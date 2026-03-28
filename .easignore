@@ -1,0 +1,10 @@
+node_modules
+.expo
+.git
+*.ipa
+*.apk
+*.aab
+*.zip
+*.tar
+*.tar.gz
+*.log

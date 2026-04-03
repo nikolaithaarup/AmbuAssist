@@ -10,79 +10,199 @@ export const en = {
   danish: "Danish",
   open: "Open",
 
-  // Tool cards
-  tool_weightDose_title: "Weight → Joule + Doses",
-  tool_weightDose_desc: "Age → weight estimate → joules + configured meds",
-  tool_news2_title: "NEWS2",
-  tool_news2_desc: "Vitals → NEWS2 score + escalation",
-  tool_wells_title: "Wells (DVT)",
-  tool_wells_desc: "DVT probability scoring",
-  tool_nihss_title: "NIHSS",
-  tool_nihss_desc: "Stroke severity scoring",
-  tool_bvc_title: "BVC",
-  tool_bvc_desc: "Brøset Violence Checklist",
-  tool_settings_title: "Settings",
-  tool_settings_desc: "Weight formula, default J/kg, med dose list",
-
-  // Common
+  // Shared UI / common
   loading: "Loading…",
   result: "Result",
-  clinicalReminder:
-    "Clinical reminder: this is a calculator. Your local guideline wins. Use it to reduce arithmetic errors, not judgement errors.",
   save: "Save",
   reset: "Reset",
   cancel: "Cancel",
   remove: "Remove",
   add: "Add",
+  close: "Close",
+  default: "default",
+  yes: "Yes",
+  no: "No",
+  answer: "Answer",
+  back: "Back",
 
-  // Weight/Joule/Dose
+  clinicalReminder:
+    "Clinical reminder: This tool supports assessment only. Always follow local guidelines and clinical judgment.",
+
+  tool_disclaimer_title: "Medical disclaimer",
+  tool_sources_title: "Sources and references",
+  tool_answered: "Answered:",
+  tool_filled: "Filled values:",
+
+  // Tool cards
+  tool_meddisc_title: "Medical disclaimer",
+  tool_meddisc_desc: "Important use, safety, and source information.",
+
+  tool_dest_title: "Destination",
+  tool_dest_desc: "Pick Byen/Regionen + diagnosis → destination hospital",
+
+  tool_weightDose_title: "Weight → Joule + Doses",
+  tool_weightDose_desc: "Age → weight estimate → joules + configured meds",
+
+  tool_exams_title: "Clinical exams",
+  tool_exams_desc: "Quick bedside signs",
+
+  tool_nihss_title: "NIHSS",
+  tool_nihss_desc: "Stroke severity scoring",
+
+  tool_hints_title: "HINTS",
+  tool_hints_desc: "Step through HINTS+ and positional vertigo flow",
+
+  tool_news2_title: "NEWS2",
+  tool_news2_desc: "Vitals → NEWS2 score + escalation",
+
+  tool_wells_title: "Wells (DVT)",
+  tool_wells_desc: "DVT probability scoring",
+
+  tool_bvc_title: "BVC",
+  tool_bvc_desc: "Brøset Violence Checklist",
+
+  tool_spine_title: "Spinal trauma",
+  tool_spine_desc: "Step through spine trauma stabilization flow",
+
+  tool_flacc_title: "FLACC",
+  tool_flacc_desc: "Pediatric pain score (0–10).",
+
+  tool_apgar_title: "APGAR",
+  tool_apgar_desc: "Newborn assessment score (0–10).",
+
+  tool_cfs_title: "CFS",
+  tool_cfs_desc: "Clinical Frailty Scale (1–9)",
+
+  tool_settings_title: "Settings",
+  tool_settings_desc: "Weight formula, default J/kg, med dose list",
+
+  // Medical disclaimer page
+  meddisc_title: "Medical disclaimer",
+  meddisc_sub:
+    "Important information about safe use of AmbuAssist and its clinical tools.",
+
+  meddisc_section_use_title: "Intended use",
+  meddisc_use_1:
+    "AmbuAssist is intended as a reference and support tool for trained users.",
+  meddisc_use_2:
+    "The app does not replace clinical judgment, local guidelines, physician advice, or supervision.",
+  meddisc_use_3:
+    "Information and calculations in the app must always be interpreted in the full clinical context.",
+  meddisc_use_4:
+    "Users are responsible for checking whether the tool content matches local practice, approved medicines, and applicable protocols.",
+
+  meddisc_section_warning_title: "Important warning",
+  meddisc_warning_body:
+    "Do not use AmbuAssist as the sole basis for diagnosis, triage, medication administration, transport decisions, or other treatment decisions. Always follow local instructions and seek a qualified doctor’s advice when relevant before making medical decisions.",
+
+  meddisc_section_sources_title: "Sources and references",
+  meddisc_sources_body:
+    "Medical tools in AmbuAssist should be used together with clearly stated sources, guidelines, or validated scoring systems. Source information for individual tools should be easy to find in the relevant tool screens.",
+
+  meddisc_section_emergency_title: "Emergency use",
+  meddisc_emergency_body:
+    "In urgent or life-threatening situations, follow your local emergency procedures, approved guidelines, and supervising clinical direction. Delays caused by app use must always be avoided.",
+
+  meddisc_footer:
+    "This app is a support tool — not a substitute for professional medical assessment.",
+
+  // Weight / Joule / Dose
   wjd_title: "Weight → Joule + Doses",
   wjd_sub: "Age → estimated kg → joules + your configured medication list.",
   wjd_age: "Age",
   wjd_years: "years",
-  wjd_weight_override: "Weight (override)",
+  wjd_weight_override: "Weight",
   wjd_kg_optional: "kg (optional)",
-  wjd_jkg_override: "J/kg (override)",
+  wjd_jkg_override: "J/kg",
   wjd_calculated: "Calculated",
-  wjd_estWeight: "Est. weight",
+  wjd_estWeight: "Estimated weight",
   wjd_usingWeight: "Using weight",
   wjd_energy: "Energy",
   wjd_doses: "Doses",
   wjd_doses_sub:
-    "Shown only for enabled meds. Add concentration to also get mL.",
-  wjd_noMeds: "No enabled meds. Go to Settings → Medication list.",
+    "Shown only for enabled medicines. Add concentration to also get mL.",
+  wjd_noMeds: "No enabled medicines. Go to Settings → Medication list.",
   wjd_dose: "Dose",
   wjd_volume: "Volume",
+  wjd_openSettings: "Settings",
+  wjd_settings_title: "Tool settings",
+  wjd_settings_sub:
+    "These settings affect Weight → Joule + Doses (saved on device).",
+  wjd_capped120: "Capped at 120 J",
+  wjd_cappedMax: "Capped at max",
+
+  wjd_page_disclaimer:
+    "This tool is intended as calculation support only. It must not be used as the sole basis for medication administration, choosing defibrillation energy, or other treatment decisions. Always verify dose, concentration, indication, route, contraindications, local instructions, and clinical responsibility before treatment.",
+  wjd_settings_disclaimer:
+    "Medication information and concentrations must be checked carefully against approved local references. Errors in settings can produce incorrect dose or volume calculations.",
+  wjd_result_disclaimer:
+    "Calculated values are advisory only and must always be checked against local guidelines, approved medication references, and the full clinical situation.",
+  wjd_sources_sub:
+    "Weight estimates, energy choices, and medication data should be checked against approved pediatric and local treatment references.",
+  wjd_source_1_title: "Local pediatric medication and resuscitation guidance",
+  wjd_source_1_sub:
+    "Use approved local dose tables, formularies, and resuscitation instructions.",
+  wjd_source_2_title:
+    "Validated references for weight estimation and pediatric emergency care",
+  wjd_source_2_sub:
+    "Age-to-weight estimation should only be used when an actual or better estimated weight is not available.",
+  wjd_source_3_title: "Approved references for medication concentration",
+  wjd_source_3_sub:
+    "Always verify concentration, formulation, route, and maximum dose before medication administration.",
 
   // NEWS2
   news2_title: "NEWS2",
-  news2_sub: "Enter vitals — score and escalation update live.",
+  news2_sub: "Enter values — score and escalation update live.",
   news2_scale: "SpO₂ scale",
   news2_scale1: "Scale 1",
   news2_scale2: "Scale 2",
   news2_o2: "Supplemental O₂",
   news2_consciousness: "Consciousness (AVPU)",
-  news2_rr: "Resp rate (RR)",
+  news2_rr: "Respiratory rate (RR)",
   news2_spo2: "SpO₂",
-  news2_sbp: "Systolic BP (SBP)",
-  news2_hr: "Heart rate (HR)",
+  news2_sbp: "Systolic BP",
+  news2_hr: "Heart rate",
   news2_temp: "Temperature",
   news2_points: "pts",
+  news2_rr_placeholder: "breaths/min",
+  news2_spo2_placeholder: "%",
+  news2_sbp_placeholder: "mmHg",
+  news2_hr_placeholder: "beats/min",
+  news2_temp_placeholder: "°C",
   news2_guidance_note:
-    "Note: escalation thresholds and observation frequency can vary by region/hospital.",
+    "Note: escalation thresholds and observation frequency can vary between regions and hospitals.",
   news2_guidance_0: "NEWS 0: Low risk (routine obs as per local policy).",
   news2_guidance_high:
     "High risk (NEWS ≥ 7): urgent clinical review / escalation.",
   news2_guidance_any3:
-    "Single parameter scoring 3: urgent clinical review (even if total is lower).",
+    "Single-parameter score of 3: urgent clinical review (even if total is lower).",
   news2_guidance_med:
-    "Medium risk (NEWS 5–6): urgent review / consider escalation.",
+    "Moderate risk (NEWS 5–6): urgent review / consider escalation.",
   news2_guidance_low:
     "Low–moderate risk (NEWS 1–4): increased observation and clinical judgement.",
 
+  news2_page_disclaimer:
+    "NEWS2 supports a structured assessment of acute illness, but it does not replace clinical judgement, local escalation instructions, or medical assessment. The score must not stand alone when making decisions about diagnosis, treatment, or destination.",
+  // NEWS2
+  news2_sources_sub:
+    "NEWS2 should be used in accordance with the Royal College of Physicians NEWS2 report and local escalation guidance.",
+  news2_source_1_title:
+    "Royal College of Physicians – National Early Warning Score (NEWS2), 2017",
+  news2_source_1_sub:
+    "Official NEWS2 report describing the validated scoring system for acute illness severity.",
+  news2_source_2_title:
+    "Royal College of Physicians – NEWS2 thresholds, oxygen scoring, and escalation principles",
+  news2_source_2_sub:
+    "Reference for SpO₂ Scale 1 and Scale 2, supplemental oxygen scoring, and response/escalation structure.",
+  news2_source_3_title: "Local observation and escalation guidance",
+  news2_source_3_sub:
+    "Use together with current local instructions for monitoring frequency, escalation, and referral pathways.",
+
+  // NIHSS
+
   // Wells
   wells_title: "Wells score (DVT)",
-  wells_sub: "Tick findings — score and interpretation update instantly.",
+  wells_sub: "Tick findings — score and interpretation update live.",
   wells_score: "Score",
   wells_twoLevel: "Two-level",
   wells_threeLevel: "Three-level (classic)",
@@ -92,17 +212,38 @@ export const en = {
   wells_three_moderate: "Moderate",
   wells_three_high: "High",
   wells_clinical_reminder:
-    "Clinical reminder: In most pathways you combine Wells with D-dimer and/or ultrasound. AmbuAssist supports your thinking — it doesn’t replace local guidelines.",
+    "Clinical reminder: In most pathways Wells is combined with D-dimer and/or ultrasound. AmbuAssist supports your thinking — it does not replace local guidelines.",
+
+  wells_page_disclaimer:
+    "The Wells DVT score is a clinical prediction tool and must not be used alone to confirm or exclude deep vein thrombosis. The score must always be interpreted together with history, examination, differential diagnoses, and local diagnostic guidance.",
+  wells_result_disclaimer:
+    "The result is advisory only and does not replace imaging, D-dimer strategy, medical assessment, or local instructions.",
+  // Wells
+  wells_sources_sub:
+    "The Wells DVT score should be used with validated pre-test probability references and current diagnostic guidance.",
+  wells_source_1_title:
+    "Wells et al. – Evaluation of D-dimer in the diagnosis of suspected deep-vein thrombosis (2003)",
+  wells_source_1_sub:
+    "Key publication supporting Wells-based clinical probability assessment combined with D-dimer testing.",
+  wells_source_2_title:
+    "NICE guideline NG158 – Venous thromboembolic diseases: diagnosis and management",
+  wells_source_2_sub:
+    "Current guideline resource for DVT diagnostic pathways, including structured workup and management.",
+  wells_source_3_title: "Local VTE / referral guidance",
+  wells_source_3_sub:
+    "Use together with current local instructions for D-dimer strategy, ultrasound referral, escalation, and anticoagulation decisions.",
 
   // NIHSS
-  nihss_sub: "Select one option per item — total updates instantly.",
+  nihss_title: "NIHSS",
+  nihss_sub: "Select one option per item — total updates live.",
+  nihss_scoreLabel: "NIHSS:",
+  nihss_needAll:
+    "Complete all NIHSS items before interpreting the score group.",
   nihss_noStroke: "0: No stroke symptoms",
   nihss_minor: "1–4: Minor stroke",
   nihss_moderate: "5–15: Moderate stroke",
-  nihss_modSevere: "16–20: Moderate–severe stroke",
+  nihss_modSevere: "16–20: Moderate-severe stroke",
   nihss_severe: "21+: Severe stroke",
-  nihss_title: "NIHSS",
-  nihss_scoreLabel: "NIHSS:",
 
   nihss_1a_title: "1a. Level of consciousness",
   nihss_1a_opt_alert: "Alert",
@@ -179,13 +320,33 @@ export const en = {
   nihss_11_opt_mild: "Mild (1 modality)",
   nihss_11_opt_severe: "Severe (≥2 modalities)",
 
+  nihss_page_disclaimer:
+    "NIHSS is a structured neurological assessment tool and must not be used as the sole basis for diagnosis, destination choice, thrombolysis considerations, or other treatment decisions. The score must always be interpreted together with the overall clinical picture, local stroke guidance, and clinical judgement.",
+  nihss_result_disclaimer:
+    "Severity groups are advisory only and do not replace local stroke assessment or medical guidance.",
+  // NIHSS
+  nihss_sources_sub:
+    "NIHSS content should follow the original NIH Stroke Scale publication, stroke guideline material, and local stroke pathways.",
+  nihss_source_1_title:
+    "Brott et al. – Measurements of acute cerebral infarction: a clinical examination scale (1989)",
+  nihss_source_1_sub:
+    "Original publication describing the NIH Stroke Scale as a 15-item neurologic examination scale for acute stroke.",
+  nihss_source_2_title:
+    "American Heart Association / American Stroke Association – Acute ischemic stroke guideline material",
+  nihss_source_2_sub:
+    "Guideline material supporting structured stroke severity assessment, including use of the NIHSS.",
+  nihss_source_3_title:
+    "Local or regional stroke triage / destination guidance",
+  nihss_source_3_sub:
+    "Use together with current prehospital stroke triage, destination, imaging, and escalation procedures.",
+
   // BVC
+  bvc_title: "BVC",
   bvc_sub: "Brøset Violence Checklist — tick observed behaviours.",
+  bvc_scoreLabel: "BVC:",
   bvc_low: "Low risk",
   bvc_mod: "Moderate risk",
   bvc_high: "High risk",
-  bvc_title: "BVC",
-  bvc_scoreLabel: "BVC:",
 
   bvc_item_confused: "Confused",
   bvc_item_irritable: "Irritable",
@@ -194,11 +355,28 @@ export const en = {
   bvc_item_physical: "Physical threats",
   bvc_item_attacking: "Attacking objects",
 
-  // Tool cards
-  tool_exams_title: "Clinical exams",
-  tool_exams_desc: "Quick bedside signs",
+  bvc_page_disclaimer:
+    "BVC is a short-term violence-risk screening tool and should support, not replace, dynamic clinical assessment, de-escalation, and local safety procedures. It must not be used alone to justify coercion, diagnosis, or treatment decisions.",
+  bvc_result_disclaimer:
+    "The BVC score is advisory only and must be interpreted together with behaviour, history, environment, and local safety guidance.",
+  bvc_sources_sub:
+    "BVC should be used together with validated short-term violence-risk references and local safety procedures.",
 
-  // Exams page
+  bvc_source_1_title:
+    "Woods & Almvik et al. – The Brøset Violence Checklist (2002)",
+  bvc_source_1_sub:
+    "Original publication describing the Brøset Violence Checklist as a short-term violence prediction instrument.",
+
+  bvc_source_2_title:
+    "Short-term risk prediction: the Brøset Violence Checklist",
+  bvc_source_2_sub:
+    "Supporting literature on short-term prediction of threatening or violent behaviour in psychiatric settings.",
+
+  bvc_source_3_title: "Local psychiatric / prehospital safety guidance",
+  bvc_source_3_sub:
+    "Use together with current local procedures for de-escalation, scene safety, observation, escalation, and staff protection.",
+
+  // Exams
   exams_title: "Clinical exams & signs",
   exams_sub:
     "Tap an item to expand. Use as a memory aid — guidelines and context win.",
@@ -208,7 +386,7 @@ export const en = {
   ex_label_indicates: "Indicates",
   ex_label_prehospital: "Prehospital note",
 
-  ex_group_abdomen: "Abdomen (acute belly)",
+  ex_group_abdomen: "Abdomen (acute abdomen)",
   ex_group_cns: "CNS / meningeal irritation",
   ex_group_back: "Back / nerves",
   ex_group_thorax: "Thorax / heart",
@@ -216,10 +394,9 @@ export const en = {
   ex_group_ob: "Obstetrics",
   ex_group_trauma: "Head / trauma",
 
-  // ABDOMEN
   ex_mcburney_title: "McBurney's point",
   ex_mcburney_how:
-    "Palpate 1/3 of the distance from the right ASIS toward the umbilicus.",
+    "Palpate one-third of the distance from the right ASIS toward the umbilicus.",
   ex_mcburney_pos: "Localized tenderness/pain.",
   ex_mcburney_ind: "Acute appendicitis (classic).",
   ex_mcburney_pre:
@@ -231,7 +408,7 @@ export const en = {
   ex_murphy_pos: "Inspiratory arrest due to pain.",
   ex_murphy_ind: "Acute cholecystitis.",
   ex_murphy_pre:
-    "Helps explain fever + RUQ pain and guides correct receiving specialty.",
+    "Helps explain fever + RUQ pain and guides the correct receiving specialty.",
 
   ex_blumberg_title: "Blumberg's sign (rebound tenderness)",
   ex_blumberg_how: "Press slowly and deeply, then release quickly.",
@@ -247,7 +424,7 @@ export const en = {
 
   ex_psoas_title: "Psoas sign",
   ex_psoas_how:
-    "Patient raises a straight leg against resistance OR you extend the hip.",
+    "The patient raises a straight leg against resistance OR you extend the hip.",
   ex_psoas_pos: "Abdominal pain.",
   ex_psoas_ind: "Retrocecal appendicitis / retroperitoneal irritation.",
 
@@ -256,7 +433,6 @@ export const en = {
   ex_obturator_pos: "Lower abdominal/pelvic pain.",
   ex_obturator_ind: "Appendicitis located in the pelvis.",
 
-  // CNS / MENINGEAL
   ex_brudzinski_title: "Brudzinski's sign",
   ex_brudzinski_how: "Passive neck flexion with the patient supine.",
   ex_brudzinski_pos: "Involuntary hip/knee flexion.",
@@ -274,18 +450,16 @@ export const en = {
   ex_babinski_pos: "Upgoing big toe (± fanning of toes).",
   ex_babinski_ind: "Upper motor neuron lesion (CNS).",
   ex_babinski_pre:
-    "Supports a central neurological cause (e.g., stroke, intracranial pathology).",
+    "Supports a central neurological cause (e.g. stroke or intracranial pathology).",
 
-  // BACK / NERVES
   ex_lasegue_title: "Lasègue's sign (Straight Leg Raise)",
   ex_lasegue_how: "Passively raise the straight leg with the patient supine.",
   ex_lasegue_pos: "Radiating pain down the leg.",
   ex_lasegue_ind: "Sciatica / disc herniation.",
   ex_lasegue_pre: "Helps separate radicular pain from muscular back pain.",
 
-  // THORAX / HEART
   ex_becks_title: "Beck's triad",
-  ex_becks_how: "Assess for: hypotension, JVD, and muffled heart sounds.",
+  ex_becks_how: "Assess for hypotension, JVD, and muffled heart sounds.",
   ex_becks_pos: "Triad present (often incomplete).",
   ex_becks_ind: "Cardiac tamponade.",
   ex_becks_pre:
@@ -302,13 +476,11 @@ export const en = {
   ex_kussmaul_ind:
     "Right-sided heart failure, tamponade (and other obstructive physiology).",
 
-  // UROLOGY
   ex_giordano_title: "Giordano's sign (CVA tenderness)",
   ex_giordano_how: "Gently percuss over the flank/kidney angle.",
   ex_giordano_pos: "Pain.",
   ex_giordano_ind: "Pyelonephritis or renal stone.",
 
-  // OBSTETRICS
   ex_ob_painless_bleeding_title: "Painless vaginal bleeding",
   ex_ob_painless_bleeding_how:
     "History/observation: vaginal bleeding without pain.",
@@ -323,7 +495,7 @@ export const en = {
 
   ex_ob_prev_csection_pain_title: "Sudden pain with previous C-section",
   ex_ob_prev_csection_pain_how:
-    "History: sudden severe pain in a patient with prior uterine surgery (e.g., C-section).",
+    "History: sudden severe pain in a patient with prior uterine surgery (e.g. C-section).",
   ex_ob_prev_csection_pain_pos: "Sudden severe abdominal pain ± shock.",
   ex_ob_prev_csection_pain_ind: "Uterine rupture.",
 
@@ -335,7 +507,6 @@ export const en = {
   ex_ob_no_fetal_movement_pre:
     "Always urgent → consult and transport to the correct destination.",
 
-  // TRAUMA
   ex_battles_title: "Battle’s sign",
   ex_battles_how: "Inspect behind the ear (mastoid region).",
   ex_battles_pos: "Bruising over the mastoid.",
@@ -346,37 +517,64 @@ export const en = {
   ex_raccoon_pos: "Periorbital ecchymosis (bruising).",
   ex_raccoon_ind: "Basilar skull fracture.",
 
+  exams_page_disclaimer:
+    "These examination signs are intended as teaching and support content only. They must not be used alone to confirm a diagnosis, exclude serious illness, or determine treatment. Findings must always be interpreted in the full clinical context and according to local guidance.",
+  exams_item_disclaimer:
+    "Single examination signs may have limited sensitivity or specificity and must be interpreted together with history, the overall examination, vital signs, and clinical judgement.",
+  exams_sources_sub:
+    "Physical examination findings should be interpreted using standard clinical examination references and local guidance.",
+  exams_source_1_title: "Standard references in clinical examination",
+  exams_source_1_sub:
+    "Use established textbooks and validated teaching material for bedside examination.",
+  exams_source_2_title: "Acute and prehospital assessment guidance",
+  exams_source_2_sub:
+    "Combine examination findings with structured ABCDE assessment and recognition of red flags.",
+  exams_source_3_title: "Local clinical guidelines",
+  exams_source_3_sub:
+    "Follow current local guidance for referral, escalation, and acute management.",
+
   // HINTS
-  tool_hints_title: "HINTS",
-  tool_hints_desc: "Step through HINTS+ and positional vertigo flow",
   hints_flowchart: "Flowchart",
   hints_result: "Result",
   hints_selections: "Your selections",
-  back: "Back",
 
-  // Tool card
-  tool_spine_title: "Spinal trauma",
-  tool_spine_desc: "Step through spine trauma stabilization flow",
+  hints_page_disclaimer:
+    "HINTS+ is intended for selected patients with Acute Vestibular Syndrome and requires correct examination technique together with the appropriate clinical context. It does not replace broader neurological assessment, stroke evaluation, imaging pathways, or senior clinical judgement when indicated.",
+  hints_result_disclaimer:
+    "This result is advisory only. If examination quality is uncertain, symptoms are atypical, or risk is high, follow the higher-risk pathway and local stroke or neurological guidance.",
+  // HINTS
+  hints_sources_sub:
+    "HINTS+ and related dizziness assessment should be used in accordance with the original AVS literature, modern dizziness guidance, and local stroke pathways.",
+  hints_source_1_title:
+    "Kattah et al. – HINTS to Diagnose Stroke in the Acute Vestibular Syndrome (2009)",
+  hints_source_1_sub:
+    "Foundational HINTS paper describing the three-step bedside oculomotor examination in acute vestibular syndrome.",
+  hints_source_2_title:
+    "GRACE-3 – Acute dizziness and vertigo in the emergency department (2023)",
+  hints_source_2_sub:
+    "Guideline emphasizing training, timing/triggers-based assessment, and appropriate use of bedside eye-movement examination.",
+  hints_source_3_title: "Local stroke / neurology escalation guidance",
+  hints_source_3_sub:
+    "Follow current local procedures for escalation, imaging, and specialist assessment when a central cause is suspected.",
 
-  // Page
+  // Spinal trauma
   spine_title: "Spinal trauma flow",
-  spine_sub:
-    "A quick decision flow for when spinal stabilization is indicated.",
+  spine_sub: "Quick decision flow for when spinal stabilization is indicated.",
 
   spine_info_title: "Definitions (tap to expand)",
   spine_info_hint:
-    "Trauma criteria + what counts as ABC critical, tenderness, neuro deficit.",
+    "Trauma criteria + what counts as critical ABC, tenderness, and neurological deficit.",
   spine_info_trauma:
-    "Relevant trauma: within 48 hours, adult (≥18y), with risk of secondary spinal cord injury.",
+    "Relevant trauma: within 48 hours, adult (≥18 years), with risk of secondary spinal cord injury.",
   spine_info_abc_title: "Critical ABC problem",
   spine_info_abc:
     "A: blocked or threatened airway.\nB: suspected pneumothorax/haemothorax, flail chest, hypoxia.\nC: threatened or manifest circulatory instability.",
   spine_info_tender_title: "Bony midline tenderness",
   spine_info_tender:
-    "Direct/indirect bony tenderness on palpation of the spinous processes. Interpret reaction (e.g., pain behavior) rather than only asking the patient.",
+    "Direct/indirect bony tenderness on palpation of the spinous processes. Interpret the patient’s reaction (e.g. pain behaviour), not only what they say.",
   spine_info_neuro_title: "Neurological deficit",
   spine_info_neuro:
-    "Cannot squeeze hands and/or dorsiflex feet, or altered sensation in arms/legs/trunk (gross neuro exam).",
+    "Unable to squeeze hands and/or dorsiflex feet, or altered sensation in arms/legs/trunk (gross neurological exam).",
 
   spine_step1_title: "Step 1",
   spine_step1_q: "Is this an isolated penetrating trauma?",
@@ -385,7 +583,7 @@ export const en = {
   spine_step2_title: "Step 2",
   spine_step2_q: "Critical ABC problem and/or GCS < 15?",
   spine_step2_note:
-    "If yes → time-critical spinal stabilization (do not delay ABCDE or transport).",
+    "If yes → time-critical spinal stabilization (must not delay ABCDE or transport).",
 
   spine_step3_title: "Step 3",
   spine_step3_q:
@@ -399,79 +597,126 @@ export const en = {
 
   spine_outcome_none_title: "No spinal stabilization",
   spine_outcome_none_body:
-    "Spinal stabilization is not indicated based on the selections in this flow.",
+    "Spinal stabilization is not indicated based on the selected answers in this flow.",
   spine_outcome_none_practical:
     "Focus on patient comfort and safe handling. Reassess if symptoms change.",
 
   spine_outcome_spinal_title: "Spinal stabilization",
   spine_outcome_spinal_body: "Spinal stabilization is indicated.",
   spine_outcome_spinal_practical:
-    "Prehospital: position/transport on vacuum mattress. No routine rigid cervical collar.\nExtrication: self-extrication if asymptomatic OR if spinal tenderness is the only symptom; otherwise assisted extrication with situation-dependent aids (e.g., scoop, spineboard) possibly combined with MILS.",
+    "Prehospital: position/transport on a vacuum mattress. No routine use of a rigid cervical collar.\nExtrication: self-extrication if asymptomatic OR if spinal tenderness is the only symptom; otherwise assisted extrication using situation-dependent aids (e.g. scoop, spineboard) possibly combined with MILS.",
 
   spine_outcome_time_title: "Time-critical spinal stabilization",
   spine_outcome_time_body:
     "Spinal stabilization is indicated, but must not delay ABCDE interventions or transport.",
   spine_outcome_time_practical:
-    "Do only the stabilization steps that do not slow down airway/breathing/circulation or transport. Use situation-dependent aids (vacuum mattress, scoop, spineboard, ambulance stretcher) possibly combined with MILS.",
+    "Only perform stabilization steps that do not delay airway, breathing, circulation, or transport. Use situation-dependent aids (vacuum mattress, scoop, spineboard, ambulance stretcher) possibly combined with MILS.",
 
   spine_disclaimer:
-    "Support tool only — follow local clinical guidelines and medical direction.",
+    "Support tool only — follow local clinical guidance and medical direction.",
 
-  // Common (if you don’t already have these keys)
-  yes: "Yes",
-  no: "No",
-  answer: "Answer",
-
-  wjd_openSettings: "Settings",
-  wjd_settings_title: "Tool settings",
-  wjd_settings_sub:
-    "These settings affect Weight → Joule + Doses (saved on device).",
-  wjd_capped120: "Capped at 120 J",
-  wjd_cappedMax: "Capped at max",
-  settings_med_name_placeholder: "Drug name",
-
-  close: "Close",
-  default: "default",
+  spine_page_disclaimer:
+    "This spinal trauma flow is a support tool only. It does not replace ABCDE assessment, clinical judgement, local trauma guidance, or medical direction. If the patient is unstable, or the clinical picture is unclear, follow the higher-risk pathway and local guidance.",
+  spine_result_disclaimer:
+    "The suggested result is advisory only and must be interpreted together with mechanism of injury, examination findings, neurological deficits, and local trauma guidance.",
+  // Spinal trauma
+  spine_sources_sub:
+    "Assessment of spinal trauma should follow Danish spinal-stabilisation guidance, trauma principles, and local prehospital procedures.",
+  spine_source_1_title:
+    "Sundhedsstyrelsen – National Klinisk Retningslinje for spinal stabilisering af voksne traumepatienter",
+  spine_source_1_sub:
+    "Danish national clinical guideline describing when spinal stabilisation is and is not recommended in adult trauma patients.",
+  spine_source_2_title:
+    "Maschmann et al. – New clinical guidelines on the spinal stabilisation of adult trauma patients in Denmark (2019)",
+  spine_source_2_sub:
+    "Consensus- and evidence-based Danish guideline publication on prehospital spinal stabilisation practice.",
+  spine_source_3_title: "Local trauma / prehospital guidance",
+  spine_source_3_sub:
+    "Follow current local procedures for ABCDE priorities, handling, transport, spinal motion restriction, and escalation.",
 
   // Destination
-  tool_dest_title: "Destination",
-  tool_dest_desc: "Pick Byen/Regionen + diagnosis → destination hospital",
   dest_title: "Destination helper",
-  dest_sub: "Choose area, then street/district and diagnosis category.",
+  dest_sub: "Choose area, then street/district/municipality and category.",
   dest_area: "Area",
   dest_byen: "Byen",
   dest_region: "Regionen",
   dest_find_street: "Street search",
   dest_find_street_sub:
-    "Type a street name to resolve to a bydel (sample list in code).",
-  dest_street_placeholder: "Street (e.g., Amagertorv)",
+    "Type a street and get the district (only a small demo list in the code).",
+  dest_street_placeholder: "Street (e.g. Amagertorv)",
   dest_no_street_match: "No match in the current street list.",
-  dest_byen_pick: "Bydel + diagnosis",
+  dest_byen_pick: "District + category",
   dest_byen_pick_sub:
-    "Pick a bydel and category to get the destination hospital.",
-  dest_bydel: "Bydel",
-  dest_region_pick: "Kommune + specialty",
-  dest_region_pick_sub: "Nord scaffold (extend the mapping when you want).",
-  dest_kommune: "Kommune",
+    "Choose district and category to get the destination hospital.",
+  dest_bydel: "District",
+  dest_region_pick: "Municipality + specialty",
+  dest_region_pick_sub:
+    "Choose municipality and specialty category to suggest destination.",
+  dest_kommune: "Municipality",
   dest_category: "Category",
   dest_result: "Result",
   dest_pick_more:
-    "Select area + (bydel/kommune) + category to get a destination.",
+    "Select area + (district/municipality) + category to get a destination.",
   dest_destination: "Destination",
   dest_context: "Context",
   dest_code: "Code",
-  dest_unknown: "No mapping for this choice yet — add it to the dataset.",
+  dest_unknown:
+    "No mapped destination was found for this combination. Verify against current local guidance.",
   dest_region_note:
-    "Note: Region mapping is a starter scaffold. Expand to match your official tables.",
+    "Note: Region mapping is a starter scaffold. Expand it to match the official tables.",
   dest_data_title: "Data",
   dest_data_sub:
-    "The mapping lives in app/tools/destination.tsx as plain objects. You can later move it to JSON.",
+    "Mapping lives in app/tools/destination.tsx as plain objects. It can later be moved to JSON.",
 
-  // Categories (Byen)
+  dest_use_location_title: "Use current location",
+  dest_use_location_sub:
+    "Find street/district in Byen mode or municipality in Region mode.",
+  dest_use_location_btn: "Use current location",
+  dest_detecting: "Finding location...",
+  dest_detected: "Detected",
+  dest_unknown_area: "Unknown area",
+  dest_using_bydel: "Using district:",
+  dest_using_kommune: "Using municipality:",
+  dest_clear_location: "Clear location",
+
+  dest_loc_perm_title: "Location permission required",
+  dest_loc_perm_body:
+    "Allow location access so AmbuAssist can find the patient’s area.",
+  dest_loc_notfound_title: "Location not found",
+  dest_loc_notfound_body: "Could not reverse-geocode this location.",
+  dest_area_notmapped_title: "Area not mapped",
+  dest_area_notmapped_body:
+    "The location was found, but could not yet be matched to a mapped Byen street/district. You can still search or choose manually.",
+  dest_kommune_notmapped_title: "Municipality not mapped",
+  dest_kommune_notmapped_body:
+    "The location was found, but could not yet be matched to one of the mapped municipalities. You can still search or choose manually.",
+  dest_loc_error_title: "Location error",
+  dest_loc_error_body: "Something went wrong while reading location.",
+  dest_no_kommune_match: "No municipality match found.",
+  dest_region_neurokir_note_fallback:
+    "Neurosurgery is listed as a shared destination in the planning document.",
+
+  dest_page_disclaimer:
+    "This destination tool is a logistical support tool only. It does not replace local destination rules, current hospital capacity, specialty-specific pathways, medical triage, or real-time operational leadership. Always verify the destination against current local instructions before transport.",
+  dest_result_disclaimer:
+    "Suggested destinations are advisory only and must be checked against current destination rules, pathway criteria, and operational updates.",
+  dest_sources_sub:
+    "Destination suggestions should be based on current local destination documents, specialty pathways, and operational guidance.",
+  dest_source_1_title: "Region H destination guidance (internal)",
+  dest_source_1_sub:
+    "Internal regional guidance for destination and hospital choice. Add version and review date here.",
+  dest_source_2_title: "Operational updates and local pathway notes",
+  dest_source_2_sub:
+    "Use together with current operational messages, special instructions, and pathway criteria.",
+  dest_source_3_title: "Local dispatch / medical triage",
+  dest_source_3_sub:
+    "Follow current dispatch, physician, and regional coordination guidance if it differs from static mapping.",
+
+  // Destination categories (Byen)
   dest_cat_hospital: "Hospital (default)",
-  dest_cat_medicin: "Medicin",
-  dest_cat_reuma: "Reumatology",
-  dest_cat_gaskir: "Gastro surgery",
+  dest_cat_medicin: "Medicine",
+  dest_cat_reuma: "Rheumatology",
+  dest_cat_gaskir: "Gastrointestinal surgery",
   dest_cat_neuro_apopleksi: "Neurology: stroke",
   dest_cat_neuro_almen: "Neurology: general",
   dest_cat_kardiologi: "Cardiology",
@@ -480,20 +725,46 @@ export const en = {
   dest_cat_gyn: "Gynecology",
   dest_cat_uro: "Urology",
 
-  // Categories (Region)
+  // Destination categories (Region)
   dest_reg_traumecenter: "Trauma center",
-  dest_reg_akutmodtagelse: "Acute receiving",
+  dest_reg_akutmodtagelse: "Emergency department",
   dest_reg_med_modtagelse: "Medical receiving",
   dest_reg_akutklinik: "Acute clinic",
+  dest_reg_kir_mave_tarm: "Gastrointestinal surgery",
+  dest_reg_boernekir: "Pediatric surgery",
+  dest_reg_ortkir: "Orthopedic surgery",
+  dest_reg_ortkir_boern: "Pediatric orthopedics (<16 years)",
   dest_reg_karkir: "Vascular surgery",
   dest_reg_thoraxkir: "Thoracic surgery",
   dest_reg_neurokir: "Neurosurgery",
+  dest_reg_urologi: "Urology",
+  dest_reg_plastkir: "Plastic surgery",
+  dest_reg_mammakir: "Breast surgery",
   dest_reg_kardiologi: "Cardiology",
-  dest_reg_neurologi: "Neurology",
+  dest_reg_lungemed: "Respiratory medicine",
+  dest_reg_gastro: "Gastroenterology",
+  dest_reg_endo: "Endocrinology",
+  dest_reg_geri: "Geriatrics",
+  dest_reg_reuma: "Rheumatology",
+  dest_reg_infekt: "Infectious diseases",
+  dest_reg_nefro: "Nephrology",
+  dest_reg_haemato: "Hematology",
+  dest_reg_neuro: "Neurology",
   dest_reg_apopleksi: "Stroke",
+  dest_reg_gyn: "Gynecology",
+  dest_reg_obst: "Obstetrics",
   dest_reg_paediatri: "Pediatrics",
-  dest_reg_gyn: "Ob/Gyn",
   dest_reg_billeddiag: "Imaging",
+  dest_reg_onk: "Clinical oncology",
+  dest_reg_pall: "Palliative unit",
+  dest_reg_oftal: "Ophthalmology",
+  dest_reg_oenh: "ENT",
+  dest_reg_audio: "Audiology",
+  dest_reg_odont: "Odontology",
+  dest_reg_derm: "Dermato-venereology",
+  dest_reg_allergi: "Allergology",
+  dest_reg_arbejds: "Occupational and environmental medicine",
+  dest_reg_social: "Social medicine",
 
   // Hospital labels
   dest_h_AMH: "Amager Hospital (AMH)",
@@ -507,28 +778,24 @@ export const en = {
   dest_h_RH: "Rigshospitalet (RH)",
   dest_h_UNKNOWN: "Unknown",
 
-  // Tool cards
-  tool_cfs_title: "CFS",
-  tool_cfs_desc: "Clinical Frailty Scale (1–9)",
-
   // CFS
   cfs_title: "Clinical Frailty Scale (CFS)",
   cfs_sub:
-    "Pick the best matching level based on baseline function (not just today’s illness).",
-  cfs_pickTitle: "Select level",
+    "Choose the level that best matches the patient’s baseline function (not just today’s illness).",
+  cfs_pickTitle: "Choose level",
   cfs_pickSub: "Choose 1–9. Tap a number to see the definition.",
   cfs_scoreLabel: "CFS:",
   cfs_noSelection: "No score selected yet.",
   cfs_note:
-    "Tip: Score the patient’s usual baseline over the last weeks–months. Acute illness can temporarily worsen function, but CFS is about the underlying reserve.",
+    "Tip: Score the patient’s usual function over the last weeks to months. Acute illness can worsen function temporarily, but CFS reflects the underlying reserve.",
 
   cfs_1_title: "Very fit",
   cfs_1_desc:
-    "Robust, active, energetic and motivated. Exercises regularly and among the fittest for their age.",
+    "Robust, active, energetic, and motivated. Exercises regularly and is among the fittest for their age.",
 
   cfs_2_title: "Fit",
   cfs_2_desc:
-    "No active disease symptoms, but less fit than level 1. Often exercises or is very active occasionally (e.g., seasonally).",
+    "No active disease symptoms, but less fit than level 1. Often exercises or is very active occasionally (e.g. seasonally).",
 
   cfs_3_title: "Managing well",
   cfs_3_desc:
@@ -536,19 +803,19 @@ export const en = {
 
   cfs_4_title: "Living with very mild frailty",
   cfs_4_desc:
-    "Not dependent for daily help, but symptoms often limit activities. Commonly feels ‘slowed up’ and/or tired during the day.",
+    "Not dependent on help for daily activities, but symptoms often limit activity. Commonly feels slowed up and/or tired during the day.",
 
   cfs_5_title: "Living with mild frailty",
   cfs_5_desc:
-    "More evident slowing. Needs help with higher order IADLs (finances, transport, heavy housework). Shopping, walking outside alone, meal prep and meds may be affected.",
+    "More evident slowing. Needs help with higher-order IADLs (finances, transport, heavy housework). Shopping, walking outside alone, meal prep, and medication handling may be affected.",
 
   cfs_6_title: "Living with moderate frailty",
   cfs_6_desc:
-    "Needs help with all outside activities and with keeping house. Often problems with stairs. Needs help with bathing and may need minimal assistance (cueing/standby) with dressing.",
+    "Needs help with all outside activities and with keeping house. Often has problems with stairs. Needs help with bathing and may need minimal assistance (cueing/standby) with dressing.",
 
   cfs_7_title: "Living with severe frailty",
   cfs_7_desc:
-    "Completely dependent for personal care (physical or cognitive). Still appears stable and not at high risk of dying within ~6 months.",
+    "Completely dependent for personal care (physical or cognitive). Still appears stable and is not at high risk of dying within about 6 months.",
 
   cfs_8_title: "Living with very severe frailty",
   cfs_8_desc:
@@ -556,19 +823,39 @@ export const en = {
 
   cfs_9_title: "Terminally ill",
   cfs_9_desc:
-    "Approaching end of life with life expectancy < 6 months, but not otherwise living with severe frailty. Many can remain active until very close to death.",
+    "Approaching end of life with life expectancy under 6 months, but not otherwise living with severe frailty. Many remain active until very close to death.",
 
-  // --- FLACC ---
+  cfs_page_disclaimer:
+    "The Clinical Frailty Scale supports a structured assessment of the patient’s usual frailty, but it does not replace an overall clinical assessment. It should not be used alone to determine treatment level, prognosis, or admission decisions.",
+  cfs_result_disclaimer:
+    "CFS should be interpreted in the context of the patient’s usual baseline function, current illness, collateral history, and local guidance.",
+  cfs_sources_sub:
+    "CFS should be used in accordance with the official Clinical Frailty Scale material, Danish translation work, and local clinical guidance.",
+
+  cfs_source_1_title: "Clinical Frailty Scale (official scale material)",
+  cfs_source_1_sub:
+    "Official Clinical Frailty Scale resource from the Geriatric Medicine Research group / Dalhousie University.",
+
+  cfs_source_2_title:
+    "Danish translation and validation of the Clinical Frailty Scale",
+  cfs_source_2_sub:
+    "Danish translation and cross-sector reliability work supporting clinical use in Danish healthcare settings.",
+
+  cfs_source_3_title: "Local geriatric / acute medicine guidance",
+  cfs_source_3_sub:
+    "Interpret the score together with baseline function, collateral history, acute illness, and current local clinical guidance.",
+
+  // FLACC
   flacc_title: "FLACC score",
   flacc_sub:
-    "Behavioral pain assessment (Face, Legs, Activity, Cry, Consolability). Tap one option per category.",
+    "Behavioural pain assessment (Face, Legs, Activity, Cry, Consolability). Choose one option per category.",
   flacc_face_title: "Face",
   flacc_face_0: "Disinterested",
   flacc_face_1: "Occasional grimace, withdrawn",
   flacc_face_2: "Frequent frown, clenched jaw",
 
   flacc_legs_title: "Legs",
-  flacc_legs_0: "No position or relaxed",
+  flacc_legs_0: "No particular position or relaxed",
   flacc_legs_1: "Uneasy, restless, tense",
   flacc_legs_2: "Kicking or legs drawn up",
 
@@ -580,7 +867,7 @@ export const en = {
   flacc_cry_title: "Cry",
   flacc_cry_0: "No crying",
   flacc_cry_1: "Moans or whimpers",
-  flacc_cry_2: "Constant crying, screams or sobs",
+  flacc_cry_2: "Constant crying, screams, or sobs",
 
   flacc_consolability_title: "Consolability",
   flacc_consolability_0: "Content, relaxed",
@@ -588,17 +875,38 @@ export const en = {
   flacc_consolability_2: "Inconsolable",
 
   flacc_scoreLabel: "Total:",
-  flacc_needAll: "Select one option in every category to interpret the score.",
+  flacc_needAll: "Choose one option in every category to interpret the score.",
   flacc_severity_0: "0 = Relaxed and comfortable.",
   flacc_severity_mild: "1–3 = Mild discomfort/pain.",
   flacc_severity_mod: "4–6 = Moderate pain.",
   flacc_severity_severe: "7–10 = Severe pain/discomfort.",
   flacc_disclaimer:
-    "Reminder: Scores support clinical judgment — reassess after intervention.",
+    "Reminder: The score supports clinical judgement — reassess after intervention.",
 
-  // --- APGAR ---
+  flacc_page_disclaimer:
+    "FLACC is a behavioural pain assessment tool and should support, not replace, the overall pain assessment. Use the tool together with age, clinical context, relevant parent/caregiver information, and reassessment after intervention.",
+  flacc_result_disclaimer:
+    "The FLACC score must be interpreted with caution and must never be used as the sole basis for pain-treatment decisions.",
+  flacc_sources_sub:
+    "FLACC should be used in accordance with validated pediatric pain-assessment references and local pediatric guidance.",
+
+  flacc_source_1_title:
+    "Merkel et al. – FLACC Behavioral Pain Assessment Scale (1997)",
+  flacc_source_1_sub:
+    "Original publication describing FLACC as a behavioral pain scale for children who may not be able to verbalize pain.",
+
+  flacc_source_2_title:
+    "Validation studies for FLACC in pediatric pain assessment",
+  flacc_source_2_sub:
+    "Supporting literature on validity and reliability of FLACC for clinical and procedural pain assessment in children.",
+
+  flacc_source_3_title: "AAP pediatric pain assessment guidance",
+  flacc_source_3_sub:
+    "Use together with broader pediatric pain-assessment principles, reassessment after intervention, and local pediatric treatment guidance.",
+
+  // APGAR
   apgar_title: "APGAR score",
-  apgar_sub: "Newborn assessment. Tap one option per category (0–2).",
+  apgar_sub: "Newborn assessment. Choose one option per category (0–2).",
   apgar_appearance_title: "Appearance (skin color)",
   apgar_appearance_0: "Cyanotic / pale all over",
   apgar_appearance_1: "Peripheral cyanosis only",
@@ -611,13 +919,13 @@ export const en = {
 
   apgar_grimace_title: "Grimace (reflex irritability)",
   apgar_grimace_0: "No response to stimulation",
-  apgar_grimace_1: "Grimace or weak cry when stimulated",
-  apgar_grimace_2: "Cry when stimulated",
+  apgar_grimace_1: "Grimace or weak cry with stimulation",
+  apgar_grimace_2: "Cries with stimulation",
 
   apgar_activity_title: "Activity (tone)",
   apgar_activity_0: "Floppy",
   apgar_activity_1: "Some flexion",
-  apgar_activity_2: "Well flexed and resisting extension",
+  apgar_activity_2: "Well flexed and resists extension",
 
   apgar_respiration_title: "Respiration",
   apgar_respiration_0: "Apneic",
@@ -625,43 +933,193 @@ export const en = {
   apgar_respiration_2: "Strong cry",
 
   apgar_scoreLabel: "Total:",
-  apgar_needAll: "Select one option in every category to interpret the score.",
+  apgar_needAll: "Choose one option in every category to interpret the score.",
   apgar_interp_ok: "7–10 = Generally normal adaptation.",
   apgar_interp_mod: "4–6 = Moderately depressed — support may be needed.",
   apgar_interp_crit:
-    "0–3 = Critically low — immediate resuscitation actions likely needed.",
+    "0–3 = Critically low — immediate resuscitation measures may be needed.",
   apgar_disclaimer:
-    "Reminder: APGAR complements (does not replace) ongoing assessment and resuscitation algorithms.",
-  tool_flacc_title: "FLACC",
-  tool_flacc_desc: "Pediatric pain score (0–10).",
+    "Reminder: APGAR complements, but does not replace, ongoing assessment and resuscitation algorithms.",
 
-  tool_apgar_title: "APGAR",
-  tool_apgar_desc: "Newborn assessment score (0–10).",
+  apgar_page_disclaimer:
+    "APGAR is a structured newborn assessment tool and does not replace neonatal resuscitation algorithms, ongoing reassessment, or clinical judgement. Use the score together with the full clinical picture and local neonatal guidance.",
+  apgar_result_disclaimer:
+    "APGAR supports communication and structured assessment, but it must not be used alone to determine treatment or prognosis.",
+  apgar_sources_sub:
+    "APGAR should be used in accordance with established newborn assessment references and local neonatal guidance.",
+  apgar_source_1_title: "APGAR score",
+  apgar_source_1_sub:
+    "Established assessment framework for newborn appearance, pulse, grimace, activity, and respiration.",
+  apgar_source_2_title: "Neonatal assessment and resuscitation guidance",
+  apgar_source_2_sub:
+    "Use together with current neonatal resuscitation algorithms and structured reassessment.",
+  apgar_source_3_title: "Local obstetric / neonatal guidance",
+  apgar_source_3_sub:
+    "Follow current local guidance for newborn assessment, escalation, and treatment.",
 
   // Settings
   settings_title: "Settings",
-  settings_sub: "These affect calculators across the app (saved on device).",
+  settings_sub: "These affect tools across the app (saved on device).",
   settings_weight_title: "Weight estimation",
-  settings_weight_sub: "Select a default formula for Age → estimated kg.",
-  settings_apls_1_5: "APLS 1–5y",
-  settings_apls_6_12: "APLS 6–12y",
+  settings_weight_sub: "Choose a default formula for Age → estimated kg.",
+  settings_apls_1_5: "APLS 1–5 years",
+  settings_apls_6_12: "APLS 6–12 years",
   settings_custom: "Custom",
   settings_custom_hint: "weight = age*a + b",
   settings_default_energy_title: "Default defib energy",
   settings_j_per_kg: "J/kg",
   settings_meds_title: "Medication list (dose by weight)",
   settings_meds_sub:
-    "Use mg/kg. Optional max mg. Optional concentration (mg/mL) enables volume calculation.",
+    "Use mg/kg. Optional max mg. Optional concentration (mg/mL) also enables mL calculation.",
   settings_med_name: "Name",
   settings_med_enabled: "Enabled",
   settings_med_mgkg: "mg/kg",
-  settings_med_max: "Max mg (opt)",
-  settings_med_conc: "Conc (opt)",
-  settings_add_med: "Add med",
+  settings_med_max: "Max mg (optional)",
+  settings_med_conc: "Concentration (optional)",
+  settings_add_med: "Add medicine",
   settings_save: "Save settings",
   settings_reset: "Reset to defaults",
   settings_reset_confirm: "Reset settings to defaults?",
-  settings_remove_confirm: "Remove this medication?",
+  settings_remove_confirm: "Remove this medicine?",
+  settings_med_name_placeholder: "Medicine name",
+  settings_med_dose: "Dose",
+
+  tool_assessment_title: "Assessment tools",
+  tool_assessment_desc: "Clinical scores, scales, and structured assessments",
+
+  tool_contact_title: "Contact & feedback",
+  tool_contact_desc: "Report bugs, suggest improvements, or get in touch.",
+
+  tool_about_title: "About",
+  tool_about_desc: "What AmbuAssist is, what it does, and what it does not do.",
+
+  contact_title: "Contact & feedback",
+  contact_sub:
+    "Report bugs, suggest improvements, or get in touch about the app.",
+
+  contact_getintouch_title: "Get in touch",
+  contact_getintouch_body:
+    "If you notice an issue, spot incorrect content, or have an idea for improving AmbuAssist, please send feedback.",
+  contact_support_email_label: "Support email",
+  contact_email_button: "Email support",
+
+  contact_include_title: "What to include",
+  contact_include_1: "The tool or page where the issue happened.",
+  contact_include_2: "What went wrong, and what you expected instead.",
+  contact_include_3: "Which language the app was using when it happened.",
+  contact_include_4: "Your device and operating system, if it is a bug.",
+  contact_include_5:
+    "A screenshot if possible, especially for layout or calculation issues.",
+
+  contact_medical_title: "Medical content feedback",
+  contact_medical_body:
+    "If you believe a source, disclaimer, destination mapping, score explanation, or other clinical content is incorrect or outdated, please report it as clearly as possible.",
+  contact_medical_warning:
+    "AmbuAssist is a support tool only. Clinical content feedback is valuable and helps improve safety, but users must always follow local guidelines, approved references, and clinical judgement.",
+
+  contact_suggestions_title: "Suggestions are welcome too",
+  contact_suggestions_1: "New tools or assessment pages.",
+  contact_suggestions_2: "Translation improvements.",
+  contact_suggestions_3: "UI tweaks that make the app faster to use on shift.",
+  contact_suggestions_4: "Feature ideas for prehospital workflows.",
+
+  contact_email_subject: "AmbuAssist feedback / issue report",
+  contact_email_body_greeting: "Hi,",
+  contact_email_body_intro: "I would like to report the following:",
+  contact_email_body_tool: "Tool/page",
+  contact_email_body_happened: "What happened",
+  contact_email_body_expected: "What I expected",
+  contact_email_body_language: "App language",
+  contact_email_body_device: "Device / OS",
+  contact_email_body_version: "App version (if known)",
+  contact_email_body_notes: "Additional notes",
+
+  about_title: "About AmbuAssist",
+  about_sub:
+    "A lightweight support app for prehospital and clinical reference use.",
+
+  about_what_title: "What AmbuAssist is",
+  about_what_body:
+    "AmbuAssist is designed as a simple support tool for quick access to selected clinical scores, assessment aids, destination help, and reference content in busy real-world settings.",
+
+  about_purpose_title: "Purpose",
+  about_purpose_1:
+    "Reduce friction when looking up common tools and structured assessments.",
+  about_purpose_2:
+    "Present practical information in a clean and fast mobile format.",
+  about_purpose_3:
+    "Support clinical thinking without replacing guidelines or judgement.",
+
+  about_limit_title: "Important limitation",
+  about_limit_body:
+    "AmbuAssist is a support tool only. It does not replace clinical judgement, local instructions, approved references, physician input, or operational guidance.",
+
+  about_info_title: "App information",
+  about_info_name: "App name",
+  about_info_version: "Version",
+  about_info_use: "Intended use",
+  about_info_use_value: "Reference and support tool",
+  about_info_focus: "Primary focus",
+  about_info_focus_value: "Prehospital and clinical support content",
+
+  about_design_title: "Design philosophy",
+  about_design_1: "Fast to open.",
+  about_design_2: "Easy to read under pressure.",
+  about_design_3: "Minimal clutter.",
+  about_design_4:
+    "Clear separation between support content and clinical decision responsibility.",
+
+  about_feedback_title: "Feedback",
+  about_feedback_body:
+    "If you find a bug, spot outdated content, or have ideas for improving the app, please use the Contact & feedback page.",
+
+  meddisc_section_users_title: "Intended users",
+  meddisc_users_1:
+    "AmbuAssist is intended for trained healthcare personnel and students working under approved supervision.",
+  meddisc_users_2:
+    "The app is not intended for self-diagnosis, self-treatment, or use by untrained members of the public.",
+  meddisc_users_3:
+    "Some tools require specific clinical training, correct examination technique, and knowledge of local escalation pathways.",
+
+  meddisc_section_method_title: "Clinical basis and methodology",
+  meddisc_method_1:
+    "Assessment tools in AmbuAssist are based on established clinical scores, structured examination frameworks, or named guideline-based decision aids.",
+  meddisc_method_2:
+    "Each relevant tool screen should include its own source section describing the clinical basis of that tool.",
+  meddisc_method_3:
+    "Scores, checklists, and flows in the app simplify bedside support and do not reproduce the full clinical context, exclusions, or operational exceptions from all local documents.",
+  meddisc_method_4:
+    "If a source, workflow, score threshold, or local practice changes, local and current approved guidance always takes priority over the app.",
+
+  meddisc_sources_note_title: "About tool-specific references",
+  meddisc_sources_note_body:
+    "Use the source section on each tool page to review the framework, guideline, or reference material relevant to that specific assessment.",
+
+  meddisc_section_region_title: "Local and regional applicability",
+  meddisc_region_1:
+    "AmbuAssist is designed as a support app for Danish clinical and prehospital use, including users working in the Copenhagen area.",
+  meddisc_region_2:
+    "Destination advice, escalation thresholds, trauma handling, stroke pathways, medication use, and referral practice may vary between services, hospitals, and regions.",
+  meddisc_region_3:
+    "If local, regional, employer, physician, or dispatch guidance differs from the app, follow the current approved local guidance.",
+
+  meddisc_section_updates_title: "Content review and updates",
+  meddisc_updates_1:
+    "Clinical content should be reviewed and updated whenever local guidance, named tools, or operational pathways change.",
+  meddisc_updates_2:
+    "Users should report suspected errors, outdated references, or mismatches with current local practice.",
+  meddisc_updates_3:
+    "Absence of an updated source on a tool page should be treated as a reason to verify the content in an approved reference before relying on it.",
+
+  ex_dix_hallpike_title: "Dix-Hallpike test",
+  ex_dix_hallpike_how:
+    "Turn the patient's head 45° to one side, then quickly lower them from sitting to supine with the head extended about 20° below horizontal. Observe the eyes for nystagmus and ask about vertigo. Repeat on the other side.",
+  ex_dix_hallpike_pos:
+    "Reproduction of vertigo with characteristic positional nystagmus after a short latency, typically fatigable and worse on one side.",
+  ex_dix_hallpike_ind:
+    "Suggests benign paroxysmal positional vertigo (BPPV), usually involving the posterior semicircular canal on the affected side.",
+  ex_dix_hallpike_pre:
+    "Use with caution in patients with neck pain, cervical spine instability, vascular risk, trauma, or inability to tolerate positioning. A negative test does not exclude central causes of vertigo.",
 };
 
 export const da: typeof en = {
@@ -673,32 +1131,103 @@ export const da: typeof en = {
   danish: "Dansk",
   open: "Åbn",
 
-  // Tool cards
-  tool_weightDose_title: "Vægt → Joule + Doser",
-  tool_weightDose_desc: "Alder → vægtestimat → joule + valgte lægemidler",
-  tool_news2_title: "NEWS2",
-  tool_news2_desc: "Vitalparametre → NEWS2-score + eskalation",
-  tool_wells_title: "Wells (DVT)",
-  tool_wells_desc: "Sandsynlighedsscore for DVT",
-  tool_nihss_title: "NIHSS",
-  tool_nihss_desc: "Sværhedsgrad ved apopleksi",
-  tool_bvc_title: "BVC",
-  tool_bvc_desc: "Brøset Violence Checklist",
-  tool_settings_title: "Indstillinger",
-  tool_settings_desc: "Vægtestimat, standard J/kg, medicinliste",
-
-  // Common
+  // Shared UI / common
   loading: "Indlæser…",
   result: "Resultat",
-  clinicalReminder:
-    "Klinisk note: Dette er en beregner. Lokale retningslinjer gælder. Brug den til at undgå regnefejl — ikke dømmekraftfejl.",
   save: "Gem",
   reset: "Nulstil",
   cancel: "Annuller",
   remove: "Fjern",
   add: "Tilføj",
+  close: "Luk",
+  default: "standard",
+  yes: "Ja",
+  no: "Nej",
+  answer: "Svar",
+  back: "Tilbage",
 
-  // Weight/Joule/Dose
+  clinicalReminder:
+    "Klinisk note: Dette værktøj understøtter vurderingen, men erstatter ikke klinisk skøn. Følg altid lokale retningslinjer.",
+
+  tool_disclaimer_title: "Medicinsk disclaimer",
+  tool_sources_title: "Kilder og referencer",
+  tool_answered: "Besvaret:",
+  tool_filled: "Udfyldte værdier:",
+
+  // Tool cards
+  tool_meddisc_title: "Medicinsk disclaimer",
+  tool_meddisc_desc: "Vigtig info om brug, sikkerhed og kilder.",
+
+  tool_dest_title: "Destination",
+  tool_dest_desc: "Vælg Byen/Regionen + diagnose → destinationshospital",
+
+  tool_weightDose_title: "Vægt → Joule + Doser",
+  tool_weightDose_desc: "Alder → vægtestimat → joule + valgte lægemidler",
+
+  tool_exams_title: "Kliniske undersøgelser",
+  tool_exams_desc: "Hurtige bedside-tegn",
+
+  tool_nihss_title: "NIHSS",
+  tool_nihss_desc: "Sværhedsgrad ved apopleksi",
+
+  tool_hints_title: "HINTS",
+  tool_hints_desc: "Gå trin for trin gennem HINTS+ og positionssvimmelhed.",
+
+  tool_news2_title: "NEWS2",
+  tool_news2_desc: "Vitalparametre → NEWS2-score + eskalation",
+
+  tool_wells_title: "Wells (DVT)",
+  tool_wells_desc: "Sandsynlighedsscore for DVT",
+
+  tool_bvc_title: "BVC",
+  tool_bvc_desc: "Brøset Violence Checklist",
+
+  tool_spine_title: "NKR - Rygsøjletraume",
+  tool_spine_desc: "Gå trinvis gennem flow for spinal stabilisering",
+
+  tool_flacc_title: "FLACC",
+  tool_flacc_desc: "Pædiatrisk smertevurdering (0–10).",
+
+  tool_apgar_title: "APGAR",
+  tool_apgar_desc: "Vurdering af nyfødt (0–10).",
+
+  tool_cfs_title: "CFS",
+  tool_cfs_desc: "Clinical Frailty Skala (1–9)",
+
+  tool_settings_title: "Indstillinger",
+  tool_settings_desc: "Vægtestimat, standard J/kg, medicinliste",
+
+  // Medical disclaimer page
+  meddisc_title: "Medicinsk disclaimer",
+  meddisc_sub:
+    "Vigtig information om sikker brug af AmbuAssist og appens kliniske værktøjer.",
+
+  meddisc_section_use_title: "Tilsigtet brug",
+  meddisc_use_1:
+    "AmbuAssist er tænkt som et opslags- og støtteværktøj til uddannede brugere.",
+  meddisc_use_2:
+    "Appen erstatter ikke klinisk vurdering, lokale retningslinjer, lægefaglig rådgivning eller supervision.",
+  meddisc_use_3:
+    "Information og beregninger i appen skal altid tolkes i den samlede kliniske kontekst.",
+  meddisc_use_4:
+    "Brugeren har ansvar for at kontrollere, om indholdet passer med lokal praksis, godkendte lægemidler og gældende instrukser.",
+
+  meddisc_section_warning_title: "Vigtig advarsel",
+  meddisc_warning_body:
+    "AmbuAssist må ikke bruges som eneste grundlag for diagnose, triage, medicingivning, visitationsbeslutninger eller andre behandlingsbeslutninger. Følg altid lokale instrukser og søg relevant lægefaglig rådgivning, før der træffes medicinske beslutninger.",
+
+  meddisc_section_sources_title: "Kilder og referencer",
+  meddisc_sources_body:
+    "De medicinske værktøjer i AmbuAssist bør bruges sammen med tydeligt angivne kilder, retningslinjer eller validerede scoringssystemer. Kildeoplysninger for de enkelte værktøjer bør være lette at finde på de relevante værktøjssider.",
+
+  meddisc_section_emergency_title: "Brug i akutte situationer",
+  meddisc_emergency_body:
+    "I akutte eller livstruende situationer skal du følge lokale akutprocedurer, godkendte retningslinjer og klinisk ansvarlig ledelse. Brug af appen må aldrig forsinke nødvendig behandling.",
+
+  meddisc_footer:
+    "Denne app er et støtteværktøj — ikke en erstatning for professionel medicinsk vurdering.",
+
+  // Weight / Joule / Dose
   wjd_title: "Vægt → Joule + Doser",
   wjd_sub: "Alder → estimeret kg → joule + din konfigurerede medicinliste.",
   wjd_age: "Alder",
@@ -717,6 +1246,31 @@ export const da: typeof en = {
     "Ingen aktiverede lægemidler. Gå til Indstillinger → Medicinliste.",
   wjd_dose: "Dosis",
   wjd_volume: "Volumen",
+  wjd_openSettings: "Indstillinger",
+  wjd_settings_title: "Værktøjsindstillinger",
+  wjd_settings_sub:
+    "Indstillinger for Vægt → Joule + Doser (gemmes på enheden).",
+  wjd_capped120: "Begrænset til 120 J",
+  wjd_cappedMax: "Begrænset til max",
+
+  wjd_page_disclaimer:
+    "Dette værktøj er kun tænkt som beregningsstøtte. Det må ikke bruges som eneste grundlag for medicingivning, valg af defibrilleringsenergi eller andre behandlingsbeslutninger. Verificér altid dosis, koncentration, indikation, administrationsvej, kontraindikationer, lokale instrukser og klinisk ansvar før behandling.",
+  wjd_settings_disclaimer:
+    "Medicinoplysninger og koncentrationer skal kontrolleres nøje mod godkendte lokale referencer. Fejl i indstillingerne kan give forkerte dosis- eller volumenberegninger.",
+  wjd_result_disclaimer:
+    "Beregnede værdier er kun vejledende og skal altid kontrolleres mod lokale retningslinjer, godkendte medicinreferencer og den samlede kliniske situation.",
+  wjd_sources_sub:
+    "Vægtestimater, energivalg og medicindata bør kontrolleres mod godkendte pædiatriske og lokale behandlingsreferencer.",
+  wjd_source_1_title: "Lokal pædiatrisk medicin- og genoplivningsvejledning",
+  wjd_source_1_sub:
+    "Brug godkendte lokale doseringsskemaer, formularier og genoplivningsinstrukser.",
+  wjd_source_2_title:
+    "Validerede referencer for vægtestimat og pædiatrisk akutbehandling",
+  wjd_source_2_sub:
+    "Alder-til-vægt-estimat bør kun bruges, når reel eller bedre estimeret vægt ikke er tilgængelig.",
+  wjd_source_3_title: "Godkendte referencer for lægemiddelkoncentration",
+  wjd_source_3_sub:
+    "Kontrollér altid koncentration, formulering, administrationsvej og maksimal dosis før medicingivning.",
 
   // NEWS2
   news2_title: "NEWS2",
@@ -732,6 +1286,11 @@ export const da: typeof en = {
   news2_hr: "Puls",
   news2_temp: "Temperatur",
   news2_points: "pt",
+  news2_rr_placeholder: "vejrtrækninger/min",
+  news2_spo2_placeholder: "%",
+  news2_sbp_placeholder: "mmHg",
+  news2_hr_placeholder: "slag/min",
+  news2_temp_placeholder: "°C",
   news2_guidance_note:
     "Note: eskalationsgrænser og observationsfrekvens kan variere mellem regioner/hospitaler.",
   news2_guidance_0:
@@ -744,6 +1303,23 @@ export const da: typeof en = {
     "Moderat risiko (NEWS 5–6): hurtig vurdering / overvej eskalation.",
   news2_guidance_low:
     "Lav–moderat risiko (NEWS 1–4): øget observation og klinisk vurdering.",
+
+  news2_page_disclaimer:
+    "NEWS2 støtter en struktureret vurdering af akut sygdom, men erstatter ikke klinisk skøn, lokale eskaleringsinstrukser eller lægefaglig vurdering. Scoren må ikke stå alene ved beslutninger om diagnose, behandling eller visitation.",
+  // NEWS2
+  news2_sources_sub:
+    "NEWS2 bør bruges i overensstemmelse med Royal College of Physicians’ NEWS2-rapport og lokale eskaleringsretningslinjer.",
+  news2_source_1_title:
+    "Royal College of Physicians – National Early Warning Score (NEWS2), 2017",
+  news2_source_1_sub:
+    "Officiel NEWS2-rapport, der beskriver det validerede scoringssystem til vurdering af akut sygdoms sværhedsgrad.",
+  news2_source_2_title:
+    "Royal College of Physicians – tærskler, iltscoring og eskaleringsprincipper i NEWS2",
+  news2_source_2_sub:
+    "Reference for SpO₂-skala 1 og 2, point for ilttilskud samt struktur for respons og eskalering.",
+  news2_source_3_title: "Lokale observations- og eskaleringsretningslinjer",
+  news2_source_3_sub:
+    "Bruges sammen med gældende lokale instrukser for observationshyppighed, eskalering og henvisningsforløb.",
 
   // Wells
   wells_title: "Wells-score (DVT)",
@@ -759,15 +1335,35 @@ export const da: typeof en = {
   wells_clinical_reminder:
     "Klinisk note: I de fleste forløb kombineres Wells med D-dimer og/eller UL. AmbuAssist støtter din vurdering — den erstatter ikke lokale retningslinjer.",
 
+  wells_page_disclaimer:
+    "Wells DVT-score er et klinisk prædiktionsværktøj og må ikke bruges alene til at be- eller afkræfte dyb venetrombose. Scoren skal altid tolkes sammen med anamnese, objektiv undersøgelse, differentialdiagnoser og lokale diagnostiske retningslinjer.",
+  wells_result_disclaimer:
+    "Resultatet er kun vejledende og erstatter ikke billeddiagnostik, D-dimer-strategi, lægefaglig vurdering eller lokal instruks.",
+  // Wells
+  wells_sources_sub:
+    "Wells DVT-score bør bruges sammen med validerede referencer for prætest-sandsynlighed og gældende diagnostiske retningslinjer.",
+  wells_source_1_title:
+    "Wells m.fl. – Evaluation of D-dimer in the diagnosis of suspected deep-vein thrombosis (2003)",
+  wells_source_1_sub:
+    "Central publikation, der understøtter Wells-baseret klinisk sandsynlighedsvurdering kombineret med D-dimer.",
+  wells_source_2_title:
+    "NICE guideline NG158 – Venous thromboembolic diseases: diagnosis and management",
+  wells_source_2_sub:
+    "Aktuel guideline om diagnostiske forløb ved DVT, herunder struktureret udredning og behandling.",
+  wells_source_3_title: "Lokal VTE- / henvisningsvejledning",
+  wells_source_3_sub:
+    "Bruges sammen med gældende lokale instrukser for D-dimer-strategi, ultralydshenvisning, eskalering og antikoagulationsbeslutninger.",
+
   // NIHSS
+  nihss_title: "NIHSS",
   nihss_sub: "Vælg én mulighed pr. punkt — total opdateres live.",
+  nihss_scoreLabel: "NIHSS:",
+  nihss_needAll: "Udfyld alle NIHSS-punkter, før scorekategorien tolkes.",
   nihss_noStroke: "0: Ingen apopleksisymptomer",
   nihss_minor: "1–4: Let apopleksi",
   nihss_moderate: "5–15: Moderat apopleksi",
   nihss_modSevere: "16–20: Moderat-svær apopleksi",
   nihss_severe: "21+: Svær apopleksi",
-  nihss_title: "NIHSS",
-  nihss_scoreLabel: "NIHSS:",
 
   nihss_1a_title: "1a. Bevidsthedsniveau",
   nihss_1a_opt_alert: "Vågen",
@@ -844,13 +1440,33 @@ export const da: typeof en = {
   nihss_11_opt_mild: "Let (1 modalitet)",
   nihss_11_opt_severe: "Svær (≥2 modaliteter)",
 
+  nihss_page_disclaimer:
+    "NIHSS er et struktureret neurologisk vurderingsværktøj og må ikke bruges som eneste grundlag for diagnose, visitationssted, trombolyseovervejelser eller andre behandlingsbeslutninger. Scoren skal altid tolkes sammen med det samlede kliniske billede, lokale apopleksi-retningslinjer og klinisk skøn.",
+  nihss_result_disclaimer:
+    "Sværhedsgrupperne er kun vejledende og erstatter ikke lokal apopleksivurdering eller lægefaglig rådgivning.",
+  // NIHSS
+  nihss_sources_sub:
+    "NIHSS-indhold bør følge den originale NIH Stroke Scale-publikation, guideline-materiale om stroke og lokale stroke-pathways.",
+  nihss_source_1_title:
+    "Brott m.fl. – Measurements of acute cerebral infarction: a clinical examination scale (1989)",
+  nihss_source_1_sub:
+    "Original publikation, der beskriver NIH Stroke Scale som en 15-punkts neurologisk undersøgelsesskala ved akut apopleksi.",
+  nihss_source_2_title:
+    "American Heart Association / American Stroke Association – guideline-materiale om akut iskæmisk stroke",
+  nihss_source_2_sub:
+    "Guideline-materiale der understøtter struktureret vurdering af stroke-sværhedsgrad, herunder brug af NIHSS.",
+  nihss_source_3_title:
+    "Lokal eller regional stroke-triage / visitationsvejledning",
+  nihss_source_3_sub:
+    "Bruges sammen med gældende præhospitale procedurer for stroke-triage, visitation, billeddiagnostik og eskalering.",
+
   // BVC
+  bvc_title: "BVC",
   bvc_sub: "Brøset Violence Checklist — afkryds observeret adfærd.",
+  bvc_scoreLabel: "BVC:",
   bvc_low: "Lav risiko",
   bvc_mod: "Moderat risiko",
   bvc_high: "Høj risiko",
-  bvc_title: "BVC",
-  bvc_scoreLabel: "BVC:",
 
   bvc_item_confused: "Konfus",
   bvc_item_irritable: "Irritabel",
@@ -859,11 +1475,28 @@ export const da: typeof en = {
   bvc_item_physical: "Fysiske trusler",
   bvc_item_attacking: "Angriber genstande",
 
-  // Tool cards
-  tool_exams_title: "Kliniske undersøgelser",
-  tool_exams_desc: "Hurtige bedside-tegn",
+  bvc_page_disclaimer:
+    "BVC er et screeningsværktøj til korttidsvurdering af voldsrisiko og bør støtte, ikke erstatte, dynamisk klinisk vurdering, deeskalering og lokale sikkerhedsprocedurer. Det må ikke bruges alene til at begrunde tvang, diagnose eller behandlingsbeslutninger.",
+  bvc_result_disclaimer:
+    "BVC-scoren er kun vejledende og skal tolkes sammen med adfærd, anamnese, miljøforhold og lokale sikkerhedsretningslinjer.",
+  bvc_sources_sub:
+    "BVC bør bruges sammen med validerede referencer for korttidsvurdering af voldsrisiko og lokale sikkerhedsprocedurer.",
 
-  // Exams page
+  bvc_source_1_title:
+    "Woods & Almvik m.fl. – The Brøset Violence Checklist (2002)",
+  bvc_source_1_sub:
+    "Original publikation, der beskriver Brøset Violence Checklist som et instrument til korttidsforudsigelse af voldelig adfærd.",
+
+  bvc_source_2_title:
+    "Short-term risk prediction: the Brøset Violence Checklist",
+  bvc_source_2_sub:
+    "Supplerende litteratur om korttidsforudsigelse af truende eller voldelig adfærd i psykiatriske miljøer.",
+
+  bvc_source_3_title: "Lokal psykiatrisk / præhospital sikkerhedsvejledning",
+  bvc_source_3_sub:
+    "Bruges sammen med gældende lokale procedurer for deeskalering, scenesikkerhed, observation, eskalering og personalesikkerhed.",
+
+  // Exams
   exams_title: "Kliniske undersøgelser & tegn",
   exams_sub:
     "Tryk for at folde ud. Brug som huskeliste — retningslinjer og kontekst vinder.",
@@ -881,7 +1514,6 @@ export const da: typeof en = {
   ex_group_ob: "Obstetrik",
   ex_group_trauma: "Kranie / traume",
 
-  // ABDOMEN
   ex_mcburney_title: "McBurneys punkt",
   ex_mcburney_how:
     "Palpér 1/3 af afstanden fra spina iliaca anterior superior mod navlen på højre side.",
@@ -920,7 +1552,6 @@ export const da: typeof en = {
   ex_obturator_pos: "Smerter i underlivet.",
   ex_obturator_ind: "Appendicit beliggende i bækkenet.",
 
-  // CNS / MENINGEAL
   ex_brudzinski_title: "Brudzinskis tegn",
   ex_brudzinski_how: "Passiv fleksion af nakken i rygleje.",
   ex_brudzinski_pos: "Ufrivillig fleksion af hofter/knæ.",
@@ -940,14 +1571,12 @@ export const da: typeof en = {
   ex_babinski_pre:
     "Understøtter central neurologisk årsag (fx apopleksi eller intrakraniel patologi).",
 
-  // BACK / NERVES
   ex_lasegue_title: "Lasègues tegn (Straight Leg Raise)",
   ex_lasegue_how: "Løft strakt ben passivt i rygleje.",
   ex_lasegue_pos: "Radierende smerter ned i benet.",
   ex_lasegue_ind: "Iskias / diskusprolaps.",
   ex_lasegue_pre: "Adskiller nerverodssmerter fra muskulære smerter.",
 
-  // THORAX / HEART
   ex_becks_title: "Becks triade",
   ex_becks_how: "Vurder for: hypotension, halsvenestase og dæmpede hjertelyde.",
   ex_becks_pos: "Triaden til stede (ofte ufuldstændig).",
@@ -965,13 +1594,11 @@ export const da: typeof en = {
   ex_kussmaul_ind:
     "Højresidig hjertesvigt, tamponade (og anden obstruktiv fysiologi).",
 
-  // UROLOGY
   ex_giordano_title: "Giordanos tegn (bankeømhed)",
   ex_giordano_how: "Let bankeømhed/perkussion over flanken (nyrelogen).",
   ex_giordano_pos: "Smerter.",
   ex_giordano_ind: "Pyelonefritis eller nyresten.",
 
-  // OBSTETRICS
   ex_ob_painless_bleeding_title: "Smertefri vaginal blødning",
   ex_ob_painless_bleeding_how:
     "Anamnese/observation: vaginal blødning uden smerter.",
@@ -998,7 +1625,6 @@ export const da: typeof en = {
   ex_ob_no_fetal_movement_pre:
     "Altid akut → konference og korrekt visitation/transport.",
 
-  // TRAUMA
   ex_battles_title: "Battle’s sign",
   ex_battles_how: "Inspicér bag øret (mastoide-regionen).",
   ex_battles_pos: "Blå mærker bag øret.",
@@ -1009,19 +1635,47 @@ export const da: typeof en = {
   ex_raccoon_pos: "Periorbitale hæmatomer.",
   ex_raccoon_ind: "Basis cranii-fraktur.",
 
+  exams_page_disclaimer:
+    "Disse undersøgelsestegn er kun tænkt som undervisnings- og støtteindhold. De må ikke bruges alene til at bekræfte en diagnose, udelukke alvorlig sygdom eller afgøre behandling. Fund skal altid tolkes i den samlede kliniske kontekst og efter lokale retningslinjer.",
+  exams_item_disclaimer:
+    "Enkeltstående undersøgelsestegn kan have begrænset sensitivitet eller specificitet og skal tolkes sammen med anamnese, den samlede objektive undersøgelse, vitalparametre og klinisk skøn.",
+  exams_sources_sub:
+    "Objektive undersøgelsesfund bør tolkes ud fra standardværker i klinisk undersøgelse og lokale instrukser.",
+  exams_source_1_title: "Standardreferencer i klinisk undersøgelse",
+  exams_source_1_sub:
+    "Brug etablerede lærebøger og valideret undervisningsmateriale i bedside-undersøgelse.",
+  exams_source_2_title: "Akut- og præhospital vurderingsvejledning",
+  exams_source_2_sub:
+    "Kombinér undersøgelsesfund med struktureret ABCDE-vurdering og genkendelse af røde flag.",
+  exams_source_3_title: "Lokale kliniske retningslinjer",
+  exams_source_3_sub:
+    "Følg gældende lokale instrukser for henvisning, eskalering og akut håndtering.",
+
   // HINTS
-  tool_hints_title: "HINTS",
-  tool_hints_desc: "Gå trin for trin gennem HINTS+ og positionssvimmelhed.",
   hints_flowchart: "Flowchart",
   hints_result: "Resultat",
   hints_selections: "Dine valg",
-  back: "Tilbage",
 
-  // Tool card
-  tool_spine_title: "NKR - Rygsøjletraume",
-  tool_spine_desc: "Gå trinvis gennem flow for spinal stabilisering",
+  hints_page_disclaimer:
+    "HINTS+ er tiltænkt udvalgte patienter med Akut Vestibulært Syndrom og kræver korrekt undersøgelsesteknik samt relevant klinisk kontekst. Det erstatter ikke bredere neurologisk vurdering, stroke-vurdering, billeddiagnostiske forløb eller senior klinisk vurdering, når dette er indiceret.",
+  hints_result_disclaimer:
+    "Dette resultat er kun vejledende. Hvis undersøgelseskvaliteten er usikker, symptomerne er atypiske, eller risikoen er høj, skal højere risikoniveau og lokale stroke- eller neurologiske retningslinjer følges.",
+  // HINTS
+  hints_sources_sub:
+    "HINTS+ og relateret svimmelhedsvurdering bør bruges i overensstemmelse med den originale AVS-litteratur, moderne retningslinjer for svimmelhed og lokale stroke-pathways.",
+  hints_source_1_title:
+    "Kattah m.fl. – HINTS to Diagnose Stroke in the Acute Vestibular Syndrome (2009)",
+  hints_source_1_sub:
+    "Grundlæggende HINTS-publikation, der beskriver den tretrins okulomotoriske bedside-undersøgelse ved akut vestibulært syndrom.",
+  hints_source_2_title:
+    "GRACE-3 – Acute dizziness and vertigo in the emergency department (2023)",
+  hints_source_2_sub:
+    "Retningslinje der fremhæver træning, vurdering ud fra timing/triggers og korrekt brug af bedside-øjenbevægelsesundersøgelse.",
+  hints_source_3_title: "Lokal stroke- / neurologisk eskaleringsvejledning",
+  hints_source_3_sub:
+    "Følg gældende lokale procedurer for eskalering, billeddiagnostik og specialistvurdering ved mistanke om central årsag.",
 
-  // Page
+  // Spinal trauma
   spine_title: "Flow: traume mod rygsøjlen",
   spine_sub:
     "Hurtigt beslutningsflow for hvornår spinal stabilisering er indiceret.",
@@ -1080,25 +1734,26 @@ export const da: typeof en = {
   spine_disclaimer:
     "Støtteværktøj — følg lokale retningslinjer og medicinsk delegation.",
 
-  // Common (if you don’t already have these keys)
-  yes: "Ja",
-  no: "Nej",
-  answer: "Svar",
-
-  wjd_openSettings: "Indstillinger",
-  wjd_settings_title: "Værktøjsindstillinger",
-  wjd_settings_sub:
-    "Indstillinger for Vægt → Joule + Doser (gemmes på enheden).",
-  wjd_capped120: "Begrænset til 120 J",
-  wjd_cappedMax: "Begrænset til max",
-  settings_med_name_placeholder: "Lægemiddelnavn",
-
-  close: "Luk",
-  default: "standard",
+  spine_page_disclaimer:
+    "Dette spinal-traume-flow er kun et støtteværktøj. Det erstatter ikke ABCDE-vurdering, klinisk skøn, lokale traumerelevante instrukser eller lægefaglig ledelse. Hvis patienten er ustabil, eller det kliniske billede er uklart, skal højere risikoniveau og lokal instruks følges.",
+  spine_result_disclaimer:
+    "Det foreslåede resultat er kun vejledende og skal tolkes sammen med traumemekanisme, objektive fund, neurologiske udfald og lokale traumerelevante retningslinjer.",
+  // Spinal trauma
+  spine_sources_sub:
+    "Vurdering af spinalt traume bør følge dansk vejledning om spinal stabilisering, traumaprincipper og lokale præhospitale procedurer.",
+  spine_source_1_title:
+    "Sundhedsstyrelsen – National Klinisk Retningslinje for spinal stabilisering af voksne traumepatienter",
+  spine_source_1_sub:
+    "Dansk national klinisk retningslinje, der beskriver hvornår spinal stabilisering er og ikke er anbefalet hos voksne traumepatienter.",
+  spine_source_2_title:
+    "Maschmann m.fl. – New clinical guidelines on the spinal stabilisation of adult trauma patients in Denmark (2019)",
+  spine_source_2_sub:
+    "Konsensus- og evidensbaseret dansk guidelinepublikation om præhospital praksis for spinal stabilisering.",
+  spine_source_3_title: "Lokal traume- / præhospital vejledning",
+  spine_source_3_sub:
+    "Følg gældende lokale procedurer for ABCDE-prioriteter, håndtering, transport, spinal bevægerestriktion og eskalering.",
 
   // Destination
-  tool_dest_title: "Destination",
-  tool_dest_desc: "Vælg Byen/Regionen + diagnose → destinationshospital",
   dest_title: "Destinationshjælper",
   dest_sub: "Vælg område, derefter gade/bydel/kommune og kategori.",
   dest_area: "Område",
@@ -1113,7 +1768,8 @@ export const da: typeof en = {
   dest_byen_pick_sub: "Vælg bydel og kategori for at få destinationshospital.",
   dest_bydel: "Bydel",
   dest_region_pick: "Kommune + speciale",
-  dest_region_pick_sub: "Nord er en start-skabelon (udvid mapping senere).",
+  dest_region_pick_sub:
+    "Vælg kommune og specialekategori for at foreslå destination.",
   dest_kommune: "Kommune",
   dest_category: "Kategori",
   dest_result: "Resultat",
@@ -1123,14 +1779,58 @@ export const da: typeof en = {
   dest_context: "Kontekst",
   dest_code: "Kode",
   dest_unknown:
-    "Der findes ingen mapping for dette valg endnu — tilføj det i datasættet.",
+    "Der blev ikke fundet en mappet destination for denne kombination. Kontrollér mod gældende lokale retningslinjer.",
   dest_region_note:
     "Note: Regionsmapping er en start-skabelon. Udvid så den matcher de officielle tabeller.",
   dest_data_title: "Data",
   dest_data_sub:
     "Mapping ligger i app/tools/destination.tsx som simple objekter. Kan senere flyttes til JSON.",
 
-  // Kategorier (Byen)
+  dest_use_location_title: "Brug nuværende lokation",
+  dest_use_location_sub:
+    "Find gade/bydel i Byen-tilstand eller kommune i Region-tilstand.",
+  dest_use_location_btn: "Brug nuværende lokation",
+  dest_detecting: "Finder lokation...",
+  dest_detected: "Fundet",
+  dest_unknown_area: "Ukendt område",
+  dest_using_bydel: "Bruger bydel:",
+  dest_using_kommune: "Bruger kommune:",
+  dest_clear_location: "Ryd lokation",
+
+  dest_loc_perm_title: "Placeringstilladelse kræves",
+  dest_loc_perm_body:
+    "Giv adgang til placering, så AmbuAssist kan finde patientens område.",
+  dest_loc_notfound_title: "Lokation ikke fundet",
+  dest_loc_notfound_body: "Kunne ikke reverse-geokode denne placering.",
+  dest_area_notmapped_title: "Område ikke mappet",
+  dest_area_notmapped_body:
+    "Lokationen blev fundet, men kunne endnu ikke matches til en mappet Byen-gade/bydel. Du kan stadig søge eller vælge manuelt.",
+  dest_kommune_notmapped_title: "Kommune ikke mappet",
+  dest_kommune_notmapped_body:
+    "Lokationen blev fundet, men kunne ikke matches til en af de mappede kommuner endnu. Du kan stadig søge eller vælge manuelt.",
+  dest_loc_error_title: "Lokationsfejl",
+  dest_loc_error_body: "Noget gik galt under læsning af lokation.",
+  dest_no_kommune_match: "Ingen kommunematch fundet.",
+  dest_region_neurokir_note_fallback:
+    "Neurokirurgi er angivet som delt destination i planlægningsdokumentet.",
+
+  dest_page_disclaimer:
+    "Dette destinationsværktøj er kun et logistisk støtteværktøj. Det erstatter ikke lokale visitationsregler, aktuel hospitalskapacitet, specialespecifikke forløb, lægefaglig visitation eller realtidsmæssig operativ ledelse. Kontrollér altid destinationen op mod gældende lokale instrukser før transport.",
+  dest_result_disclaimer:
+    "Foreslåede destinationer er kun vejledende og skal kontrolleres mod gældende visitationsregler, pathway-kriterier og operative opdateringer.",
+  dest_sources_sub:
+    "Destinationsforslag bør baseres på gældende lokale visitationsdokumenter, specialepathways og operative retningslinjer.",
+  dest_source_1_title: "Region H visitationsvejledning (intern)",
+  dest_source_1_sub:
+    "Intern regional vejledning for visitation og destinationsvalg. Tilføj version og dato for gennemgang her.",
+  dest_source_2_title: "Operationelle opdateringer og lokale pathway-noter",
+  dest_source_2_sub:
+    "Bruges sammen med aktuelle driftsmeddelelser, særlige instrukser og pathway-kriterier.",
+  dest_source_3_title: "Lokal dispatch- / lægefaglig visitation",
+  dest_source_3_sub:
+    "Følg gældende dispatch-, læge- og regional koordineringsvejledning, hvis den afviger fra statisk mapping.",
+
+  // Destination categories (Byen)
   dest_cat_hospital: "Hospital (standard)",
   dest_cat_medicin: "Medicin",
   dest_cat_reuma: "Reumatologi",
@@ -1143,20 +1843,46 @@ export const da: typeof en = {
   dest_cat_gyn: "Gynækologi",
   dest_cat_uro: "Urologi",
 
-  // Kategorier (Region)
+  // Destination categories (Region)
   dest_reg_traumecenter: "Traumecenter",
   dest_reg_akutmodtagelse: "Akutmodtagelse",
   dest_reg_med_modtagelse: "Medicinsk modtagelse",
   dest_reg_akutklinik: "Akutklinik",
+  dest_reg_kir_mave_tarm: "Gastrokirurgi",
+  dest_reg_boernekir: "Børnekirurgi",
+  dest_reg_ortkir: "Ortopædkirurgi",
+  dest_reg_ortkir_boern: "Børneortopædi (<16 år)",
   dest_reg_karkir: "Karkirurgi",
   dest_reg_thoraxkir: "Thoraxkirurgi",
   dest_reg_neurokir: "Neurokirurgi",
+  dest_reg_urologi: "Urologi",
+  dest_reg_plastkir: "Plastikkirurgi",
+  dest_reg_mammakir: "Mammakirurgi",
   dest_reg_kardiologi: "Kardiologi",
-  dest_reg_neurologi: "Neurologi",
+  dest_reg_lungemed: "Lungemedicin",
+  dest_reg_gastro: "Gastroenterologi",
+  dest_reg_endo: "Endokrinologi",
+  dest_reg_geri: "Geriatri",
+  dest_reg_reuma: "Reumatologi",
+  dest_reg_infekt: "Infektionsmedicin",
+  dest_reg_nefro: "Nefrologi",
+  dest_reg_haemato: "Hæmatologi",
+  dest_reg_neuro: "Neurologi",
   dest_reg_apopleksi: "Apopleksi",
+  dest_reg_gyn: "Gynækologi",
+  dest_reg_obst: "Obstetrik",
   dest_reg_paediatri: "Pædiatri",
-  dest_reg_gyn: "Obstetrik/Gyn",
   dest_reg_billeddiag: "Billeddiagnostik",
+  dest_reg_onk: "Klinisk onkologi",
+  dest_reg_pall: "Palliativ enhed",
+  dest_reg_oftal: "Oftalmologi",
+  dest_reg_oenh: "Øre-næse-hals",
+  dest_reg_audio: "Audiologi",
+  dest_reg_odont: "Odontologi",
+  dest_reg_derm: "Dermato-venerologi",
+  dest_reg_allergi: "Allergologi",
+  dest_reg_arbejds: "Arbejds- og miljømedicin",
+  dest_reg_social: "Socialmedicin",
 
   // Hospital labels
   dest_h_AMH: "Amager Hospital (AMH)",
@@ -1169,10 +1895,6 @@ export const da: typeof en = {
   dest_h_HVH: "Hvidovre Hospital (HVH)",
   dest_h_RH: "Rigshospitalet (RH)",
   dest_h_UNKNOWN: "Ukendt",
-
-  // Tool cards
-  tool_cfs_title: "CFS",
-  tool_cfs_desc: "Clinical Frailty Skala (1–9)",
 
   // CFS
   cfs_title: "Clinical Frailty Scale (CFS)",
@@ -1221,7 +1943,27 @@ export const da: typeof en = {
   cfs_9_desc:
     "Nærmer sig livets afslutning med forventet levetid < 6 måneder, men er ellers ikke præget af svær skrøbelighed. Mange kan være aktive næsten helt til det sidste.",
 
-  // --- FLACC ---
+  cfs_page_disclaimer:
+    "Clinical Frailty Scale støtter en struktureret vurdering af patientens habituelle skrøbelighed, men erstatter ikke en samlet klinisk vurdering. Den bør ikke bruges alene til at afgøre behandlingsniveau, prognose eller indlæggelsesbeslutninger.",
+  cfs_result_disclaimer:
+    "CFS bør tolkes i sammenhæng med patientens habituelle funktionsevne, aktuelle sygdom, oplysninger fra pårørende og lokale retningslinjer.",
+  cfs_sources_sub:
+    "CFS bør anvendes i overensstemmelse med det officielle Clinical Frailty Scale-materiale, dansk oversættelsesarbejde og lokale kliniske retningslinjer.",
+
+  cfs_source_1_title: "Clinical Frailty Scale (officielt skalamateriale)",
+  cfs_source_1_sub:
+    "Officiel ressource for Clinical Frailty Scale fra Geriatric Medicine Research group / Dalhousie University.",
+
+  cfs_source_2_title:
+    "Dansk oversættelse og validering af Clinical Frailty Scale",
+  cfs_source_2_sub:
+    "Dansk oversættelse og tværsektorielt reliabilitetsarbejde, som understøtter klinisk anvendelse i danske sundhedsfaglige miljøer.",
+
+  cfs_source_3_title: "Lokal geriatrisk / akutmedicinsk vejledning",
+  cfs_source_3_sub:
+    "Scoren skal tolkes sammen med habituelt funktionsniveau, oplysninger fra pårørende, akut sygdom og gældende lokale retningslinjer.",
+
+  // FLACC
   flacc_title: "FLACC-score",
   flacc_sub:
     "Adfærdsbaseret smertevurdering (Ansigt, Ben, Aktivitet, Gråd, Trøstbarhed). Vælg én mulighed pr. kategori.",
@@ -1259,7 +2001,28 @@ export const da: typeof en = {
   flacc_disclaimer:
     "Husk: Score understøtter klinisk vurdering — revurdér efter intervention.",
 
-  // --- APGAR ---
+  flacc_page_disclaimer:
+    "FLACC er et adfærdsbaseret smertevurderingsværktøj og bør støtte, ikke erstatte, den samlede smertevurdering. Brug værktøjet sammen med alder, klinisk kontekst, relevante oplysninger fra forældre og revurdering efter intervention.",
+  flacc_result_disclaimer:
+    "FLACC-scoren skal tolkes med forsigtighed og må aldrig bruges som eneste grundlag for beslutninger om smertebehandling.",
+  flacc_sources_sub:
+    "FLACC bør anvendes i overensstemmelse med validerede pædiatriske smertevurderingsreferencer og lokale børneinstrukser.",
+
+  flacc_source_1_title:
+    "Merkel m.fl. – FLACC Behavioral Pain Assessment Scale (1997)",
+  flacc_source_1_sub:
+    "Original publikation, der beskriver FLACC som en adfærdsbaseret smerteskala til børn, som ikke nødvendigvis kan verbalisere smerte.",
+
+  flacc_source_2_title:
+    "Valideringsstudier af FLACC ved pædiatrisk smertevurdering",
+  flacc_source_2_sub:
+    "Supplerende litteratur om validitet og reliabilitet af FLACC ved klinisk og procedure-relateret smertevurdering hos børn.",
+
+  flacc_source_3_title: "AAP-vejledning om smertevurdering hos børn",
+  flacc_source_3_sub:
+    "Bruges sammen med bredere principper for pædiatrisk smertevurdering, revurdering efter intervention og lokale behandlingsinstrukser.",
+
+  // APGAR
   apgar_title: "APGAR-score",
   apgar_sub: "Vurdering af nyfødt. Vælg én mulighed pr. kategori (0–2).",
   apgar_appearance_title: "Udseende (hudfarve)",
@@ -1296,11 +2059,21 @@ export const da: typeof en = {
   apgar_disclaimer:
     "Husk: APGAR supplerer (erstatter ikke) løbende vurdering og genoplivningsalgoritmer.",
 
-  tool_flacc_title: "FLACC",
-  tool_flacc_desc: "Pædiatrisk smertevurdering (0–10).",
-
-  tool_apgar_title: "APGAR",
-  tool_apgar_desc: "Vurdering af nyfødt (0–10).",
+  apgar_page_disclaimer:
+    "APGAR er et struktureret værktøj til vurdering af nyfødte og erstatter ikke neonatale genoplivningsalgoritmer, løbende revurdering eller klinisk skøn. Brug scoren sammen med det samlede kliniske billede og lokale neonatale retningslinjer.",
+  apgar_result_disclaimer:
+    "APGAR støtter kommunikation og struktureret vurdering, men må ikke stå alene ved beslutninger om behandling eller prognose.",
+  apgar_sources_sub:
+    "APGAR bør anvendes i overensstemmelse med etablerede referencer for vurdering af nyfødte og lokale neonatale retningslinjer.",
+  apgar_source_1_title: "APGAR-score",
+  apgar_source_1_sub:
+    "Etableret vurderingsramme for den nyfødtes udseende, puls, grimace, aktivitet og respiration.",
+  apgar_source_2_title: "Vejledning om neonatal vurdering og genoplivning",
+  apgar_source_2_sub:
+    "Bruges sammen med gældende algoritmer for neonatal genoplivning og struktureret revurdering.",
+  apgar_source_3_title: "Lokale obstetriske / neonatale retningslinjer",
+  apgar_source_3_sub:
+    "Følg gældende lokale instrukser for vurdering, eskalering og behandling af nyfødte.",
 
   // Settings
   settings_title: "Indstillinger",
@@ -1320,10 +2093,148 @@ export const da: typeof en = {
   settings_med_enabled: "Aktiv",
   settings_med_mgkg: "mg/kg",
   settings_med_max: "Max mg (valgfri)",
-  settings_med_conc: "Koncentration mg/mL (valgfri)",
+  settings_med_conc: "Koncentration (valgfri)",
   settings_add_med: "Tilføj medicin",
   settings_save: "Gem indstillinger",
   settings_reset: "Nulstil til standard",
   settings_reset_confirm: "Nulstil indstillinger til standard?",
   settings_remove_confirm: "Fjern denne medicin?",
+  settings_med_name_placeholder: "Lægemiddelnavn",
+  settings_med_dose: "Dosis",
+
+  tool_assessment_title: "Vurderingsværktøjer",
+  tool_assessment_desc: "Kliniske scores, skalaer og strukturerede vurderinger",
+
+  tool_contact_title: "Kontakt & feedback",
+  tool_contact_desc: "Rapportér fejl, kom med forslag, eller kontakt os.",
+
+  tool_about_title: "Om appen",
+  tool_about_desc: "Hvad AmbuAssist er, hvad den gør, og hvad den ikke gør.",
+
+  contact_title: "Kontakt & feedback",
+  contact_sub: "Rapportér fejl, kom med forslag, eller kontakt os om appen.",
+
+  contact_getintouch_title: "Kontakt os",
+  contact_getintouch_body:
+    "Hvis du opdager en fejl, ser forkert indhold, eller har en idé til at forbedre AmbuAssist, er du meget velkommen til at sende feedback.",
+  contact_support_email_label: "Support-email",
+  contact_email_button: "Send email",
+
+  contact_include_title: "Hvad du gerne må sende med",
+  contact_include_1: "Hvilket værktøj eller hvilken side problemet skete på.",
+  contact_include_2: "Hvad der gik galt, og hvad du forventede i stedet.",
+  contact_include_3: "Hvilket sprog appen brugte, da det skete.",
+  contact_include_4: "Din enhed og dit styresystem, hvis det er en fejl.",
+  contact_include_5:
+    "Gerne et screenshot, især ved layout- eller beregningsproblemer.",
+
+  contact_medical_title: "Feedback om medicinsk indhold",
+  contact_medical_body:
+    "Hvis du mener, at en kilde, disclaimer, destinationsmapping, scoreforklaring eller andet klinisk indhold er forkert eller forældet, må du meget gerne rapportere det så tydeligt som muligt.",
+  contact_medical_warning:
+    "AmbuAssist er kun et støtteværktøj. Feedback om klinisk indhold er værdifuldt og kan forbedre sikkerheden, men brugeren skal altid følge lokale retningslinjer, godkendte referencer og klinisk skøn.",
+
+  contact_suggestions_title: "Forslag er også velkomne",
+  contact_suggestions_1: "Nye værktøjer eller vurderingssider.",
+  contact_suggestions_2: "Forbedringer af oversættelser.",
+  contact_suggestions_3:
+    "UI-ændringer der gør appen hurtigere at bruge på vagt.",
+  contact_suggestions_4: "Funktionsidéer til præhospitale arbejdsgange.",
+
+  contact_email_subject: "AmbuAssist feedback / fejlrapport",
+  contact_email_body_greeting: "Hej,",
+  contact_email_body_intro: "Jeg vil gerne rapportere følgende:",
+  contact_email_body_tool: "Værktøj/side",
+  contact_email_body_happened: "Hvad skete der",
+  contact_email_body_expected: "Hvad jeg forventede",
+  contact_email_body_language: "App-sprog",
+  contact_email_body_device: "Enhed / OS",
+  contact_email_body_version: "App-version (hvis kendt)",
+  contact_email_body_notes: "Yderligere noter",
+
+  about_title: "Om AmbuAssist",
+  about_sub: "En let støtteapp til præhospital og klinisk referencebrug.",
+
+  about_what_title: "Hvad AmbuAssist er",
+  about_what_body:
+    "AmbuAssist er lavet som et enkelt støtteværktøj, der giver hurtig adgang til udvalgte kliniske scores, vurderingsværktøjer, destinationshjælp og referenceindhold i travle virkelige arbejdssituationer.",
+
+  about_purpose_title: "Formål",
+  about_purpose_1:
+    "At mindske friktion, når man skal slå almindelige værktøjer og strukturerede vurderinger op.",
+  about_purpose_2:
+    "At præsentere praktisk information i et rent og hurtigt mobilformat.",
+  about_purpose_3:
+    "At understøtte klinisk tænkning uden at erstatte retningslinjer eller klinisk skøn.",
+
+  about_limit_title: "Vigtig begrænsning",
+  about_limit_body:
+    "AmbuAssist er kun et støtteværktøj. Det erstatter ikke klinisk skøn, lokale instrukser, godkendte referencer, lægefaglig vurdering eller operativ ledelse.",
+
+  about_info_title: "App-information",
+  about_info_name: "App-navn",
+  about_info_version: "Version",
+  about_info_use: "Tilsigtet brug",
+  about_info_use_value: "Opslags- og støtteværktøj",
+  about_info_focus: "Primært fokus",
+  about_info_focus_value: "Præhospitalt og klinisk støtteindhold",
+
+  about_design_title: "Designfilosofi",
+  about_design_1: "Hurtig at åbne.",
+  about_design_2: "Nem at læse under pres.",
+  about_design_3: "Minimal støj.",
+  about_design_4:
+    "Tydelig adskillelse mellem støtteindhold og klinisk beslutningsansvar.",
+
+  about_feedback_title: "Feedback",
+  about_feedback_body:
+    "Hvis du finder en fejl, ser forældet indhold, eller har idéer til forbedringer, så brug siden Kontakt & feedback.",
+
+  meddisc_section_users_title: "Tilsigtede brugere",
+  meddisc_users_1:
+    "AmbuAssist er tiltænkt uddannet sundhedspersonale og studerende, der arbejder under godkendt supervision.",
+  meddisc_users_2:
+    "Appen er ikke tiltænkt selvdiagnostik, selvbehandling eller brug af utrænede borgere.",
+  meddisc_users_3:
+    "Nogle værktøjer kræver specifik klinisk træning, korrekt undersøgelsesteknik og kendskab til lokale eskaleringsveje.",
+
+  meddisc_section_method_title: "Klinisk grundlag og metode",
+  meddisc_method_1:
+    "Vurderingsværktøjerne i AmbuAssist bygger på etablerede kliniske scores, strukturerede undersøgelsesrammer eller navngivne guideline-baserede beslutningsstøtter.",
+  meddisc_method_2:
+    "Hver relevant værktøjsside bør have sin egen kildesektion, som beskriver det kliniske grundlag for netop det værktøj.",
+  meddisc_method_3:
+    "Scores, tjeklister og flows i appen er forenklede bedside-støtter og gengiver ikke nødvendigvis hele den kliniske kontekst, alle eksklusionskriterier eller alle lokale undtagelser.",
+  meddisc_method_4:
+    "Hvis en kilde, arbejdsgang, scoregrænse eller lokal praksis ændrer sig, har gældende godkendt lokal vejledning altid forrang over appen.",
+
+  meddisc_sources_note_title: "Om værktøjsspecifikke referencer",
+  meddisc_sources_note_body:
+    "Brug kildesektionen på hver værktøjsside til at se den guideline, det framework eller det referencemateriale, der er relevant for netop den vurdering.",
+
+  meddisc_section_region_title: "Lokal og regional anvendelse",
+  meddisc_region_1:
+    "AmbuAssist er designet som en støtteapp til dansk klinisk og præhospital brug, herunder brugere der arbejder i København og omegn.",
+  meddisc_region_2:
+    "Destinationsvalg, eskalationsgrænser, traumehåndtering, stroke-pathways, medicinanvendelse og henvisningspraksis kan variere mellem tjenester, hospitaler og regioner.",
+  meddisc_region_3:
+    "Hvis lokal, regional, arbejdsgiverrelateret, lægefaglig eller dispatch-relateret vejledning afviger fra appen, skal gældende godkendt lokal vejledning følges.",
+
+  meddisc_section_updates_title: "Gennemgang og opdatering af indhold",
+  meddisc_updates_1:
+    "Det kliniske indhold bør gennemgås og opdateres, når lokale retningslinjer, navngivne værktøjer eller operative arbejdsgange ændrer sig.",
+  meddisc_updates_2:
+    "Brugere bør rapportere mistænkte fejl, forældede referencer eller uoverensstemmelser med gældende lokal praksis.",
+  meddisc_updates_3:
+    "Hvis en værktøjsside mangler en opdateret kilde, bør indholdet verificeres i en godkendt reference, før man læner sig op ad det.",
+
+  ex_dix_hallpike_title: "Dix-Hallpike-test",
+  ex_dix_hallpike_how:
+    "Drej patientens hoved 45° til den ene side, og læg derefter patienten hurtigt fra siddende til rygliggende med hovedet ca. 20° bagover. Observer øjnene for nystagmus og spørg til svimmelhed. Gentag til den anden side.",
+  ex_dix_hallpike_pos:
+    "Udløsning af svimmelhed sammen med karakteristisk positionsudløst nystagmus efter kort latenstid, typisk fatigabel og mest udtalt på den ene side.",
+  ex_dix_hallpike_ind:
+    "Taler for benign paroksystisk positionsvertigo (BPPV), oftest fra den bageste buegang på den afficerede side.",
+  ex_dix_hallpike_pre:
+    "Bruges med forsigtighed ved nakkesmerter, cervikal instabilitet, vaskulære risikofaktorer, traume eller hvis patienten ikke tåler positioneringen. En negativ test udelukker ikke centrale årsager til vertigo.",
 };

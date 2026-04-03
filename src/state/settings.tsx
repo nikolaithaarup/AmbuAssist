@@ -182,7 +182,7 @@ function mergeDefaultMedWithLoaded(
 const defaultSettings: AppSettings = {
   version: 2,
   defaultsRev: DEFAULTS_REV,
-  language: "en",
+  language: "da",
   defaultJPerKg: 4,
   formula: "APLS_1_5",
   customLinearA: 2,

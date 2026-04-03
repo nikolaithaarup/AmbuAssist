@@ -1,7 +1,7 @@
-// app/tools/weight-joule-dose.tsx
 import { useEffect, useMemo, useState } from "react";
 import {
   Alert,
+  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -20,6 +20,7 @@ import {
   type MedConfig,
 } from "../../src/state/settings";
 import { Background } from "../../src/ui/Background";
+import { CollapsibleCard } from "../../src/ui/CollapsibleCard";
 import {
   Card,
   Input,
@@ -46,7 +47,6 @@ function fmtInt(n: number) {
   return String(Math.round(n));
 }
 
-// UI formatting: show comma even though we store numbers internally
 function fmtNum(value: number | string) {
   return String(value).replace(".", ",");
 }
@@ -99,21 +99,17 @@ function fromMg(valueMg: number, unit: DoseUnit): number {
   return valueMg / f;
 }
 
-// ✅ Add IE to the cycle so you can set Heparin properly in settings
 const UNITS: DoseUnit[] = ["ug", "mg", "g", "IE"];
 function nextUnit(u: DoseUnit): DoseUnit {
   const idx = UNITS.indexOf(u);
   return UNITS[(idx + 1) % UNITS.length];
 }
 
-// If a translation key is missing, many i18n setups return the key itself.
-// This helper keeps UI nice without breaking i18n.
 function tOr(t: (key: any) => string, key: string, fallback: string) {
   const v = t(key);
   return v === key ? fallback : v;
 }
 
-// ✅ Display label: store "IE", show "IU" in English and "IE" in Danish
 function unitLabel(unit: DoseUnit, language: "en" | "da") {
   if (unit === "IE") return language === "en" ? "IU" : "IE";
   return unit;
@@ -138,6 +134,126 @@ type MedFieldText = {
   concentration?: string;
 };
 
+function SourceItem({
+  title,
+  subtitle,
+  url,
+}: {
+  title: string;
+  subtitle?: string;
+  url?: string;
+}) {
+  const openSource = async () => {
+    if (!url) return;
+
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (!supported) {
+        Alert.alert("Kunne ikke åbne link", url);
+        return;
+      }
+
+      await Linking.openURL(url);
+    } catch {
+      Alert.alert("Fejl", "Linket kunne ikke åbnes.");
+    }
+  };
+
+  const Wrapper = url ? Pressable : View;
+
+  return (
+    <Wrapper
+      {...(url
+        ? {
+            onPress: openSource,
+            style: ({ pressed }: { pressed: boolean }) => ({
+              paddingVertical: 10,
+              borderBottomWidth: 1,
+              borderBottomColor: "rgba(255,255,255,0.06)",
+              opacity: pressed ? 0.75 : 1,
+            }),
+          }
+        : {
+            style: {
+              paddingVertical: 10,
+              borderBottomWidth: 1,
+              borderBottomColor: "rgba(255,255,255,0.06)",
+            },
+          })}
+    >
+      <Text
+        style={{
+          color: url
+            ? (theme.colors.primary ?? theme.colors.text)
+            : theme.colors.text,
+          fontSize: 14,
+          fontWeight: "800",
+          lineHeight: 18,
+          textDecorationLine: url ? "underline" : "none",
+        }}
+      >
+        {title}
+      </Text>
+
+      {!!subtitle && (
+        <Text
+          style={{
+            color: theme.colors.mutedText,
+            fontSize: 12,
+            lineHeight: 17,
+            marginTop: 4,
+          }}
+        >
+          {subtitle}
+        </Text>
+      )}
+    </Wrapper>
+  );
+}
+
+function SourceFolderLink({ label, url }: { label: string; url: string }) {
+  const openFolder = async () => {
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (!supported) {
+        Alert.alert("Kunne ikke åbne link", url);
+        return;
+      }
+
+      await Linking.openURL(url);
+    } catch {
+      Alert.alert("Fejl", "Mappen kunne ikke åbnes.");
+    }
+  };
+
+  return (
+    <Pressable
+      onPress={openFolder}
+      style={({ pressed }) => ({
+        marginTop: 12,
+        alignSelf: "flex-start",
+        opacity: pressed ? 0.75 : 1,
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: theme.colors.cardBorder,
+        backgroundColor: "rgba(220,220,220,0.12)",
+      })}
+    >
+      <Text
+        style={{
+          color: theme.colors.text,
+          fontWeight: "800",
+          fontSize: 12,
+        }}
+      >
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
 export default function WeightJouleDose() {
   const { settings, setSettings, resetSettings, isReady } = useSettings();
   const { t } = useT();
@@ -159,6 +275,24 @@ export default function WeightJouleDose() {
 
   const [draft, setDraft] = useState<AppSettings>(safeSettings);
   const [medText, setMedText] = useState<Record<string, MedFieldText>>({});
+
+  const MEDICINE_FOLDER_URL =
+    "https://drive.google.com/drive/folders/16VfsoyO-JrI934rgZCRCebiU27lXKMTm?usp=sharing";
+
+  const ADRENALINE_URL =
+    "https://drive.google.com/file/d/16c6SlduR87W5q6HYHIeDN5YHq_66QeI1/view?usp=sharing";
+
+  const AMIODARON_URL =
+    "https://drive.google.com/file/d/1XRcxE4FfTeQi-GhOVi-AnuMfSOMeBpve/view?usp=sharing";
+
+  const FENTANYL_URL =
+    "https://drive.google.com/file/d/1nOvdom_I7opEDVIJNyBIlOFekYNTBrve/view?usp=sharing";
+
+  const HEPARIN_URL =
+    "https://drive.google.com/file/d/11oxmBDzYN_dMW1QNT2FM8Hp63pnTSH2W/view?usp=sharing";
+
+  const SKETAMIN_URL =
+    "https://drive.google.com/file/d/1qs-4YA5GqsrKTkKI2alWHGTk_4O4dH5W/view?usp=sharing";
 
   useEffect(() => {
     if (isReady) setDraft(safeSettings);
@@ -195,7 +329,6 @@ export default function WeightJouleDose() {
     const joules = Number.isFinite(rawJoules) ? Math.min(rawJoules, 120) : NaN;
     const joulesCapped = Number.isFinite(rawJoules) ? rawJoules > 120 : false;
 
-    // ✅ DO NOT drop meds if enabled is missing (treat missing as enabled)
     const medsArr = Array.isArray(settings.meds) ? settings.meds : [];
 
     const medRows = medsArr
@@ -210,19 +343,12 @@ export default function WeightJouleDose() {
 
         const isIE = doseUnit === "IE";
 
-        // ------------------------
-        // Dose math
-        // ------------------------
-        // raw and final "display unit" values (mg-world uses conversions; IE uses direct)
         let rawDoseDisplay = NaN;
         let finalDoseDisplay = NaN;
         let capped = false;
-
-        // Volume
         let ml = NaN;
 
         if (isIE) {
-          // ✅ IE is not convertible to mg. Calculate in IE directly.
           const rawIE =
             Number.isFinite(weightKg) && Number.isFinite(dosePerKg)
               ? weightKg * dosePerKg
@@ -240,7 +366,6 @@ export default function WeightJouleDose() {
           rawDoseDisplay = rawIE;
           finalDoseDisplay = finalIE;
 
-          // ✅ Volume only if concentration is IE/mL (concUnit must match doseUnit)
           if (
             Number.isFinite(finalIE) &&
             Number.isFinite(concentration) &&
@@ -250,7 +375,6 @@ export default function WeightJouleDose() {
             ml = finalIE / concentration;
           }
         } else {
-          // ✅ Mass-units: compute in mg internally
           const rawDoseMg =
             Number.isFinite(weightKg) && Number.isFinite(dosePerKg)
               ? toMg(weightKg * dosePerKg, doseUnit)
@@ -327,7 +451,6 @@ export default function WeightJouleDose() {
       const tt = medText[m.id];
       if (!tt) return m;
 
-      // dosePerKg
       let dosePerKg = m.dosePerKg;
       if (tt.dosePerKg !== undefined) {
         const s = tt.dosePerKg.trim();
@@ -336,7 +459,6 @@ export default function WeightJouleDose() {
         else if (Number.isFinite(v)) dosePerKg = v;
       }
 
-      // maxDose
       let maxDose = m.maxDose;
       if (tt.maxDose !== undefined) {
         const s = tt.maxDose.trim();
@@ -345,7 +467,6 @@ export default function WeightJouleDose() {
         else if (Number.isFinite(v)) maxDose = v;
       }
 
-      // concentration
       let concentration = m.concentration;
       if (tt.concentration !== undefined) {
         const s = tt.concentration.trim();
@@ -354,7 +475,6 @@ export default function WeightJouleDose() {
         else if (Number.isFinite(v)) concentration = v;
       }
 
-      // ✅ If doseUnit is IE, keep concUnit consistent so volume calc can work
       const concUnit = m.doseUnit === "IE" ? "IE" : m.concUnit;
 
       return { ...m, dosePerKg, maxDose, concentration, concUnit };
@@ -393,7 +513,6 @@ export default function WeightJouleDose() {
   const numKeyboard =
     Platform.OS === "ios" ? "numbers-and-punctuation" : "decimal-pad";
 
-  /** ---------- header row (title + top-right button) ---------- */
   const Header = ({
     title,
     subtitle,
@@ -445,7 +564,6 @@ export default function WeightJouleDose() {
           />
 
           <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
-            {/* Weight formula */}
             <Card>
               <Title>{t("settings_weight_title")}</Title>
               <Subtle>{t("settings_weight_sub")}</Subtle>
@@ -526,7 +644,6 @@ export default function WeightJouleDose() {
               )}
             </Card>
 
-            {/* Default energy */}
             <Card>
               <Title>{t("settings_default_energy_title")}</Title>
 
@@ -549,7 +666,6 @@ export default function WeightJouleDose() {
               </View>
             </Card>
 
-            {/* Medications */}
             <Card>
               <Title>{t("settings_meds_title")}</Title>
               <Subtle>{t("settings_meds_sub")}</Subtle>
@@ -598,7 +714,6 @@ export default function WeightJouleDose() {
                         gap: 12,
                       }}
                     >
-                      {/* Name + enabled */}
                       <View
                         style={{
                           flexDirection: "row",
@@ -661,7 +776,6 @@ export default function WeightJouleDose() {
                         </TouchableOpacity>
                       </View>
 
-                      {/* Dose per kg */}
                       <View style={{ gap: 6 }}>
                         <Label>{tOr(t, "settings_med_dose", "Dose")}</Label>
 
@@ -682,7 +796,6 @@ export default function WeightJouleDose() {
                                     ? {
                                         ...x,
                                         doseUnit: nextUnit(x.doseUnit),
-                                        // ✅ If switching to IE, keep concentration unit sane
                                         concUnit:
                                           nextUnit(x.doseUnit) === "IE"
                                             ? "IE"
@@ -776,7 +889,6 @@ export default function WeightJouleDose() {
                         </View>
                       </View>
 
-                      {/* Max dose */}
                       <View style={{ gap: 6 }}>
                         <Label>{t("settings_med_max")}</Label>
                         <View
@@ -840,7 +952,6 @@ export default function WeightJouleDose() {
                         </View>
                       </View>
 
-                      {/* Concentration */}
                       <View style={{ gap: 6 }}>
                         <Label>{t("settings_med_conc")}</Label>
 
@@ -859,7 +970,6 @@ export default function WeightJouleDose() {
                                 meds: (p.meds ?? []).map((x) => {
                                   if (x.id !== m.id) return x;
 
-                                  // ✅ If dose unit is IE, lock conc unit to IE
                                   if (x.doseUnit === "IE")
                                     return { ...x, concUnit: "IE" };
 
@@ -963,7 +1073,6 @@ export default function WeightJouleDose() {
                         </View>
                       </View>
 
-                      {/* Remove med */}
                       <View style={{ alignItems: "flex-start" }}>
                         <TouchableOpacity
                           activeOpacity={0.7}
@@ -1147,6 +1256,27 @@ export default function WeightJouleDose() {
                 {t("wjd_capped120")}
               </Text>
             )}
+
+            <View
+              style={{
+                marginTop: 12,
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: theme.colors.cardBorder,
+                padding: 10,
+                backgroundColor: "rgba(0,0,0,0.10)",
+              }}
+            >
+              <Text
+                style={{
+                  color: theme.colors.mutedText,
+                  fontSize: 12,
+                  lineHeight: 17,
+                }}
+              >
+                {t("wjd_result_disclaimer")}
+              </Text>
+            </View>
           </Card>
 
           <Card>
@@ -1249,6 +1379,80 @@ export default function WeightJouleDose() {
               })
             )}
           </Card>
+
+          <CollapsibleCard
+            title={t("tool_disclaimer_title")}
+            subtitle={t("wjd_page_disclaimer")}
+          >
+            <View
+              style={{
+                borderRadius: 14,
+                borderWidth: 1,
+                borderColor: theme.colors.cardBorder,
+                padding: 12,
+                backgroundColor: "rgba(255,209,102,0.10)",
+              }}
+            >
+              <Text
+                style={{
+                  color: theme.colors.text,
+                  fontSize: 14,
+                  lineHeight: 20,
+                }}
+              >
+                {t("wjd_page_disclaimer")}
+              </Text>
+            </View>
+          </CollapsibleCard>
+
+          <CollapsibleCard
+            title={t("tool_sources_title")}
+            subtitle={t("wjd_sources_sub")}
+          >
+            <Subtle style={{ marginBottom: 8 }}>{t("wjd_sources_sub")}</Subtle>
+
+            <View style={{ marginTop: 8 }}>
+              <SourceItem
+                title="Adrenalin – medicininstruks"
+                subtitle="Akutberedskabet, Region Hovedstaden. Version, gældende dato og revisionsdato fremgår af dokumentet."
+                url={ADRENALINE_URL}
+              />
+
+              <SourceItem
+                title="Amiodaron – medicininstruks"
+                subtitle="Akutberedskabet, Region Hovedstaden. Version, gældende dato og revisionsdato fremgår af dokumentet."
+                url={AMIODARON_URL}
+              />
+
+              <SourceItem
+                title="Fentanyl – medicininstruks"
+                subtitle="Akutberedskabet, Region Hovedstaden. Version, gældende dato og revisionsdato fremgår af dokumentet."
+                url={FENTANYL_URL}
+              />
+
+              <SourceItem
+                title="Heparin – medicininstruks"
+                subtitle="Akutberedskabet, Region Hovedstaden. Version, gældende dato og revisionsdato fremgår af dokumentet."
+                url={HEPARIN_URL}
+              />
+
+              <SourceItem
+                title="S-ketamin – medicininstruks"
+                subtitle="Akutberedskabet, Region Hovedstaden. Version, gældende dato og revisionsdato fremgår af dokumentet."
+                url={SKETAMIN_URL}
+              />
+
+              <SourceItem
+                title="Pædiatriske vægtestimater og energi"
+                subtitle="Vægt- og energiberegninger i dette værktøj er vejledende referenceberegninger og skal altid verificeres mod gældende officielle retningslinjer og lokale instrukser."
+              />
+
+              <SourceFolderLink
+                label="Åbn samlet mappe med medicinkilder"
+                url={MEDICINE_FOLDER_URL}
+              />
+            </View>
+          </CollapsibleCard>
         </ScrollView>
       </Screen>
     </Background>

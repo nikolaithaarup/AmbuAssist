@@ -1,4 +1,3 @@
-// app/tools/_layout.tsx
 import { Stack, usePathname, useRouter } from "expo-router";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import React from "react";
@@ -30,9 +29,7 @@ export default function ToolsLayout() {
           left: 0,
           right: 0,
           height: topOffset,
-          backgroundColor: "transparent",
           zIndex: 1000,
-          elevation: 1000,
           paddingTop: statusBarH,
           justifyContent: "center",
         }}
@@ -41,7 +38,7 @@ export default function ToolsLayout() {
           <Pressable
             onPress={() => {
               if (router.canGoBack()) router.back();
-              else router.replace("/tools");
+              else router.replace("/");
             }}
             hitSlop={18}
             style={{

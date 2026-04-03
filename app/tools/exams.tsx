@@ -1,8 +1,8 @@
-// app/tools/exams.tsx
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useT } from "../../src/i18n/useT";
 import { Background } from "../../src/ui/Background";
+import { CollapsibleCard } from "../../src/ui/CollapsibleCard";
 import { Card, Screen, Subtle, Title } from "../../src/ui/Ui";
 import { theme } from "../../src/ui/theme";
 
@@ -12,12 +12,11 @@ type Exam = {
   howKey: any;
   positiveKey: any;
   indicatesKey: any;
-  prehospitalKey?: any; // optional (some entries don’t have it)
+  prehospitalKey?: any;
   tags?: ("abdomen" | "cns" | "back" | "thorax" | "uro" | "ob" | "trauma")[];
 };
 
 const EXAMS: Exam[] = [
-  // ABDOMEN
   {
     id: "mcburney",
     titleKey: "ex_mcburney_title",
@@ -69,8 +68,6 @@ const EXAMS: Exam[] = [
     indicatesKey: "ex_obturator_ind",
     tags: ["abdomen"],
   },
-
-  // CNS / MENINGEAL
   {
     id: "brudzinski",
     titleKey: "ex_brudzinski_title",
@@ -97,8 +94,15 @@ const EXAMS: Exam[] = [
     prehospitalKey: "ex_babinski_pre",
     tags: ["cns"],
   },
-
-  // BACK / NERVES
+  {
+    id: "dix_hallpike",
+    titleKey: "ex_dix_hallpike_title",
+    howKey: "ex_dix_hallpike_how",
+    positiveKey: "ex_dix_hallpike_pos",
+    indicatesKey: "ex_dix_hallpike_ind",
+    prehospitalKey: "ex_dix_hallpike_pre",
+    tags: ["cns"],
+  },
   {
     id: "lasegue",
     titleKey: "ex_lasegue_title",
@@ -108,8 +112,6 @@ const EXAMS: Exam[] = [
     prehospitalKey: "ex_lasegue_pre",
     tags: ["back"],
   },
-
-  // THORAX / HEART
   {
     id: "becks",
     titleKey: "ex_becks_title",
@@ -135,8 +137,6 @@ const EXAMS: Exam[] = [
     indicatesKey: "ex_kussmaul_ind",
     tags: ["thorax"],
   },
-
-  // UROLOGY
   {
     id: "giordano",
     titleKey: "ex_giordano_title",
@@ -145,8 +145,6 @@ const EXAMS: Exam[] = [
     indicatesKey: "ex_giordano_ind",
     tags: ["uro"],
   },
-
-  // OBSTETRICS (non-eponym signs)
   {
     id: "ob_painless_bleeding",
     titleKey: "ex_ob_painless_bleeding_title",
@@ -180,8 +178,6 @@ const EXAMS: Exam[] = [
     prehospitalKey: "ex_ob_no_fetal_movement_pre",
     tags: ["ob"],
   },
-
-  // TRAUMA / SKULL BASE
   {
     id: "battles",
     titleKey: "ex_battles_title",
@@ -215,14 +211,46 @@ function SectionLabel({ label }: { label: string }) {
   );
 }
 
+function SourceItem({ title, subtitle }: { title: string; subtitle?: string }) {
+  return (
+    <View
+      style={{
+        paddingVertical: 8,
+        borderBottomWidth: 1,
+        borderBottomColor: "rgba(255,255,255,0.06)",
+      }}
+    >
+      <Text
+        style={{
+          color: theme.colors.text,
+          fontSize: 14,
+          fontWeight: "800",
+          lineHeight: 18,
+        }}
+      >
+        {title}
+      </Text>
+      {!!subtitle && (
+        <Text
+          style={{
+            color: theme.colors.mutedText,
+            fontSize: 12,
+            lineHeight: 17,
+            marginTop: 2,
+          }}
+        >
+          {subtitle}
+        </Text>
+      )}
+    </View>
+  );
+}
+
 export default function Exams() {
   const { t } = useT();
-
-  // default: first item open? I prefer none open for fast scanning
   const [openId, setOpenId] = useState<string | null>(null);
 
   const groups = useMemo(() => {
-    // group order matters for readability
     const order: { key: string; titleKey: any }[] = [
       { key: "abdomen", titleKey: "ex_group_abdomen" },
       { key: "cns", titleKey: "ex_group_cns" },
@@ -352,6 +380,27 @@ export default function Exams() {
                             </Text>
                           </>
                         )}
+
+                        <View
+                          style={{
+                            marginTop: 12,
+                            borderRadius: 12,
+                            borderWidth: 1,
+                            borderColor: theme.colors.cardBorder,
+                            padding: 10,
+                            backgroundColor: "rgba(0,0,0,0.10)",
+                          }}
+                        >
+                          <Text
+                            style={{
+                              color: theme.colors.mutedText,
+                              fontSize: 12,
+                              lineHeight: 17,
+                            }}
+                          >
+                            {t("exams_item_disclaimer")}
+                          </Text>
+                        </View>
                       </View>
                     )}
                   </Card>
@@ -359,6 +408,55 @@ export default function Exams() {
               })}
             </View>
           ))}
+
+          <CollapsibleCard
+            title={t("tool_disclaimer_title")}
+            subtitle={t("exams_page_disclaimer")}
+          >
+            <View
+              style={{
+                borderRadius: 14,
+                borderWidth: 1,
+                borderColor: theme.colors.cardBorder,
+                padding: 12,
+                backgroundColor: "rgba(255,209,102,0.10)",
+              }}
+            >
+              <Text
+                style={{
+                  color: theme.colors.text,
+                  fontSize: 14,
+                  lineHeight: 20,
+                }}
+              >
+                {t("exams_page_disclaimer")}
+              </Text>
+            </View>
+          </CollapsibleCard>
+
+          <CollapsibleCard
+            title={t("tool_sources_title")}
+            subtitle={t("exams_sources_sub")}
+          >
+            <Subtle style={{ marginBottom: 8 }}>
+              {t("exams_sources_sub")}
+            </Subtle>
+
+            <View style={{ marginTop: 8 }}>
+              <SourceItem
+                title={t("exams_source_1_title")}
+                subtitle={t("exams_source_1_sub")}
+              />
+              <SourceItem
+                title={t("exams_source_2_title")}
+                subtitle={t("exams_source_2_sub")}
+              />
+              <SourceItem
+                title={t("exams_source_3_title")}
+                subtitle={t("exams_source_3_sub")}
+              />
+            </View>
+          </CollapsibleCard>
         </ScrollView>
       </Screen>
     </Background>

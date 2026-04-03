@@ -1,8 +1,10 @@
 import * as Location from "expo-location";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Linking,
+  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -11,6 +13,7 @@ import {
 
 import { useT } from "../../src/i18n/useT";
 import { Background } from "../../src/ui/Background";
+import { CollapsibleCard } from "../../src/ui/CollapsibleCard";
 import {
   Card,
   Input,
@@ -56,6 +59,12 @@ import { chip } from "../../src/features/destination/ui";
 
 type TranslateFn = (key: any) => string;
 
+const VISITATION_BYEN_URL =
+  "https://drive.google.com/file/d/18gnYztqAw40PxuGuP5N_iEDmksYk-eIX/view?usp=sharing";
+
+const VISITATION_REGIONEN_URL =
+  "https://drive.google.com/file/d/1HS25c5EPt1oP3WbzT6jA99TMiprOgvVh/view?usp=sharing";
+
 const REGION_ALL_MAP: Partial<
   Record<Kommune, Partial<Record<RegionCategory, HospitalCode>>>
 > = {
@@ -80,7 +89,7 @@ const REGION_CATEGORY_LABEL_KEYS: Record<RegionCategory, string> = {
   thoraxkirurgi: "dest_reg_thoraxkir",
   neurokirurgi: "dest_reg_neurokir",
   urologi: "dest_reg_urologi",
-  plastkirurgi: "dest_reg_plastkir",
+  plastikkirurgi: "dest_reg_plastkir",
   mammakirurgi: "dest_reg_mammakir",
   kardiologi: "dest_reg_kardiologi",
   lungemedicin: "dest_reg_lungemed",
@@ -241,6 +250,105 @@ function SimpleDropdown<T extends string>({
   );
 }
 
+function SourceItem({
+  title,
+  subtitle,
+  url,
+}: {
+  title: string;
+  subtitle?: string;
+  url?: string;
+}) {
+  const openSource = async () => {
+    if (!url) return;
+
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (!supported) {
+        Alert.alert("Kunne ikke åbne link", url);
+        return;
+      }
+
+      await Linking.openURL(url);
+    } catch {
+      Alert.alert("Fejl", "Linket kunne ikke åbnes.");
+    }
+  };
+
+  if (url) {
+    return (
+      <Pressable
+        onPress={openSource}
+        style={({ pressed }) => ({
+          paddingVertical: 10,
+          borderBottomWidth: 1,
+          borderBottomColor: "rgba(255,255,255,0.06)",
+          opacity: pressed ? 0.75 : 1,
+        })}
+      >
+        <Text
+          style={{
+            color: "#8ec5ff",
+            fontSize: 14,
+            fontWeight: "800",
+            lineHeight: 18,
+            textDecorationLine: "underline",
+          }}
+        >
+          {title}
+        </Text>
+
+        {!!subtitle && (
+          <Text
+            style={{
+              color: theme.colors.mutedText,
+              fontSize: 12,
+              lineHeight: 17,
+              marginTop: 4,
+            }}
+          >
+            {subtitle}
+          </Text>
+        )}
+      </Pressable>
+    );
+  }
+
+  return (
+    <View
+      style={{
+        paddingVertical: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: "rgba(255,255,255,0.06)",
+      }}
+    >
+      <Text
+        style={{
+          color: theme.colors.text,
+          fontSize: 14,
+          fontWeight: "800",
+          lineHeight: 18,
+        }}
+      >
+        {title}
+      </Text>
+
+      {!!subtitle && (
+        <Text
+          style={{
+            color: theme.colors.mutedText,
+            fontSize: 12,
+            lineHeight: 17,
+            marginTop: 4,
+          }}
+        >
+          {subtitle}
+        </Text>
+      )}
+    </View>
+  );
+}
+
 export default function DestinationTool() {
   const { t } = useT();
 
@@ -263,6 +371,22 @@ export default function DestinationTool() {
   const [kommuneOpen, setKommuneOpen] = useState(false);
   const [byenCatOpen, setByenCatOpen] = useState(false);
   const [regCatOpen, setRegCatOpen] = useState(false);
+
+  const lastGeocodeAtRef = useRef(0);
+  const lastGeocodeCoordsRef = useRef<{ lat: number; lon: number } | null>(
+    null,
+  );
+  const lastGeocodeResultRef = useRef<
+    Location.LocationGeocodedAddress[] | null
+  >(null);
+  const geocodeBlockedUntilRef = useRef(0);
+  const geocodeInFlightRef = useRef<Promise<
+    Location.LocationGeocodedAddress[]
+  > | null>(null);
+
+  const GEOCODE_COOLDOWN_MS = 20_000;
+  const GEOCODE_BLOCK_MS = 90_000;
+  const GEOCODE_CACHE_DISTANCE = 0.0025;
 
   const closeAllDropdowns = () => {
     setStreetOpen(false);
@@ -340,6 +464,77 @@ export default function DestinationTool() {
     closeAllDropdowns();
   };
 
+  const isNearCachedLocation = (lat: number, lon: number) => {
+    const cached = lastGeocodeCoordsRef.current;
+    if (!cached) return false;
+
+    return (
+      Math.abs(cached.lat - lat) <= GEOCODE_CACHE_DISTANCE &&
+      Math.abs(cached.lon - lon) <= GEOCODE_CACHE_DISTANCE
+    );
+  };
+
+  const getReverseGeocodeSafely = async (lat: number, lon: number) => {
+    const now = Date.now();
+
+    if (lastGeocodeResultRef.current && isNearCachedLocation(lat, lon)) {
+      return lastGeocodeResultRef.current;
+    }
+
+    if (now < geocodeBlockedUntilRef.current) {
+      const secondsLeft = Math.ceil(
+        (geocodeBlockedUntilRef.current - now) / 1000,
+      );
+      throw new Error(
+        `Adresseopslag er midlertidigt blokeret. Vent ca. ${secondsLeft} sekunder og prøv igen.`,
+      );
+    }
+
+    if (geocodeInFlightRef.current) {
+      return geocodeInFlightRef.current;
+    }
+
+    if (now - lastGeocodeAtRef.current < GEOCODE_COOLDOWN_MS) {
+      const secondsLeft = Math.ceil(
+        (GEOCODE_COOLDOWN_MS - (now - lastGeocodeAtRef.current)) / 1000,
+      );
+      throw new Error(
+        `Adresseopslag er på cooldown. Vent ca. ${secondsLeft} sekunder og prøv igen.`,
+      );
+    }
+
+    lastGeocodeAtRef.current = now;
+
+    const promise = Location.reverseGeocodeAsync({
+      latitude: lat,
+      longitude: lon,
+    })
+      .then((result) => {
+        lastGeocodeCoordsRef.current = { lat, lon };
+        lastGeocodeResultRef.current = result;
+        return result;
+      })
+      .catch((error: any) => {
+        const message = String(error?.message ?? "").toLowerCase();
+
+        if (
+          message.includes("rate limit") ||
+          message.includes("too many requests") ||
+          message.includes("geocoding rate limit exceeded")
+        ) {
+          geocodeBlockedUntilRef.current = Date.now() + GEOCODE_BLOCK_MS;
+        }
+
+        throw error;
+      })
+      .finally(() => {
+        geocodeInFlightRef.current = null;
+      });
+
+    geocodeInFlightRef.current = promise;
+    return promise;
+  };
+
   const streetOptions = useMemo(() => {
     const q = norm(streetQ);
     const all = uniqueStrings(STREET_SAMPLE.map((r) => r.street)).sort((a, b) =>
@@ -401,7 +596,6 @@ export default function DestinationTool() {
 
     if (exactStreet) {
       setSelectedStreet(exactStreet.street);
-
       const officialBydel = mapStreetBydelToOfficialBydel(exactStreet.bydel);
       setBydel(officialBydel || "");
     } else if (!text.trim()) {
@@ -432,33 +626,69 @@ export default function DestinationTool() {
   };
 
   const detectLocation = async () => {
+    if (detectedArea) {
+      Alert.alert(
+        t("dest_loc_error_title"),
+        "Lokation er allerede fundet. Ryd lokationen først, hvis du vil hente den igen.",
+      );
+      return;
+    }
+
+    if (detectingLocation) return;
+
     try {
       setDetectingLocation(true);
 
-      const perm = await Location.requestForegroundPermissionsAsync();
-      if (!perm.granted) {
+      const servicesEnabled = await Location.hasServicesEnabledAsync();
+      if (!servicesEnabled) {
         Alert.alert(
-          "Location permission needed",
-          "Please allow location access so AmbuAssist can detect the patient area.",
+          t("dest_loc_error_title"),
+          "Location services are turned off on this device.",
         );
         return;
       }
 
-      const pos = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
+      const existingPerm = await Location.getForegroundPermissionsAsync();
+      let granted = existingPerm.granted;
+
+      if (!granted) {
+        const requestedPerm =
+          await Location.requestForegroundPermissionsAsync();
+        granted = requestedPerm.granted;
+      }
+
+      if (!granted) {
+        Alert.alert(t("dest_loc_perm_title"), t("dest_loc_perm_body"));
+        return;
+      }
+
+      if (Platform.OS === "android") {
+        try {
+          await Location.enableNetworkProviderAsync();
+        } catch {
+          // ignore
+        }
+      }
+
+      let pos = await Location.getLastKnownPositionAsync({
+        maxAge: 60_000,
+        requiredAccuracy: 200,
       });
 
-      const geocoded = await Location.reverseGeocodeAsync({
-        latitude: pos.coords.latitude,
-        longitude: pos.coords.longitude,
-      });
+      if (!pos) {
+        pos = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+      }
 
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
+
+      const geocoded = await getReverseGeocodeSafely(lat, lon);
       const first = geocoded[0];
+
       if (!first) {
-        Alert.alert(
-          "Location not found",
-          "Could not reverse-geocode this location.",
-        );
+        Alert.alert(t("dest_loc_notfound_title"), t("dest_loc_notfound_body"));
         return;
       }
 
@@ -467,13 +697,17 @@ export default function DestinationTool() {
       const district = String(first.district ?? "").trim();
       const subregion = String(first.subregion ?? "").trim();
       const street = String(first.street ?? "").trim();
+      const region = String(first.region ?? "").trim();
+      const name = String(first.name ?? "").trim();
 
       setDetectedArea({
-        label: [street, district, city, postcode].filter(Boolean).join(", "),
+        label: [street || name, district, city || subregion || region, postcode]
+          .filter(Boolean)
+          .join(", "),
         postcode,
-        city,
+        city: city || subregion || region,
         district,
-        subregion,
+        subregion: subregion || region,
       });
 
       if (area === "byen") {
@@ -489,13 +723,7 @@ export default function DestinationTool() {
 
             setSelectedStreet(streetMatch.street);
             setStreetQ(streetMatch.street);
-
-            if (officialBydel) {
-              setBydel(officialBydel);
-            } else {
-              setBydel("");
-            }
-
+            setBydel(officialBydel || "");
             closeAllDropdowns();
             return;
           }
@@ -511,12 +739,15 @@ export default function DestinationTool() {
           closeAllDropdowns();
         } else {
           Alert.alert(
-            "Area not mapped",
-            "I found the location, but could not match it to a mapped Byen street/bydel yet. You can still search the street or choose manually.",
+            t("dest_area_notmapped_title"),
+            t("dest_area_notmapped_body"),
           );
         }
       } else {
-        const mappedKommune = mapRegionCityToKommune(city, subregion);
+        const mappedKommune = mapRegionCityToKommune(
+          city || district || subregion || region,
+          subregion || region,
+        );
 
         if (mappedKommune) {
           setKommune(mappedKommune);
@@ -524,16 +755,34 @@ export default function DestinationTool() {
           closeAllDropdowns();
         } else {
           Alert.alert(
-            "Municipality not mapped",
-            "I found the location, but could not match it to one of the mapped region municipalities yet. You can still search or choose manually.",
+            t("dest_kommune_notmapped_title"),
+            `Could not map location.\n\ncity: ${city}\ndistrict: ${district}\nsubregion: ${subregion}\nregion: ${region}\npostcode: ${postcode}`,
           );
         }
       }
-    } catch {
-      Alert.alert(
-        "Location error",
-        "Something went wrong while reading location.",
-      );
+    } catch (error: any) {
+      const message = String(error?.message ?? "");
+      const lower = message.toLowerCase();
+
+      if (
+        lower.includes("rate limit") ||
+        lower.includes("too many requests") ||
+        lower.includes("midlertidigt blokeret")
+      ) {
+        Alert.alert(
+          t("dest_loc_error_title"),
+          "iPhone-adresseopslag er midlertidigt begrænset. Vent lidt og prøv igen.",
+        );
+      } else if (lower.includes("cooldown") || lower.includes("på cooldown")) {
+        Alert.alert(t("dest_loc_error_title"), message);
+      } else {
+        Alert.alert(
+          t("dest_loc_error_title"),
+          message || t("dest_loc_error_body"),
+        );
+      }
+
+      console.log("detectLocation error:", error);
     } finally {
       setDetectingLocation(false);
     }
@@ -552,21 +801,24 @@ export default function DestinationTool() {
 
         <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
           <Card>
-            <Title>Use current location</Title>
-            <Subtle>
-              Detect street/bydel in Byen mode, or municipality in Region mode.
-            </Subtle>
+            <Title>{t("dest_use_location_title")}</Title>
+            <Subtle>{t("dest_use_location_sub")}</Subtle>
 
             <View style={{ marginTop: 10, gap: 10 }}>
               <Pressable
                 onPress={detectLocation}
                 disabled={detectingLocation}
-                style={chip(false)}
+                style={({ pressed }) => [
+                  chip(false),
+                  {
+                    opacity: detectingLocation ? 0.6 : pressed ? 0.8 : 1,
+                  },
+                ]}
               >
                 <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
                   {detectingLocation
-                    ? "Detecting location..."
-                    : "Use current location"}
+                    ? t("dest_detecting")
+                    : t("dest_use_location_btn")}
                 </Text>
               </Pressable>
 
@@ -587,16 +839,16 @@ export default function DestinationTool() {
                     <Text
                       style={{ color: theme.colors.text, fontWeight: "800" }}
                     >
-                      Detected
+                      {t("dest_detected")}
                     </Text>
 
                     <Text style={{ color: theme.colors.mutedText }}>
-                      {detectedArea.label || "Unknown area"}
+                      {detectedArea.label || t("dest_unknown_area")}
                     </Text>
 
                     {area === "byen" && !!bydel && (
                       <Text style={{ color: theme.colors.mutedText }}>
-                        Using bydel:{" "}
+                        {t("dest_using_bydel")}{" "}
                         <Text
                           style={{
                             color: theme.colors.text,
@@ -610,7 +862,7 @@ export default function DestinationTool() {
 
                     {area === "region" && !!kommune && (
                       <Text style={{ color: theme.colors.mutedText }}>
-                        Using kommune:{" "}
+                        {t("dest_using_kommune")}{" "}
                         <Text
                           style={{
                             color: theme.colors.text,
@@ -630,7 +882,7 @@ export default function DestinationTool() {
                     <Text
                       style={{ color: theme.colors.text, fontWeight: "800" }}
                     >
-                      Clear location
+                      {t("dest_clear_location")}
                     </Text>
                   </Pressable>
                 </>
@@ -758,7 +1010,7 @@ export default function DestinationTool() {
                     setKommuneOpen(false);
                   }}
                   placeholder={t("dest_kommune")}
-                  emptyText="No municipality match found."
+                  emptyText={t("dest_no_kommune_match")}
                   maxHeight={220}
                 />
 
@@ -788,7 +1040,7 @@ export default function DestinationTool() {
                 {showNeurokirNote && (
                   <Text style={{ color: theme.colors.mutedText }}>
                     {neurokirNote === "dest_region_neurokir_note"
-                      ? "Neurokirurgi is listed as a shared destination in the planning sheet."
+                      ? t("dest_region_neurokir_note_fallback")
                       : neurokirNote}
                   </Text>
                 )}
@@ -853,6 +1105,17 @@ export default function DestinationTool() {
                       {resolvedHospital.code}
                     </Text>
                   </Text>
+
+                  <Text
+                    style={{
+                      color: theme.colors.mutedText,
+                      fontSize: 12,
+                      lineHeight: 17,
+                      marginTop: 4,
+                    }}
+                  >
+                    {t("dest_result_disclaimer")}
+                  </Text>
                 </View>
 
                 {resolvedHospital.code === "UNKNOWN" && (
@@ -869,6 +1132,58 @@ export default function DestinationTool() {
               </>
             )}
           </Card>
+
+          <CollapsibleCard
+            title={t("tool_disclaimer_title")}
+            subtitle={t("dest_page_disclaimer")}
+          >
+            <View
+              style={{
+                borderRadius: 14,
+                borderWidth: 1,
+                borderColor: theme.colors.cardBorder,
+                padding: 12,
+                backgroundColor: "rgba(255,209,102,0.10)",
+                gap: 8,
+              }}
+            >
+              <Text
+                style={{
+                  color: theme.colors.text,
+                  fontSize: 14,
+                  lineHeight: 20,
+                }}
+              >
+                {t("dest_page_disclaimer")}
+              </Text>
+            </View>
+          </CollapsibleCard>
+
+          <CollapsibleCard
+            title={t("tool_sources_title")}
+            subtitle={t("dest_sources_sub")}
+          >
+            <Subtle style={{ marginBottom: 8 }}>{t("dest_sources_sub")}</Subtle>
+
+            <View style={{ marginTop: 8 }}>
+              <SourceItem
+                title="Visitationsoversigt – Byen"
+                subtitle="Kildegrundlag for visitation i København/Byen. Gældende detaljer, version og revisionsoplysninger fremgår af kildedokumentet."
+                url={VISITATION_BYEN_URL}
+              />
+
+              <SourceItem
+                title="Visitationsoversigt – Regionen"
+                subtitle="Kildegrundlag for visitation i regionen uden for Byen. Gældende detaljer, version og revisionsoplysninger fremgår af kildedokumentet."
+                url={VISITATION_REGIONEN_URL}
+              />
+
+              <SourceItem
+                title="Klinisk verifikation kræves"
+                subtitle="Resultater i dette værktøj er vejledende og skal altid verificeres mod gældende officielle visitationsretningslinjer, lokale instrukser og klinisk vurdering."
+              />
+            </View>
+          </CollapsibleCard>
         </ScrollView>
       </Screen>
     </Background>

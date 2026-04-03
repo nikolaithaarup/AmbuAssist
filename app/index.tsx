@@ -1,13 +1,6 @@
 // app/index.tsx
 import { useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
-import {
-  Image,
-  LayoutChangeEvent,
-  Pressable,
-  ScrollView,
-  View,
-} from "react-native";
+import { Image, Pressable, ScrollView, View } from "react-native";
 import { useT } from "../src/i18n/useT";
 import { useSettings } from "../src/state/settings";
 import { Background } from "../src/ui/Background";
@@ -16,120 +9,32 @@ import { theme } from "../src/ui/theme";
 
 type ToolLink = { titleKey: any; descKey: any; path: string };
 
-function ToolsTwoColumnByMaxWidth({
-  tools,
+function FullWidthToolCard({
+  title,
+  description,
   onPress,
-  t,
-  resetKey,
 }: {
-  tools: ToolLink[];
-  onPress: (path: string) => void;
-  t: (k: any) => string;
-  resetKey: string;
+  title: string;
+  description: string;
+  onPress: () => void;
 }) {
-  const [colMax, setColMax] = useState<[number, number]>([0, 0]);
-
-  useEffect(() => {
-    setColMax([0, 0]);
-  }, [resetKey]);
-
-  const rows = useMemo(
-    () => Array.from({ length: Math.ceil(tools.length / 2) }),
-    [tools.length],
-  );
-
-  function onMeasure(colIdx: 0 | 1) {
-    return (e: LayoutChangeEvent) => {
-      const w = Math.round(e.nativeEvent.layout.width);
-      setColMax((prev) => {
-        if (w <= prev[colIdx]) return prev;
-        const next: [number, number] = [prev[0], prev[1]];
-        next[colIdx] = w;
-        return next;
-      });
-    };
-  }
-
   return (
-    <>
-      {rows.map((_, rowIdx) => {
-        const left = tools[rowIdx * 2];
-        const right = tools[rowIdx * 2 + 1];
-
-        return (
-          <View
-            key={`row-${rowIdx}`}
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              gap: 12,
-            }}
-          >
-            {/* Left column cell */}
-            <View style={{ flex: 1, alignItems: "center" }}>
-              {left ? (
-                <Pressable
-                  onPress={() => onPress(left.path)}
-                  style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-                >
-                  <View
-                    onLayout={onMeasure(0)}
-                    style={{
-                      width: colMax[0] > 0 ? colMax[0] : undefined,
-                      alignSelf: "center",
-                    }}
-                  >
-                    <Card
-                      style={{ paddingHorizontal: 18, paddingVertical: 14 }}
-                    >
-                      <View style={{ alignItems: "center", gap: 6 }}>
-                        <Title style={{ textAlign: "center", fontSize: 16 }}>
-                          {t(left.titleKey)}
-                        </Title>
-                        <Subtle style={{ textAlign: "center", fontSize: 12 }}>
-                          {t(left.descKey)}
-                        </Subtle>
-                      </View>
-                    </Card>
-                  </View>
-                </Pressable>
-              ) : null}
-            </View>
-
-            {/* Right column cell */}
-            <View style={{ flex: 1, alignItems: "center" }}>
-              {right ? (
-                <Pressable
-                  onPress={() => onPress(right.path)}
-                  style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-                >
-                  <View
-                    onLayout={onMeasure(1)}
-                    style={{
-                      width: colMax[1] > 0 ? colMax[1] : undefined,
-                      alignSelf: "center",
-                    }}
-                  >
-                    <Card
-                      style={{ paddingHorizontal: 18, paddingVertical: 14 }}
-                    >
-                      <View style={{ alignItems: "center", gap: 6 }}>
-                        <Title style={{ textAlign: "center", fontSize: 16 }}>
-                          {t(right.titleKey)}
-                        </Title>
-                        <Subtle style={{ textAlign: "center", fontSize: 12 }}>
-                          {t(right.descKey)}
-                        </Subtle>
-                      </View>
-                    </Card>
-                  </View>
-                </Pressable>
-              ) : null}
-            </View>
-          </View>
-        );
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => ({
+        opacity: pressed ? 0.7 : 1,
+        width: "100%",
       })}
-    </>
+    >
+      <Card style={{ paddingHorizontal: 18, paddingVertical: 16 }}>
+        <View style={{ alignItems: "center", gap: 6 }}>
+          <Title style={{ textAlign: "center", fontSize: 16 }}>{title}</Title>
+          <Subtle style={{ textAlign: "center", fontSize: 12 }}>
+            {description}
+          </Subtle>
+        </View>
+      </Card>
+    </Pressable>
   );
 }
 
@@ -138,7 +43,7 @@ export default function Home() {
   const { setLanguage, settings } = useSettings();
   const { t } = useT();
 
-  const tools: ToolLink[] = [
+  const mainTools: ToolLink[] = [
     {
       titleKey: "tool_dest_title",
       descKey: "tool_dest_desc",
@@ -155,49 +60,24 @@ export default function Home() {
       path: "/tools/exams",
     },
     {
-      titleKey: "tool_nihss_title",
-      descKey: "tool_nihss_desc",
-      path: "/tools/nihss",
+      titleKey: "tool_assessment_title",
+      descKey: "tool_assessment_desc",
+      path: "/tools/assessment-tools",
     },
     {
-      titleKey: "tool_hints_title",
-      descKey: "tool_hints_desc",
-      path: "/tools/hints",
+      titleKey: "tool_meddisc_title",
+      descKey: "tool_meddisc_desc",
+      path: "/tools/medical-disclaimer",
     },
     {
-      titleKey: "tool_news2_title",
-      descKey: "tool_news2_desc",
-      path: "/tools/news2",
+      titleKey: "tool_contact_title",
+      descKey: "tool_contact_desc",
+      path: "/tools/contact",
     },
     {
-      titleKey: "tool_wells_title",
-      descKey: "tool_wells_desc",
-      path: "/tools/wells-dvt",
-    },
-    {
-      titleKey: "tool_bvc_title",
-      descKey: "tool_bvc_desc",
-      path: "/tools/bvc",
-    },
-    {
-      titleKey: "tool_spine_title",
-      descKey: "tool_spine_desc",
-      path: "/tools/spinal-trauma",
-    },
-    {
-      titleKey: "tool_flacc_title",
-      descKey: "tool_flacc_desc",
-      path: "/tools/flacc",
-    },
-    {
-      titleKey: "tool_apgar_title",
-      descKey: "tool_apgar_desc",
-      path: "/tools/apgar",
-    },
-    {
-      titleKey: "tool_cfs_title",
-      descKey: "tool_cfs_desc",
-      path: "/tools/cfs",
+      titleKey: "tool_about_title",
+      descKey: "tool_about_desc",
+      path: "/tools/about",
     },
   ];
 
@@ -302,12 +182,14 @@ export default function Home() {
           }}
         >
           <View style={{ width: "100%", maxWidth: 520, gap: 12 }}>
-            <ToolsTwoColumnByMaxWidth
-              tools={tools}
-              onPress={(path) => router.push(path)}
-              t={t}
-              resetKey={settings.language}
-            />
+            {mainTools.map((tool) => (
+              <FullWidthToolCard
+                key={tool.path}
+                title={t(tool.titleKey)}
+                description={t(tool.descKey)}
+                onPress={() => router.push(tool.path)}
+              />
+            ))}
           </View>
         </ScrollView>
       </Screen>

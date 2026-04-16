@@ -2,6 +2,167 @@ export type Lang = "en" | "da";
 export type Key = keyof typeof en;
 
 export const en = {
+  tool_bg_patterns_title: "Pattern recognition",
+  tool_bg_patterns_desc: "Identify common blood gas and lab patterns",
+
+  bg_label_ph: "pH",
+  bg_label_pco2: "pCO₂ (kPa)",
+  bg_label_hco3: "HCO₃⁻ (mmol/L)",
+  bg_label_glucose: "Glucose (mmol/L)",
+  bg_label_lactate: "Lactate (mmol/L)",
+
+  bg_pattern_dka: "Possible DKA pattern – consider ketoacidosis",
+  bg_pattern_lactate_elevated:
+    "Elevated lactate – consider sepsis or hypoperfusion",
+  bg_pattern_lactate_high: "High lactate – urgent assessment for shock state",
+  bg_pattern_dehydration: "Pattern may fit dehydration / stress response",
+  bg_pattern_respiratory_acidosis: "Pattern may fit respiratory acidosis",
+
+  bg_disclaimer: "Support tool only – not for diagnosis",
+  result: "Result",
+  // BLOOD GAS MAIN
+  tool_bloodgas_title: "Blood gas & patterns",
+  tool_bloodgas_desc:
+    "Interpret blood gas, lactate, glucose and infection indicators",
+
+  // ACID-BASE
+  tool_bg_acidbase_title: "Acid–base analysis",
+  tool_bg_acidbase_desc: "Determine acidosis/alkalosis and likely cause",
+
+  // PATTERNS
+
+  // INFECTION
+  tool_bg_infection_title: "Infection indicators",
+  tool_bg_infection_desc: "CRP and urine interpretation",
+
+  // RESULT
+  lab_result: "Result",
+
+  // OPTIONAL LABELS (nice UX upgrade)
+  bg_label_crp: "CRP (mg/L)",
+  bg_label_nitrite: "Nitrite",
+  bg_label_leukocytes: "Leukocytes",
+  bg_no_pattern_found:
+    "No clear pattern suggestion based on the entered values.",
+
+  // DISCLAIMERS
+  abcstamp_title: "ABC-STAMP",
+  abcstamp_sub: "Structured psychiatric assessment support",
+  abcstamp_completedLabel: "Completed sections:",
+  abcstamp_result_text:
+    "Use this as a structured observational support tool together with clinical judgement and local procedure.",
+  abcstamp_result_disclaimer:
+    "ABC-STAMP is documentation and assessment support only. It must not replace full psychiatric assessment, escalation, or local guidelines.",
+  abcstamp_page_disclaimer:
+    "Use the official local or regional ABC-STAMP structure where applicable. This page should be adapted to approved Danish clinical wording before release.",
+  abcstamp_sources_sub: "References and approved sources for ABC-STAMP.",
+  abcstamp_source_1_title: "Official Danish ABC-STAMP source",
+  abcstamp_source_1_sub:
+    "Replace with your approved regional or psychiatric source.",
+  abcstamp_source_2_title: "Local / regional psychiatric guidance",
+  abcstamp_source_2_sub: "Replace with your approved operational source.",
+  abcstamp_source_3_title: "AmbuAssist disclaimer",
+  abcstamp_source_3_sub: "Assessment support only.",
+
+  abcstamp_notes_label: "Short notes",
+  abcstamp_notes_placeholder: "Add short observations...",
+
+  abcstamp_a_title: "A",
+  abcstamp_a_sub: "Appearance",
+  abcstamp_b_title: "B",
+  abcstamp_b_sub: "Behaviour",
+  abcstamp_c_title: "C",
+  abcstamp_c_sub: "Communication",
+  abcstamp_s_title: "S",
+  abcstamp_s_sub: "Speech",
+  abcstamp_t_title: "T",
+  abcstamp_t_sub: "Thought",
+  abcstamp_m_title: "M",
+  abcstamp_m_sub: "Mood",
+  abcstamp_p_title: "P",
+  abcstamp_p_sub: "Perception",
+
+  abcstamp_a_opt_appearance_calm: "Calm / appropriate appearance",
+  abcstamp_a_opt_appearance_agitated: "Agitated / tense appearance",
+  abcstamp_a_opt_appearance_dishevelled: "Dishevelled / neglected appearance",
+
+  abcstamp_b_opt_behaviour_cooperative: "Cooperative behaviour",
+  abcstamp_b_opt_behaviour_restless: "Restless / unsettled behaviour",
+  abcstamp_b_opt_behaviour_aggressive: "Aggressive / threatening behaviour",
+
+  abcstamp_c_opt_communication_clear: "Clear communication",
+  abcstamp_c_opt_communication_disorganised: "Disorganised communication",
+  abcstamp_c_opt_communication_minimal: "Minimal / absent communication",
+
+  abcstamp_s_opt_speech_normal: "Normal speech",
+  abcstamp_s_opt_speech_pressured: "Pressured / rapid speech",
+  abcstamp_s_opt_speech_slow: "Slow / reduced speech",
+
+  abcstamp_t_opt_thought_linear: "Linear / coherent thought",
+  abcstamp_t_opt_thought_racing: "Racing thoughts",
+  abcstamp_t_opt_thought_disorganised: "Disorganised / incoherent thought",
+
+  abcstamp_m_opt_mood_euthymic: "Neutral / stable mood",
+  abcstamp_m_opt_mood_low: "Low / depressed mood",
+  abcstamp_m_opt_mood_elevated: "Elevated / labile mood",
+
+  abcstamp_p_opt_perception_none: "No abnormal perceptions reported",
+  abcstamp_p_opt_perception_voices: "Auditory hallucinations / voices reported",
+  abcstamp_p_opt_perception_other: "Other perceptual disturbance",
+  tool_behaviouralGeriatric_title: "Behavioural & Geriatric",
+  tool_behaviouralGeriatric_desc: "BVC, ABC-STAMP and CFS",
+
+  behaviouralGeriatric_title: "Behavioural & Geriatric",
+  behaviouralGeriatric_sub:
+    "Choose a behavioural or geriatric assessment tool.",
+  dest_function_title: "Choose function",
+  tool_paediatric_title: "Paediatric",
+  tool_paediatric_desc: "APGAR, FLACC and paediatric assessments",
+
+  paediatric_title: "Paediatric",
+  paediatric_sub: "Choose a paediatric scoring system.",
+  neurological_title: "Neurological",
+  neurological_sub: "Choose a neurological scoring system.",
+
+  press_title: "PreSS",
+  press_sub: "Prehospital Stroke Score",
+
+  press_part1_title: "PreSS Part 1",
+  press_part1_sub: "Stroke / TIA suspicion screening",
+  press_part2_title: "PreSS Part 2",
+  press_part2_sub: "Severity / LVO-oriented assessment",
+
+  press_p1_face_title: "Facial palsy",
+  press_p1_arm_title: "Arm weakness",
+  press_p1_speech_title: "Speech disturbance",
+  press_p1_other_title: "Other neurological symptoms",
+
+  press_p2_armDrift_title: "Arm drift",
+  press_p2_loc_title: "Incorrect month and/or age",
+  press_p2_gaze_title: "Gaze palsy / deviation",
+
+  press_opt_yes: "Yes",
+  press_opt_no: "No",
+
+  press_part1_score: "PreSS Part 1:",
+  press_part2_score: "PreSS Part 2:",
+  press_part1_positive:
+    "Positive screening for suspected stroke/TIA. Use together with clinical judgement and local protocol.",
+  press_part1_negative: "No positive items selected.",
+  press_needAll: "Complete all items to view the result.",
+  press_result_disclaimer:
+    "PreSS is decision support only and must not replace clinical assessment, local guidelines, or neurologist consultation when indicated.",
+
+  press_page_disclaimer:
+    "This tool is for structured prehospital neurological assessment support only. Always follow local guidelines and use clinical judgement.",
+  press_sources_sub: "Key references and protocol sources for PreSS.",
+  press_source_1_title: "Prehospital Stroke Score (PreSS)",
+  press_source_1_sub: "Two-part Danish prehospital stroke assessment model.",
+  press_source_2_title: "The Prehospital Stroke Score and telephone conference",
+  press_source_2_sub: "Prospective validation study.",
+  press_source_3_title: "Local / regional guideline",
+  press_source_3_sub: "Replace with your approved operational source.",
+
   // Home
   appName: "AmbuAssist",
   homeTagline: "Minimal tools for chaotic reality",
@@ -12,7 +173,6 @@ export const en = {
 
   // Shared UI / common
   loading: "Loading…",
-  result: "Result",
   save: "Save",
   reset: "Reset",
   cancel: "Cancel",
@@ -46,8 +206,8 @@ export const en = {
   tool_exams_title: "Clinical exams",
   tool_exams_desc: "Quick bedside signs",
 
-  tool_nihss_title: "NIHSS",
-  tool_nihss_desc: "Stroke severity scoring",
+  tool_neuro_title: "Neurological",
+  tool_neuro_desc: "NIHSS, PreSS and HINTS",
 
   tool_hints_title: "HINTS",
   tool_hints_desc: "Step through HINTS+ and positional vertigo flow",
@@ -1167,8 +1327,8 @@ export const da: typeof en = {
   tool_exams_title: "Kliniske undersøgelser",
   tool_exams_desc: "Hurtige bedside-tegn",
 
-  tool_nihss_title: "NIHSS",
-  tool_nihss_desc: "Sværhedsgrad ved apopleksi",
+  tool_neuro_title: "Neurologisk",
+  tool_neuro_desc: "NIHSS, PreSS og HINTS",
 
   tool_hints_title: "HINTS",
   tool_hints_desc: "Gå trin for trin gennem HINTS+ og positionssvimmelhed.",
@@ -2237,4 +2397,161 @@ export const da: typeof en = {
     "Taler for benign paroksystisk positionsvertigo (BPPV), oftest fra den bageste buegang på den afficerede side.",
   ex_dix_hallpike_pre:
     "Bruges med forsigtighed ved nakkesmerter, cervikal instabilitet, vaskulære risikofaktorer, traume eller hvis patienten ikke tåler positioneringen. En negativ test udelukker ikke centrale årsager til vertigo.",
+
+  neurological_title: "Neurologisk",
+  neurological_sub: "Vælg et neurologisk scoresystem.",
+
+  press_title: "PreSS",
+  press_sub: "Prehospital Stroke Score",
+
+  press_part1_title: "PreSS del 1",
+  press_part1_sub: "Screening for apopleksi / TCI",
+  press_part2_title: "PreSS del 2",
+  press_part2_sub: "Sværhedsgrad / LVO-orienteret vurdering",
+
+  press_p1_face_title: "Ansigtsparese",
+  press_p1_arm_title: "Armsvækkelse",
+  press_p1_speech_title: "Talepåvirkning",
+  press_p1_other_title: "Andre neurologiske symptomer",
+
+  press_p2_armDrift_title: "Armdrift",
+  press_p2_loc_title: "Forkert måned og/eller alder",
+  press_p2_gaze_title: "Blikparese / blikdeviation",
+
+  press_opt_yes: "Ja",
+  press_opt_no: "Nej",
+
+  press_part1_score: "PreSS del 1:",
+  press_part2_score: "PreSS del 2:",
+  press_part1_positive:
+    "Positiv screening for mistanke om apopleksi/TCI. Bruges sammen med klinisk vurdering og lokale retningslinjer.",
+  press_part1_negative: "Ingen positive fund valgt.",
+  press_needAll: "Udfyld alle punkter for at se resultatet.",
+  press_result_disclaimer:
+    "PreSS er kun beslutningsstøtte og må ikke erstatte klinisk vurdering, lokale retningslinjer eller neurologkontakt, når det er indiceret.",
+
+  press_page_disclaimer:
+    "Dette værktøj er kun til støtte for struktureret præhospital neurologisk vurdering. Følg altid lokale retningslinjer og brug klinisk vurdering.",
+  press_sources_sub: "Nøglereferencer og protokolkilder for PreSS.",
+  press_source_1_title: "Prehospital Stroke Score (PreSS)",
+  press_source_1_sub: "Todelt dansk præhospital apopleksivurdering.",
+  press_source_2_title: "The Prehospital Stroke Score and telephone conference",
+  press_source_2_sub: "Prospektivt valideringsstudie.",
+  press_source_3_title: "Lokal / regional retningslinje",
+  press_source_3_sub: "Erstat med jeres godkendte driftskilde.",
+  tool_paediatric_title: "Pædiatrisk",
+  tool_paediatric_desc: "APGAR, FLACC og pædiatriske vurderinger",
+
+  paediatric_title: "Pædiatrisk",
+  paediatric_sub: "Vælg et pædiatrisk scoresystem.",
+  dest_function_title: "Vælg funktion",
+  tool_behaviouralGeriatric_title: "Adfærd & Geriatri",
+  tool_behaviouralGeriatric_desc: "BVC, ABC-STAMP og CFS",
+
+  behaviouralGeriatric_title: "Adfærd & Geriatri",
+  behaviouralGeriatric_sub:
+    "Vælg et adfærds- eller geriatrisk vurderingsværktøj.",
+  abcstamp_title: "ABC-STAMP",
+  abcstamp_sub: "Struktureret psykiatrisk vurderingsstøtte",
+  abcstamp_completedLabel: "Udfyldte sektioner:",
+  abcstamp_result_text:
+    "Brug dette som et struktureret observationsværktøj sammen med klinisk vurdering og lokal procedure.",
+  abcstamp_result_disclaimer:
+    "ABC-STAMP er kun støtte til dokumentation og vurdering. Det må ikke erstatte fuld psykiatrisk vurdering, eskalering eller lokale retningslinjer.",
+  abcstamp_page_disclaimer:
+    "Brug den officielle lokale eller regionale ABC-STAMP-struktur, hvor det er relevant. Siden bør tilpasses godkendt dansk klinisk ordlyd før release.",
+  abcstamp_sources_sub: "Referencer og godkendte kilder for ABC-STAMP.",
+  abcstamp_source_1_title: "Officiel dansk ABC-STAMP-kilde",
+  abcstamp_source_1_sub:
+    "Erstat med jeres godkendte regionale eller psykiatriske kilde.",
+  abcstamp_source_2_title: "Lokal / regional psykiatrisk vejledning",
+  abcstamp_source_2_sub: "Erstat med jeres godkendte driftskilde.",
+  abcstamp_source_3_title: "AmbuAssist-disclaimer",
+  abcstamp_source_3_sub: "Kun vurderingsstøtte.",
+
+  abcstamp_notes_label: "Korte noter",
+  abcstamp_notes_placeholder: "Tilføj korte observationer...",
+
+  abcstamp_a_title: "A",
+  abcstamp_a_sub: "Fremtoning",
+  abcstamp_b_title: "B",
+  abcstamp_b_sub: "Adfærd",
+  abcstamp_c_title: "C",
+  abcstamp_c_sub: "Kommunikation",
+  abcstamp_s_title: "S",
+  abcstamp_s_sub: "Tale",
+  abcstamp_t_title: "T",
+  abcstamp_t_sub: "Tanke",
+  abcstamp_m_title: "M",
+  abcstamp_m_sub: "Stemningsleje",
+  abcstamp_p_title: "P",
+  abcstamp_p_sub: "Perception",
+
+  abcstamp_a_opt_appearance_calm: "Rolig / passende fremtoning",
+  abcstamp_a_opt_appearance_agitated: "Urolig / spændt fremtoning",
+  abcstamp_a_opt_appearance_dishevelled: "Forsømt / usoigneret fremtoning",
+
+  abcstamp_b_opt_behaviour_cooperative: "Samarbejdende adfærd",
+  abcstamp_b_opt_behaviour_restless: "Urolig / rastløs adfærd",
+  abcstamp_b_opt_behaviour_aggressive: "Aggressiv / truende adfærd",
+
+  abcstamp_c_opt_communication_clear: "Klar kommunikation",
+  abcstamp_c_opt_communication_disorganised: "Usammenhængende kommunikation",
+  abcstamp_c_opt_communication_minimal: "Minimal / ophævet kommunikation",
+
+  abcstamp_s_opt_speech_normal: "Normal tale",
+  abcstamp_s_opt_speech_pressured: "Forceret / hurtig tale",
+  abcstamp_s_opt_speech_slow: "Langsom / reduceret tale",
+
+  abcstamp_t_opt_thought_linear: "Lineær / sammenhængende tankegang",
+  abcstamp_t_opt_thought_racing: "Tankeflugt / tankemylder",
+  abcstamp_t_opt_thought_disorganised:
+    "Usammenhængende / uorganiseret tankegang",
+
+  abcstamp_m_opt_mood_euthymic: "Neutralt / stabilt stemningsleje",
+  abcstamp_m_opt_mood_low: "Nedtrykt / depressivt stemningsleje",
+  abcstamp_m_opt_mood_elevated: "Eleveret / svingende stemningsleje",
+
+  abcstamp_p_opt_perception_none: "Ingen abnorme perceptioner oplyst",
+  abcstamp_p_opt_perception_voices: "Hørehallucinationer / stemmer oplyst",
+  abcstamp_p_opt_perception_other: "Anden perceptuel forstyrrelse",
+  // BLODGAS MAIN
+  tool_bloodgas_title: "Blodgas fortolkning",
+  tool_bloodgas_desc: "Fortolk blodgas, laktat, glukose og infektionsparametre",
+
+  // SYRE-BASE
+  tool_bg_acidbase_title: "Syre-base analyse",
+  tool_bg_acidbase_desc: "Vurder acidose/alkalose og sandsynlig årsag",
+
+  // MØNSTRE
+  tool_bg_patterns_title: "Fortolkning",
+  tool_bg_patterns_desc: "Identificér typiske mønstre som DKA eller sepsis",
+
+  // INFEKTION
+  tool_bg_infection_title: "Infektionsindikatorer",
+  tool_bg_infection_desc: "CRP og urinstix fortolkning",
+
+  // RESULT
+  lab_result: "Resultat",
+
+  // LABELS
+  bg_label_ph: "pH",
+  bg_label_pco2: "pCO₂ (kPa)",
+  bg_label_hco3: "HCO₃⁻ (mmol/L)",
+  bg_label_glucose: "Glukose (mmol/L)",
+  bg_label_lactate: "Laktat (mmol/L)",
+  bg_label_crp: "CRP (mg/L)",
+  bg_label_nitrite: "Nitrit",
+  bg_label_leukocytes: "Leukocytter",
+
+  // DISCLAIMER
+  bg_disclaimer: "Kun støtteværktøj – ikke diagnostisk",
+  bg_no_pattern_found:
+    "Ingen tydelig mønsterforslag ud fra de indtastede værdier.",
+  bg_pattern_dka: "Possible DKA pattern – consider ketoacidosis",
+  bg_pattern_lactate_elevated:
+    "Elevated lactate – consider sepsis or hypoperfusion",
+  bg_pattern_lactate_high: "High lactate – urgent assessment for shock state",
+  bg_pattern_dehydration: "Pattern may fit dehydration / stress response",
+  bg_pattern_respiratory_acidosis: "Pattern may fit respiratory acidosis",
 };

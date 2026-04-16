@@ -1,5 +1,5 @@
 import * as Location from "expo-location";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -12,6 +12,11 @@ import {
 } from "react-native";
 
 import { useT } from "../../src/i18n/useT";
+import { useSettings } from "../../src/state/settings";
+import {
+  getReference,
+  type ReferenceDoc,
+} from "../../src/services/referenceService";
 import { Background } from "../../src/ui/Background";
 import { CollapsibleCard } from "../../src/ui/CollapsibleCard";
 import {
@@ -55,9 +60,15 @@ import {
   norm,
 } from "../../src/features/destination/helpers";
 
+import {
+  getHospitalPhoneNumber,
+  type HospitalPhoneNumber,
+} from "../../src/services/hospitalNumbers";
+
 import { chip } from "../../src/features/destination/ui";
 
 type TranslateFn = (key: any) => string;
+type InputMode = "gps" | "search";
 
 const VISITATION_BYEN_URL =
   "https://drive.google.com/file/d/18gnYztqAw40PxuGuP5N_iEDmksYk-eIX/view?usp=sharing";
@@ -351,7 +362,12 @@ function SourceItem({
 
 export default function DestinationTool() {
   const { t } = useT();
+  const { settings } = useSettings();
+  const lang = settings.language === "da" ? "da" : "en";
 
+  const [reference, setReference] = useState<ReferenceDoc | null>(null);
+
+  const [mode, setMode] = useState<InputMode>("gps");
   const [area, setArea] = useState<Area>("byen");
 
   const [bydel, setBydel] = useState<Bydel | "">("");
@@ -372,6 +388,12 @@ export default function DestinationTool() {
   const [byenCatOpen, setByenCatOpen] = useState(false);
   const [regCatOpen, setRegCatOpen] = useState(false);
 
+  const [hospitalPhone, setHospitalPhone] =
+    useState<HospitalPhoneNumber | null>(null);
+  const [loadingHospitalPhone, setLoadingHospitalPhone] = useState(false);
+
+  const selectedSpecialtyKey = area === "byen" ? byenCat : regCat;
+
   const lastGeocodeAtRef = useRef(0);
   const lastGeocodeCoordsRef = useRef<{ lat: number; lon: number } | null>(
     null,
@@ -388,11 +410,51 @@ export default function DestinationTool() {
   const GEOCODE_BLOCK_MS = 90_000;
   const GEOCODE_CACHE_DISTANCE = 0.0025;
 
+  useEffect(() => {
+    let active = true;
+
+    async function loadReference() {
+      const data = await getReference("dest");
+      if (!active) return;
+      setReference(data);
+    }
+
+    loadReference();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const closeAllDropdowns = () => {
     setStreetOpen(false);
     setKommuneOpen(false);
     setByenCatOpen(false);
     setRegCatOpen(false);
+  };
+
+  const resetSelectionState = () => {
+    setDetectedArea(null);
+    setBydel("");
+    setKommune("");
+    setSelectedStreet("");
+    setStreetQ("");
+    setKommuneQ("");
+    closeAllDropdowns();
+  };
+
+  const clearDetectedLocation = () => {
+    resetSelectionState();
+  };
+
+  const switchArea = (nextArea: Area) => {
+    setArea(nextArea);
+    resetSelectionState();
+  };
+
+  const switchMode = (nextMode: InputMode) => {
+    setMode(nextMode);
+    resetSelectionState();
   };
 
   const toggleStreetDropdown = () => {
@@ -443,27 +505,6 @@ export default function DestinationTool() {
     });
   };
 
-  const clearDetectedLocation = () => {
-    setDetectedArea(null);
-    setBydel("");
-    setKommune("");
-    setSelectedStreet("");
-    setStreetQ("");
-    setKommuneQ("");
-    closeAllDropdowns();
-  };
-
-  const switchArea = (nextArea: Area) => {
-    setArea(nextArea);
-    setDetectedArea(null);
-    setBydel("");
-    setKommune("");
-    setSelectedStreet("");
-    setStreetQ("");
-    setKommuneQ("");
-    closeAllDropdowns();
-  };
-
   const isNearCachedLocation = (lat: number, lon: number) => {
     const cached = lastGeocodeCoordsRef.current;
     if (!cached) return false;
@@ -472,6 +513,22 @@ export default function DestinationTool() {
       Math.abs(cached.lat - lat) <= GEOCODE_CACHE_DISTANCE &&
       Math.abs(cached.lon - lon) <= GEOCODE_CACHE_DISTANCE
     );
+  };
+
+  const callHospitalNumber = async (phone: string) => {
+    try {
+      const url = `tel:${phone}`;
+      const supported = await Linking.canOpenURL(url);
+
+      if (!supported) {
+        Alert.alert("Kunne ikke åbne opkald", phone);
+        return;
+      }
+
+      await Linking.openURL(url);
+    } catch {
+      Alert.alert("Fejl", "Kunne ikke starte opkald.");
+    }
   };
 
   const getReverseGeocodeSafely = async (lat: number, lon: number) => {
@@ -553,6 +610,16 @@ export default function DestinationTool() {
     return all.filter((k) => norm(k).includes(q));
   }, [kommuneQ]);
 
+  const regionCategoryOptions = useMemo(() => {
+    return (Object.keys(REGION_CATEGORY_LABEL_KEYS) as RegionCategory[]).sort(
+      (a, b) =>
+        getRegionCategoryLabel(t as TranslateFn, a).localeCompare(
+          getRegionCategoryLabel(t as TranslateFn, b),
+          "da",
+        ),
+    );
+  }, [t]);
+
   const resolvedHospital = useMemo<ResolvedHospital | null>(() => {
     if (area === "byen") {
       if (!bydel) return null;
@@ -582,6 +649,34 @@ export default function DestinationTool() {
       extra: selectedKommune,
     };
   }, [area, bydel, kommune, selectedStreet, byenCat, regCat, t]);
+
+  useEffect(() => {
+    const loadHospitalPhone = async () => {
+      if (!resolvedHospital || resolvedHospital.code === "UNKNOWN") {
+        setHospitalPhone(null);
+        setLoadingHospitalPhone(false);
+        return;
+      }
+
+      setLoadingHospitalPhone(true);
+
+      try {
+        const result = await getHospitalPhoneNumber(
+          resolvedHospital.code,
+          selectedSpecialtyKey,
+        );
+
+        setHospitalPhone(result);
+      } catch (error) {
+        console.error("Error loading hospital phone:", error);
+        setHospitalPhone(null);
+      } finally {
+        setLoadingHospitalPhone(false);
+      }
+    };
+
+    loadHospitalPhone();
+  }, [resolvedHospital?.code, selectedSpecialtyKey]);
 
   const handleStreetChange = (text: string) => {
     setStreetQ(text);
@@ -791,6 +886,54 @@ export default function DestinationTool() {
   const showNeurokirNote = area === "region" && regCat === "neurokirurgi";
   const neurokirNote = t("dest_region_neurokir_note" as any);
 
+  const fallbackSources = [
+    {
+      id: "dest-fallback-1",
+      title:
+        lang === "da"
+          ? "Visitationsoversigt – Byen"
+          : "Destination overview – Byen",
+      subtitle:
+        lang === "da"
+          ? "Kildegrundlag for visitation i København/Byen. Gældende detaljer, version og revisionsoplysninger fremgår af kildedokumentet."
+          : "Source basis for destination guidance in Copenhagen/Byen. Current details, version, and revision information are shown in the source document.",
+      url: VISITATION_BYEN_URL,
+    },
+    {
+      id: "dest-fallback-2",
+      title:
+        lang === "da"
+          ? "Visitationsoversigt – Regionen"
+          : "Destination overview – Regionen",
+      subtitle:
+        lang === "da"
+          ? "Kildegrundlag for visitation i regionen uden for Byen. Gældende detaljer, version og revisionsoplysninger fremgår af kildedokumentet."
+          : "Source basis for destination guidance in the wider region outside Byen. Current details, version, and revision information are shown in the source document.",
+      url: VISITATION_REGIONEN_URL,
+    },
+    {
+      id: "dest-fallback-3",
+      title:
+        lang === "da"
+          ? "Klinisk verifikation kræves"
+          : "Clinical verification required",
+      subtitle:
+        lang === "da"
+          ? "Resultater i dette værktøj er vejledende og skal altid verificeres mod gældende officielle visitationsretningslinjer, lokale instrukser og klinisk vurdering."
+          : "Results in this tool are advisory and must always be verified against current official destination guidance, local instructions, and clinical judgement.",
+    },
+  ];
+
+  const renderedSources =
+    reference?.sources && reference.sources.length > 0
+      ? reference.sources.map((source) => ({
+          id: source.id,
+          title: source.title[lang],
+          subtitle: source.subtitle[lang],
+          url: (source as any).url?.[lang] ?? (source as any).url ?? undefined,
+        }))
+      : fallbackSources;
+
   return (
     <Background>
       <Screen>
@@ -801,97 +944,27 @@ export default function DestinationTool() {
 
         <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
           <Card>
-            <Title>{t("dest_use_location_title")}</Title>
-            <Subtle>{t("dest_use_location_sub")}</Subtle>
+            <Title>{t("dest_function_title")}</Title>
 
-            <View style={{ marginTop: 10, gap: 10 }}>
+            <View style={{ flexDirection: "row", gap: 10, marginTop: 10 }}>
               <Pressable
-                onPress={detectLocation}
-                disabled={detectingLocation}
-                style={({ pressed }) => [
-                  chip(false),
-                  {
-                    opacity: detectingLocation ? 0.6 : pressed ? 0.8 : 1,
-                  },
-                ]}
+                onPress={() => switchMode("gps")}
+                style={chip(mode === "gps")}
               >
                 <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
-                  {detectingLocation
-                    ? t("dest_detecting")
-                    : t("dest_use_location_btn")}
+                  GPS
                 </Text>
               </Pressable>
 
-              {detectingLocation && <ActivityIndicator />}
-
-              {detectedArea && (
-                <>
-                  <View
-                    style={{
-                      borderRadius: 12,
-                      borderWidth: 1,
-                      borderColor: theme.colors.cardBorder,
-                      padding: 12,
-                      backgroundColor: "rgba(0,0,0,0.10)",
-                      gap: 4,
-                    }}
-                  >
-                    <Text
-                      style={{ color: theme.colors.text, fontWeight: "800" }}
-                    >
-                      {t("dest_detected")}
-                    </Text>
-
-                    <Text style={{ color: theme.colors.mutedText }}>
-                      {detectedArea.label || t("dest_unknown_area")}
-                    </Text>
-
-                    {area === "byen" && !!bydel && (
-                      <Text style={{ color: theme.colors.mutedText }}>
-                        {t("dest_using_bydel")}{" "}
-                        <Text
-                          style={{
-                            color: theme.colors.text,
-                            fontWeight: "800",
-                          }}
-                        >
-                          {bydel}
-                        </Text>
-                      </Text>
-                    )}
-
-                    {area === "region" && !!kommune && (
-                      <Text style={{ color: theme.colors.mutedText }}>
-                        {t("dest_using_kommune")}{" "}
-                        <Text
-                          style={{
-                            color: theme.colors.text,
-                            fontWeight: "800",
-                          }}
-                        >
-                          {kommune}
-                        </Text>
-                      </Text>
-                    )}
-                  </View>
-
-                  <Pressable
-                    onPress={clearDetectedLocation}
-                    style={chip(false)}
-                  >
-                    <Text
-                      style={{ color: theme.colors.text, fontWeight: "800" }}
-                    >
-                      {t("dest_clear_location")}
-                    </Text>
-                  </Pressable>
-                </>
-              )}
+              <Pressable
+                onPress={() => switchMode("search")}
+                style={chip(mode === "search")}
+              >
+                <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
+                  Søg
+                </Text>
+              </Pressable>
             </View>
-          </Card>
-
-          <Card>
-            <Title>{t("dest_area")}</Title>
 
             <View style={{ flexDirection: "row", gap: 10, marginTop: 10 }}>
               <Pressable
@@ -912,14 +985,158 @@ export default function DestinationTool() {
                 </Text>
               </Pressable>
             </View>
+
+            <View style={{ marginTop: 14 }}>
+              {area === "byen" ? (
+                <SimpleDropdown<ByenCategory>
+                  label={t("dest_category")}
+                  value={byenCat}
+                  open={byenCatOpen}
+                  onToggle={toggleByenCatDropdown}
+                  options={BYEN_CATEGORIES.map((c) => c.key) as ByenCategory[]}
+                  onSelect={(value) => {
+                    setByenCat(value);
+                    setByenCatOpen(false);
+                  }}
+                  renderValue={(value) => {
+                    const item = BYEN_CATEGORIES.find((c) => c.key === value);
+                    return item ? t(item.labelKey as any) : value;
+                  }}
+                  placeholder={t("dest_category")}
+                  maxHeight={220}
+                />
+              ) : (
+                <>
+                  <SimpleDropdown<RegionCategory>
+                    label={t("dest_category")}
+                    value={regCat}
+                    open={regCatOpen}
+                    onToggle={toggleRegCatDropdown}
+                    options={regionCategoryOptions}
+                    onSelect={(value) => {
+                      setRegCat(value);
+                      setRegCatOpen(false);
+                    }}
+                    renderValue={(value) =>
+                      getRegionCategoryLabel(t as TranslateFn, value)
+                    }
+                    placeholder={t("dest_category")}
+                    maxHeight={220}
+                  />
+
+                  <Text style={{ color: theme.colors.mutedText, marginTop: 8 }}>
+                    {t("dest_region_note")}
+                  </Text>
+
+                  {showNeurokirNote && (
+                    <Text
+                      style={{ color: theme.colors.mutedText, marginTop: 4 }}
+                    >
+                      {neurokirNote === "dest_region_neurokir_note"
+                        ? t("dest_region_neurokir_note_fallback")
+                        : neurokirNote}
+                    </Text>
+                  )}
+                </>
+              )}
+            </View>
           </Card>
 
-          {area === "byen" ? (
+          {mode === "gps" && (
             <Card>
-              <Title>{t("dest_find_street")}</Title>
-              <Subtle>{t("dest_find_street_sub")}</Subtle>
+              <View style={{ gap: 10 }}>
+                <Pressable
+                  onPress={detectLocation}
+                  disabled={detectingLocation}
+                  style={({ pressed }) => [
+                    chip(false),
+                    {
+                      opacity: detectingLocation ? 0.6 : pressed ? 0.8 : 1,
+                    },
+                  ]}
+                >
+                  <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
+                    {detectingLocation
+                      ? t("dest_detecting")
+                      : t("dest_use_location_btn")}
+                  </Text>
+                </Pressable>
 
-              <View style={{ marginTop: 10, gap: 14 }}>
+                {detectingLocation && <ActivityIndicator />}
+
+                {detectedArea && (
+                  <>
+                    <View
+                      style={{
+                        borderRadius: 12,
+                        borderWidth: 1,
+                        borderColor: theme.colors.cardBorder,
+                        padding: 12,
+                        backgroundColor: "rgba(0,0,0,0.10)",
+                        gap: 4,
+                      }}
+                    >
+                      <Text
+                        style={{ color: theme.colors.text, fontWeight: "800" }}
+                      >
+                        {t("dest_detected")}
+                      </Text>
+
+                      <Text style={{ color: theme.colors.mutedText }}>
+                        {detectedArea.label || t("dest_unknown_area")}
+                      </Text>
+
+                      {area === "byen" && !!bydel && (
+                        <Text style={{ color: theme.colors.mutedText }}>
+                          {t("dest_using_bydel")}{" "}
+                          <Text
+                            style={{
+                              color: theme.colors.text,
+                              fontWeight: "800",
+                            }}
+                          >
+                            {bydel}
+                          </Text>
+                        </Text>
+                      )}
+
+                      {area === "region" && !!kommune && (
+                        <Text style={{ color: theme.colors.mutedText }}>
+                          {t("dest_using_kommune")}{" "}
+                          <Text
+                            style={{
+                              color: theme.colors.text,
+                              fontWeight: "800",
+                            }}
+                          >
+                            {kommune}
+                          </Text>
+                        </Text>
+                      )}
+                    </View>
+
+                    <Pressable
+                      onPress={clearDetectedLocation}
+                      style={chip(false)}
+                    >
+                      <Text
+                        style={{
+                          color: theme.colors.text,
+                          fontWeight: "800",
+                        }}
+                      >
+                        {t("dest_clear_location")}
+                      </Text>
+                    </Pressable>
+                  </>
+                )}
+              </View>
+            </Card>
+          )}
+
+          {mode === "search" && area === "byen" && (
+            <Card>
+              <View style={{ gap: 14 }}>
                 <View style={{ gap: 8 }}>
                   <Label>{t("dest_street_placeholder")}</Label>
                   <Input
@@ -960,32 +1177,13 @@ export default function DestinationTool() {
                   emptyText={t("dest_no_street_match")}
                   maxHeight={220}
                 />
-
-                <SimpleDropdown<ByenCategory>
-                  label={t("dest_category")}
-                  value={byenCat}
-                  open={byenCatOpen}
-                  onToggle={toggleByenCatDropdown}
-                  options={BYEN_CATEGORIES.map((c) => c.key) as ByenCategory[]}
-                  onSelect={(value) => {
-                    setByenCat(value);
-                    setByenCatOpen(false);
-                  }}
-                  renderValue={(value) => {
-                    const item = BYEN_CATEGORIES.find((c) => c.key === value);
-                    return item ? t(item.labelKey as any) : value;
-                  }}
-                  placeholder={t("dest_category")}
-                  maxHeight={220}
-                />
               </View>
             </Card>
-          ) : (
-            <Card>
-              <Title>{t("dest_region_pick")}</Title>
-              <Subtle>{t("dest_region_pick_sub")}</Subtle>
+          )}
 
-              <View style={{ marginTop: 10, gap: 14 }}>
+          {mode === "search" && area === "region" && (
+            <Card>
+              <View style={{ gap: 14 }}>
                 <View style={{ gap: 8 }}>
                   <Label>{t("dest_kommune")}</Label>
                   <Input
@@ -1013,37 +1211,6 @@ export default function DestinationTool() {
                   emptyText={t("dest_no_kommune_match")}
                   maxHeight={220}
                 />
-
-                <SimpleDropdown<RegionCategory>
-                  label={t("dest_category")}
-                  value={regCat}
-                  open={regCatOpen}
-                  onToggle={toggleRegCatDropdown}
-                  options={
-                    Object.keys(REGION_CATEGORY_LABEL_KEYS) as RegionCategory[]
-                  }
-                  onSelect={(value) => {
-                    setRegCat(value);
-                    setRegCatOpen(false);
-                  }}
-                  renderValue={(value) =>
-                    getRegionCategoryLabel(t as TranslateFn, value)
-                  }
-                  placeholder={t("dest_category")}
-                  maxHeight={220}
-                />
-
-                <Text style={{ color: theme.colors.mutedText }}>
-                  {t("dest_region_note")}
-                </Text>
-
-                {showNeurokirNote && (
-                  <Text style={{ color: theme.colors.mutedText }}>
-                    {neurokirNote === "dest_region_neurokir_note"
-                      ? t("dest_region_neurokir_note_fallback")
-                      : neurokirNote}
-                  </Text>
-                )}
               </View>
             </Card>
           )}
@@ -1081,30 +1248,58 @@ export default function DestinationTool() {
                     borderColor: theme.colors.cardBorder,
                     padding: 12,
                     backgroundColor: "rgba(0,0,0,0.14)",
-                    gap: 6,
+                    gap: 8,
                   }}
                 >
-                  <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
-                    {t("dest_context")}:{" "}
-                    <Text
+                  {loadingHospitalPhone ? (
+                    <Text style={{ color: theme.colors.mutedText }}>
+                      Henter telefonnummer...
+                    </Text>
+                  ) : hospitalPhone ? (
+                    <View
                       style={{
-                        color: theme.colors.mutedText,
-                        fontWeight: "700",
+                        gap: 8,
                       }}
                     >
-                      {area === "byen" ? t("dest_byen") : t("dest_region")} •{" "}
-                      {resolvedHospital.extra}
-                    </Text>
-                  </Text>
+                      <Text style={{ color: theme.colors.mutedText }}>
+                        Telefonnummer:{" "}
+                        <Text
+                          style={{
+                            color: theme.colors.text,
+                            fontWeight: "800",
+                          }}
+                        >
+                          {hospitalPhone.phone}
+                        </Text>
+                      </Text>
 
-                  <Text style={{ color: theme.colors.mutedText }}>
-                    {t("dest_code")}:{" "}
-                    <Text
-                      style={{ color: theme.colors.text, fontWeight: "800" }}
-                    >
-                      {resolvedHospital.code}
+                      <Text
+                        style={{ color: theme.colors.mutedText, fontSize: 12 }}
+                      >
+                        {hospitalPhone.specialtyKey === "main"
+                          ? "Specialenummer ikke fundet – viser hospitalets hovednummer."
+                          : `Viser: ${hospitalPhone.displayNameDa}`}
+                      </Text>
+
+                      <Pressable
+                        onPress={() => callHospitalNumber(hospitalPhone.phone)}
+                        style={chip(false)}
+                      >
+                        <Text
+                          style={{
+                            color: theme.colors.text,
+                            fontWeight: "800",
+                          }}
+                        >
+                          Ring op
+                        </Text>
+                      </Pressable>
+                    </View>
+                  ) : (
+                    <Text style={{ color: theme.colors.mutedText }}>
+                      Intet telefonnummer fundet endnu.
                     </Text>
-                  </Text>
+                  )}
 
                   <Text
                     style={{
@@ -1135,7 +1330,7 @@ export default function DestinationTool() {
 
           <CollapsibleCard
             title={t("tool_disclaimer_title")}
-            subtitle={t("dest_page_disclaimer")}
+            subtitle={reference?.disclaimer[lang] ?? t("dest_page_disclaimer")}
           >
             <View
               style={{
@@ -1154,34 +1349,28 @@ export default function DestinationTool() {
                   lineHeight: 20,
                 }}
               >
-                {t("dest_page_disclaimer")}
+                {reference?.disclaimer[lang] ?? t("dest_page_disclaimer")}
               </Text>
             </View>
           </CollapsibleCard>
 
           <CollapsibleCard
             title={t("tool_sources_title")}
-            subtitle={t("dest_sources_sub")}
+            subtitle={reference?.sourcesSub[lang] ?? t("dest_sources_sub")}
           >
-            <Subtle style={{ marginBottom: 8 }}>{t("dest_sources_sub")}</Subtle>
+            <Subtle style={{ marginBottom: 8 }}>
+              {reference?.sourcesSub[lang] ?? t("dest_sources_sub")}
+            </Subtle>
 
             <View style={{ marginTop: 8 }}>
-              <SourceItem
-                title="Visitationsoversigt – Byen"
-                subtitle="Kildegrundlag for visitation i København/Byen. Gældende detaljer, version og revisionsoplysninger fremgår af kildedokumentet."
-                url={VISITATION_BYEN_URL}
-              />
-
-              <SourceItem
-                title="Visitationsoversigt – Regionen"
-                subtitle="Kildegrundlag for visitation i regionen uden for Byen. Gældende detaljer, version og revisionsoplysninger fremgår af kildedokumentet."
-                url={VISITATION_REGIONEN_URL}
-              />
-
-              <SourceItem
-                title="Klinisk verifikation kræves"
-                subtitle="Resultater i dette værktøj er vejledende og skal altid verificeres mod gældende officielle visitationsretningslinjer, lokale instrukser og klinisk vurdering."
-              />
+              {renderedSources.map((source) => (
+                <SourceItem
+                  key={source.id}
+                  title={source.title}
+                  subtitle={source.subtitle}
+                  url={source.url}
+                />
+              ))}
             </View>
           </CollapsibleCard>
         </ScrollView>

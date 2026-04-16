@@ -211,7 +211,15 @@ function SectionLabel({ label }: { label: string }) {
   );
 }
 
-function SourceItem({ title, subtitle }: { title: string; subtitle?: string }) {
+function SourceItem({
+  title,
+  subtitle,
+  url,
+}: {
+  title: string;
+  subtitle?: string;
+  url?: string;
+}) {
   return (
     <View
       style={{

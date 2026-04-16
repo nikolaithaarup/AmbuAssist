@@ -1,11 +1,10 @@
 import { useMemo, useState } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
-import { useT } from "../../../src/i18n/useT";
-import { useSettings } from "../../../src/state/settings";
-import { Background } from "../../../src/ui/Background";
-import { CollapsibleCard } from "../../../src/ui/CollapsibleCard";
-import { Card, Row, Screen, Subtle, Title } from "../../../src/ui/Ui";
-import { theme } from "../../../src/ui/theme";
+import { useT } from "../../i18n/useT";
+import { CollapsibleCard } from "../../ui/CollapsibleCard";
+import { Card, Row, Subtle, Title } from "../../ui/Ui";
+import { theme } from "../../ui/theme";
+import type { ReferenceDoc } from "../../services/referenceService";
 
 type Lang = "en" | "da";
 
@@ -51,40 +50,6 @@ type Node =
       title: Record<Lang, string>;
       body: Record<Lang, string>;
     };
-
-function ui(lang: Lang) {
-  const en = {
-    toolTitle: "HINTS / Acute vertigo flow",
-    toolSub:
-      "Step through the decision tree. Use Back if you’re uncertain — it keeps your previous choices.",
-    back: "Back",
-    reset: "Reset",
-    selections: "Your selections",
-    flowchart: "Flowchart",
-    show: "Show",
-    hide: "Hide",
-    tip: "Clinical reminder: HINTS+ is meant for Acute Vestibular Syndrome (continuous vertigo with spontaneous/gaze-evoked nystagmus). If you’re unsure, treat as higher risk.",
-    none: "No selections yet.",
-    conclusion: "Conclusion:",
-  };
-
-  const da = {
-    toolTitle: "HINTS / Akut vertigo flow",
-    toolSub:
-      "Gå trin for trin i flowchartet. Brug Tilbage hvis du er i tvivl — den beholder dine tidligere valg.",
-    back: "Tilbage",
-    reset: "Nulstil",
-    selections: "Dine valg",
-    flowchart: "Flowchart",
-    show: "Vis",
-    hide: "Skjul",
-    tip: "Klinisk reminder: HINTS+ er tiltænkt Akut Vestibulært Syndrom (kontinuerlig svimmelhed med spontan/blik-udløst nystagmus). Er du i tvivl, håndtér som højere risiko.",
-    none: "Ingen valg endnu.",
-    conclusion: "Konklusion:",
-  };
-
-  return lang === "da" ? da : en;
-}
 
 const NODES: Node[] = [
   {
@@ -328,7 +293,15 @@ type StepChoice = {
   label: Record<Lang, string>;
 };
 
-function SourceItem({ title, subtitle }: { title: string; subtitle?: string }) {
+function SourceItem({
+  title,
+  subtitle,
+  url,
+}: {
+  title: string;
+  subtitle?: string;
+  url?: string;
+}) {
   return (
     <View
       style={{
@@ -363,11 +336,13 @@ function SourceItem({ title, subtitle }: { title: string; subtitle?: string }) {
   );
 }
 
-export default function HintsTool() {
-  const { settings } = useSettings();
+type Props = {
+  lang: Lang;
+  reference: ReferenceDoc | null;
+};
+
+export default function HintsContent({ lang, reference }: Props) {
   const { t } = useT();
-  const lang: Lang = settings.language === "da" ? "da" : "en";
-  const U = ui(lang);
 
   const [currentId, setCurrentId] = useState<NodeId>("START_RED_FLAGS");
   const [history, setHistory] = useState<StepChoice[]>([]);
@@ -402,307 +377,277 @@ export default function HintsTool() {
   const onReset = () => {
     setHistory([]);
     setCurrentId("START_RED_FLAGS");
+    setFlowExpanded(false);
   };
 
-  const titleFromI18n =
-    t("tool_hints_title") === "tool_hints_title"
-      ? U.toolTitle
-      : t("tool_hints_title");
-
-  const descFromI18n =
-    t("tool_hints_desc") === "tool_hints_desc"
-      ? U.toolSub
-      : t("tool_hints_desc");
-
   return (
-    <Background>
-      <Screen>
-        <View style={{ gap: 6, marginTop: 12 }}>
-          <Title>{titleFromI18n}</Title>
-          <Subtle>{descFromI18n}</Subtle>
-        </View>
+    <>
+      <Card>
+        <Title>{t("tool_hints_title")}</Title>
+        <Subtle>{t("tool_hints_desc")}</Subtle>
+      </Card>
 
-        <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
-          <Card>
-            <View style={{ gap: 6 }}>
-              <Title style={{ fontSize: 20 }}>
-                {current.kind === "RESULT"
-                  ? t("hints_result") === "hints_result"
-                    ? "Result"
-                    : t("hints_result")
-                  : current.title[lang]}
-              </Title>
+      <Card>
+        <View style={{ gap: 6 }}>
+          <Title style={{ fontSize: 20 }}>
+            {current.kind === "RESULT"
+              ? t("hints_result")
+              : current.title[lang]}
+          </Title>
 
-              {current.kind === "QUESTION" && current.subtitle && (
-                <Subtle>{current.subtitle[lang]}</Subtle>
-              )}
+          {current.kind === "QUESTION" && current.subtitle && (
+            <Subtle>{current.subtitle[lang]}</Subtle>
+          )}
 
-              {current.kind === "RESULT" && (
-                <>
-                  <Subtle>{current.title[lang]}</Subtle>
-                  <Text style={{ color: theme.colors.text, lineHeight: 20 }}>
-                    {current.body[lang]}
-                  </Text>
-                  <Text
-                    style={{
-                      color: theme.colors.mutedText,
-                      fontSize: 12,
-                      lineHeight: 17,
-                      marginTop: 8,
-                    }}
-                  >
-                    {t("hints_result_disclaimer")}
-                  </Text>
-                </>
-              )}
-            </View>
-
-            {current.kind === "QUESTION" && (
-              <View style={{ gap: 10, marginTop: 12 }}>
-                {current.options.map((opt) => (
-                  <Pressable
-                    key={opt.id}
-                    onPress={() => onPick(opt)}
-                    style={({ pressed }) => ({
-                      opacity: pressed ? 0.75 : 1,
-                      paddingVertical: 12,
-                      paddingHorizontal: 12,
-                      borderRadius: 14,
-                      borderWidth: 1,
-                      borderColor: theme.colors.cardBorder,
-                      backgroundColor: "rgba(220,220,220,0.12)",
-                    })}
-                  >
-                    <Text
-                      style={{
-                        color: theme.colors.text,
-                        fontWeight: "800",
-                        lineHeight: 20,
-                      }}
-                    >
-                      {opt.label[lang]}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-            )}
-
-            <Row>
-              <Pressable
-                onPress={onBack}
-                disabled={history.length === 0}
-                style={({ pressed }) => ({
-                  opacity: history.length === 0 ? 0.4 : pressed ? 0.7 : 1,
-                  marginTop: 14,
-                  paddingVertical: 10,
-                  paddingHorizontal: 12,
-                  borderRadius: 12,
-                  borderWidth: 1,
-                  borderColor: theme.colors.cardBorder,
-                  backgroundColor: "rgba(0,0,0,0.14)",
-                })}
-              >
-                <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
-                  {t("back") === "back" ? U.back : t("back")}
-                </Text>
-              </Pressable>
-
-              <Pressable
-                onPress={onReset}
-                style={({ pressed }) => ({
-                  opacity: pressed ? 0.7 : 1,
-                  marginTop: 14,
-                  marginLeft: "auto",
-                  paddingVertical: 10,
-                  paddingHorizontal: 12,
-                  borderRadius: 12,
-                  borderWidth: 1,
-                  borderColor: theme.colors.cardBorder,
-                  backgroundColor: "rgba(255,107,107,0.10)",
-                })}
-              >
-                <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
-                  {t("reset") === "reset" ? U.reset : t("reset")}
-                </Text>
-              </Pressable>
-            </Row>
-          </Card>
-
-          <Card>
-            <Title style={{ fontSize: 18 }}>
-              {t("hints_selections") === "hints_selections"
-                ? U.selections
-                : t("hints_selections")}
-            </Title>
-
-            {history.length === 0 ? (
-              <Text style={{ color: theme.colors.mutedText }}>{U.none}</Text>
-            ) : (
-              <View style={{ gap: 8, marginTop: 10 }}>
-                {history.map((h, idx) => (
-                  <View
-                    key={`${h.nodeId}_${h.optionId}_${idx}`}
-                    style={{
-                      borderTopWidth: idx === 0 ? 0 : 1,
-                      borderTopColor: theme.colors.cardBorder,
-                      paddingTop: idx === 0 ? 0 : 8,
-                      marginTop: idx === 0 ? 0 : 8,
-                    }}
-                  >
-                    <Text
-                      style={{ color: theme.colors.text, fontWeight: "800" }}
-                    >
-                      {idx + 1}. {h.label[lang]}
-                    </Text>
-                  </View>
-                ))}
-
-                {isResult && (
-                  <View
-                    style={{
-                      marginTop: 8,
-                      borderRadius: 14,
-                      borderWidth: 1,
-                      borderColor: theme.colors.cardBorder,
-                      padding: 12,
-                      backgroundColor: "rgba(220,220,220,0.10)",
-                    }}
-                  >
-                    <Text
-                      style={{ color: theme.colors.text, fontWeight: "900" }}
-                    >
-                      {U.conclusion}
-                    </Text>
-                    <Text
-                      style={{
-                        color: theme.colors.text,
-                        marginTop: 4,
-                        lineHeight: 20,
-                      }}
-                    >
-                      {current.kind === "RESULT" ? current.title[lang] : ""}
-                    </Text>
-                  </View>
-                )}
-              </View>
-            )}
-          </Card>
-
-          <Card>
-            <Row>
-              <Title style={{ fontSize: 18 }}>
-                {t("hints_flowchart") === "hints_flowchart"
-                  ? U.flowchart
-                  : t("hints_flowchart")}
-              </Title>
-
-              <Pressable
-                onPress={() => setFlowExpanded((p) => !p)}
-                style={({ pressed }) => ({
-                  opacity: pressed ? 0.7 : 1,
-                  marginLeft: "auto",
-                  paddingVertical: 8,
-                  paddingHorizontal: 12,
-                  borderRadius: 12,
-                  borderWidth: 1,
-                  borderColor: theme.colors.cardBorder,
-                  backgroundColor: "rgba(220,220,220,0.18)",
-                })}
-              >
-                <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
-                  {flowExpanded ? U.hide : U.show}
-                </Text>
-              </Pressable>
-            </Row>
-
-            <Text
-              style={{
-                color: theme.colors.mutedText,
-                marginTop: 10,
-                fontSize: 13,
-                lineHeight: 18,
-              }}
-            >
-              {U.tip}
-            </Text>
-
-            {flowExpanded && (
-              <View style={{ marginTop: 12 }}>
-                <ScrollView horizontal showsHorizontalScrollIndicator>
-                  <ScrollView showsVerticalScrollIndicator>
-                    <Image
-                      source={require("../../../assets/hints-flowchart.png")}
-                      style={{
-                        width: 980,
-                        height: 720,
-                        borderRadius: 12,
-                        borderWidth: 1,
-                        borderColor: theme.colors.cardBorder,
-                      }}
-                      resizeMode="contain"
-                    />
-                  </ScrollView>
-                </ScrollView>
-
-                <Subtle style={{ marginTop: 8 }}>
-                  {lang === "da"
-                    ? "Tip: Scroll for at zoome/tilpasse på web."
-                    : "Tip: Scroll to pan/zoom on web."}
-                </Subtle>
-              </View>
-            )}
-          </Card>
-
-          <CollapsibleCard
-            title={t("tool_disclaimer_title")}
-            subtitle={t("hints_page_disclaimer")}
-          >
-            <View
-              style={{
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: theme.colors.cardBorder,
-                padding: 12,
-                backgroundColor: "rgba(255,209,102,0.10)",
-              }}
-            >
+          {current.kind === "RESULT" && (
+            <>
+              <Subtle>{current.title[lang]}</Subtle>
+              <Text style={{ color: theme.colors.text, lineHeight: 20 }}>
+                {current.body[lang]}
+              </Text>
               <Text
                 style={{
-                  color: theme.colors.text,
-                  fontSize: 14,
-                  lineHeight: 20,
+                  color: theme.colors.mutedText,
+                  fontSize: 12,
+                  lineHeight: 17,
+                  marginTop: 8,
                 }}
               >
-                {t("hints_page_disclaimer")}
+                {t("hints_result_disclaimer")}
               </Text>
-            </View>
-          </CollapsibleCard>
+            </>
+          )}
+        </View>
 
-          <CollapsibleCard
-            title={t("tool_sources_title")}
-            subtitle={t("hints_sources_sub")}
+        {current.kind === "QUESTION" && (
+          <View style={{ gap: 10, marginTop: 12 }}>
+            {current.options.map((opt) => (
+              <Pressable
+                key={opt.id}
+                onPress={() => onPick(opt)}
+                style={({ pressed }) => ({
+                  opacity: pressed ? 0.75 : 1,
+                  paddingVertical: 12,
+                  paddingHorizontal: 12,
+                  borderRadius: 14,
+                  borderWidth: 1,
+                  borderColor: theme.colors.cardBorder,
+                  backgroundColor: "rgba(220,220,220,0.12)",
+                })}
+              >
+                <Text
+                  style={{
+                    color: theme.colors.text,
+                    fontWeight: "800",
+                    lineHeight: 20,
+                  }}
+                >
+                  {opt.label[lang]}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        )}
+
+        <Row>
+          <Pressable
+            onPress={onBack}
+            disabled={history.length === 0}
+            style={({ pressed }) => ({
+              opacity: history.length === 0 ? 0.4 : pressed ? 0.7 : 1,
+              marginTop: 14,
+              paddingVertical: 10,
+              paddingHorizontal: 12,
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: theme.colors.cardBorder,
+              backgroundColor: "rgba(0,0,0,0.14)",
+            })}
           >
-            <Subtle style={{ marginBottom: 8 }}>
-              {t("hints_sources_sub")}
-            </Subtle>
+            <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
+              {t("back")}
+            </Text>
+          </Pressable>
 
-            <View style={{ marginTop: 4 }}>
-              <SourceItem
-                title={t("hints_source_1_title")}
-                subtitle={t("hints_source_1_sub")}
-              />
-              <SourceItem
-                title={t("hints_source_2_title")}
-                subtitle={t("hints_source_2_sub")}
-              />
-              <SourceItem
-                title={t("hints_source_3_title")}
-                subtitle={t("hints_source_3_sub")}
-              />
-            </View>
-          </CollapsibleCard>
-        </ScrollView>
-      </Screen>
-    </Background>
+          <Pressable
+            onPress={onReset}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.7 : 1,
+              marginTop: 14,
+              marginLeft: "auto",
+              paddingVertical: 10,
+              paddingHorizontal: 12,
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: theme.colors.cardBorder,
+              backgroundColor: "rgba(255,107,107,0.10)",
+            })}
+          >
+            <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
+              {t("reset")}
+            </Text>
+          </Pressable>
+        </Row>
+      </Card>
+
+      <Card>
+        <Title style={{ fontSize: 18 }}>{t("hints_selections")}</Title>
+
+        {history.length === 0 ? (
+          <Text style={{ color: theme.colors.mutedText }}>
+            {t("hints_none")}
+          </Text>
+        ) : (
+          <View style={{ gap: 8, marginTop: 10 }}>
+            {history.map((h, idx) => (
+              <View
+                key={`${h.nodeId}_${h.optionId}_${idx}`}
+                style={{
+                  borderTopWidth: idx === 0 ? 0 : 1,
+                  borderTopColor: theme.colors.cardBorder,
+                  paddingTop: idx === 0 ? 0 : 8,
+                  marginTop: idx === 0 ? 0 : 8,
+                }}
+              >
+                <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
+                  {idx + 1}. {h.label[lang]}
+                </Text>
+              </View>
+            ))}
+
+            {isResult && (
+              <View
+                style={{
+                  marginTop: 8,
+                  borderRadius: 14,
+                  borderWidth: 1,
+                  borderColor: theme.colors.cardBorder,
+                  padding: 12,
+                  backgroundColor: "rgba(220,220,220,0.10)",
+                }}
+              >
+                <Text style={{ color: theme.colors.text, fontWeight: "900" }}>
+                  {t("hints_conclusion")}
+                </Text>
+                <Text
+                  style={{
+                    color: theme.colors.text,
+                    marginTop: 4,
+                    lineHeight: 20,
+                  }}
+                >
+                  {current.kind === "RESULT" ? current.title[lang] : ""}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+      </Card>
+
+      <Card>
+        <Row>
+          <Title style={{ fontSize: 18 }}>{t("hints_flowchart")}</Title>
+
+          <Pressable
+            onPress={() => setFlowExpanded((p) => !p)}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.7 : 1,
+              marginLeft: "auto",
+              paddingVertical: 8,
+              paddingHorizontal: 12,
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: theme.colors.cardBorder,
+              backgroundColor: "rgba(220,220,220,0.18)",
+            })}
+          >
+            <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
+              {flowExpanded ? t("hide") : t("show")}
+            </Text>
+          </Pressable>
+        </Row>
+
+        <Text
+          style={{
+            color: theme.colors.mutedText,
+            marginTop: 10,
+            fontSize: 13,
+            lineHeight: 18,
+          }}
+        >
+          {t("hints_tip")}
+        </Text>
+
+        {flowExpanded && (
+          <View style={{ marginTop: 12 }}>
+            <ScrollView horizontal showsHorizontalScrollIndicator>
+              <ScrollView showsVerticalScrollIndicator>
+                <Image
+                  source={require("../../../assets/hints-flowchart.png")}
+                  style={{
+                    width: 980,
+                    height: 720,
+                    borderRadius: 12,
+                    borderWidth: 1,
+                    borderColor: theme.colors.cardBorder,
+                  }}
+                  resizeMode="contain"
+                />
+              </ScrollView>
+            </ScrollView>
+
+            <Subtle style={{ marginTop: 8 }}>
+              {lang === "da"
+                ? "Tip: Scroll for at zoome/tilpasse på web."
+                : "Tip: Scroll to pan/zoom on web."}
+            </Subtle>
+          </View>
+        )}
+      </Card>
+
+      <CollapsibleCard
+        title={t("tool_disclaimer_title")}
+        subtitle={reference?.disclaimer[lang] ?? ""}
+      >
+        <View
+          style={{
+            borderRadius: 14,
+            borderWidth: 1,
+            borderColor: theme.colors.cardBorder,
+            padding: 12,
+            backgroundColor: "rgba(255,209,102,0.10)",
+          }}
+        >
+          <Text
+            style={{
+              color: theme.colors.text,
+              fontSize: 14,
+              lineHeight: 20,
+            }}
+          >
+            {reference?.disclaimer[lang] ?? ""}
+          </Text>
+        </View>
+      </CollapsibleCard>
+
+      <CollapsibleCard
+        title={t("tool_sources_title")}
+        subtitle={reference?.sourcesSub[lang] ?? ""}
+      >
+        <Subtle style={{ marginBottom: 8 }}>
+          {reference?.sourcesSub[lang] ?? ""}
+        </Subtle>
+
+        <View style={{ marginTop: 4 }}>
+          {(reference?.sources ?? []).map((source) => (
+            <SourceItem
+              key={source.id}
+              title={source.title[lang]}
+              subtitle={source.subtitle[lang]}
+            />
+          ))}
+        </View>
+      </CollapsibleCard>
+    </>
   );
 }

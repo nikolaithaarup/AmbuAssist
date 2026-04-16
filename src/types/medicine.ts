@@ -1,0 +1,21 @@
+export type Medicine = {
+  slug: string;
+  genericName: string;
+  brandNames?: string[];
+  indicationDa?: string;
+  indicationEn?: string;
+  routes?: string[];
+  adultDoseTextDa?: string;
+  adultDoseTextEn?: string;
+  pediatricDoseTextDa?: string;
+  pediatricDoseTextEn?: string;
+  maxDoseTextDa?: string;
+  maxDoseTextEn?: string;
+  concentrations?: string[];
+  warningsDa?: string[];
+  warningsEn?: string[];
+  sourceTitle?: string;
+  sourceUrl?: string;
+  active: boolean;
+  sortOrder?: number;
+};

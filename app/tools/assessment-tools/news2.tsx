@@ -1,6 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useT } from "../../../src/i18n/useT";
+import { useSettings } from "../../../src/state/settings";
+import {
+  getReference,
+  type ReferenceDoc,
+} from "../../../src/services/referenceService";
 import { Background } from "../../../src/ui/Background";
 import { CollapsibleCard } from "../../../src/ui/CollapsibleCard";
 import {
@@ -91,7 +96,15 @@ function guidanceKey(total: number, anyThree: boolean) {
   return "news2_guidance_low";
 }
 
-function SourceItem({ title, subtitle }: { title: string; subtitle?: string }) {
+function SourceItem({
+  title,
+  subtitle,
+  url,
+}: {
+  title: string;
+  subtitle?: string;
+  url?: string;
+}) {
   return (
     <View
       style={{
@@ -128,6 +141,10 @@ function SourceItem({ title, subtitle }: { title: string; subtitle?: string }) {
 
 export default function NEWS2() {
   const { t } = useT();
+  const { settings } = useSettings();
+  const lang = settings.language === "da" ? "da" : "en";
+
+  const [reference, setReference] = useState<ReferenceDoc | null>(null);
 
   const [rr, setRr] = useState("");
   const [spo2, setSpo2] = useState("");
@@ -138,6 +155,22 @@ export default function NEWS2() {
   const [onO2, setOnO2] = useState(false);
   const [scale, setScale] = useState<SpO2Scale>(1);
   const [avpu, setAvpu] = useState<"A" | "V" | "P" | "U">("A");
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadReference() {
+      const data = await getReference("news2");
+      if (!active) return;
+      setReference(data);
+    }
+
+    loadReference();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const computed = useMemo(() => {
     const vRR = toNum(rr);
@@ -410,7 +443,7 @@ export default function NEWS2() {
                   lineHeight: 18,
                 }}
               >
-                {t(gKey as any)}
+                {t(gKey)}
               </Text>
 
               <Text
@@ -447,7 +480,7 @@ export default function NEWS2() {
 
           <CollapsibleCard
             title={t("tool_disclaimer_title")}
-            subtitle={t("news2_page_disclaimer")}
+            subtitle={reference?.disclaimer[lang] ?? ""}
           >
             <View
               style={{
@@ -465,32 +498,28 @@ export default function NEWS2() {
                   lineHeight: 20,
                 }}
               >
-                {t("news2_page_disclaimer")}
+                {reference?.disclaimer[lang] ?? ""}
               </Text>
             </View>
           </CollapsibleCard>
 
           <CollapsibleCard
             title={t("tool_sources_title")}
-            subtitle={t("news2_sources_sub")}
+            subtitle={reference?.sourcesSub[lang] ?? ""}
           >
             <Subtle style={{ marginBottom: 8 }}>
-              {t("news2_sources_sub")}
+              {reference?.sourcesSub[lang] ?? ""}
             </Subtle>
 
             <View style={{ marginTop: 4 }}>
-              <SourceItem
-                title={t("news2_source_1_title")}
-                subtitle={t("news2_source_1_sub")}
-              />
-              <SourceItem
-                title={t("news2_source_2_title")}
-                subtitle={t("news2_source_2_sub")}
-              />
-              <SourceItem
-                title={t("news2_source_3_title")}
-                subtitle={t("news2_source_3_sub")}
-              />
+              {(reference?.sources ?? []).map((source) => (
+                <SourceItem
+                  key={source.id}
+                  title={source.title[lang]}
+                  subtitle={source.subtitle[lang]}
+                  url={source.url?.[lang]}
+                />
+              ))}
             </View>
           </CollapsibleCard>
         </ScrollView>

@@ -1,6 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useT } from "../../../src/i18n/useT";
+import { useSettings } from "../../../src/state/settings";
+import {
+  getReference,
+  type ReferenceDoc,
+} from "../../../src/services/referenceService";
 import { Background } from "../../../src/ui/Background";
 import { CollapsibleCard } from "../../../src/ui/CollapsibleCard";
 import { Card, Screen, Subtle, Title } from "../../../src/ui/Ui";
@@ -84,7 +89,15 @@ function classifyWells(score: number) {
   return { likely, three };
 }
 
-function SourceItem({ title, subtitle }: { title: string; subtitle?: string }) {
+function SourceItem({
+  title,
+  subtitle,
+  url,
+}: {
+  title: string;
+  subtitle?: string;
+  url?: string;
+}) {
   return (
     <View
       style={{
@@ -120,8 +133,28 @@ function SourceItem({ title, subtitle }: { title: string; subtitle?: string }) {
 }
 
 export default function WellsDvt() {
-  const { t, lang } = useT();
+  const { t } = useT();
+  const { settings } = useSettings();
+  const lang = settings.language === "da" ? "da" : "en";
+
+  const [reference, setReference] = useState<ReferenceDoc | null>(null);
   const [checked, setChecked] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadReference() {
+      const data = await getReference("wells");
+      if (!active) return;
+      setReference(data);
+    }
+
+    loadReference();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const score = useMemo(() => {
     return items.reduce(
@@ -293,7 +326,7 @@ export default function WellsDvt() {
 
           <CollapsibleCard
             title={t("tool_disclaimer_title")}
-            subtitle={t("wells_page_disclaimer")}
+            subtitle={reference?.disclaimer[lang] ?? ""}
           >
             <View
               style={{
@@ -311,32 +344,28 @@ export default function WellsDvt() {
                   lineHeight: 20,
                 }}
               >
-                {t("wells_page_disclaimer")}
+                {reference?.disclaimer[lang] ?? ""}
               </Text>
             </View>
           </CollapsibleCard>
 
           <CollapsibleCard
             title={t("tool_sources_title")}
-            subtitle={t("wells_sources_sub")}
+            subtitle={reference?.sourcesSub[lang] ?? ""}
           >
             <Subtle style={{ marginBottom: 8 }}>
-              {t("wells_sources_sub")}
+              {reference?.sourcesSub[lang] ?? ""}
             </Subtle>
 
             <View style={{ marginTop: 4 }}>
-              <SourceItem
-                title={t("wells_source_1_title")}
-                subtitle={t("wells_source_1_sub")}
-              />
-              <SourceItem
-                title={t("wells_source_2_title")}
-                subtitle={t("wells_source_2_sub")}
-              />
-              <SourceItem
-                title={t("wells_source_3_title")}
-                subtitle={t("wells_source_3_sub")}
-              />
+              {(reference?.sources ?? []).map((source) => (
+                <SourceItem
+                  key={source.id}
+                  title={source.title[lang]}
+                  subtitle={source.subtitle[lang]}
+                  url={source.url?.[lang]}
+                />
+              ))}
             </View>
           </CollapsibleCard>
         </ScrollView>

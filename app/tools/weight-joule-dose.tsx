@@ -19,6 +19,10 @@ import {
   type DoseUnit,
   type MedConfig,
 } from "../../src/state/settings";
+import {
+  getReference,
+  type ReferenceDoc,
+} from "../../src/services/referenceService";
 import { Background } from "../../src/ui/Background";
 import { CollapsibleCard } from "../../src/ui/CollapsibleCard";
 import {
@@ -259,6 +263,7 @@ export default function WeightJouleDose() {
   const { t } = useT();
 
   const [showSettings, setShowSettings] = useState(false);
+  const [reference, setReference] = useState<ReferenceDoc | null>(null);
 
   /** ---------- calculator state ---------- */
   const [ageYears, setAgeYears] = useState("");
@@ -293,6 +298,22 @@ export default function WeightJouleDose() {
 
   const SKETAMIN_URL =
     "https://drive.google.com/file/d/1qs-4YA5GqsrKTkKI2alWHGTk_4O4dH5W/view?usp=sharing";
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadReference() {
+      const data = await getReference("wjd");
+      if (!active) return;
+      setReference(data);
+    }
+
+    loadReference();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (isReady) setDraft(safeSettings);
@@ -1158,6 +1179,90 @@ export default function WeightJouleDose() {
 
   const lang = settings.language;
 
+  const fallbackSources = [
+    {
+      id: "wjd-fallback-1",
+      title:
+        lang === "da"
+          ? "Adrenalin – medicininstruks"
+          : "Adrenaline – medication instruction",
+      subtitle:
+        lang === "da"
+          ? "Akutberedskabet, Region Hovedstaden. Version, gældende dato og revisionsdato fremgår af dokumentet."
+          : "Emergency Medical Services, Capital Region. Version, effective date, and revision date appear in the document.",
+      url: ADRENALINE_URL,
+    },
+    {
+      id: "wjd-fallback-2",
+      title:
+        lang === "da"
+          ? "Amiodaron – medicininstruks"
+          : "Amiodarone – medication instruction",
+      subtitle:
+        lang === "da"
+          ? "Akutberedskabet, Region Hovedstaden. Version, gældende dato og revisionsdato fremgår af dokumentet."
+          : "Emergency Medical Services, Capital Region. Version, effective date, and revision date appear in the document.",
+      url: AMIODARON_URL,
+    },
+    {
+      id: "wjd-fallback-3",
+      title:
+        lang === "da"
+          ? "Fentanyl – medicininstruks"
+          : "Fentanyl – medication instruction",
+      subtitle:
+        lang === "da"
+          ? "Akutberedskabet, Region Hovedstaden. Version, gældende dato og revisionsdato fremgår af dokumentet."
+          : "Emergency Medical Services, Capital Region. Version, effective date, and revision date appear in the document.",
+      url: FENTANYL_URL,
+    },
+    {
+      id: "wjd-fallback-4",
+      title:
+        lang === "da"
+          ? "Heparin – medicininstruks"
+          : "Heparin – medication instruction",
+      subtitle:
+        lang === "da"
+          ? "Akutberedskabet, Region Hovedstaden. Version, gældende dato og revisionsdato fremgår af dokumentet."
+          : "Emergency Medical Services, Capital Region. Version, effective date, and revision date appear in the document.",
+      url: HEPARIN_URL,
+    },
+    {
+      id: "wjd-fallback-5",
+      title:
+        lang === "da"
+          ? "S-ketamin – medicininstruks"
+          : "S-ketamine – medication instruction",
+      subtitle:
+        lang === "da"
+          ? "Akutberedskabet, Region Hovedstaden. Version, gældende dato og revisionsdato fremgår af dokumentet."
+          : "Emergency Medical Services, Capital Region. Version, effective date, and revision date appear in the document.",
+      url: SKETAMIN_URL,
+    },
+    {
+      id: "wjd-fallback-6",
+      title:
+        lang === "da"
+          ? "Pædiatriske vægtestimater og energi"
+          : "Paediatric weight estimates and energy",
+      subtitle:
+        lang === "da"
+          ? "Vægt- og energiberegninger i dette værktøj er vejledende referenceberegninger og skal altid verificeres mod gældende officielle retningslinjer og lokale instrukser."
+          : "Weight and energy calculations in this tool are advisory reference calculations and must always be verified against current official guidance and local instructions.",
+    },
+  ];
+
+  const renderedSources =
+    reference?.sources && reference.sources.length > 0
+      ? reference.sources.map((source) => ({
+          id: source.id,
+          title: source.title[lang],
+          subtitle: source.subtitle[lang],
+          url: (source as any).url?.[lang] ?? (source as any).url ?? undefined,
+        }))
+      : fallbackSources;
+
   return (
     <Background>
       <Screen>
@@ -1382,7 +1487,7 @@ export default function WeightJouleDose() {
 
           <CollapsibleCard
             title={t("tool_disclaimer_title")}
-            subtitle={t("wjd_page_disclaimer")}
+            subtitle={reference?.disclaimer[lang] ?? t("wjd_page_disclaimer")}
           >
             <View
               style={{
@@ -1400,55 +1505,35 @@ export default function WeightJouleDose() {
                   lineHeight: 20,
                 }}
               >
-                {t("wjd_page_disclaimer")}
+                {reference?.disclaimer[lang] ?? t("wjd_page_disclaimer")}
               </Text>
             </View>
           </CollapsibleCard>
 
           <CollapsibleCard
             title={t("tool_sources_title")}
-            subtitle={t("wjd_sources_sub")}
+            subtitle={reference?.sourcesSub[lang] ?? t("wjd_sources_sub")}
           >
-            <Subtle style={{ marginBottom: 8 }}>{t("wjd_sources_sub")}</Subtle>
+            <Subtle style={{ marginBottom: 8 }}>
+              {reference?.sourcesSub[lang] ?? t("wjd_sources_sub")}
+            </Subtle>
 
             <View style={{ marginTop: 8 }}>
-              <SourceItem
-                title="Adrenalin – medicininstruks"
-                subtitle="Akutberedskabet, Region Hovedstaden. Version, gældende dato og revisionsdato fremgår af dokumentet."
-                url={ADRENALINE_URL}
-              />
-
-              <SourceItem
-                title="Amiodaron – medicininstruks"
-                subtitle="Akutberedskabet, Region Hovedstaden. Version, gældende dato og revisionsdato fremgår af dokumentet."
-                url={AMIODARON_URL}
-              />
-
-              <SourceItem
-                title="Fentanyl – medicininstruks"
-                subtitle="Akutberedskabet, Region Hovedstaden. Version, gældende dato og revisionsdato fremgår af dokumentet."
-                url={FENTANYL_URL}
-              />
-
-              <SourceItem
-                title="Heparin – medicininstruks"
-                subtitle="Akutberedskabet, Region Hovedstaden. Version, gældende dato og revisionsdato fremgår af dokumentet."
-                url={HEPARIN_URL}
-              />
-
-              <SourceItem
-                title="S-ketamin – medicininstruks"
-                subtitle="Akutberedskabet, Region Hovedstaden. Version, gældende dato og revisionsdato fremgår af dokumentet."
-                url={SKETAMIN_URL}
-              />
-
-              <SourceItem
-                title="Pædiatriske vægtestimater og energi"
-                subtitle="Vægt- og energiberegninger i dette værktøj er vejledende referenceberegninger og skal altid verificeres mod gældende officielle retningslinjer og lokale instrukser."
-              />
+              {renderedSources.map((source) => (
+                <SourceItem
+                  key={source.id}
+                  title={source.title}
+                  subtitle={source.subtitle}
+                  url={source.url}
+                />
+              ))}
 
               <SourceFolderLink
-                label="Åbn samlet mappe med medicinkilder"
+                label={
+                  lang === "da"
+                    ? "Åbn samlet mappe med medicinkilder"
+                    : "Open folder with medication sources"
+                }
                 url={MEDICINE_FOLDER_URL}
               />
             </View>

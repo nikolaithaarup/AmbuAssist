@@ -55,6 +55,11 @@ export default function Home() {
       path: "/tools/weight-joule-dose",
     },
     {
+      titleKey: "tool_trombolysis_title",
+      descKey: "tool_trombolysis_desc",
+      path: "/tools/trombolysis",
+    },
+    {
       titleKey: "tool_exams_title",
       descKey: "tool_exams_desc",
       path: "/tools/exams",

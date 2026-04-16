@@ -2,50 +2,294 @@ export type Lang = "en" | "da";
 export type Key = keyof typeof en;
 
 export const en = {
+  // =========================================================
+  // SHARED / APP
+  // =========================================================
+  appName: "AmbuAssist",
+  homeTagline: "Minimal tools for chaotic reality",
+  language: "Language",
+  english: "English",
+  danish: "Danish",
+  open: "Open",
+
+  loading: "Loading…",
+  save: "Save",
+  reset: "Reset",
+  cancel: "Cancel",
+  remove: "Remove",
+  add: "Add",
+  close: "Close",
+  default: "default",
+  yes: "Yes",
+  no: "No",
+  answer: "Answer",
+  back: "Back",
+
+  clinicalReminder:
+    "Clinical reminder: This tool supports assessment only. Always follow local guidelines and clinical judgment.",
+
+  tool_disclaimer_title: "Medical disclaimer",
+  tool_sources_title: "Sources and references",
+  tool_answered: "Answered:",
+  tool_filled: "Filled values:",
+
+  // =========================================================
+  // HOME TOOL CARDS
+  // =========================================================
+  tool_dest_title: "Destination",
+  tool_dest_desc: "Pick Byen/Regionen + diagnosis → destination hospital",
+
+  tool_trombolysis_title: "Thrombolysis",
+  tool_trombolysis_desc:
+    "Automatically shows the responsible hospital and phone number.",
+
+  tool_weightDose_title: "Weight → Joule + Doses",
+  tool_weightDose_desc: "Age → weight estimate → joules + configured meds",
+
+  tool_exams_title: "Clinical exams",
+  tool_exams_desc: "Quick bedside signs",
+
+  tool_assessment_title: "Assessment tools",
+  tool_assessment_desc: "Clinical scores, scales, and structured assessments",
+
+  tool_meddisc_title: "Medical disclaimer",
+  tool_meddisc_desc: "Important use, safety, and source information.",
+
+  tool_contact_title: "Contact & feedback",
+  tool_contact_desc: "Report bugs, suggest improvements, or get in touch.",
+
+  tool_about_title: "About",
+  tool_about_desc: "What AmbuAssist is, what it does, and what it does not do.",
+
+  // =========================================================
+  // ASSESSMENT SECTION CARDS
+  // =========================================================
+
+  tool_bloodgas_title: "Blood gas & patterns",
+  tool_bloodgas_desc:
+    "Interpret blood gas, lactate, glucose and infection indicators",
+
+  tool_bvc_title: "BVC",
+  tool_bvc_desc: "Brøset Violence Checklist",
+
+  tool_spine_title: "Spinal trauma",
+  tool_spine_desc: "Step through spine trauma stabilization flow",
+
+  tool_flacc_title: "FLACC",
+  tool_flacc_desc: "Pediatric pain score (0–10).",
+
+  tool_apgar_title: "APGAR",
+  tool_apgar_desc: "Newborn assessment score (0–10).",
+
+  tool_cfs_title: "CFS",
+  tool_cfs_desc: "Clinical Frailty Scale (1–9)",
+
+  tool_hints_title: "HINTS",
+  tool_hints_desc: "Step through HINTS+ and positional vertigo flow",
+
+  tool_neuro_title: "Neurological",
+  tool_neuro_desc: "NIHSS, PreSS and HINTS",
+
+  tool_news2_title: "NEWS2",
+  tool_news2_desc: "Vitals → NEWS2 score + escalation",
+
+  tool_wells_title: "Wells (DVT)",
+  tool_wells_desc: "DVT probability scoring",
+
+  tool_behaviouralGeriatric_title: "Behavioural & Geriatric",
+  tool_behaviouralGeriatric_desc: "BVC, ABC-STAMP and CFS",
+
+  tool_paediatric_title: "Paediatric",
+  tool_paediatric_desc: "APGAR, FLACC and paediatric assessments",
+
+  // =========================================================
+  // SECTION PAGES
+  // =========================================================
+  behaviouralGeriatric_title: "Behavioural & Geriatric",
+  behaviouralGeriatric_sub:
+    "Choose a behavioural or geriatric assessment tool.",
+
+  paediatric_title: "Paediatric",
+  paediatric_sub: "Choose a paediatric scoring system.",
+
+  neurological_title: "Neurological",
+  neurological_sub: "Choose a neurological scoring system.",
+
+  // =========================================================
+  // BLOOD GAS / LAB
+  // =========================================================
+
+  bg_label_po2: "pO₂ (kPa)",
+  bg_label_be: "Base excess, BE(b) (mmol/L)",
+  bg_label_so2: "cSO₂ (%)",
+  bg_label_na: "Na+ (mmol/L)",
+  bg_label_k: "K+ (mmol/L)",
+  bg_label_ca: "Ca++ (mmol/L)",
+  bg_label_cl: "Cl- (mmol/L)",
+  bg_label_urea: "Urea (mmol/L)",
+  bg_label_creatinine: "Creatinine (µmol/L)",
+  bg_label_hct: "Hct (%)",
+  bg_label_hgb: "cHgb (mmol/L)",
+
+  bg_pattern_hhs:
+    "Possible HHS pattern – marked hyperglycaemia without clear severe ketoacidosis pattern.",
+  bg_pattern_metabolic_acidosis:
+    "Metabolic acidosis pattern – low HCO₃⁻ / negative base excess with acidaemia.",
+  bg_pattern_hyponatremia: "Hyponatraemia pattern – sodium is reduced.",
+  bg_pattern_hypoxemia: "Hypoxaemia pattern – pO₂ is reduced.",
+  bg_pattern_low_so2: "Low oxygen saturation pattern – cSO₂ is reduced.",
+  bg_pattern_renal_impairment:
+    "Possible renal impairment pattern – urea and creatinine are elevated.",
+
+  bg_infection_lactate_elevated:
+    "Elevated lactate – consider hypoperfusion, sepsis, or significant physiological stress.",
+  bg_infection_stress_hyperglycemia:
+    "Hyperglycaemia may be stress-related, but should be interpreted clinically.",
+
+  bg_disclaimer: "Support tool only – not for diagnosis",
+  bg_no_pattern_found:
+    "No clear pattern suggestion based on the entered values.",
+
+  tool_bg_acidbase_title: "Acid-base helper",
+  tool_bg_acidbase_desc:
+    "Simple acid-base pattern support using pH, pCO₂, and HCO₃⁻.",
+
   tool_bg_patterns_title: "Pattern recognition",
-  tool_bg_patterns_desc: "Identify common blood gas and lab patterns",
+  tool_bg_patterns_desc: "Identify common blood gas and lab patterns.",
+
+  tool_bg_infection_title: "Infection helper",
+  tool_bg_infection_desc:
+    "Simple support for infection-related blood and urine findings.",
 
   bg_label_ph: "pH",
   bg_label_pco2: "pCO₂ (kPa)",
   bg_label_hco3: "HCO₃⁻ (mmol/L)",
   bg_label_glucose: "Glucose (mmol/L)",
   bg_label_lactate: "Lactate (mmol/L)",
-
-  bg_pattern_dka: "Possible DKA pattern – consider ketoacidosis",
-  bg_pattern_lactate_elevated:
-    "Elevated lactate – consider sepsis or hypoperfusion",
-  bg_pattern_lactate_high: "High lactate – urgent assessment for shock state",
-  bg_pattern_dehydration: "Pattern may fit dehydration / stress response",
-  bg_pattern_respiratory_acidosis: "Pattern may fit respiratory acidosis",
-
-  bg_disclaimer: "Support tool only – not for diagnosis",
-  result: "Result",
-  // BLOOD GAS MAIN
-  tool_bloodgas_title: "Blood gas & patterns",
-  tool_bloodgas_desc:
-    "Interpret blood gas, lactate, glucose and infection indicators",
-
-  // ACID-BASE
-  tool_bg_acidbase_title: "Acid–base analysis",
-  tool_bg_acidbase_desc: "Determine acidosis/alkalosis and likely cause",
-
-  // PATTERNS
-
-  // INFECTION
-  tool_bg_infection_title: "Infection indicators",
-  tool_bg_infection_desc: "CRP and urine interpretation",
-
-  // RESULT
-  lab_result: "Result",
-
-  // OPTIONAL LABELS (nice UX upgrade)
   bg_label_crp: "CRP (mg/L)",
   bg_label_nitrite: "Nitrite",
   bg_label_leukocytes: "Leukocytes",
-  bg_no_pattern_found:
-    "No clear pattern suggestion based on the entered values.",
 
-  // DISCLAIMERS
+  bg_acidbase_enter_values:
+    "Enter pH, pCO₂, and HCO₃⁻ to see an interpretation.",
+  bg_acidbase_disclaimer:
+    "Support tool only. Acid-base interpretation must always be verified against the full clinical picture, other laboratory values, and current local guidelines.",
+  bg_acidbase_sources_sub:
+    "Review the underlying references and verify against local guidelines.",
+
+  bg_acidbase_resp_acidosis_title: "Acidosis – respiratory pattern",
+  bg_acidbase_resp_acidosis_body:
+    "Low pH with elevated pCO₂ suggests a primary respiratory acidosis pattern.",
+  bg_acidbase_met_acidosis_title: "Acidosis – metabolic pattern",
+  bg_acidbase_met_acidosis_body:
+    "Low pH with low HCO₃⁻ suggests a primary metabolic acidosis pattern.",
+  bg_acidbase_mixed_acidosis_title: "Acidosis – mixed/combined pattern",
+  bg_acidbase_mixed_acidosis_body:
+    "Low pH with both elevated pCO₂ and low HCO₃⁻ suggests a mixed respiratory and metabolic acidosis.",
+  bg_acidbase_unclear_acidosis_title: "Acidosis – unclear pattern",
+  bg_acidbase_unclear_acidosis_body:
+    "Acidaemia is present, but the values do not fit a simple single-process pattern.",
+
+  bg_acidbase_resp_alkalosis_title: "Alkalosis – respiratory pattern",
+  bg_acidbase_resp_alkalosis_body:
+    "High pH with low pCO₂ suggests a primary respiratory alkalosis pattern.",
+  bg_acidbase_met_alkalosis_title: "Alkalosis – metabolic pattern",
+  bg_acidbase_met_alkalosis_body:
+    "High pH with elevated HCO₃⁻ suggests a primary metabolic alkalosis pattern.",
+  bg_acidbase_mixed_alkalosis_title: "Alkalosis – mixed/combined pattern",
+  bg_acidbase_mixed_alkalosis_body:
+    "High pH with both low pCO₂ and elevated HCO₃⁻ suggests a mixed respiratory and metabolic alkalosis.",
+  bg_acidbase_unclear_alkalosis_title: "Alkalosis – unclear pattern",
+  bg_acidbase_unclear_alkalosis_body:
+    "Alkalaemia is present, but the values do not fit a simple single-process pattern.",
+
+  bg_acidbase_comp_resp_acidosis_title:
+    "Near-normal pH – compensated respiratory acidosis possible",
+  bg_acidbase_comp_resp_acidosis_body:
+    "A near-normal pH with elevated pCO₂ and elevated HCO₃⁻ may reflect compensation.",
+  bg_acidbase_comp_resp_alkalosis_title:
+    "Near-normal pH – compensated respiratory alkalosis possible",
+  bg_acidbase_comp_resp_alkalosis_body:
+    "A near-normal pH with low pCO₂ and low HCO₃⁻ may reflect compensation.",
+  bg_acidbase_near_normal_title: "Acid-base status appears near normal",
+  bg_acidbase_near_normal_body:
+    "pH is within the normal range and the overall pattern is not obviously deranged.",
+
+  bg_acidbase_comp_metabolic_present:
+    "HCO₃⁻ may suggest metabolic/renal compensation.",
+  bg_acidbase_comp_metabolic_limited:
+    "Little or no metabolic compensation is apparent.",
+  bg_acidbase_comp_respiratory_present:
+    "pCO₂ may suggest respiratory compensation.",
+  bg_acidbase_comp_respiratory_limited:
+    "Little or no respiratory compensation is apparent.",
+  bg_acidbase_mixed_compensation:
+    "This may represent combined processes rather than simple compensation.",
+  bg_acidbase_verify_context:
+    "Interpret together with the clinical picture and the full blood gas.",
+  bg_acidbase_compensated_note:
+    "Consider compensation and correlate clinically.",
+  bg_acidbase_severe_acidemia: "Marked acidaemia",
+  bg_acidbase_severe_alkalemia: "Marked alkalaemia",
+
+  bg_acidbase_source_fallback_1_title: "Acid-base interpretation reference",
+  bg_acidbase_source_fallback_1_sub:
+    "Use approved local blood gas guidance, SOPs, and teaching materials.",
+  bg_acidbase_source_fallback_2_title: "Clinical verification required",
+  bg_acidbase_source_fallback_2_sub:
+    "This tool is advisory only and must be verified against the full blood gas and patient presentation.",
+
+  bg_patterns_enter_values:
+    "Enter one or more values to look for common patterns.",
+  bg_patterns_disclaimer:
+    "Support tool only. Pattern recognition is simplified and must always be interpreted with the full clinical picture and current local guidelines.",
+  bg_patterns_sources_sub:
+    "Review the underlying references and verify against local guidelines.",
+
+  bg_pattern_dka: "Possible DKA pattern – consider ketoacidosis.",
+  bg_pattern_lactate_elevated:
+    "Elevated lactate – consider infection, hypoperfusion, or metabolic stress.",
+  bg_pattern_lactate_high:
+    "High lactate – urgent assessment for shock or significant hypoperfusion is relevant.",
+  bg_pattern_dehydration: "Pattern may fit dehydration or stress response.",
+  bg_pattern_respiratory_acidosis:
+    "Respiratory acidosis pattern – low pH with elevated pCO₂.",
+
+  bg_patterns_source_fallback_1_title: "Pattern recognition reference",
+  bg_patterns_source_fallback_1_sub:
+    "Use approved local blood gas and laboratory guidance.",
+  bg_patterns_source_fallback_2_title: "Clinical verification required",
+  bg_patterns_source_fallback_2_sub:
+    "Patterns shown here are simplified and must always be verified clinically.",
+
+  bg_infection_enter_values:
+    "Enter CRP and/or urine findings to see supportive interpretation.",
+  bg_infection_disclaimer:
+    "Support tool only. CRP and urine findings are nonspecific and must always be interpreted together with history, examination, vital signs, and local guidelines.",
+  bg_infection_sources_sub:
+    "Review the underlying references and verify against local guidelines.",
+
+  bg_infection_crp_high:
+    "High CRP – consider significant inflammatory or infectious process.",
+  bg_infection_crp_moderate:
+    "Moderate CRP elevation – possible inflammatory or infectious process.",
+  bg_infection_uti_pattern:
+    "Nitrite and leukocytes present – consider UTI pattern.",
+  bg_infection_leukocytes_only:
+    "Leukocytes present – possible inflammation or infection.",
+  bg_infection_nitrite_only:
+    "Nitrite present – bacterial UTI may be relevant depending on symptoms.",
+
+  bg_infection_source_fallback_1_title: "Infection interpretation reference",
+  bg_infection_source_fallback_1_sub:
+    "Use approved local infection guidance and urinalysis interpretation guidance.",
+  bg_infection_source_fallback_2_title: "Clinical verification required",
+  bg_infection_source_fallback_2_sub:
+    "This tool is advisory only and must be verified against symptoms, examination, and local guidance.",
+
+  // =========================================================
+  // ABC-STAMP
+  // =========================================================
   abcstamp_title: "ABC-STAMP",
   abcstamp_sub: "Structured psychiatric assessment support",
   abcstamp_completedLabel: "Completed sections:",
@@ -109,21 +353,10 @@ export const en = {
   abcstamp_p_opt_perception_none: "No abnormal perceptions reported",
   abcstamp_p_opt_perception_voices: "Auditory hallucinations / voices reported",
   abcstamp_p_opt_perception_other: "Other perceptual disturbance",
-  tool_behaviouralGeriatric_title: "Behavioural & Geriatric",
-  tool_behaviouralGeriatric_desc: "BVC, ABC-STAMP and CFS",
 
-  behaviouralGeriatric_title: "Behavioural & Geriatric",
-  behaviouralGeriatric_sub:
-    "Choose a behavioural or geriatric assessment tool.",
-  dest_function_title: "Choose function",
-  tool_paediatric_title: "Paediatric",
-  tool_paediatric_desc: "APGAR, FLACC and paediatric assessments",
-
-  paediatric_title: "Paediatric",
-  paediatric_sub: "Choose a paediatric scoring system.",
-  neurological_title: "Neurological",
-  neurological_sub: "Choose a neurological scoring system.",
-
+  // =========================================================
+  // PRESS
+  // =========================================================
   press_title: "PreSS",
   press_sub: "Prehospital Stroke Score",
 
@@ -163,110 +396,9 @@ export const en = {
   press_source_3_title: "Local / regional guideline",
   press_source_3_sub: "Replace with your approved operational source.",
 
-  // Home
-  appName: "AmbuAssist",
-  homeTagline: "Minimal tools for chaotic reality",
-  language: "Language",
-  english: "English",
-  danish: "Danish",
-  open: "Open",
-
-  // Shared UI / common
-  loading: "Loading…",
-  save: "Save",
-  reset: "Reset",
-  cancel: "Cancel",
-  remove: "Remove",
-  add: "Add",
-  close: "Close",
-  default: "default",
-  yes: "Yes",
-  no: "No",
-  answer: "Answer",
-  back: "Back",
-
-  clinicalReminder:
-    "Clinical reminder: This tool supports assessment only. Always follow local guidelines and clinical judgment.",
-
-  tool_disclaimer_title: "Medical disclaimer",
-  tool_sources_title: "Sources and references",
-  tool_answered: "Answered:",
-  tool_filled: "Filled values:",
-
-  // Tool cards
-  tool_meddisc_title: "Medical disclaimer",
-  tool_meddisc_desc: "Important use, safety, and source information.",
-
-  tool_dest_title: "Destination",
-  tool_dest_desc: "Pick Byen/Regionen + diagnosis → destination hospital",
-
-  tool_weightDose_title: "Weight → Joule + Doses",
-  tool_weightDose_desc: "Age → weight estimate → joules + configured meds",
-
-  tool_exams_title: "Clinical exams",
-  tool_exams_desc: "Quick bedside signs",
-
-  tool_neuro_title: "Neurological",
-  tool_neuro_desc: "NIHSS, PreSS and HINTS",
-
-  tool_hints_title: "HINTS",
-  tool_hints_desc: "Step through HINTS+ and positional vertigo flow",
-
-  tool_news2_title: "NEWS2",
-  tool_news2_desc: "Vitals → NEWS2 score + escalation",
-
-  tool_wells_title: "Wells (DVT)",
-  tool_wells_desc: "DVT probability scoring",
-
-  tool_bvc_title: "BVC",
-  tool_bvc_desc: "Brøset Violence Checklist",
-
-  tool_spine_title: "Spinal trauma",
-  tool_spine_desc: "Step through spine trauma stabilization flow",
-
-  tool_flacc_title: "FLACC",
-  tool_flacc_desc: "Pediatric pain score (0–10).",
-
-  tool_apgar_title: "APGAR",
-  tool_apgar_desc: "Newborn assessment score (0–10).",
-
-  tool_cfs_title: "CFS",
-  tool_cfs_desc: "Clinical Frailty Scale (1–9)",
-
-  tool_settings_title: "Settings",
-  tool_settings_desc: "Weight formula, default J/kg, med dose list",
-
-  // Medical disclaimer page
-  meddisc_title: "Medical disclaimer",
-  meddisc_sub:
-    "Important information about safe use of AmbuAssist and its clinical tools.",
-
-  meddisc_section_use_title: "Intended use",
-  meddisc_use_1:
-    "AmbuAssist is intended as a reference and support tool for trained users.",
-  meddisc_use_2:
-    "The app does not replace clinical judgment, local guidelines, physician advice, or supervision.",
-  meddisc_use_3:
-    "Information and calculations in the app must always be interpreted in the full clinical context.",
-  meddisc_use_4:
-    "Users are responsible for checking whether the tool content matches local practice, approved medicines, and applicable protocols.",
-
-  meddisc_section_warning_title: "Important warning",
-  meddisc_warning_body:
-    "Do not use AmbuAssist as the sole basis for diagnosis, triage, medication administration, transport decisions, or other treatment decisions. Always follow local instructions and seek a qualified doctor’s advice when relevant before making medical decisions.",
-
-  meddisc_section_sources_title: "Sources and references",
-  meddisc_sources_body:
-    "Medical tools in AmbuAssist should be used together with clearly stated sources, guidelines, or validated scoring systems. Source information for individual tools should be easy to find in the relevant tool screens.",
-
-  meddisc_section_emergency_title: "Emergency use",
-  meddisc_emergency_body:
-    "In urgent or life-threatening situations, follow your local emergency procedures, approved guidelines, and supervising clinical direction. Delays caused by app use must always be avoided.",
-
-  meddisc_footer:
-    "This app is a support tool — not a substitute for professional medical assessment.",
-
-  // Weight / Joule / Dose
+  // =========================================================
+  // WEIGHT / JOULE / DOSES
+  // =========================================================
   wjd_title: "Weight → Joule + Doses",
   wjd_sub: "Age → estimated kg → joules + your configured medication list.",
   wjd_age: "Age",
@@ -310,7 +442,9 @@ export const en = {
   wjd_source_3_sub:
     "Always verify concentration, formulation, route, and maximum dose before medication administration.",
 
+  // =========================================================
   // NEWS2
+  // =========================================================
   news2_title: "NEWS2",
   news2_sub: "Enter values — score and escalation update live.",
   news2_scale: "SpO₂ scale",
@@ -343,7 +477,6 @@ export const en = {
 
   news2_page_disclaimer:
     "NEWS2 supports a structured assessment of acute illness, but it does not replace clinical judgement, local escalation instructions, or medical assessment. The score must not stand alone when making decisions about diagnosis, treatment, or destination.",
-  // NEWS2
   news2_sources_sub:
     "NEWS2 should be used in accordance with the Royal College of Physicians NEWS2 report and local escalation guidance.",
   news2_source_1_title:
@@ -358,9 +491,9 @@ export const en = {
   news2_source_3_sub:
     "Use together with current local instructions for monitoring frequency, escalation, and referral pathways.",
 
-  // NIHSS
-
-  // Wells
+  // =========================================================
+  // WELLS (DVT)
+  // =========================================================
   wells_title: "Wells score (DVT)",
   wells_sub: "Tick findings — score and interpretation update live.",
   wells_score: "Score",
@@ -378,7 +511,6 @@ export const en = {
     "The Wells DVT score is a clinical prediction tool and must not be used alone to confirm or exclude deep vein thrombosis. The score must always be interpreted together with history, examination, differential diagnoses, and local diagnostic guidance.",
   wells_result_disclaimer:
     "The result is advisory only and does not replace imaging, D-dimer strategy, medical assessment, or local instructions.",
-  // Wells
   wells_sources_sub:
     "The Wells DVT score should be used with validated pre-test probability references and current diagnostic guidance.",
   wells_source_1_title:
@@ -393,7 +525,9 @@ export const en = {
   wells_source_3_sub:
     "Use together with current local instructions for D-dimer strategy, ultrasound referral, escalation, and anticoagulation decisions.",
 
+  // =========================================================
   // NIHSS
+  // =========================================================
   nihss_title: "NIHSS",
   nihss_sub: "Select one option per item — total updates live.",
   nihss_scoreLabel: "NIHSS:",
@@ -484,7 +618,6 @@ export const en = {
     "NIHSS is a structured neurological assessment tool and must not be used as the sole basis for diagnosis, destination choice, thrombolysis considerations, or other treatment decisions. The score must always be interpreted together with the overall clinical picture, local stroke guidance, and clinical judgement.",
   nihss_result_disclaimer:
     "Severity groups are advisory only and do not replace local stroke assessment or medical guidance.",
-  // NIHSS
   nihss_sources_sub:
     "NIHSS content should follow the original NIH Stroke Scale publication, stroke guideline material, and local stroke pathways.",
   nihss_source_1_title:
@@ -500,7 +633,9 @@ export const en = {
   nihss_source_3_sub:
     "Use together with current prehospital stroke triage, destination, imaging, and escalation procedures.",
 
+  // =========================================================
   // BVC
+  // =========================================================
   bvc_title: "BVC",
   bvc_sub: "Brøset Violence Checklist — tick observed behaviours.",
   bvc_scoreLabel: "BVC:",
@@ -521,22 +656,21 @@ export const en = {
     "The BVC score is advisory only and must be interpreted together with behaviour, history, environment, and local safety guidance.",
   bvc_sources_sub:
     "BVC should be used together with validated short-term violence-risk references and local safety procedures.",
-
   bvc_source_1_title:
     "Woods & Almvik et al. – The Brøset Violence Checklist (2002)",
   bvc_source_1_sub:
     "Original publication describing the Brøset Violence Checklist as a short-term violence prediction instrument.",
-
   bvc_source_2_title:
     "Short-term risk prediction: the Brøset Violence Checklist",
   bvc_source_2_sub:
     "Supporting literature on short-term prediction of threatening or violent behaviour in psychiatric settings.",
-
   bvc_source_3_title: "Local psychiatric / prehospital safety guidance",
   bvc_source_3_sub:
     "Use together with current local procedures for de-escalation, scene safety, observation, escalation, and staff protection.",
 
-  // Exams
+  // =========================================================
+  // EXAMS
+  // =========================================================
   exams_title: "Clinical exams & signs",
   exams_sub:
     "Tap an item to expand. Use as a memory aid — guidelines and context win.",
@@ -677,6 +811,16 @@ export const en = {
   ex_raccoon_pos: "Periorbital ecchymosis (bruising).",
   ex_raccoon_ind: "Basilar skull fracture.",
 
+  ex_dix_hallpike_title: "Dix-Hallpike test",
+  ex_dix_hallpike_how:
+    "Turn the patient's head 45° to one side, then quickly lower them from sitting to supine with the head extended about 20° below horizontal. Observe the eyes for nystagmus and ask about vertigo. Repeat on the other side.",
+  ex_dix_hallpike_pos:
+    "Reproduction of vertigo with characteristic positional nystagmus after a short latency, typically fatigable and worse on one side.",
+  ex_dix_hallpike_ind:
+    "Suggests benign paroxysmal positional vertigo (BPPV), usually involving the posterior semicircular canal on the affected side.",
+  ex_dix_hallpike_pre:
+    "Use with caution in patients with neck pain, cervical spine instability, vascular risk, trauma, or inability to tolerate positioning. A negative test does not exclude central causes of vertigo.",
+
   exams_page_disclaimer:
     "These examination signs are intended as teaching and support content only. They must not be used alone to confirm a diagnosis, exclude serious illness, or determine treatment. Findings must always be interpreted in the full clinical context and according to local guidance.",
   exams_item_disclaimer:
@@ -693,7 +837,9 @@ export const en = {
   exams_source_3_sub:
     "Follow current local guidance for referral, escalation, and acute management.",
 
+  // =========================================================
   // HINTS
+  // =========================================================
   hints_flowchart: "Flowchart",
   hints_result: "Result",
   hints_selections: "Your selections",
@@ -702,7 +848,6 @@ export const en = {
     "HINTS+ is intended for selected patients with Acute Vestibular Syndrome and requires correct examination technique together with the appropriate clinical context. It does not replace broader neurological assessment, stroke evaluation, imaging pathways, or senior clinical judgement when indicated.",
   hints_result_disclaimer:
     "This result is advisory only. If examination quality is uncertain, symptoms are atypical, or risk is high, follow the higher-risk pathway and local stroke or neurological guidance.",
-  // HINTS
   hints_sources_sub:
     "HINTS+ and related dizziness assessment should be used in accordance with the original AVS literature, modern dizziness guidance, and local stroke pathways.",
   hints_source_1_title:
@@ -717,7 +862,9 @@ export const en = {
   hints_source_3_sub:
     "Follow current local procedures for escalation, imaging, and specialist assessment when a central cause is suspected.",
 
-  // Spinal trauma
+  // =========================================================
+  // SPINAL TRAUMA
+  // =========================================================
   spine_title: "Spinal trauma flow",
   spine_sub: "Quick decision flow for when spinal stabilization is indicated.",
 
@@ -779,7 +926,6 @@ export const en = {
     "This spinal trauma flow is a support tool only. It does not replace ABCDE assessment, clinical judgement, local trauma guidance, or medical direction. If the patient is unstable, or the clinical picture is unclear, follow the higher-risk pathway and local guidance.",
   spine_result_disclaimer:
     "The suggested result is advisory only and must be interpreted together with mechanism of injury, examination findings, neurological deficits, and local trauma guidance.",
-  // Spinal trauma
   spine_sources_sub:
     "Assessment of spinal trauma should follow Danish spinal-stabilisation guidance, trauma principles, and local prehospital procedures.",
   spine_source_1_title:
@@ -794,43 +940,28 @@ export const en = {
   spine_source_3_sub:
     "Follow current local procedures for ABCDE priorities, handling, transport, spinal motion restriction, and escalation.",
 
-  // Destination
+  // =========================================================
+  // DESTINATION
+  // =========================================================
   dest_title: "Destination helper",
   dest_sub: "Choose area, then street/district/municipality and category.",
+  dest_function_title: "Choose function",
   dest_area: "Area",
   dest_byen: "Byen",
   dest_region: "Regionen",
   dest_find_street: "Street search",
-  dest_find_street_sub:
-    "Type a street and get the district (only a small demo list in the code).",
   dest_street_placeholder: "Street (e.g. Amagertorv)",
   dest_no_street_match: "No match in the current street list.",
-  dest_byen_pick: "District + category",
-  dest_byen_pick_sub:
-    "Choose district and category to get the destination hospital.",
   dest_bydel: "District",
-  dest_region_pick: "Municipality + specialty",
-  dest_region_pick_sub:
-    "Choose municipality and specialty category to suggest destination.",
   dest_kommune: "Municipality",
   dest_category: "Category",
   dest_result: "Result",
   dest_pick_more:
     "Select area + (district/municipality) + category to get a destination.",
   dest_destination: "Destination",
-  dest_context: "Context",
-  dest_code: "Code",
   dest_unknown:
     "No mapped destination was found for this combination. Verify against current local guidance.",
-  dest_region_note:
-    "Note: Region mapping is a starter scaffold. Expand it to match the official tables.",
-  dest_data_title: "Data",
-  dest_data_sub:
-    "Mapping lives in app/tools/destination.tsx as plain objects. It can later be moved to JSON.",
 
-  dest_use_location_title: "Use current location",
-  dest_use_location_sub:
-    "Find street/district in Byen mode or municipality in Region mode.",
   dest_use_location_btn: "Use current location",
   dest_detecting: "Finding location...",
   dest_detected: "Detected",
@@ -858,8 +989,6 @@ export const en = {
 
   dest_page_disclaimer:
     "This destination tool is a logistical support tool only. It does not replace local destination rules, current hospital capacity, specialty-specific pathways, medical triage, or real-time operational leadership. Always verify the destination against current local instructions before transport.",
-  dest_result_disclaimer:
-    "Suggested destinations are advisory only and must be checked against current destination rules, pathway criteria, and operational updates.",
   dest_sources_sub:
     "Destination suggestions should be based on current local destination documents, specialty pathways, and operational guidance.",
   dest_source_1_title: "Region H destination guidance (internal)",
@@ -872,7 +1001,6 @@ export const en = {
   dest_source_3_sub:
     "Follow current dispatch, physician, and regional coordination guidance if it differs from static mapping.",
 
-  // Destination categories (Byen)
   dest_cat_hospital: "Hospital (default)",
   dest_cat_medicin: "Medicine",
   dest_cat_reuma: "Rheumatology",
@@ -885,7 +1013,6 @@ export const en = {
   dest_cat_gyn: "Gynecology",
   dest_cat_uro: "Urology",
 
-  // Destination categories (Region)
   dest_reg_traumecenter: "Trauma center",
   dest_reg_akutmodtagelse: "Emergency department",
   dest_reg_med_modtagelse: "Medical receiving",
@@ -926,7 +1053,6 @@ export const en = {
   dest_reg_arbejds: "Occupational and environmental medicine",
   dest_reg_social: "Social medicine",
 
-  // Hospital labels
   dest_h_AMH: "Amager Hospital (AMH)",
   dest_h_BBH: "Bispebjerg Hospital (BBH)",
   dest_h_FRH: "Frederiksberg Hospital (FRH)",
@@ -938,7 +1064,36 @@ export const en = {
   dest_h_RH: "Rigshospitalet (RH)",
   dest_h_UNKNOWN: "Unknown",
 
+  // =========================================================
+  // TROMBOLYSIS
+  // =========================================================
+  trombolysis_title: "Thrombolysis",
+  trombolysis_sub:
+    "Automatically shows who is responsible for thrombolysis visitation right now.",
+  trombolysis_current_title: "Current responsibility",
+  trombolysis_contact_title: "Contact",
+  trombolysis_responsible: "Responsible",
+  trombolysis_next_switch: "Next switch:",
+  trombolysis_loading_number: "Loading phone number...",
+  trombolysis_number_label: "Phone number:",
+  trombolysis_number_not_found: "No phone number found.",
+  trombolysis_call_btn: "Call",
+  trombolysis_main_fallback:
+    "Specialty number not found – showing the hospital main number.",
+  trombolysis_disclaimer:
+    "This tool is advisory only. The phone number and destination responsibility must always be verified against current regional guidelines and local instructions.",
+  trombolysis_call_error_title: "Could not open call",
+  trombolysis_call_error_body: "Could not start the call.",
+  trombolysis_rh: "Rigshospitalet",
+  trombolysis_bbh: "Bispebjerg Hospital",
+  trombolysis_current_time: "Current time",
+  trombolysis_info_title: "Information",
+  trombolysis_rule:
+    "RH covers odd dates, and BBH covers even dates. Responsibility changes every day at 08:00.",
+
+  // =========================================================
   // CFS
+  // =========================================================
   cfs_title: "Clinical Frailty Scale (CFS)",
   cfs_sub:
     "Choose the level that best matches the patient’s baseline function (not just today’s illness).",
@@ -952,35 +1107,27 @@ export const en = {
   cfs_1_title: "Very fit",
   cfs_1_desc:
     "Robust, active, energetic, and motivated. Exercises regularly and is among the fittest for their age.",
-
   cfs_2_title: "Fit",
   cfs_2_desc:
     "No active disease symptoms, but less fit than level 1. Often exercises or is very active occasionally (e.g. seasonally).",
-
   cfs_3_title: "Managing well",
   cfs_3_desc:
     "Medical problems are well controlled, even if occasionally symptomatic. Not regularly active beyond routine walking.",
-
   cfs_4_title: "Living with very mild frailty",
   cfs_4_desc:
     "Not dependent on help for daily activities, but symptoms often limit activity. Commonly feels slowed up and/or tired during the day.",
-
   cfs_5_title: "Living with mild frailty",
   cfs_5_desc:
     "More evident slowing. Needs help with higher-order IADLs (finances, transport, heavy housework). Shopping, walking outside alone, meal prep, and medication handling may be affected.",
-
   cfs_6_title: "Living with moderate frailty",
   cfs_6_desc:
     "Needs help with all outside activities and with keeping house. Often has problems with stairs. Needs help with bathing and may need minimal assistance (cueing/standby) with dressing.",
-
   cfs_7_title: "Living with severe frailty",
   cfs_7_desc:
     "Completely dependent for personal care (physical or cognitive). Still appears stable and is not at high risk of dying within about 6 months.",
-
   cfs_8_title: "Living with very severe frailty",
   cfs_8_desc:
     "Completely dependent for personal care and approaching end of life. Typically could not recover even from a minor illness.",
-
   cfs_9_title: "Terminally ill",
   cfs_9_desc:
     "Approaching end of life with life expectancy under 6 months, but not otherwise living with severe frailty. Many remain active until very close to death.",
@@ -991,21 +1138,20 @@ export const en = {
     "CFS should be interpreted in the context of the patient’s usual baseline function, current illness, collateral history, and local guidance.",
   cfs_sources_sub:
     "CFS should be used in accordance with the official Clinical Frailty Scale material, Danish translation work, and local clinical guidance.",
-
   cfs_source_1_title: "Clinical Frailty Scale (official scale material)",
   cfs_source_1_sub:
     "Official Clinical Frailty Scale resource from the Geriatric Medicine Research group / Dalhousie University.",
-
   cfs_source_2_title:
     "Danish translation and validation of the Clinical Frailty Scale",
   cfs_source_2_sub:
     "Danish translation and cross-sector reliability work supporting clinical use in Danish healthcare settings.",
-
   cfs_source_3_title: "Local geriatric / acute medicine guidance",
   cfs_source_3_sub:
     "Interpret the score together with baseline function, collateral history, acute illness, and current local clinical guidance.",
 
+  // =========================================================
   // FLACC
+  // =========================================================
   flacc_title: "FLACC score",
   flacc_sub:
     "Behavioural pain assessment (Face, Legs, Activity, Cry, Consolability). Choose one option per category.",
@@ -1049,22 +1195,21 @@ export const en = {
     "The FLACC score must be interpreted with caution and must never be used as the sole basis for pain-treatment decisions.",
   flacc_sources_sub:
     "FLACC should be used in accordance with validated pediatric pain-assessment references and local pediatric guidance.",
-
   flacc_source_1_title:
     "Merkel et al. – FLACC Behavioral Pain Assessment Scale (1997)",
   flacc_source_1_sub:
     "Original publication describing FLACC as a behavioral pain scale for children who may not be able to verbalize pain.",
-
   flacc_source_2_title:
     "Validation studies for FLACC in pediatric pain assessment",
   flacc_source_2_sub:
     "Supporting literature on validity and reliability of FLACC for clinical and procedural pain assessment in children.",
-
   flacc_source_3_title: "AAP pediatric pain assessment guidance",
   flacc_source_3_sub:
     "Use together with broader pediatric pain-assessment principles, reassessment after intervention, and local pediatric treatment guidance.",
 
+  // =========================================================
   // APGAR
+  // =========================================================
   apgar_title: "APGAR score",
   apgar_sub: "Newborn assessment. Choose one option per category (0–2).",
   apgar_appearance_title: "Appearance (skin color)",
@@ -1117,7 +1262,10 @@ export const en = {
   apgar_source_3_sub:
     "Follow current local guidance for newborn assessment, escalation, and treatment.",
 
-  // Settings
+  // =========================================================
+  // SETTINGS
+  // =========================================================
+  result: "Result",
   settings_title: "Settings",
   settings_sub: "These affect tools across the app (saved on device).",
   settings_weight_title: "Weight estimation",
@@ -1144,15 +1292,12 @@ export const en = {
   settings_med_name_placeholder: "Medicine name",
   settings_med_dose: "Dose",
 
-  tool_assessment_title: "Assessment tools",
-  tool_assessment_desc: "Clinical scores, scales, and structured assessments",
+  tool_settings_title: "Settings",
+  tool_settings_desc: "Weight formula, default J/kg, med dose list",
 
-  tool_contact_title: "Contact & feedback",
-  tool_contact_desc: "Report bugs, suggest improvements, or get in touch.",
-
-  tool_about_title: "About",
-  tool_about_desc: "What AmbuAssist is, what it does, and what it does not do.",
-
+  // =========================================================
+  // CONTACT
+  // =========================================================
   contact_title: "Contact & feedback",
   contact_sub:
     "Report bugs, suggest improvements, or get in touch about the app.",
@@ -1194,6 +1339,9 @@ export const en = {
   contact_email_body_version: "App version (if known)",
   contact_email_body_notes: "Additional notes",
 
+  // =========================================================
+  // ABOUT
+  // =========================================================
   about_title: "About AmbuAssist",
   about_sub:
     "A lightweight support app for prehospital and clinical reference use.",
@@ -1233,6 +1381,23 @@ export const en = {
   about_feedback_body:
     "If you find a bug, spot outdated content, or have ideas for improving the app, please use the Contact & feedback page.",
 
+  // =========================================================
+  // MEDICAL DISCLAIMER
+  // =========================================================
+  meddisc_title: "Medical disclaimer",
+  meddisc_sub:
+    "Important information about safe use of AmbuAssist and its clinical tools.",
+
+  meddisc_section_use_title: "Intended use",
+  meddisc_use_1:
+    "AmbuAssist is intended as a reference and support tool for trained users.",
+  meddisc_use_2:
+    "The app does not replace clinical judgment, local guidelines, physician advice, or supervision.",
+  meddisc_use_3:
+    "Information and calculations in the app must always be interpreted in the full clinical context.",
+  meddisc_use_4:
+    "Users are responsible for checking whether the tool content matches local practice, approved medicines, and applicable protocols.",
+
   meddisc_section_users_title: "Intended users",
   meddisc_users_1:
     "AmbuAssist is intended for trained healthcare personnel and students working under approved supervision.",
@@ -1240,6 +1405,10 @@ export const en = {
     "The app is not intended for self-diagnosis, self-treatment, or use by untrained members of the public.",
   meddisc_users_3:
     "Some tools require specific clinical training, correct examination technique, and knowledge of local escalation pathways.",
+
+  meddisc_section_warning_title: "Important warning",
+  meddisc_warning_body:
+    "Do not use AmbuAssist as the sole basis for diagnosis, triage, medication administration, transport decisions, or other treatment decisions. Always follow local instructions and seek a qualified doctor’s advice when relevant before making medical decisions.",
 
   meddisc_section_method_title: "Clinical basis and methodology",
   meddisc_method_1:
@@ -1250,6 +1419,10 @@ export const en = {
     "Scores, checklists, and flows in the app simplify bedside support and do not reproduce the full clinical context, exclusions, or operational exceptions from all local documents.",
   meddisc_method_4:
     "If a source, workflow, score threshold, or local practice changes, local and current approved guidance always takes priority over the app.",
+
+  meddisc_section_sources_title: "Sources and references",
+  meddisc_sources_body:
+    "Medical tools in AmbuAssist should be used together with clearly stated sources, guidelines, or validated scoring systems. Source information for individual tools should be easy to find in the relevant tool screens.",
 
   meddisc_sources_note_title: "About tool-specific references",
   meddisc_sources_note_body:
@@ -1263,6 +1436,10 @@ export const en = {
   meddisc_region_3:
     "If local, regional, employer, physician, or dispatch guidance differs from the app, follow the current approved local guidance.",
 
+  meddisc_section_emergency_title: "Emergency use",
+  meddisc_emergency_body:
+    "In urgent or life-threatening situations, follow your local emergency procedures, approved guidelines, and supervising clinical direction. Delays caused by app use must always be avoided.",
+
   meddisc_section_updates_title: "Content review and updates",
   meddisc_updates_1:
     "Clinical content should be reviewed and updated whenever local guidance, named tools, or operational pathways change.",
@@ -1271,19 +1448,14 @@ export const en = {
   meddisc_updates_3:
     "Absence of an updated source on a tool page should be treated as a reason to verify the content in an approved reference before relying on it.",
 
-  ex_dix_hallpike_title: "Dix-Hallpike test",
-  ex_dix_hallpike_how:
-    "Turn the patient's head 45° to one side, then quickly lower them from sitting to supine with the head extended about 20° below horizontal. Observe the eyes for nystagmus and ask about vertigo. Repeat on the other side.",
-  ex_dix_hallpike_pos:
-    "Reproduction of vertigo with characteristic positional nystagmus after a short latency, typically fatigable and worse on one side.",
-  ex_dix_hallpike_ind:
-    "Suggests benign paroxysmal positional vertigo (BPPV), usually involving the posterior semicircular canal on the affected side.",
-  ex_dix_hallpike_pre:
-    "Use with caution in patients with neck pain, cervical spine instability, vascular risk, trauma, or inability to tolerate positioning. A negative test does not exclude central causes of vertigo.",
+  meddisc_footer:
+    "This app is a support tool — not a substitute for professional medical assessment.",
 };
 
 export const da: typeof en = {
-  // Home
+  // =========================================================
+  // SHARED / APP
+  // =========================================================
   appName: "AmbuAssist",
   homeTagline: "Små værktøjer til kaotisk virkelighed",
   language: "Sprog",
@@ -1291,9 +1463,7 @@ export const da: typeof en = {
   danish: "Dansk",
   open: "Åbn",
 
-  // Shared UI / common
   loading: "Indlæser…",
-  result: "Resultat",
   save: "Gem",
   reset: "Nulstil",
   cancel: "Annuller",
@@ -1314,12 +1484,15 @@ export const da: typeof en = {
   tool_answered: "Besvaret:",
   tool_filled: "Udfyldte værdier:",
 
-  // Tool cards
-  tool_meddisc_title: "Medicinsk disclaimer",
-  tool_meddisc_desc: "Vigtig info om brug, sikkerhed og kilder.",
-
+  // =========================================================
+  // HOME TOOL CARDS
+  // =========================================================
   tool_dest_title: "Destination",
   tool_dest_desc: "Vælg Byen/Regionen + diagnose → destinationshospital",
+
+  tool_trombolysis_title: "Trombolyse",
+  tool_trombolysis_desc:
+    "Viser automatisk ansvarligt visitationshospital og telefonnummer.",
 
   tool_weightDose_title: "Vægt → Joule + Doser",
   tool_weightDose_desc: "Alder → vægtestimat → joule + valgte lægemidler",
@@ -1327,17 +1500,24 @@ export const da: typeof en = {
   tool_exams_title: "Kliniske undersøgelser",
   tool_exams_desc: "Hurtige bedside-tegn",
 
-  tool_neuro_title: "Neurologisk",
-  tool_neuro_desc: "NIHSS, PreSS og HINTS",
+  tool_assessment_title: "Vurderingsværktøjer",
+  tool_assessment_desc: "Kliniske scores, skalaer og strukturerede vurderinger",
 
-  tool_hints_title: "HINTS",
-  tool_hints_desc: "Gå trin for trin gennem HINTS+ og positionssvimmelhed.",
+  tool_meddisc_title: "Medicinsk disclaimer",
+  tool_meddisc_desc: "Vigtig info om brug, sikkerhed og kilder.",
 
-  tool_news2_title: "NEWS2",
-  tool_news2_desc: "Vitalparametre → NEWS2-score + eskalation",
+  tool_contact_title: "Kontakt & feedback",
+  tool_contact_desc: "Rapportér fejl, kom med forslag, eller kontakt os.",
 
-  tool_wells_title: "Wells (DVT)",
-  tool_wells_desc: "Sandsynlighedsscore for DVT",
+  tool_about_title: "Om appen",
+  tool_about_desc: "Hvad AmbuAssist er, hvad den gør, og hvad den ikke gør.",
+
+  // =========================================================
+  // ASSESSMENT SECTION CARDS
+  // =========================================================
+
+  tool_bloodgas_title: "Blodgas fortolkning",
+  tool_bloodgas_desc: "Fortolk blodgas, laktat, glukose og infektionsparametre",
 
   tool_bvc_title: "BVC",
   tool_bvc_desc: "Brøset Violence Checklist",
@@ -1354,40 +1534,323 @@ export const da: typeof en = {
   tool_cfs_title: "CFS",
   tool_cfs_desc: "Clinical Frailty Skala (1–9)",
 
+  tool_hints_title: "HINTS",
+  tool_hints_desc: "Gå trin for trin gennem HINTS+ og positionssvimmelhed.",
+
+  tool_neuro_title: "Neurologisk",
+  tool_neuro_desc: "NIHSS, PreSS og HINTS",
+
+  tool_news2_title: "NEWS2",
+  tool_news2_desc: "Vitalparametre → NEWS2-score + eskalation",
+
+  tool_wells_title: "Wells (DVT)",
+  tool_wells_desc: "Sandsynlighedsscore for DVT",
+
+  tool_behaviouralGeriatric_title: "Adfærd & Geriatri",
+  tool_behaviouralGeriatric_desc: "BVC, ABC-STAMP og CFS",
+
+  tool_paediatric_title: "Pædiatrisk",
+  tool_paediatric_desc: "APGAR, FLACC og pædiatriske vurderinger",
+
   tool_settings_title: "Indstillinger",
   tool_settings_desc: "Vægtestimat, standard J/kg, medicinliste",
 
-  // Medical disclaimer page
-  meddisc_title: "Medicinsk disclaimer",
-  meddisc_sub:
-    "Vigtig information om sikker brug af AmbuAssist og appens kliniske værktøjer.",
+  // =========================================================
+  // SECTION PAGES
+  // =========================================================
+  behaviouralGeriatric_title: "Adfærd & Geriatri",
+  behaviouralGeriatric_sub:
+    "Vælg et adfærds- eller geriatrisk vurderingsværktøj.",
 
-  meddisc_section_use_title: "Tilsigtet brug",
-  meddisc_use_1:
-    "AmbuAssist er tænkt som et opslags- og støtteværktøj til uddannede brugere.",
-  meddisc_use_2:
-    "Appen erstatter ikke klinisk vurdering, lokale retningslinjer, lægefaglig rådgivning eller supervision.",
-  meddisc_use_3:
-    "Information og beregninger i appen skal altid tolkes i den samlede kliniske kontekst.",
-  meddisc_use_4:
-    "Brugeren har ansvar for at kontrollere, om indholdet passer med lokal praksis, godkendte lægemidler og gældende instrukser.",
+  paediatric_title: "Pædiatrisk",
+  paediatric_sub: "Vælg et pædiatrisk scoresystem.",
 
-  meddisc_section_warning_title: "Vigtig advarsel",
-  meddisc_warning_body:
-    "AmbuAssist må ikke bruges som eneste grundlag for diagnose, triage, medicingivning, visitationsbeslutninger eller andre behandlingsbeslutninger. Følg altid lokale instrukser og søg relevant lægefaglig rådgivning, før der træffes medicinske beslutninger.",
+  neurological_title: "Neurologisk",
+  neurological_sub: "Vælg et neurologisk scoresystem.",
 
-  meddisc_section_sources_title: "Kilder og referencer",
-  meddisc_sources_body:
-    "De medicinske værktøjer i AmbuAssist bør bruges sammen med tydeligt angivne kilder, retningslinjer eller validerede scoringssystemer. Kildeoplysninger for de enkelte værktøjer bør være lette at finde på de relevante værktøjssider.",
+  // =========================================================
+  // BLODGAS / LAB
+  // =========================================================
+  bg_label_po2: "pO₂ (kPa)",
+  bg_label_be: "Base excess, BE(b) (mmol/L)",
+  bg_label_so2: "cSO₂ (%)",
+  bg_label_na: "Na+ (mmol/L)",
+  bg_label_k: "K+ (mmol/L)",
+  bg_label_ca: "Ca++ (mmol/L)",
+  bg_label_cl: "Cl- (mmol/L)",
+  bg_label_urea: "Urea (mmol/L)",
+  bg_label_creatinine: "Kreatinin (µmol/L)",
+  bg_label_hct: "Hct (%)",
+  bg_label_hgb: "cHgb (mmol/L)",
 
-  meddisc_section_emergency_title: "Brug i akutte situationer",
-  meddisc_emergency_body:
-    "I akutte eller livstruende situationer skal du følge lokale akutprocedurer, godkendte retningslinjer og klinisk ansvarlig ledelse. Brug af appen må aldrig forsinke nødvendig behandling.",
+  bg_pattern_hhs:
+    "Muligt HHS-mønster – udtalt hyperglykæmi uden tydeligt svært ketoacidosemønster.",
+  bg_pattern_metabolic_acidosis:
+    "Metabolisk acidosemønster – lav HCO₃⁻ / negativ base excess sammen med acidæmi.",
+  bg_pattern_hyponatremia: "Hyponatriæmi-mønster – natrium er nedsat.",
+  bg_pattern_hypoxemia: "Hypoksæmi-mønster – pO₂ er nedsat.",
+  bg_pattern_low_so2: "Lav iltmætning-mønster – cSO₂ er nedsat.",
+  bg_pattern_renal_impairment:
+    "Muligt nyrepåvirkningsmønster – urea og kreatinin er forhøjede.",
 
-  meddisc_footer:
-    "Denne app er et støtteværktøj — ikke en erstatning for professionel medicinsk vurdering.",
+  bg_infection_lactate_elevated:
+    "Forhøjet laktat – overvej hypoperfusion, sepsis eller betydelig fysiologisk stress.",
+  bg_infection_stress_hyperglycemia:
+    "Hyperglykæmi kan være stressrelateret, men skal fortolkes klinisk.",
+  tool_bg_acidbase_title: "Syre-base-hjælper",
+  tool_bg_acidbase_desc:
+    "Simpel støtte til syre-base-mønstre ud fra pH, pCO₂ og HCO₃⁻.",
 
-  // Weight / Joule / Dose
+  tool_bg_patterns_title: "Mønstergenkendelse",
+  tool_bg_patterns_desc:
+    "Identificér almindelige blodgas- og laboratoriemønstre.",
+
+  tool_bg_infection_title: "Infektionshjælper",
+  tool_bg_infection_desc:
+    "Simpel støtte til infektionstolkning ud fra blod- og urinprøver.",
+
+  bg_label_ph: "pH",
+  bg_label_pco2: "pCO₂ (kPa)",
+  bg_label_hco3: "HCO₃⁻ (mmol/L)",
+  bg_label_glucose: "Glukose (mmol/L)",
+  bg_label_lactate: "Laktat (mmol/L)",
+  bg_label_crp: "CRP (mg/L)",
+  bg_label_nitrite: "Nitrit",
+  bg_label_leukocytes: "Leukocytter",
+
+  bg_acidbase_enter_values:
+    "Indtast pH, pCO₂ og HCO₃⁻ for at se en fortolkning.",
+  bg_acidbase_disclaimer:
+    "Kun støtteværktøj. Syre-base-tolkning skal altid verificeres ud fra hele det kliniske billede, øvrige laboratoriesvar og gældende lokale retningslinjer.",
+  bg_acidbase_sources_sub:
+    "Gennemgå de underliggende kilder og verificér mod lokale retningslinjer.",
+
+  bg_acidbase_resp_acidosis_title: "Acidose – respiratorisk mønster",
+  bg_acidbase_resp_acidosis_body:
+    "Lav pH sammen med forhøjet pCO₂ tyder på et primært respiratorisk acidosemønster.",
+  bg_acidbase_met_acidosis_title: "Acidose – metabolisk mønster",
+  bg_acidbase_met_acidosis_body:
+    "Lav pH sammen med lav HCO₃⁻ tyder på et primært metabolisk acidosemønster.",
+  bg_acidbase_mixed_acidosis_title: "Acidose – blandet/kombineret mønster",
+  bg_acidbase_mixed_acidosis_body:
+    "Lav pH sammen med både forhøjet pCO₂ og lav HCO₃⁻ tyder på en blandet respiratorisk og metabolisk acidose.",
+  bg_acidbase_unclear_acidosis_title: "Acidose – uklart mønster",
+  bg_acidbase_unclear_acidosis_body:
+    "Der er acidæmi, men værdierne passer ikke til et enkelt og tydeligt mønster.",
+
+  bg_acidbase_resp_alkalosis_title: "Alkalose – respiratorisk mønster",
+  bg_acidbase_resp_alkalosis_body:
+    "Høj pH sammen med lav pCO₂ tyder på et primært respiratorisk alkalosemønster.",
+  bg_acidbase_met_alkalosis_title: "Alkalose – metabolisk mønster",
+  bg_acidbase_met_alkalosis_body:
+    "Høj pH sammen med forhøjet HCO₃⁻ tyder på et primært metabolisk alkalosemønster.",
+  bg_acidbase_mixed_alkalosis_title: "Alkalose – blandet/kombineret mønster",
+  bg_acidbase_mixed_alkalosis_body:
+    "Høj pH sammen med både lav pCO₂ og forhøjet HCO₃⁻ tyder på en blandet respiratorisk og metabolisk alkalose.",
+  bg_acidbase_unclear_alkalosis_title: "Alkalose – uklart mønster",
+  bg_acidbase_unclear_alkalosis_body:
+    "Der er alkalæmi, men værdierne passer ikke til et enkelt og tydeligt mønster.",
+
+  bg_acidbase_comp_resp_acidosis_title:
+    "Næsten normal pH – kompenseret respiratorisk acidose mulig",
+  bg_acidbase_comp_resp_acidosis_body:
+    "En næsten normal pH sammen med forhøjet pCO₂ og forhøjet HCO₃⁻ kan afspejle kompensation.",
+  bg_acidbase_comp_resp_alkalosis_title:
+    "Næsten normal pH – kompenseret respiratorisk alkalose mulig",
+  bg_acidbase_comp_resp_alkalosis_body:
+    "En næsten normal pH sammen med lav pCO₂ og lav HCO₃⁻ kan afspejle kompensation.",
+  bg_acidbase_near_normal_title: "Syre-base-status virker næsten normal",
+  bg_acidbase_near_normal_body:
+    "pH ligger inden for normalområdet, og mønstret virker ikke tydeligt patologisk.",
+
+  bg_acidbase_comp_metabolic_present:
+    "HCO₃⁻ kan tyde på metabolisk/renal kompensation.",
+  bg_acidbase_comp_metabolic_limited:
+    "Der ses kun begrænset eller ingen tydelig metabolisk kompensation.",
+  bg_acidbase_comp_respiratory_present:
+    "pCO₂ kan tyde på respiratorisk kompensation.",
+  bg_acidbase_comp_respiratory_limited:
+    "Der ses kun begrænset eller ingen tydelig respiratorisk kompensation.",
+  bg_acidbase_mixed_compensation:
+    "Dette kan repræsentere kombinerede processer frem for simpel kompensation.",
+  bg_acidbase_verify_context:
+    "Fortolk altid sammen med det kliniske billede og hele blodgassen.",
+  bg_acidbase_compensated_note: "Overvej kompensation og korrelér klinisk.",
+  bg_acidbase_severe_acidemia: "Udtalt acidæmi",
+  bg_acidbase_severe_alkalemia: "Udtalt alkalæmi",
+
+  bg_acidbase_source_fallback_1_title: "Reference for syre-base-fortolkning",
+  bg_acidbase_source_fallback_1_sub:
+    "Brug godkendte lokale vejledninger, instrukser og undervisningsmaterialer.",
+  bg_acidbase_source_fallback_2_title: "Klinisk verifikation kræves",
+  bg_acidbase_source_fallback_2_sub:
+    "Dette værktøj er vejledende og skal altid verificeres mod hele blodgassen og patientens klinik.",
+
+  bg_patterns_enter_values:
+    "Indtast en eller flere værdier for at se typiske mønstre.",
+  bg_patterns_disclaimer:
+    "Kun støtteværktøj. Mønstergenkendelse er forenklet og skal altid fortolkes sammen med hele det kliniske billede og gældende lokale retningslinjer.",
+  bg_patterns_sources_sub:
+    "Gennemgå de underliggende kilder og verificér mod lokale retningslinjer.",
+
+  bg_pattern_dka: "Muligt DKA-mønster – overvej ketoacidose.",
+  bg_pattern_lactate_elevated:
+    "Forhøjet laktat – overvej infektion, hypoperfusion eller metabolisk stress.",
+  bg_pattern_lactate_high:
+    "Højt laktat – hurtig vurdering for shock eller betydende hypoperfusion er relevant.",
+  bg_pattern_dehydration:
+    "Mønstret kan passe med dehydrering eller stressrespons.",
+  bg_pattern_respiratory_acidosis:
+    "Respiratorisk acidosemønster – lav pH sammen med forhøjet pCO₂.",
+
+  bg_patterns_source_fallback_1_title: "Reference for mønstergenkendelse",
+  bg_patterns_source_fallback_1_sub:
+    "Brug godkendte lokale vejledninger for blodgas og laboratorieværdier.",
+  bg_patterns_source_fallback_2_title: "Klinisk verifikation kræves",
+  bg_patterns_source_fallback_2_sub:
+    "Mønstrene her er forenklede og skal altid verificeres klinisk.",
+
+  bg_infection_enter_values:
+    "Indtast CRP og/eller urinfund for at se en støttende fortolkning.",
+  bg_infection_disclaimer:
+    "Kun støtteværktøj. CRP og urinfund er uspecifikke og skal altid fortolkes sammen med anamnese, undersøgelse, vitale værdier og lokale retningslinjer.",
+  bg_infection_sources_sub:
+    "Gennemgå de underliggende kilder og verificér mod lokale retningslinjer.",
+
+  bg_infection_crp_high:
+    "Høj CRP – overvej betydende inflammatorisk eller infektiøs proces.",
+  bg_infection_crp_moderate:
+    "Moderat forhøjet CRP – mulig inflammatorisk eller infektiøs proces.",
+  bg_infection_uti_pattern:
+    "Nitrit og leukocytter til stede – overvej UVI-mønster.",
+  bg_infection_leukocytes_only:
+    "Leukocytter til stede – mulig inflammation eller infektion.",
+  bg_infection_nitrite_only:
+    "Nitrit til stede – bakteriel UVI kan være relevant afhængigt af symptomer.",
+
+  bg_infection_source_fallback_1_title: "Reference for infektionstolkning",
+  bg_infection_source_fallback_1_sub:
+    "Brug godkendte lokale vejledninger for infektion og urinstix-fortolkning.",
+  bg_infection_source_fallback_2_title: "Klinisk verifikation kræves",
+  bg_infection_source_fallback_2_sub:
+    "Dette værktøj er vejledende og skal altid verificeres mod symptomer, undersøgelse og lokale retningslinjer.",
+  bg_disclaimer: "Kun støtteværktøj – ikke diagnostisk",
+  bg_no_pattern_found:
+    "Ingen tydelig mønsterforslag ud fra de indtastede værdier.",
+
+  // =========================================================
+  // ABC-STAMP
+  // =========================================================
+  abcstamp_title: "ABC-STAMP",
+  abcstamp_sub: "Struktureret psykiatrisk vurderingsstøtte",
+  abcstamp_completedLabel: "Udfyldte sektioner:",
+  abcstamp_result_text:
+    "Brug dette som et struktureret observationsværktøj sammen med klinisk vurdering og lokal procedure.",
+  abcstamp_result_disclaimer:
+    "ABC-STAMP er kun støtte til dokumentation og vurdering. Det må ikke erstatte fuld psykiatrisk vurdering, eskalering eller lokale retningslinjer.",
+  abcstamp_page_disclaimer:
+    "Brug den officielle lokale eller regionale ABC-STAMP-struktur, hvor det er relevant. Siden bør tilpasses godkendt dansk klinisk ordlyd før release.",
+  abcstamp_sources_sub: "Referencer og godkendte kilder for ABC-STAMP.",
+  abcstamp_source_1_title: "Officiel dansk ABC-STAMP-kilde",
+  abcstamp_source_1_sub:
+    "Erstat med jeres godkendte regionale eller psykiatriske kilde.",
+  abcstamp_source_2_title: "Lokal / regional psykiatrisk vejledning",
+  abcstamp_source_2_sub: "Erstat med jeres godkendte driftskilde.",
+  abcstamp_source_3_title: "AmbuAssist-disclaimer",
+  abcstamp_source_3_sub: "Kun vurderingsstøtte.",
+
+  abcstamp_notes_label: "Korte noter",
+  abcstamp_notes_placeholder: "Tilføj korte observationer...",
+
+  abcstamp_a_title: "A",
+  abcstamp_a_sub: "Fremtoning",
+  abcstamp_b_title: "B",
+  abcstamp_b_sub: "Adfærd",
+  abcstamp_c_title: "C",
+  abcstamp_c_sub: "Kommunikation",
+  abcstamp_s_title: "S",
+  abcstamp_s_sub: "Tale",
+  abcstamp_t_title: "T",
+  abcstamp_t_sub: "Tanke",
+  abcstamp_m_title: "M",
+  abcstamp_m_sub: "Stemningsleje",
+  abcstamp_p_title: "P",
+  abcstamp_p_sub: "Perception",
+
+  abcstamp_a_opt_appearance_calm: "Rolig / passende fremtoning",
+  abcstamp_a_opt_appearance_agitated: "Urolig / spændt fremtoning",
+  abcstamp_a_opt_appearance_dishevelled: "Forsømt / usoigneret fremtoning",
+
+  abcstamp_b_opt_behaviour_cooperative: "Samarbejdende adfærd",
+  abcstamp_b_opt_behaviour_restless: "Urolig / rastløs adfærd",
+  abcstamp_b_opt_behaviour_aggressive: "Aggressiv / truende adfærd",
+
+  abcstamp_c_opt_communication_clear: "Klar kommunikation",
+  abcstamp_c_opt_communication_disorganised: "Usammenhængende kommunikation",
+  abcstamp_c_opt_communication_minimal: "Minimal / ophævet kommunikation",
+
+  abcstamp_s_opt_speech_normal: "Normal tale",
+  abcstamp_s_opt_speech_pressured: "Forceret / hurtig tale",
+  abcstamp_s_opt_speech_slow: "Langsom / reduceret tale",
+
+  abcstamp_t_opt_thought_linear: "Lineær / sammenhængende tankegang",
+  abcstamp_t_opt_thought_racing: "Tankeflugt / tankemylder",
+  abcstamp_t_opt_thought_disorganised:
+    "Usammenhængende / uorganiseret tankegang",
+
+  abcstamp_m_opt_mood_euthymic: "Neutralt / stabilt stemningsleje",
+  abcstamp_m_opt_mood_low: "Nedtrykt / depressivt stemningsleje",
+  abcstamp_m_opt_mood_elevated: "Eleveret / svingende stemningsleje",
+
+  abcstamp_p_opt_perception_none: "Ingen abnorme perceptioner oplyst",
+  abcstamp_p_opt_perception_voices: "Hørehallucinationer / stemmer oplyst",
+  abcstamp_p_opt_perception_other: "Anden perceptuel forstyrrelse",
+
+  // =========================================================
+  // PRESS
+  // =========================================================
+  press_title: "PreSS",
+  press_sub: "Prehospital Stroke Score",
+
+  press_part1_title: "PreSS del 1",
+  press_part1_sub: "Screening for apopleksi / TCI",
+  press_part2_title: "PreSS del 2",
+  press_part2_sub: "Sværhedsgrad / LVO-orienteret vurdering",
+
+  press_p1_face_title: "Ansigtsparese",
+  press_p1_arm_title: "Armsvækkelse",
+  press_p1_speech_title: "Talepåvirkning",
+  press_p1_other_title: "Andre neurologiske symptomer",
+
+  press_p2_armDrift_title: "Armdrift",
+  press_p2_loc_title: "Forkert måned og/eller alder",
+  press_p2_gaze_title: "Blikparese / blikdeviation",
+
+  press_opt_yes: "Ja",
+  press_opt_no: "Nej",
+
+  press_part1_score: "PreSS del 1:",
+  press_part2_score: "PreSS del 2:",
+  press_part1_positive:
+    "Positiv screening for mistanke om apopleksi/TCI. Bruges sammen med klinisk vurdering og lokale retningslinjer.",
+  press_part1_negative: "Ingen positive fund valgt.",
+  press_needAll: "Udfyld alle punkter for at se resultatet.",
+  press_result_disclaimer:
+    "PreSS er kun beslutningsstøtte og må ikke erstatte klinisk vurdering, lokale retningslinjer eller neurologkontakt, når det er indiceret.",
+
+  press_page_disclaimer:
+    "Dette værktøj er kun til støtte for struktureret præhospital neurologisk vurdering. Følg altid lokale retningslinjer og brug klinisk vurdering.",
+  press_sources_sub: "Nøglereferencer og protokolkilder for PreSS.",
+  press_source_1_title: "Prehospital Stroke Score (PreSS)",
+  press_source_1_sub: "Todelt dansk præhospital apopleksivurdering.",
+  press_source_2_title: "The Prehospital Stroke Score and telephone conference",
+  press_source_2_sub: "Prospektivt valideringsstudie.",
+  press_source_3_title: "Lokal / regional retningslinje",
+  press_source_3_sub: "Erstat med jeres godkendte driftskilde.",
+
+  // =========================================================
+  // WEIGHT / JOULE / DOSER
+  // =========================================================
   wjd_title: "Vægt → Joule + Doser",
   wjd_sub: "Alder → estimeret kg → joule + din konfigurerede medicinliste.",
   wjd_age: "Alder",
@@ -1432,7 +1895,9 @@ export const da: typeof en = {
   wjd_source_3_sub:
     "Kontrollér altid koncentration, formulering, administrationsvej og maksimal dosis før medicingivning.",
 
+  // =========================================================
   // NEWS2
+  // =========================================================
   news2_title: "NEWS2",
   news2_sub: "Indtast værdier — score og eskalation opdateres live.",
   news2_scale: "SpO₂-skala",
@@ -1466,7 +1931,6 @@ export const da: typeof en = {
 
   news2_page_disclaimer:
     "NEWS2 støtter en struktureret vurdering af akut sygdom, men erstatter ikke klinisk skøn, lokale eskaleringsinstrukser eller lægefaglig vurdering. Scoren må ikke stå alene ved beslutninger om diagnose, behandling eller visitation.",
-  // NEWS2
   news2_sources_sub:
     "NEWS2 bør bruges i overensstemmelse med Royal College of Physicians’ NEWS2-rapport og lokale eskaleringsretningslinjer.",
   news2_source_1_title:
@@ -1481,7 +1945,9 @@ export const da: typeof en = {
   news2_source_3_sub:
     "Bruges sammen med gældende lokale instrukser for observationshyppighed, eskalering og henvisningsforløb.",
 
-  // Wells
+  // =========================================================
+  // WELLS (DVT)
+  // =========================================================
   wells_title: "Wells-score (DVT)",
   wells_sub: "Afkryds fund — score og tolkning opdateres live.",
   wells_score: "Score",
@@ -1499,7 +1965,6 @@ export const da: typeof en = {
     "Wells DVT-score er et klinisk prædiktionsværktøj og må ikke bruges alene til at be- eller afkræfte dyb venetrombose. Scoren skal altid tolkes sammen med anamnese, objektiv undersøgelse, differentialdiagnoser og lokale diagnostiske retningslinjer.",
   wells_result_disclaimer:
     "Resultatet er kun vejledende og erstatter ikke billeddiagnostik, D-dimer-strategi, lægefaglig vurdering eller lokal instruks.",
-  // Wells
   wells_sources_sub:
     "Wells DVT-score bør bruges sammen med validerede referencer for prætest-sandsynlighed og gældende diagnostiske retningslinjer.",
   wells_source_1_title:
@@ -1514,7 +1979,9 @@ export const da: typeof en = {
   wells_source_3_sub:
     "Bruges sammen med gældende lokale instrukser for D-dimer-strategi, ultralydshenvisning, eskalering og antikoagulationsbeslutninger.",
 
+  // =========================================================
   // NIHSS
+  // =========================================================
   nihss_title: "NIHSS",
   nihss_sub: "Vælg én mulighed pr. punkt — total opdateres live.",
   nihss_scoreLabel: "NIHSS:",
@@ -1604,7 +2071,6 @@ export const da: typeof en = {
     "NIHSS er et struktureret neurologisk vurderingsværktøj og må ikke bruges som eneste grundlag for diagnose, visitationssted, trombolyseovervejelser eller andre behandlingsbeslutninger. Scoren skal altid tolkes sammen med det samlede kliniske billede, lokale apopleksi-retningslinjer og klinisk skøn.",
   nihss_result_disclaimer:
     "Sværhedsgrupperne er kun vejledende og erstatter ikke lokal apopleksivurdering eller lægefaglig rådgivning.",
-  // NIHSS
   nihss_sources_sub:
     "NIHSS-indhold bør følge den originale NIH Stroke Scale-publikation, guideline-materiale om stroke og lokale stroke-pathways.",
   nihss_source_1_title:
@@ -1620,7 +2086,9 @@ export const da: typeof en = {
   nihss_source_3_sub:
     "Bruges sammen med gældende præhospitale procedurer for stroke-triage, visitation, billeddiagnostik og eskalering.",
 
+  // =========================================================
   // BVC
+  // =========================================================
   bvc_title: "BVC",
   bvc_sub: "Brøset Violence Checklist — afkryds observeret adfærd.",
   bvc_scoreLabel: "BVC:",
@@ -1641,22 +2109,21 @@ export const da: typeof en = {
     "BVC-scoren er kun vejledende og skal tolkes sammen med adfærd, anamnese, miljøforhold og lokale sikkerhedsretningslinjer.",
   bvc_sources_sub:
     "BVC bør bruges sammen med validerede referencer for korttidsvurdering af voldsrisiko og lokale sikkerhedsprocedurer.",
-
   bvc_source_1_title:
     "Woods & Almvik m.fl. – The Brøset Violence Checklist (2002)",
   bvc_source_1_sub:
     "Original publikation, der beskriver Brøset Violence Checklist som et instrument til korttidsforudsigelse af voldelig adfærd.",
-
   bvc_source_2_title:
     "Short-term risk prediction: the Brøset Violence Checklist",
   bvc_source_2_sub:
     "Supplerende litteratur om korttidsforudsigelse af truende eller voldelig adfærd i psykiatriske miljøer.",
-
   bvc_source_3_title: "Lokal psykiatrisk / præhospital sikkerhedsvejledning",
   bvc_source_3_sub:
     "Bruges sammen med gældende lokale procedurer for deeskalering, scenesikkerhed, observation, eskalering og personalesikkerhed.",
 
-  // Exams
+  // =========================================================
+  // EXAMS
+  // =========================================================
   exams_title: "Kliniske undersøgelser & tegn",
   exams_sub:
     "Tryk for at folde ud. Brug som huskeliste — retningslinjer og kontekst vinder.",
@@ -1795,6 +2262,16 @@ export const da: typeof en = {
   ex_raccoon_pos: "Periorbitale hæmatomer.",
   ex_raccoon_ind: "Basis cranii-fraktur.",
 
+  ex_dix_hallpike_title: "Dix-Hallpike-test",
+  ex_dix_hallpike_how:
+    "Drej patientens hoved 45° til den ene side, og læg derefter patienten hurtigt fra siddende til rygliggende med hovedet ca. 20° bagover. Observer øjnene for nystagmus og spørg til svimmelhed. Gentag til den anden side.",
+  ex_dix_hallpike_pos:
+    "Udløsning af svimmelhed sammen med karakteristisk positionsudløst nystagmus efter kort latenstid, typisk fatigabel og mest udtalt på den ene side.",
+  ex_dix_hallpike_ind:
+    "Taler for benign paroksystisk positionsvertigo (BPPV), oftest fra den bageste buegang på den afficerede side.",
+  ex_dix_hallpike_pre:
+    "Bruges med forsigtighed ved nakkesmerter, cervikal instabilitet, vaskulære risikofaktorer, traume eller hvis patienten ikke tåler positioneringen. En negativ test udelukker ikke centrale årsager til vertigo.",
+
   exams_page_disclaimer:
     "Disse undersøgelsestegn er kun tænkt som undervisnings- og støtteindhold. De må ikke bruges alene til at bekræfte en diagnose, udelukke alvorlig sygdom eller afgøre behandling. Fund skal altid tolkes i den samlede kliniske kontekst og efter lokale retningslinjer.",
   exams_item_disclaimer:
@@ -1811,7 +2288,9 @@ export const da: typeof en = {
   exams_source_3_sub:
     "Følg gældende lokale instrukser for henvisning, eskalering og akut håndtering.",
 
+  // =========================================================
   // HINTS
+  // =========================================================
   hints_flowchart: "Flowchart",
   hints_result: "Resultat",
   hints_selections: "Dine valg",
@@ -1820,7 +2299,6 @@ export const da: typeof en = {
     "HINTS+ er tiltænkt udvalgte patienter med Akut Vestibulært Syndrom og kræver korrekt undersøgelsesteknik samt relevant klinisk kontekst. Det erstatter ikke bredere neurologisk vurdering, stroke-vurdering, billeddiagnostiske forløb eller senior klinisk vurdering, når dette er indiceret.",
   hints_result_disclaimer:
     "Dette resultat er kun vejledende. Hvis undersøgelseskvaliteten er usikker, symptomerne er atypiske, eller risikoen er høj, skal højere risikoniveau og lokale stroke- eller neurologiske retningslinjer følges.",
-  // HINTS
   hints_sources_sub:
     "HINTS+ og relateret svimmelhedsvurdering bør bruges i overensstemmelse med den originale AVS-litteratur, moderne retningslinjer for svimmelhed og lokale stroke-pathways.",
   hints_source_1_title:
@@ -1835,7 +2313,9 @@ export const da: typeof en = {
   hints_source_3_sub:
     "Følg gældende lokale procedurer for eskalering, billeddiagnostik og specialistvurdering ved mistanke om central årsag.",
 
-  // Spinal trauma
+  // =========================================================
+  // SPINAL TRAUMA
+  // =========================================================
   spine_title: "Flow: traume mod rygsøjlen",
   spine_sub:
     "Hurtigt beslutningsflow for hvornår spinal stabilisering er indiceret.",
@@ -1898,7 +2378,6 @@ export const da: typeof en = {
     "Dette spinal-traume-flow er kun et støtteværktøj. Det erstatter ikke ABCDE-vurdering, klinisk skøn, lokale traumerelevante instrukser eller lægefaglig ledelse. Hvis patienten er ustabil, eller det kliniske billede er uklart, skal højere risikoniveau og lokal instruks følges.",
   spine_result_disclaimer:
     "Det foreslåede resultat er kun vejledende og skal tolkes sammen med traumemekanisme, objektive fund, neurologiske udfald og lokale traumerelevante retningslinjer.",
-  // Spinal trauma
   spine_sources_sub:
     "Vurdering af spinalt traume bør følge dansk vejledning om spinal stabilisering, traumaprincipper og lokale præhospitale procedurer.",
   spine_source_1_title:
@@ -1913,42 +2392,28 @@ export const da: typeof en = {
   spine_source_3_sub:
     "Følg gældende lokale procedurer for ABCDE-prioriteter, håndtering, transport, spinal bevægerestriktion og eskalering.",
 
-  // Destination
+  // =========================================================
+  // DESTINATION
+  // =========================================================
   dest_title: "Destinationshjælper",
   dest_sub: "Vælg område, derefter gade/bydel/kommune og kategori.",
+  dest_function_title: "Vælg funktion",
   dest_area: "Område",
   dest_byen: "Byen",
   dest_region: "Regionen",
   dest_find_street: "Søg på gade",
-  dest_find_street_sub:
-    "Skriv en gade og få bydel (kun en lille demo-liste i koden).",
   dest_street_placeholder: "Gade (fx Amagertorv)",
   dest_no_street_match: "Ingen match i den nuværende gadeliste.",
-  dest_byen_pick: "Bydel + kategori",
-  dest_byen_pick_sub: "Vælg bydel og kategori for at få destinationshospital.",
   dest_bydel: "Bydel",
-  dest_region_pick: "Kommune + speciale",
-  dest_region_pick_sub:
-    "Vælg kommune og specialekategori for at foreslå destination.",
   dest_kommune: "Kommune",
   dest_category: "Kategori",
   dest_result: "Resultat",
   dest_pick_more:
     "Vælg område + (bydel/kommune) + kategori for at få destination.",
   dest_destination: "Destination",
-  dest_context: "Kontekst",
-  dest_code: "Kode",
   dest_unknown:
     "Der blev ikke fundet en mappet destination for denne kombination. Kontrollér mod gældende lokale retningslinjer.",
-  dest_region_note:
-    "Note: Regionsmapping er en start-skabelon. Udvid så den matcher de officielle tabeller.",
-  dest_data_title: "Data",
-  dest_data_sub:
-    "Mapping ligger i app/tools/destination.tsx som simple objekter. Kan senere flyttes til JSON.",
 
-  dest_use_location_title: "Brug nuværende lokation",
-  dest_use_location_sub:
-    "Find gade/bydel i Byen-tilstand eller kommune i Region-tilstand.",
   dest_use_location_btn: "Brug nuværende lokation",
   dest_detecting: "Finder lokation...",
   dest_detected: "Fundet",
@@ -1976,8 +2441,6 @@ export const da: typeof en = {
 
   dest_page_disclaimer:
     "Dette destinationsværktøj er kun et logistisk støtteværktøj. Det erstatter ikke lokale visitationsregler, aktuel hospitalskapacitet, specialespecifikke forløb, lægefaglig visitation eller realtidsmæssig operativ ledelse. Kontrollér altid destinationen op mod gældende lokale instrukser før transport.",
-  dest_result_disclaimer:
-    "Foreslåede destinationer er kun vejledende og skal kontrolleres mod gældende visitationsregler, pathway-kriterier og operative opdateringer.",
   dest_sources_sub:
     "Destinationsforslag bør baseres på gældende lokale visitationsdokumenter, specialepathways og operative retningslinjer.",
   dest_source_1_title: "Region H visitationsvejledning (intern)",
@@ -1990,7 +2453,6 @@ export const da: typeof en = {
   dest_source_3_sub:
     "Følg gældende dispatch-, læge- og regional koordineringsvejledning, hvis den afviger fra statisk mapping.",
 
-  // Destination categories (Byen)
   dest_cat_hospital: "Hospital (standard)",
   dest_cat_medicin: "Medicin",
   dest_cat_reuma: "Reumatologi",
@@ -2003,7 +2465,6 @@ export const da: typeof en = {
   dest_cat_gyn: "Gynækologi",
   dest_cat_uro: "Urologi",
 
-  // Destination categories (Region)
   dest_reg_traumecenter: "Traumecenter",
   dest_reg_akutmodtagelse: "Akutmodtagelse",
   dest_reg_med_modtagelse: "Medicinsk modtagelse",
@@ -2044,7 +2505,6 @@ export const da: typeof en = {
   dest_reg_arbejds: "Arbejds- og miljømedicin",
   dest_reg_social: "Socialmedicin",
 
-  // Hospital labels
   dest_h_AMH: "Amager Hospital (AMH)",
   dest_h_BBH: "Bispebjerg Hospital (BBH)",
   dest_h_FRH: "Frederiksberg Hospital (FRH)",
@@ -2056,7 +2516,36 @@ export const da: typeof en = {
   dest_h_RH: "Rigshospitalet (RH)",
   dest_h_UNKNOWN: "Ukendt",
 
+  // =========================================================
+  // TROMBOLYSE
+  // =========================================================
+  trombolysis_title: "Trombolyse",
+  trombolysis_sub:
+    "Viser automatisk hvem der har trombolysevisitation lige nu.",
+  trombolysis_current_title: "Aktuel visitation",
+  trombolysis_contact_title: "Kontakt",
+  trombolysis_responsible: "Ansvarlig",
+  trombolysis_next_switch: "Næste skift:",
+  trombolysis_loading_number: "Henter telefonnummer...",
+  trombolysis_number_label: "Telefonnummer:",
+  trombolysis_number_not_found: "Intet telefonnummer fundet.",
+  trombolysis_call_btn: "Ring op",
+  trombolysis_main_fallback:
+    "Specialenummer ikke fundet – viser hospitalets hovednummer.",
+  trombolysis_disclaimer:
+    "Dette værktøj er kun vejledende. Telefonnummer og visitation skal altid verificeres efter gældende regionale retningslinjer og lokale instrukser.",
+  trombolysis_call_error_title: "Kunne ikke åbne opkald",
+  trombolysis_call_error_body: "Kunde ikke starte opkald.",
+  trombolysis_rh: "Rigshospitalet",
+  trombolysis_bbh: "Bispebjerg Hospital",
+  trombolysis_current_time: "Aktuel tid",
+  trombolysis_info_title: "Information",
+  trombolysis_rule:
+    "RH har ulige datoer, og BBH har lige datoer. Skift sker hver dag kl. 08:00.",
+
+  // =========================================================
   // CFS
+  // =========================================================
   cfs_title: "Clinical Frailty Scale (CFS)",
   cfs_sub:
     "Vælg det niveau der passer bedst ud fra patientens baseline (ikke kun dagens sygdom).",
@@ -2070,35 +2559,27 @@ export const da: typeof en = {
   cfs_1_title: "Meget fit",
   cfs_1_desc:
     "Robust, aktiv, energisk og motiveret. Træner regelmæssigt og er blandt de mest fitte for alderen.",
-
   cfs_2_title: "Fit",
   cfs_2_desc:
     "Ingen aktive sygdomssymptomer, men mindre fit end niveau 1. Træner ofte eller er meget aktiv lejlighedsvis (fx sæsonvist).",
-
   cfs_3_title: "Klarer sig godt",
   cfs_3_desc:
     "Medicinske problemer er velkontrollerede, evt. med lejlighedsvise symptomer. Ikke regelmæssigt aktiv ud over almindelig gang.",
-
   cfs_4_title: "Lever med meget mild skrøbelighed",
   cfs_4_desc:
     "Ikke afhængig af hjælp til daglige gøremål, men symptomer begrænser ofte aktiviteter. Typisk oplevelse af at være ‘gået ned i tempo’ og/eller være træt i løbet af dagen.",
-
   cfs_5_title: "Lever med mild skrøbelighed",
   cfs_5_desc:
     "Mere tydelig langsomhed. Behøver hjælp til komplekse IADL (økonomi, transport, tungt husarbejde). Indkøb, at gå ude alene, madlavning og medicinhåndtering påvirkes ofte.",
-
   cfs_6_title: "Lever med moderat skrøbelighed",
   cfs_6_desc:
     "Behøver hjælp til alle aktiviteter uden for hjemmet og til husholdning. Har ofte problemer med trapper. Behøver hjælp til bad og evt. minimal hjælp (guidning/standby) til påklædning.",
-
   cfs_7_title: "Lever med svær skrøbelighed",
   cfs_7_desc:
     "Fuldt afhængig af personlig pleje (fysisk eller kognitivt). Fremstår dog stabil og ikke i høj risiko for at dø inden for ~6 måneder.",
-
   cfs_8_title: "Lever med meget svær skrøbelighed",
   cfs_8_desc:
     "Fuldt afhængig af personlig pleje og nærmer sig livets afslutning. Kan typisk ikke komme sig selv efter en mindre sygdom.",
-
   cfs_9_title: "Terminalt syg",
   cfs_9_desc:
     "Nærmer sig livets afslutning med forventet levetid < 6 måneder, men er ellers ikke præget af svær skrøbelighed. Mange kan være aktive næsten helt til det sidste.",
@@ -2109,21 +2590,20 @@ export const da: typeof en = {
     "CFS bør tolkes i sammenhæng med patientens habituelle funktionsevne, aktuelle sygdom, oplysninger fra pårørende og lokale retningslinjer.",
   cfs_sources_sub:
     "CFS bør anvendes i overensstemmelse med det officielle Clinical Frailty Scale-materiale, dansk oversættelsesarbejde og lokale kliniske retningslinjer.",
-
   cfs_source_1_title: "Clinical Frailty Scale (officielt skalamateriale)",
   cfs_source_1_sub:
     "Officiel ressource for Clinical Frailty Scale fra Geriatric Medicine Research group / Dalhousie University.",
-
   cfs_source_2_title:
     "Dansk oversættelse og validering af Clinical Frailty Scale",
   cfs_source_2_sub:
     "Dansk oversættelse og tværsektorielt reliabilitetsarbejde, som understøtter klinisk anvendelse i danske sundhedsfaglige miljøer.",
-
   cfs_source_3_title: "Lokal geriatrisk / akutmedicinsk vejledning",
   cfs_source_3_sub:
     "Scoren skal tolkes sammen med habituelt funktionsniveau, oplysninger fra pårørende, akut sygdom og gældende lokale retningslinjer.",
 
+  // =========================================================
   // FLACC
+  // =========================================================
   flacc_title: "FLACC-score",
   flacc_sub:
     "Adfærdsbaseret smertevurdering (Ansigt, Ben, Aktivitet, Gråd, Trøstbarhed). Vælg én mulighed pr. kategori.",
@@ -2167,22 +2647,21 @@ export const da: typeof en = {
     "FLACC-scoren skal tolkes med forsigtighed og må aldrig bruges som eneste grundlag for beslutninger om smertebehandling.",
   flacc_sources_sub:
     "FLACC bør anvendes i overensstemmelse med validerede pædiatriske smertevurderingsreferencer og lokale børneinstrukser.",
-
   flacc_source_1_title:
     "Merkel m.fl. – FLACC Behavioral Pain Assessment Scale (1997)",
   flacc_source_1_sub:
     "Original publikation, der beskriver FLACC som en adfærdsbaseret smerteskala til børn, som ikke nødvendigvis kan verbalisere smerte.",
-
   flacc_source_2_title:
     "Valideringsstudier af FLACC ved pædiatrisk smertevurdering",
   flacc_source_2_sub:
     "Supplerende litteratur om validitet og reliabilitet af FLACC ved klinisk og procedure-relateret smertevurdering hos børn.",
-
   flacc_source_3_title: "AAP-vejledning om smertevurdering hos børn",
   flacc_source_3_sub:
     "Bruges sammen med bredere principper for pædiatrisk smertevurdering, revurdering efter intervention og lokale behandlingsinstrukser.",
 
+  // =========================================================
   // APGAR
+  // =========================================================
   apgar_title: "APGAR-score",
   apgar_sub: "Vurdering af nyfødt. Vælg én mulighed pr. kategori (0–2).",
   apgar_appearance_title: "Udseende (hudfarve)",
@@ -2235,7 +2714,10 @@ export const da: typeof en = {
   apgar_source_3_sub:
     "Følg gældende lokale instrukser for vurdering, eskalering og behandling af nyfødte.",
 
-  // Settings
+  // =========================================================
+  // SETTINGS
+  // =========================================================
+  result: "Resultat",
   settings_title: "Indstillinger",
   settings_sub: "Gælder på tværs af appen (gemmes på enheden).",
   settings_weight_title: "Vægtestimat",
@@ -2262,15 +2744,9 @@ export const da: typeof en = {
   settings_med_name_placeholder: "Lægemiddelnavn",
   settings_med_dose: "Dosis",
 
-  tool_assessment_title: "Vurderingsværktøjer",
-  tool_assessment_desc: "Kliniske scores, skalaer og strukturerede vurderinger",
-
-  tool_contact_title: "Kontakt & feedback",
-  tool_contact_desc: "Rapportér fejl, kom med forslag, eller kontakt os.",
-
-  tool_about_title: "Om appen",
-  tool_about_desc: "Hvad AmbuAssist er, hvad den gør, og hvad den ikke gør.",
-
+  // =========================================================
+  // CONTACT
+  // =========================================================
   contact_title: "Kontakt & feedback",
   contact_sub: "Rapportér fejl, kom med forslag, eller kontakt os om appen.",
 
@@ -2312,6 +2788,9 @@ export const da: typeof en = {
   contact_email_body_version: "App-version (hvis kendt)",
   contact_email_body_notes: "Yderligere noter",
 
+  // =========================================================
+  // ABOUT
+  // =========================================================
   about_title: "Om AmbuAssist",
   about_sub: "En let støtteapp til præhospital og klinisk referencebrug.",
 
@@ -2350,6 +2829,23 @@ export const da: typeof en = {
   about_feedback_body:
     "Hvis du finder en fejl, ser forældet indhold, eller har idéer til forbedringer, så brug siden Kontakt & feedback.",
 
+  // =========================================================
+  // MEDICAL DISCLAIMER
+  // =========================================================
+  meddisc_title: "Medicinsk disclaimer",
+  meddisc_sub:
+    "Vigtig information om sikker brug af AmbuAssist og appens kliniske værktøjer.",
+
+  meddisc_section_use_title: "Tilsigtet brug",
+  meddisc_use_1:
+    "AmbuAssist er tænkt som et opslags- og støtteværktøj til uddannede brugere.",
+  meddisc_use_2:
+    "Appen erstatter ikke klinisk vurdering, lokale retningslinjer, lægefaglig rådgivning eller supervision.",
+  meddisc_use_3:
+    "Information og beregninger i appen skal altid tolkes i den samlede kliniske kontekst.",
+  meddisc_use_4:
+    "Brugeren har ansvar for at kontrollere, om indholdet passer med lokal praksis, godkendte lægemidler og gældende instrukser.",
+
   meddisc_section_users_title: "Tilsigtede brugere",
   meddisc_users_1:
     "AmbuAssist er tiltænkt uddannet sundhedspersonale og studerende, der arbejder under godkendt supervision.",
@@ -2357,6 +2853,10 @@ export const da: typeof en = {
     "Appen er ikke tiltænkt selvdiagnostik, selvbehandling eller brug af utrænede borgere.",
   meddisc_users_3:
     "Nogle værktøjer kræver specifik klinisk træning, korrekt undersøgelsesteknik og kendskab til lokale eskaleringsveje.",
+
+  meddisc_section_warning_title: "Vigtig advarsel",
+  meddisc_warning_body:
+    "AmbuAssist må ikke bruges som eneste grundlag for diagnose, triage, medicingivning, visitationsbeslutninger eller andre behandlingsbeslutninger. Følg altid lokale instrukser og søg relevant lægefaglig rådgivning, før der træffes medicinske beslutninger.",
 
   meddisc_section_method_title: "Klinisk grundlag og metode",
   meddisc_method_1:
@@ -2367,6 +2867,10 @@ export const da: typeof en = {
     "Scores, tjeklister og flows i appen er forenklede bedside-støtter og gengiver ikke nødvendigvis hele den kliniske kontekst, alle eksklusionskriterier eller alle lokale undtagelser.",
   meddisc_method_4:
     "Hvis en kilde, arbejdsgang, scoregrænse eller lokal praksis ændrer sig, har gældende godkendt lokal vejledning altid forrang over appen.",
+
+  meddisc_section_sources_title: "Kilder og referencer",
+  meddisc_sources_body:
+    "De medicinske værktøjer i AmbuAssist bør bruges sammen med tydeligt angivne kilder, retningslinjer eller validerede scoringssystemer. Kildeoplysninger for de enkelte værktøjer bør være lette at finde på de relevante værktøjssider.",
 
   meddisc_sources_note_title: "Om værktøjsspecifikke referencer",
   meddisc_sources_note_body:
@@ -2380,6 +2884,10 @@ export const da: typeof en = {
   meddisc_region_3:
     "Hvis lokal, regional, arbejdsgiverrelateret, lægefaglig eller dispatch-relateret vejledning afviger fra appen, skal gældende godkendt lokal vejledning følges.",
 
+  meddisc_section_emergency_title: "Brug i akutte situationer",
+  meddisc_emergency_body:
+    "I akutte eller livstruende situationer skal du følge lokale akutprocedurer, godkendte retningslinjer og klinisk ansvarlig ledelse. Brug af appen må aldrig forsinke nødvendig behandling.",
+
   meddisc_section_updates_title: "Gennemgang og opdatering af indhold",
   meddisc_updates_1:
     "Det kliniske indhold bør gennemgås og opdateres, når lokale retningslinjer, navngivne værktøjer eller operative arbejdsgange ændrer sig.",
@@ -2388,170 +2896,6 @@ export const da: typeof en = {
   meddisc_updates_3:
     "Hvis en værktøjsside mangler en opdateret kilde, bør indholdet verificeres i en godkendt reference, før man læner sig op ad det.",
 
-  ex_dix_hallpike_title: "Dix-Hallpike-test",
-  ex_dix_hallpike_how:
-    "Drej patientens hoved 45° til den ene side, og læg derefter patienten hurtigt fra siddende til rygliggende med hovedet ca. 20° bagover. Observer øjnene for nystagmus og spørg til svimmelhed. Gentag til den anden side.",
-  ex_dix_hallpike_pos:
-    "Udløsning af svimmelhed sammen med karakteristisk positionsudløst nystagmus efter kort latenstid, typisk fatigabel og mest udtalt på den ene side.",
-  ex_dix_hallpike_ind:
-    "Taler for benign paroksystisk positionsvertigo (BPPV), oftest fra den bageste buegang på den afficerede side.",
-  ex_dix_hallpike_pre:
-    "Bruges med forsigtighed ved nakkesmerter, cervikal instabilitet, vaskulære risikofaktorer, traume eller hvis patienten ikke tåler positioneringen. En negativ test udelukker ikke centrale årsager til vertigo.",
-
-  neurological_title: "Neurologisk",
-  neurological_sub: "Vælg et neurologisk scoresystem.",
-
-  press_title: "PreSS",
-  press_sub: "Prehospital Stroke Score",
-
-  press_part1_title: "PreSS del 1",
-  press_part1_sub: "Screening for apopleksi / TCI",
-  press_part2_title: "PreSS del 2",
-  press_part2_sub: "Sværhedsgrad / LVO-orienteret vurdering",
-
-  press_p1_face_title: "Ansigtsparese",
-  press_p1_arm_title: "Armsvækkelse",
-  press_p1_speech_title: "Talepåvirkning",
-  press_p1_other_title: "Andre neurologiske symptomer",
-
-  press_p2_armDrift_title: "Armdrift",
-  press_p2_loc_title: "Forkert måned og/eller alder",
-  press_p2_gaze_title: "Blikparese / blikdeviation",
-
-  press_opt_yes: "Ja",
-  press_opt_no: "Nej",
-
-  press_part1_score: "PreSS del 1:",
-  press_part2_score: "PreSS del 2:",
-  press_part1_positive:
-    "Positiv screening for mistanke om apopleksi/TCI. Bruges sammen med klinisk vurdering og lokale retningslinjer.",
-  press_part1_negative: "Ingen positive fund valgt.",
-  press_needAll: "Udfyld alle punkter for at se resultatet.",
-  press_result_disclaimer:
-    "PreSS er kun beslutningsstøtte og må ikke erstatte klinisk vurdering, lokale retningslinjer eller neurologkontakt, når det er indiceret.",
-
-  press_page_disclaimer:
-    "Dette værktøj er kun til støtte for struktureret præhospital neurologisk vurdering. Følg altid lokale retningslinjer og brug klinisk vurdering.",
-  press_sources_sub: "Nøglereferencer og protokolkilder for PreSS.",
-  press_source_1_title: "Prehospital Stroke Score (PreSS)",
-  press_source_1_sub: "Todelt dansk præhospital apopleksivurdering.",
-  press_source_2_title: "The Prehospital Stroke Score and telephone conference",
-  press_source_2_sub: "Prospektivt valideringsstudie.",
-  press_source_3_title: "Lokal / regional retningslinje",
-  press_source_3_sub: "Erstat med jeres godkendte driftskilde.",
-  tool_paediatric_title: "Pædiatrisk",
-  tool_paediatric_desc: "APGAR, FLACC og pædiatriske vurderinger",
-
-  paediatric_title: "Pædiatrisk",
-  paediatric_sub: "Vælg et pædiatrisk scoresystem.",
-  dest_function_title: "Vælg funktion",
-  tool_behaviouralGeriatric_title: "Adfærd & Geriatri",
-  tool_behaviouralGeriatric_desc: "BVC, ABC-STAMP og CFS",
-
-  behaviouralGeriatric_title: "Adfærd & Geriatri",
-  behaviouralGeriatric_sub:
-    "Vælg et adfærds- eller geriatrisk vurderingsværktøj.",
-  abcstamp_title: "ABC-STAMP",
-  abcstamp_sub: "Struktureret psykiatrisk vurderingsstøtte",
-  abcstamp_completedLabel: "Udfyldte sektioner:",
-  abcstamp_result_text:
-    "Brug dette som et struktureret observationsværktøj sammen med klinisk vurdering og lokal procedure.",
-  abcstamp_result_disclaimer:
-    "ABC-STAMP er kun støtte til dokumentation og vurdering. Det må ikke erstatte fuld psykiatrisk vurdering, eskalering eller lokale retningslinjer.",
-  abcstamp_page_disclaimer:
-    "Brug den officielle lokale eller regionale ABC-STAMP-struktur, hvor det er relevant. Siden bør tilpasses godkendt dansk klinisk ordlyd før release.",
-  abcstamp_sources_sub: "Referencer og godkendte kilder for ABC-STAMP.",
-  abcstamp_source_1_title: "Officiel dansk ABC-STAMP-kilde",
-  abcstamp_source_1_sub:
-    "Erstat med jeres godkendte regionale eller psykiatriske kilde.",
-  abcstamp_source_2_title: "Lokal / regional psykiatrisk vejledning",
-  abcstamp_source_2_sub: "Erstat med jeres godkendte driftskilde.",
-  abcstamp_source_3_title: "AmbuAssist-disclaimer",
-  abcstamp_source_3_sub: "Kun vurderingsstøtte.",
-
-  abcstamp_notes_label: "Korte noter",
-  abcstamp_notes_placeholder: "Tilføj korte observationer...",
-
-  abcstamp_a_title: "A",
-  abcstamp_a_sub: "Fremtoning",
-  abcstamp_b_title: "B",
-  abcstamp_b_sub: "Adfærd",
-  abcstamp_c_title: "C",
-  abcstamp_c_sub: "Kommunikation",
-  abcstamp_s_title: "S",
-  abcstamp_s_sub: "Tale",
-  abcstamp_t_title: "T",
-  abcstamp_t_sub: "Tanke",
-  abcstamp_m_title: "M",
-  abcstamp_m_sub: "Stemningsleje",
-  abcstamp_p_title: "P",
-  abcstamp_p_sub: "Perception",
-
-  abcstamp_a_opt_appearance_calm: "Rolig / passende fremtoning",
-  abcstamp_a_opt_appearance_agitated: "Urolig / spændt fremtoning",
-  abcstamp_a_opt_appearance_dishevelled: "Forsømt / usoigneret fremtoning",
-
-  abcstamp_b_opt_behaviour_cooperative: "Samarbejdende adfærd",
-  abcstamp_b_opt_behaviour_restless: "Urolig / rastløs adfærd",
-  abcstamp_b_opt_behaviour_aggressive: "Aggressiv / truende adfærd",
-
-  abcstamp_c_opt_communication_clear: "Klar kommunikation",
-  abcstamp_c_opt_communication_disorganised: "Usammenhængende kommunikation",
-  abcstamp_c_opt_communication_minimal: "Minimal / ophævet kommunikation",
-
-  abcstamp_s_opt_speech_normal: "Normal tale",
-  abcstamp_s_opt_speech_pressured: "Forceret / hurtig tale",
-  abcstamp_s_opt_speech_slow: "Langsom / reduceret tale",
-
-  abcstamp_t_opt_thought_linear: "Lineær / sammenhængende tankegang",
-  abcstamp_t_opt_thought_racing: "Tankeflugt / tankemylder",
-  abcstamp_t_opt_thought_disorganised:
-    "Usammenhængende / uorganiseret tankegang",
-
-  abcstamp_m_opt_mood_euthymic: "Neutralt / stabilt stemningsleje",
-  abcstamp_m_opt_mood_low: "Nedtrykt / depressivt stemningsleje",
-  abcstamp_m_opt_mood_elevated: "Eleveret / svingende stemningsleje",
-
-  abcstamp_p_opt_perception_none: "Ingen abnorme perceptioner oplyst",
-  abcstamp_p_opt_perception_voices: "Hørehallucinationer / stemmer oplyst",
-  abcstamp_p_opt_perception_other: "Anden perceptuel forstyrrelse",
-  // BLODGAS MAIN
-  tool_bloodgas_title: "Blodgas fortolkning",
-  tool_bloodgas_desc: "Fortolk blodgas, laktat, glukose og infektionsparametre",
-
-  // SYRE-BASE
-  tool_bg_acidbase_title: "Syre-base analyse",
-  tool_bg_acidbase_desc: "Vurder acidose/alkalose og sandsynlig årsag",
-
-  // MØNSTRE
-  tool_bg_patterns_title: "Fortolkning",
-  tool_bg_patterns_desc: "Identificér typiske mønstre som DKA eller sepsis",
-
-  // INFEKTION
-  tool_bg_infection_title: "Infektionsindikatorer",
-  tool_bg_infection_desc: "CRP og urinstix fortolkning",
-
-  // RESULT
-  lab_result: "Resultat",
-
-  // LABELS
-  bg_label_ph: "pH",
-  bg_label_pco2: "pCO₂ (kPa)",
-  bg_label_hco3: "HCO₃⁻ (mmol/L)",
-  bg_label_glucose: "Glukose (mmol/L)",
-  bg_label_lactate: "Laktat (mmol/L)",
-  bg_label_crp: "CRP (mg/L)",
-  bg_label_nitrite: "Nitrit",
-  bg_label_leukocytes: "Leukocytter",
-
-  // DISCLAIMER
-  bg_disclaimer: "Kun støtteværktøj – ikke diagnostisk",
-  bg_no_pattern_found:
-    "Ingen tydelig mønsterforslag ud fra de indtastede værdier.",
-  bg_pattern_dka: "Possible DKA pattern – consider ketoacidosis",
-  bg_pattern_lactate_elevated:
-    "Elevated lactate – consider sepsis or hypoperfusion",
-  bg_pattern_lactate_high: "High lactate – urgent assessment for shock state",
-  bg_pattern_dehydration: "Pattern may fit dehydration / stress response",
-  bg_pattern_respiratory_acidosis: "Pattern may fit respiratory acidosis",
+  meddisc_footer:
+    "Denne app er et støtteværktøj — ikke en erstatning for professionel medicinsk vurdering.",
 };

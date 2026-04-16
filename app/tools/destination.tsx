@@ -937,16 +937,34 @@ export default function DestinationTool() {
   return (
     <Background>
       <Screen>
-        <View style={{ gap: 6, marginTop: 12 }}>
-          <Title>{t("dest_title")}</Title>
-          <Subtle>{t("dest_sub")}</Subtle>
+        <View
+          style={{
+            gap: 6,
+            marginTop: 12,
+            alignItems: "center",
+          }}
+        >
+          <Title style={{ textAlign: "center" }}>{t("dest_title")}</Title>
+          <Subtle style={{ textAlign: "center" }}>{t("dest_sub")}</Subtle>
         </View>
 
         <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
           <Card>
-            <Title>{t("dest_function_title")}</Title>
+            <View style={{ alignItems: "center" }}>
+              <Title style={{ textAlign: "center" }}>
+                {t("dest_function_title")}
+              </Title>
+            </View>
 
-            <View style={{ flexDirection: "row", gap: 10, marginTop: 10 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                gap: 10,
+                marginTop: 10,
+                justifyContent: "center",
+                flexWrap: "wrap",
+              }}
+            >
               <Pressable
                 onPress={() => switchMode("gps")}
                 style={chip(mode === "gps")}
@@ -966,7 +984,15 @@ export default function DestinationTool() {
               </Pressable>
             </View>
 
-            <View style={{ flexDirection: "row", gap: 10, marginTop: 10 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                gap: 10,
+                marginTop: 10,
+                justifyContent: "center",
+                flexWrap: "wrap",
+              }}
+            >
               <Pressable
                 onPress={() => switchArea("byen")}
                 style={chip(area === "byen")}
@@ -1023,10 +1049,6 @@ export default function DestinationTool() {
                     placeholder={t("dest_category")}
                     maxHeight={220}
                   />
-
-                  <Text style={{ color: theme.colors.mutedText, marginTop: 8 }}>
-                    {t("dest_region_note")}
-                  </Text>
 
                   {showNeurokirNote && (
                     <Text
@@ -1219,12 +1241,12 @@ export default function DestinationTool() {
             <Title>{t("dest_result")}</Title>
 
             {!resolvedHospital ? (
-              <Text style={{ color: theme.colors.mutedText }}>
+              <Text style={{ color: theme.colors.mutedText, marginTop: 10 }}>
                 {t("dest_pick_more")}
               </Text>
             ) : (
-              <>
-                <Row>
+              <View style={{ marginTop: 12, gap: 14 }}>
+                <Row style={{ alignItems: "flex-start" }}>
                   <Text style={{ color: theme.colors.mutedText, width: 130 }}>
                     {t("dest_destination")}
                   </Text>
@@ -1240,91 +1262,92 @@ export default function DestinationTool() {
                   </Text>
                 </Row>
 
-                <View
-                  style={{
-                    marginTop: 10,
-                    borderRadius: 14,
-                    borderWidth: 1,
-                    borderColor: theme.colors.cardBorder,
-                    padding: 12,
-                    backgroundColor: "rgba(0,0,0,0.14)",
-                    gap: 8,
-                  }}
-                >
+                <Row style={{ alignItems: "flex-start" }}>
+                  <Text style={{ color: theme.colors.mutedText, width: 130 }}>
+                    Telefonnummer
+                  </Text>
+
                   {loadingHospitalPhone ? (
-                    <Text style={{ color: theme.colors.mutedText }}>
+                    <Text
+                      style={{
+                        color: theme.colors.mutedText,
+                        flex: 1,
+                      }}
+                    >
                       Henter telefonnummer...
                     </Text>
                   ) : hospitalPhone ? (
-                    <View
+                    <Text
                       style={{
-                        gap: 8,
+                        color: theme.colors.text,
+                        fontWeight: "900",
+                        fontSize: 18,
+                        flex: 1,
                       }}
                     >
-                      <Text style={{ color: theme.colors.mutedText }}>
-                        Telefonnummer:{" "}
-                        <Text
-                          style={{
-                            color: theme.colors.text,
-                            fontWeight: "800",
-                          }}
-                        >
-                          {hospitalPhone.phone}
-                        </Text>
-                      </Text>
-
-                      <Text
-                        style={{ color: theme.colors.mutedText, fontSize: 12 }}
-                      >
-                        {hospitalPhone.specialtyKey === "main"
-                          ? "Specialenummer ikke fundet – viser hospitalets hovednummer."
-                          : `Viser: ${hospitalPhone.displayNameDa}`}
-                      </Text>
-
-                      <Pressable
-                        onPress={() => callHospitalNumber(hospitalPhone.phone)}
-                        style={chip(false)}
-                      >
-                        <Text
-                          style={{
-                            color: theme.colors.text,
-                            fontWeight: "800",
-                          }}
-                        >
-                          Ring op
-                        </Text>
-                      </Pressable>
-                    </View>
+                      {hospitalPhone.phone}
+                    </Text>
                   ) : (
-                    <Text style={{ color: theme.colors.mutedText }}>
+                    <Text
+                      style={{
+                        color: theme.colors.mutedText,
+                        flex: 1,
+                      }}
+                    >
                       Intet telefonnummer fundet endnu.
                     </Text>
                   )}
+                </Row>
 
-                  <Text
-                    style={{
-                      color: theme.colors.mutedText,
-                      fontSize: 12,
-                      lineHeight: 17,
-                      marginTop: 4,
-                    }}
-                  >
-                    {t("dest_result_disclaimer")}
-                  </Text>
-                </View>
+                {hospitalPhone && (
+                  <View style={{ gap: 8 }}>
+                    <Row style={{ alignItems: "flex-start" }}>
+                      <Text
+                        style={{ color: theme.colors.mutedText, width: 130 }}
+                      >
+                        Specialenummer
+                      </Text>
+                      <Text
+                        style={{
+                          color: theme.colors.mutedText,
+                          fontSize: 12,
+                          flex: 1,
+                          lineHeight: 18,
+                        }}
+                      >
+                        {hospitalPhone.specialtyKey === "main"
+                          ? "Specialenummer ikke fundet – viser hospitalets hovednummer."
+                          : hospitalPhone.displayNameDa}
+                      </Text>
+                    </Row>
+
+                    <Pressable
+                      onPress={() => callHospitalNumber(hospitalPhone.phone)}
+                      style={chip(false)}
+                    >
+                      <Text
+                        style={{
+                          color: theme.colors.text,
+                          fontWeight: "800",
+                        }}
+                      >
+                        Ring op
+                      </Text>
+                    </Pressable>
+                  </View>
+                )}
 
                 {resolvedHospital.code === "UNKNOWN" && (
                   <Text
                     style={{
                       color: theme.colors.warn,
                       fontWeight: "800",
-                      marginTop: 8,
                     }}
                   >
                     {t("dest_unknown")}
                   </Text>
                 )}
-              </>
+              </View>
             )}
           </Card>
 

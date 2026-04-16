@@ -22,9 +22,13 @@ async function getHospitalPhoneDoc(
 
     if (!snap.exists()) return null;
 
-    return snap.data() as HospitalPhoneNumber;
+    const data = snap.data() as HospitalPhoneNumber;
+
+    if (data.active === false) return null;
+
+    return data;
   } catch (error) {
-    console.error("Failed to fetch hospital phone number:", error);
+    console.error(`Failed to fetch hospital phone number for "${id}":`, error);
     return null;
   }
 }

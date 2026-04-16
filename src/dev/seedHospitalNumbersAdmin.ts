@@ -1,5 +1,8 @@
-import { doc, setDoc } from "firebase/firestore";
-import { db } from "../lib/firebase";
+import { cert, getApps, initializeApp } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
+
+// Adjust path if needed
+import serviceAccount from "../../secrets/firebase-service-account.json";
 
 type SeedPhoneDoc = {
   id: string;
@@ -12,7 +15,6 @@ type SeedPhoneDoc = {
 };
 
 const PHONE_DATA: SeedPhoneDoc[] = [
-  // Main / fallback numbers
   {
     id: "AMH_main",
     hospitalCode: "AMH",
@@ -104,7 +106,6 @@ const PHONE_DATA: SeedPhoneDoc[] = [
     phone: "+4500000010",
   },
 
-  // Combo codes used in your mapping
   {
     id: "RH_GLO_main",
     hospitalCode: "RH_GLO",
@@ -142,7 +143,6 @@ const PHONE_DATA: SeedPhoneDoc[] = [
     phone: "+4500000014",
   },
 
-  // Trombolyse
   {
     id: "RH_trombolyse",
     hospitalCode: "RH",
@@ -162,7 +162,6 @@ const PHONE_DATA: SeedPhoneDoc[] = [
     phone: "+4500000702",
   },
 
-  // A few real first-line specialties to test exact-match behavior
   {
     id: "BBH_akutmodtagelse",
     hospitalCode: "BBH",
@@ -264,11 +263,19 @@ const PHONE_DATA: SeedPhoneDoc[] = [
   },
 ];
 
-export async function seedHospitalData() {
+if (!getApps().length) {
+  initializeApp({
+    credential: cert(serviceAccount as any),
+  });
+}
+
+const db = getFirestore();
+
+async function seedHospitalData() {
   console.log("Seeding hospital data...");
 
   for (const item of PHONE_DATA) {
-    await setDoc(doc(db, "hospital_numbers", item.id), {
+    await db.collection("hospital_numbers").doc(item.id).set({
       hospitalCode: item.hospitalCode,
       hospitalName: item.hospitalName,
       specialtyKey: item.specialtyKey,
@@ -282,7 +289,7 @@ export async function seedHospitalData() {
 
   console.log(`Seeding done ✅ (${PHONE_DATA.length} docs)`);
 }
-// Run the seed script when this file is executed directly
+
 seedHospitalData()
   .then(() => {
     console.log("Done seeding ✅");

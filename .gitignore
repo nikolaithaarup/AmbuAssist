@@ -9,6 +9,9 @@ dist/
 web-build/
 expo-env.d.ts
 secrets/
+src/lib/firebase.ts
+.env
+.env.*
 
 # Native
 .kotlin/

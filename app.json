@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "dk.ambuassist.app",
-      "buildNumber": "1",
+      "buildNumber": "2",
       "icon": "./assets/icon.png",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Allow AmbuAssist to use your location to suggest the correct destination hospital.",
@@ -25,7 +25,7 @@
     },
     "android": {
       "package": "dk.ambuassist.app",
-      "versionCode": 1,
+      "versionCode": 2,
       "adaptiveIcon": {
         "foregroundImage": "./assets/her-icon.png",
         "backgroundColor": "#25311F"

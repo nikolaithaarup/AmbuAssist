@@ -37,41 +37,36 @@ export default function BloodGasPage() {
       <Screen>
         <ScrollView
           contentContainerStyle={{
+            flexGrow: 1,
             paddingHorizontal: 16,
             paddingTop: 16,
             paddingBottom: 24,
+            justifyContent: "center",
             alignItems: "center",
           }}
         >
-          <View style={{ width: "100%", maxWidth: 520, gap: 12 }}>
-            <Title style={{ textAlign: "center" }}>
-              {t("tool_bloodgas_title")}
-            </Title>
+          <View style={{ width: "100%", maxWidth: 520 }}>
+            <Card style={{ paddingHorizontal: 20, paddingVertical: 24 }}>
+              <View style={{ alignItems: "center", gap: 12 }}>
+                <Title style={{ textAlign: "center" }}>Bloodgas</Title>
 
-            <Subtle style={{ textAlign: "center" }}>
-              {t("tool_bloodgas_desc")}
-            </Subtle>
+                <Subtle style={{ textAlign: "center", lineHeight: 20 }}>
+                  This tool is currently being built and will be available soon.
+                </Subtle>
 
-            {tools.map((tool) => (
-              <Pressable
-                key={tool.path}
-                onPress={() => router.push(tool.path)}
-                style={({ pressed }) => ({
-                  opacity: pressed ? 0.7 : 1,
-                })}
-              >
-                <Card style={{ paddingHorizontal: 18, paddingVertical: 14 }}>
-                  <View style={{ alignItems: "center", gap: 6 }}>
-                    <Title style={{ textAlign: "center", fontSize: 16 }}>
-                      {t(tool.titleKey)}
-                    </Title>
-                    <Subtle style={{ textAlign: "center", fontSize: 12 }}>
-                      {t(tool.descKey)}
-                    </Subtle>
-                  </View>
-                </Card>
-              </Pressable>
-            ))}
+                <Pressable
+                  onPress={() => router.back()}
+                  style={({ pressed }) => ({
+                    marginTop: 8,
+                    opacity: pressed ? 0.7 : 1,
+                  })}
+                >
+                  <Card style={{ paddingHorizontal: 18, paddingVertical: 10 }}>
+                    <Subtle style={{ textAlign: "center" }}>Back</Subtle>
+                  </Card>
+                </Pressable>
+              </View>
+            </Card>
           </View>
         </ScrollView>
       </Screen>

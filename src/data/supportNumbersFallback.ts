@@ -1,0 +1,147 @@
+export type SupportNumberFallback = {
+  id: string;
+  nameDa: string;
+  nameEn: string;
+  phone: string;
+  sortOrder?: number;
+  active?: boolean;
+};
+
+export const SUPPORT_NUMBERS_FALLBACK: SupportNumberFallback[] = [
+  {
+    id: "akutbilskoordinator",
+    nameDa: "Akutbilskoordinator",
+    nameEn: "Rapid response coordinator",
+    phone: "+4538698937",
+    sortOrder: 10,
+    active: true,
+  },
+  {
+    id: "alb_midt",
+    nameDa: "Akutlægebil Midt",
+    nameEn: "Emergency doctor car Mid",
+    phone: "+4524978774",
+    sortOrder: 20,
+    active: true,
+  },
+  {
+    id: "alb_nord",
+    nameDa: "Akutlægebil Nord",
+    nameEn: "Emergency doctor car North",
+    phone: "+4524822602",
+    sortOrder: 21,
+    active: true,
+  },
+  {
+    id: "alb_syd",
+    nameDa: "Akutlægebil Syd",
+    nameEn: "Emergency doctor car South",
+    phone: "+4520224358",
+    sortOrder: 22,
+    active: true,
+  },
+  {
+    id: "amk_dispatch",
+    nameDa: "AMK Dispatch",
+    nameEn: "AMK Dispatch",
+    phone: "+4538698836",
+    sortOrder: 30,
+    active: true,
+  },
+  {
+    id: "amk_lima",
+    nameDa: "AMK Læge (Lima)",
+    nameEn: "AMK Doctor (Lima)",
+    phone: "+4538698829",
+    sortOrder: 31,
+    active: true,
+  },
+  {
+    id: "amk_sjaelland",
+    nameDa: "AMK Sjælland",
+    nameEn: "AMK Zealand",
+    phone: "+4543399317",
+    sortOrder: 40,
+    active: true,
+  },
+  {
+    id: "cvi_byen",
+    nameDa: "CVI Byen",
+    nameEn: "CVI City",
+    phone: "+4538697711",
+    sortOrder: 50,
+    active: true,
+  },
+  {
+    id: "cvi_midt",
+    nameDa: "CVI Midt",
+    nameEn: "CVI Mid",
+    phone: "+4538697722",
+    sortOrder: 51,
+    active: true,
+  },
+  {
+    id: "cvi_nord",
+    nameDa: "CVI Nord",
+    nameEn: "CVI North",
+    phone: "+4538697733",
+    sortOrder: 52,
+    active: true,
+  },
+  {
+    id: "cvi_syd",
+    nameDa: "CVI Syd",
+    nameEn: "CVI South",
+    phone: "+4538697744",
+    sortOrder: 53,
+    active: true,
+  },
+  {
+    id: "giftlinjen",
+    nameDa: "Giftlinjen",
+    nameEn: "Poison control",
+    phone: "+4538635555",
+    sortOrder: 60,
+    active: true,
+  },
+  {
+    id: "laege_1813",
+    nameDa: "1813 Læge",
+    nameEn: "1813 Doctor",
+    phone: "+4551158903",
+    sortOrder: 70,
+    active: true,
+  },
+  {
+    id: "psykiatrisk_udrykningstjeneste",
+    nameDa: "Psykiatrisk udrykningstjeneste",
+    nameEn: "Psychiatric response service",
+    phone: "+4520606040",
+    sortOrder: 80,
+    active: true,
+  },
+  {
+    id: "sociolancen",
+    nameDa: "Sociolancen",
+    nameEn: "Social ambulance",
+    phone: "+4521447591",
+    sortOrder: 90,
+    active: true,
+  },
+  {
+    id: "vagtleder_112",
+    nameDa: "Vagtleder 112",
+    nameEn: "112 supervisor",
+    phone: "+4540122542",
+    sortOrder: 100,
+    active: true,
+  },
+  {
+    id: "vagtleder_ambulance",
+    nameDa: "Vagtleder Ambulance",
+    nameEn: "Ambulance supervisor",
+    phone: "+4538698929",
+    sortOrder: 101,
+    active: true,
+  },
+];

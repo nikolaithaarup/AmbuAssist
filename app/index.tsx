@@ -60,6 +60,11 @@ export default function Home() {
       path: "/tools/trombolysis",
     },
     {
+      titleKey: "tool_supportNumbers_title",
+      descKey: "tool_supportNumbers_desc",
+      path: "/tools/support-numbers",
+    },
+    {
       titleKey: "tool_exams_title",
       descKey: "tool_exams_desc",
       path: "/tools/exams",

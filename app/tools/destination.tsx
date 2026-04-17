@@ -1,5 +1,5 @@
 import * as Location from "expo-location";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -12,11 +12,11 @@ import {
 } from "react-native";
 
 import { useT } from "../../src/i18n/useT";
-import { useSettings } from "../../src/state/settings";
 import {
   getReference,
   type ReferenceDoc,
 } from "../../src/services/referenceService";
+import { useSettings } from "../../src/state/settings";
 import { Background } from "../../src/ui/Background";
 import { CollapsibleCard } from "../../src/ui/CollapsibleCard";
 import {
@@ -61,14 +61,15 @@ import {
 } from "../../src/features/destination/helpers";
 
 import {
-  getHospitalPhoneNumber,
+  getHospitalPhoneNumbersByCode,
   type HospitalPhoneNumber,
-} from "../../src/services/hospitalNumbers";
+} from "../../src/dev/hospitalNumbers";
 
 import { chip } from "../../src/features/destination/ui";
 
 type TranslateFn = (key: any) => string;
 type InputMode = "gps" | "search";
+type PhoneOptionValue = string;
 
 const VISITATION_BYEN_URL =
   "https://drive.google.com/file/d/18gnYztqAw40PxuGuP5N_iEDmksYk-eIX/view?usp=sharing";
@@ -155,13 +156,14 @@ type ResolvedHospital = {
 };
 
 type SimpleDropdownProps<T extends string> = {
-  label: string;
+  label?: string;
   value: T | "";
   open: boolean;
   onToggle: () => void;
   options: readonly T[];
   onSelect: (value: T) => void;
-  renderValue?: (value: T) => string;
+  renderValue?: (value: T) => ReactNode;
+  renderOption?: (value: T, selected: boolean) => ReactNode;
   placeholder?: string;
   emptyText?: string;
   maxHeight?: number;
@@ -175,19 +177,17 @@ function SimpleDropdown<T extends string>({
   options,
   onSelect,
   renderValue,
+  renderOption,
   placeholder = "Choose...",
   emptyText = "No matches found.",
   maxHeight = 220,
 }: SimpleDropdownProps<T>) {
-  const displayValue = value
-    ? renderValue
-      ? renderValue(value)
-      : value
-    : placeholder;
+  const displayValue =
+    value && renderValue ? renderValue(value) : value || placeholder;
 
   return (
     <View style={{ gap: 8 }}>
-      <Label>{label}</Label>
+      {!!label && <Label>{label}</Label>}
 
       <Pressable
         onPress={onToggle}
@@ -200,12 +200,28 @@ function SimpleDropdown<T extends string>({
           backgroundColor: "rgba(0,0,0,0.10)",
         }}
       >
-        <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
-          {displayValue}{" "}
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+          }}
+        >
+          <View style={{ flex: 1 }}>
+            {typeof displayValue === "string" ? (
+              <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
+                {displayValue}
+              </Text>
+            ) : (
+              displayValue
+            )}
+          </View>
+
           <Text style={{ color: theme.colors.mutedText }}>
             {open ? "▲" : "▼"}
           </Text>
-        </Text>
+        </View>
       </Pressable>
 
       {open && (
@@ -229,30 +245,37 @@ function SimpleDropdown<T extends string>({
               contentContainerStyle={{ gap: 8 }}
               showsVerticalScrollIndicator
             >
-              {options.map((option) => (
-                <Pressable
-                  key={option}
-                  onPress={() => onSelect(option)}
-                  style={{
-                    borderRadius: 10,
-                    paddingHorizontal: 10,
-                    paddingVertical: 12,
-                    backgroundColor:
-                      value === option
+              {options.map((option) => {
+                const selected = value === option;
+
+                return (
+                  <Pressable
+                    key={option}
+                    onPress={() => onSelect(option)}
+                    style={{
+                      borderRadius: 10,
+                      paddingHorizontal: 10,
+                      paddingVertical: 12,
+                      backgroundColor: selected
                         ? "rgba(220,220,220,0.18)"
                         : "transparent",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: theme.colors.text,
-                      fontWeight: value === option ? "800" : "700",
                     }}
                   >
-                    {renderValue ? renderValue(option) : option}
-                  </Text>
-                </Pressable>
-              ))}
+                    {renderOption ? (
+                      renderOption(option, selected)
+                    ) : (
+                      <Text
+                        style={{
+                          color: theme.colors.text,
+                          fontWeight: selected ? "800" : "700",
+                        }}
+                      >
+                        {renderValue ? renderValue(option) : option}
+                      </Text>
+                    )}
+                  </Pressable>
+                );
+              })}
             </ScrollView>
           )}
         </View>
@@ -387,10 +410,13 @@ export default function DestinationTool() {
   const [kommuneOpen, setKommuneOpen] = useState(false);
   const [byenCatOpen, setByenCatOpen] = useState(false);
   const [regCatOpen, setRegCatOpen] = useState(false);
+  const [phoneDropdownOpen, setPhoneDropdownOpen] = useState(false);
 
-  const [hospitalPhone, setHospitalPhone] =
-    useState<HospitalPhoneNumber | null>(null);
-  const [loadingHospitalPhone, setLoadingHospitalPhone] = useState(false);
+  const [hospitalPhones, setHospitalPhones] = useState<HospitalPhoneNumber[]>(
+    [],
+  );
+  const [selectedPhoneId, setSelectedPhoneId] = useState<string>("");
+  const [loadingHospitalPhones, setLoadingHospitalPhones] = useState(false);
 
   const selectedSpecialtyKey = area === "byen" ? byenCat : regCat;
 
@@ -431,6 +457,7 @@ export default function DestinationTool() {
     setKommuneOpen(false);
     setByenCatOpen(false);
     setRegCatOpen(false);
+    setPhoneDropdownOpen(false);
   };
 
   const resetSelectionState = () => {
@@ -440,6 +467,8 @@ export default function DestinationTool() {
     setSelectedStreet("");
     setStreetQ("");
     setKommuneQ("");
+    setHospitalPhones([]);
+    setSelectedPhoneId("");
     closeAllDropdowns();
   };
 
@@ -464,6 +493,7 @@ export default function DestinationTool() {
         setKommuneOpen(false);
         setByenCatOpen(false);
         setRegCatOpen(false);
+        setPhoneDropdownOpen(false);
       }
       return next;
     });
@@ -476,6 +506,7 @@ export default function DestinationTool() {
         setStreetOpen(false);
         setByenCatOpen(false);
         setRegCatOpen(false);
+        setPhoneDropdownOpen(false);
       }
       return next;
     });
@@ -488,6 +519,7 @@ export default function DestinationTool() {
         setStreetOpen(false);
         setKommuneOpen(false);
         setRegCatOpen(false);
+        setPhoneDropdownOpen(false);
       }
       return next;
     });
@@ -500,6 +532,20 @@ export default function DestinationTool() {
         setStreetOpen(false);
         setKommuneOpen(false);
         setByenCatOpen(false);
+        setPhoneDropdownOpen(false);
+      }
+      return next;
+    });
+  };
+
+  const togglePhoneDropdown = () => {
+    setPhoneDropdownOpen((prev) => {
+      const next = !prev;
+      if (next) {
+        setStreetOpen(false);
+        setKommuneOpen(false);
+        setByenCatOpen(false);
+        setRegCatOpen(false);
       }
       return next;
     });
@@ -651,32 +697,118 @@ export default function DestinationTool() {
   }, [area, bydel, kommune, selectedStreet, byenCat, regCat, t]);
 
   useEffect(() => {
-    const loadHospitalPhone = async () => {
+    const loadHospitalPhones = async () => {
       if (!resolvedHospital || resolvedHospital.code === "UNKNOWN") {
-        setHospitalPhone(null);
-        setLoadingHospitalPhone(false);
+        setHospitalPhones([]);
+        setSelectedPhoneId("");
+        setLoadingHospitalPhones(false);
         return;
       }
 
-      setLoadingHospitalPhone(true);
+      setLoadingHospitalPhones(true);
 
       try {
-        const result = await getHospitalPhoneNumber(
+        const results = await getHospitalPhoneNumbersByCode(
           resolvedHospital.code,
-          selectedSpecialtyKey,
         );
 
-        setHospitalPhone(result);
+        setHospitalPhones(results);
+
+        const preferred =
+          results.find((item) => item.specialtyKey === selectedSpecialtyKey) ??
+          results.find((item) => item.specialtyKey === "main") ??
+          results[0] ??
+          null;
+
+        setSelectedPhoneId(preferred?.id ?? "");
       } catch (error) {
-        console.error("Error loading hospital phone:", error);
-        setHospitalPhone(null);
+        console.error("Error loading hospital phones:", error);
+        setHospitalPhones([]);
+        setSelectedPhoneId("");
       } finally {
-        setLoadingHospitalPhone(false);
+        setLoadingHospitalPhones(false);
       }
     };
 
-    loadHospitalPhone();
+    loadHospitalPhones();
   }, [resolvedHospital?.code, selectedSpecialtyKey]);
+
+  const selectedHospitalPhone = useMemo(() => {
+    return hospitalPhones.find((item) => item.id === selectedPhoneId) ?? null;
+  }, [hospitalPhones, selectedPhoneId]);
+
+  const phoneOptions = useMemo(() => {
+    return hospitalPhones.map((item) => item.id);
+  }, [hospitalPhones]);
+
+  const getPhoneDisplayName = (item: HospitalPhoneNumber) => {
+    const preferredName =
+      lang === "da"
+        ? item.displayNameDa || item.displayNameEn
+        : item.displayNameEn || item.displayNameDa;
+
+    return preferredName || fallbackLabelFromKey(item.specialtyKey || "main");
+  };
+
+  const renderPhoneSelectedValue = (id: string) => {
+    const item = hospitalPhones.find((row) => row.id === id);
+    if (!item) {
+      return (
+        <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
+          {id}
+        </Text>
+      );
+    }
+
+    return (
+      <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
+        {getPhoneDisplayName(item)}
+      </Text>
+    );
+  };
+
+  const renderPhoneOptionRow = (id: string, selected: boolean) => {
+    const item = hospitalPhones.find((row) => row.id === id);
+
+    if (!item) {
+      return (
+        <Text
+          style={{
+            color: theme.colors.text,
+            fontWeight: selected ? "800" : "700",
+          }}
+        >
+          {id}
+        </Text>
+      );
+    }
+
+    return (
+      <View style={{ gap: 2 }}>
+        <Text
+          style={{
+            color: theme.colors.text,
+            fontWeight: selected ? "800" : "700",
+            fontSize: 16,
+            lineHeight: 20,
+          }}
+        >
+          {getPhoneDisplayName(item)}
+        </Text>
+
+        <Text
+          style={{
+            color: theme.colors.mutedText,
+            fontWeight: "600",
+            fontSize: 16,
+            lineHeight: 20,
+          }}
+        >
+          {item.phone}
+        </Text>
+      </View>
+    );
+  };
 
   const handleStreetChange = (text: string) => {
     setStreetQ(text);
@@ -684,6 +816,7 @@ export default function DestinationTool() {
     setKommuneOpen(false);
     setByenCatOpen(false);
     setRegCatOpen(false);
+    setPhoneDropdownOpen(false);
 
     const exactStreet = STREET_SAMPLE.find(
       (row) => norm(row.street) === norm(text),
@@ -708,6 +841,7 @@ export default function DestinationTool() {
     setStreetOpen(false);
     setByenCatOpen(false);
     setRegCatOpen(false);
+    setPhoneDropdownOpen(false);
 
     const exactKommune = ALL_KOMMUNER.find((k) => norm(k) === norm(text));
 
@@ -1248,7 +1382,7 @@ export default function DestinationTool() {
               <View style={{ marginTop: 12, gap: 14 }}>
                 <Row style={{ alignItems: "flex-start" }}>
                   <Text style={{ color: theme.colors.mutedText, width: 130 }}>
-                    {t("dest_destination")}
+                    Hospital
                   </Text>
                   <Text
                     style={{
@@ -1267,75 +1401,95 @@ export default function DestinationTool() {
                     Telefonnummer
                   </Text>
 
-                  {loadingHospitalPhone ? (
-                    <Text
-                      style={{
-                        color: theme.colors.mutedText,
-                        flex: 1,
-                      }}
-                    >
-                      Henter telefonnummer...
-                    </Text>
-                  ) : hospitalPhone ? (
-                    <Text
-                      style={{
-                        color: theme.colors.text,
-                        fontWeight: "900",
-                        fontSize: 18,
-                        flex: 1,
-                      }}
-                    >
-                      {hospitalPhone.phone}
-                    </Text>
-                  ) : (
-                    <Text
-                      style={{
-                        color: theme.colors.mutedText,
-                        flex: 1,
-                      }}
-                    >
-                      Intet telefonnummer fundet endnu.
-                    </Text>
-                  )}
-                </Row>
-
-                {hospitalPhone && (
-                  <View style={{ gap: 8 }}>
-                    <Row style={{ alignItems: "flex-start" }}>
-                      <Text
-                        style={{ color: theme.colors.mutedText, width: 130 }}
-                      >
-                        Specialenummer
+                  <View style={{ flex: 1 }}>
+                    {loadingHospitalPhones ? (
+                      <Text style={{ color: theme.colors.mutedText }}>
+                        Henter telefonnumre...
                       </Text>
-                      <Text
-                        style={{
-                          color: theme.colors.mutedText,
-                          fontSize: 12,
-                          flex: 1,
-                          lineHeight: 18,
-                        }}
-                      >
-                        {hospitalPhone.specialtyKey === "main"
-                          ? "Specialenummer ikke fundet – viser hospitalets hovednummer."
-                          : hospitalPhone.displayNameDa}
-                      </Text>
-                    </Row>
-
-                    <Pressable
-                      onPress={() => callHospitalNumber(hospitalPhone.phone)}
-                      style={chip(false)}
-                    >
+                    ) : selectedHospitalPhone ? (
                       <Text
                         style={{
                           color: theme.colors.text,
-                          fontWeight: "800",
+                          fontWeight: "900",
+                          fontSize: 18,
                         }}
                       >
-                        Ring op
+                        {selectedHospitalPhone.phone}
                       </Text>
-                    </Pressable>
+                    ) : (
+                      <Text style={{ color: theme.colors.mutedText }}>
+                        Intet telefonnummer fundet endnu.
+                      </Text>
+                    )}
                   </View>
+                </Row>
+
+                <Row style={{ alignItems: "flex-start" }}>
+                  <Text style={{ color: theme.colors.mutedText, width: 130 }}>
+                    Ændre
+                  </Text>
+
+                  <View style={{ flex: 1 }}>
+                    {!loadingHospitalPhones && hospitalPhones.length > 0 ? (
+                      <SimpleDropdown<PhoneOptionValue>
+                        value={selectedPhoneId}
+                        open={phoneDropdownOpen}
+                        onToggle={togglePhoneDropdown}
+                        options={phoneOptions}
+                        onSelect={(value) => {
+                          setSelectedPhoneId(value);
+                          setPhoneDropdownOpen(false);
+                        }}
+                        renderValue={renderPhoneSelectedValue}
+                        renderOption={renderPhoneOptionRow}
+                        placeholder={
+                          lang === "da"
+                            ? "Vælg hospitalsnummer"
+                            : "Choose hospital number"
+                        }
+                        emptyText={
+                          lang === "da"
+                            ? "Ingen telefonnumre fundet."
+                            : "No phone numbers found."
+                        }
+                        maxHeight={240}
+                      />
+                    ) : (
+                      <Text style={{ color: theme.colors.mutedText }}>-</Text>
+                    )}
+                  </View>
+                </Row>
+
+                {selectedHospitalPhone && (
+                  <Pressable
+                    onPress={() =>
+                      callHospitalNumber(selectedHospitalPhone.phone)
+                    }
+                    style={chip(false)}
+                  >
+                    <Text
+                      style={{
+                        color: theme.colors.text,
+                        fontWeight: "800",
+                        textAlign: "center",
+                      }}
+                    >
+                      Ring op
+                    </Text>
+                  </Pressable>
                 )}
+
+                {!loadingHospitalPhones &&
+                  resolvedHospital.code !== "UNKNOWN" &&
+                  hospitalPhones.length === 0 && (
+                    <Text
+                      style={{
+                        color: theme.colors.mutedText,
+                      }}
+                    >
+                      Ingen telefonnumre fundet for dette hospital endnu.
+                    </Text>
+                  )}
 
                 {resolvedHospital.code === "UNKNOWN" && (
                   <Text

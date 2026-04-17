@@ -102,6 +102,18 @@ export const en = {
   tool_paediatric_title: "Paediatric",
   tool_paediatric_desc: "APGAR, FLACC and paediatric assessments",
 
+  tool_supportNumbers_title: "Support numbers",
+  tool_supportNumbers_desc: "Quick access to important operational contacts",
+  support_numbers_sub: "Quick access to important operational contacts",
+  support_numbers_loading: "Loading support numbers...",
+  support_numbers_empty: "No support numbers found yet.",
+  support_numbers_name: "Name",
+  support_numbers_phone: "Phone number",
+  support_numbers_disclaimer_fallback:
+    "The numbers in this tool are advisory and must always be verified against local procedures, official contact lists, and clinical/operational judgement.",
+  support_numbers_sources_sub_fallback:
+    "Sources and local contact references for support numbers.",
+
   // =========================================================
   // SECTION PAGES
   // =========================================================
@@ -1608,6 +1620,18 @@ export const da: typeof en = {
   tool_bg_infection_title: "Infektionshjælper",
   tool_bg_infection_desc:
     "Simpel støtte til infektionstolkning ud fra blod- og urinprøver.",
+
+  tool_supportNumbers_title: "Support numre",
+  tool_supportNumbers_desc: "Hurtig adgang til vigtige operative kontakter",
+  support_numbers_sub: "Hurtig adgang til vigtige operative telefonnumre",
+  support_numbers_loading: "Henter supportnumre...",
+  support_numbers_empty: "Ingen supportnumre fundet endnu.",
+  support_numbers_name: "Navn",
+  support_numbers_phone: "Telefonnummer",
+  support_numbers_disclaimer_fallback:
+    "Numrene i dette værktøj er vejledende og skal altid verificeres mod gældende lokale instrukser, officielle kontaktlister og klinisk/operativ vurdering.",
+  support_numbers_sources_sub_fallback:
+    "Kilder og lokale kontaktgrundlag for supportnumre.",
 
   bg_label_ph: "pH",
   bg_label_pco2: "pCO₂ (kPa)",

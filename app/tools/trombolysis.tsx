@@ -9,16 +9,16 @@ import {
   View,
 } from "react-native";
 
+import {
+  getHospitalPhoneNumber,
+  type HospitalPhoneNumber,
+} from "../../src/dev/hospitalNumbers";
+import { chip } from "../../src/features/destination/ui";
 import { useT } from "../../src/i18n/useT";
 import { useSettings } from "../../src/state/settings";
 import { Background } from "../../src/ui/Background";
 import { Card, Row, Screen, Subtle, Title } from "../../src/ui/Ui";
 import { theme } from "../../src/ui/theme";
-import { chip } from "../../src/features/destination/ui";
-import {
-  getHospitalPhoneNumber,
-  type HospitalPhoneNumber,
-} from "../../src/services/hospitalNumbers";
 
 type ThromHospital = "RH" | "BBH";
 const TROMBOLYSE_SPECIALTY_KEY = "trombolyse" as const;

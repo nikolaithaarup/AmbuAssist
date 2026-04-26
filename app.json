@@ -2,7 +2,7 @@
   "expo": {
     "name": "AmbuAssist",
     "slug": "ambuassist",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "scheme": "ambuassist",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -16,16 +16,14 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "dk.ambuassist.app",
-      "buildNumber": "2",
       "icon": "./assets/icon.png",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Allow AmbuAssist to use your location to suggest the correct destination hospital.",
+        "NSLocationWhenInUseUsageDescription": "Allow AmbuAssist to use your location to suggest the correct destination hospital and estimate driving time to selected hospitals.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "package": "dk.ambuassist.app",
-      "versionCode": 2,
       "adaptiveIcon": {
         "foregroundImage": "./assets/her-icon.png",
         "backgroundColor": "#25311F"
@@ -45,7 +43,7 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Allow AmbuAssist to use your location to suggest the correct destination hospital."
+          "locationWhenInUsePermission": "Allow AmbuAssist to use your location to suggest the correct destination hospital and estimate driving time to selected hospitals."
         }
       ]
     ],

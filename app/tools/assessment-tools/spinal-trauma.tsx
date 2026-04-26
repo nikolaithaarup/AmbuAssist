@@ -1,11 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import {
+  Alert,
+  Linking,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { useT } from "../../../src/i18n/useT";
-import { useSettings } from "../../../src/state/settings";
 import {
   getReference,
   type ReferenceDoc,
 } from "../../../src/services/referenceService";
+import { useSettings } from "../../../src/state/settings";
 import { Background } from "../../../src/ui/Background";
 import { CollapsibleCard } from "../../../src/ui/CollapsibleCard";
 import { Card, Screen, Subtle, Title } from "../../../src/ui/Ui";
@@ -91,6 +98,21 @@ function SourceItem({
   subtitle?: string;
   url?: string;
 }) {
+  const openUrl = async () => {
+    if (!url) return;
+
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (!supported) {
+        Alert.alert("Could not open link", url);
+        return;
+      }
+      await Linking.openURL(url);
+    } catch {
+      Alert.alert("Could not open link", url);
+    }
+  };
+
   return (
     <View
       style={{
@@ -109,6 +131,7 @@ function SourceItem({
       >
         {title}
       </Text>
+
       {!!subtitle && (
         <Text
           style={{
@@ -120,6 +143,27 @@ function SourceItem({
         >
           {subtitle}
         </Text>
+      )}
+
+      {!!url && (
+        <Pressable
+          onPress={openUrl}
+          style={({ pressed }) => ({
+            opacity: pressed ? 0.75 : 1,
+            marginTop: 8,
+          })}
+        >
+          <Text
+            style={{
+              color: theme.colors.text,
+              fontSize: 13,
+              fontWeight: "800",
+              textDecorationLine: "underline",
+            }}
+          >
+            Open source
+          </Text>
+        </Pressable>
       )}
     </View>
   );
@@ -138,9 +182,15 @@ export default function SpinalTraumaFlow() {
     let active = true;
 
     async function loadReference() {
-      const data = await getReference("spine");
-      if (!active) return;
-      setReference(data);
+      try {
+        const data = await getReference("spine");
+        if (!active) return;
+        setReference(data);
+      } catch (error) {
+        console.error("Failed to load spine reference:", error);
+        if (!active) return;
+        setReference(null);
+      }
     }
 
     loadReference();
@@ -220,6 +270,9 @@ export default function SpinalTraumaFlow() {
       })
       .filter(Boolean) as { stepTitle: string; answer: string }[];
   }, [selections, t]);
+
+  const disclaimerText = reference?.disclaimer?.[lang] ?? "";
+  const sourcesSubText = reference?.sourcesSub?.[lang] ?? "";
 
   return (
     <Background>
@@ -546,7 +599,7 @@ export default function SpinalTraumaFlow() {
 
           <CollapsibleCard
             title={t("tool_disclaimer_title")}
-            subtitle={reference?.disclaimer[lang] ?? ""}
+            subtitle={disclaimerText}
           >
             <View
               style={{
@@ -564,26 +617,26 @@ export default function SpinalTraumaFlow() {
                   lineHeight: 20,
                 }}
               >
-                {reference?.disclaimer[lang] ?? ""}
+                {disclaimerText}
               </Text>
             </View>
           </CollapsibleCard>
 
           <CollapsibleCard
             title={t("tool_sources_title")}
-            subtitle={reference?.sourcesSub[lang] ?? ""}
+            subtitle={sourcesSubText}
           >
-            <Subtle style={{ marginBottom: 8 }}>
-              {reference?.sourcesSub[lang] ?? ""}
-            </Subtle>
+            <Subtle style={{ marginBottom: 8 }}>{sourcesSubText}</Subtle>
 
             <View style={{ marginTop: 4 }}>
               {(reference?.sources ?? []).map((source) => (
                 <SourceItem
                   key={source.id}
-                  title={source.title[lang]}
-                  subtitle={source.subtitle[lang]}
-                  url={source.url?.[lang]}
+                  title={source.title?.[lang] ?? source.title?.en ?? ""}
+                  subtitle={
+                    source.subtitle?.[lang] ?? source.subtitle?.en ?? ""
+                  }
+                  url={source.url?.[lang] ?? source.url?.en}
                 />
               ))}
             </View>

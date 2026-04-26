@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Alert, Linking, Pressable, Text, View } from "react-native";
 import { useT } from "../../i18n/useT";
 import type { ReferenceDoc } from "../../services/referenceService";
 import { CollapsibleCard } from "../../ui/CollapsibleCard";
@@ -85,6 +85,21 @@ function SourceItem({
   subtitle?: string;
   url?: string;
 }) {
+  const openUrl = async () => {
+    if (!url) return;
+
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (!supported) {
+        Alert.alert("Could not open link", url);
+        return;
+      }
+      await Linking.openURL(url);
+    } catch {
+      Alert.alert("Could not open link", url);
+    }
+  };
+
   return (
     <View
       style={{
@@ -114,6 +129,26 @@ function SourceItem({
         >
           {subtitle}
         </Text>
+      )}
+      {!!url && (
+        <Pressable
+          onPress={openUrl}
+          style={({ pressed }) => ({
+            opacity: pressed ? 0.75 : 1,
+            marginTop: 8,
+          })}
+        >
+          <Text
+            style={{
+              color: theme.colors.text,
+              fontSize: 13,
+              fontWeight: "800",
+              textDecorationLine: "underline",
+            }}
+          >
+            Open source
+          </Text>
+        </Pressable>
       )}
     </View>
   );
@@ -183,7 +218,7 @@ function ItemCard({
 
       {item.options.map((op) => (
         <OptionButton
-          key={op.labelKey}
+          key={`${item.key}_${op.labelKey}_${op.points}`}
           label={t(op.labelKey)}
           points={op.points}
           active={selectedValue === op.points}
@@ -229,6 +264,9 @@ export default function PressContent({ lang, reference }: Props) {
   const totalItems = pressPart1Items.length + pressPart2Items.length;
   const allAnswered = answeredCount === totalItems;
   const part1Positive = part1Score >= 1;
+
+  const disclaimerText = reference?.disclaimer?.[lang] ?? "";
+  const sourcesSubText = reference?.sourcesSub?.[lang] ?? "";
 
   function reset() {
     setSelected({});
@@ -386,7 +424,7 @@ export default function PressContent({ lang, reference }: Props) {
 
       <CollapsibleCard
         title={t("tool_disclaimer_title")}
-        subtitle={reference?.disclaimer[lang] ?? ""}
+        subtitle={disclaimerText}
       >
         <View
           style={{
@@ -405,26 +443,24 @@ export default function PressContent({ lang, reference }: Props) {
               lineHeight: 20,
             }}
           >
-            {reference?.disclaimer[lang] ?? ""}
+            {disclaimerText}
           </Text>
         </View>
       </CollapsibleCard>
 
       <CollapsibleCard
         title={t("tool_sources_title")}
-        subtitle={reference?.sourcesSub[lang] ?? ""}
+        subtitle={sourcesSubText}
       >
-        <Subtle style={{ marginBottom: 8 }}>
-          {reference?.sourcesSub[lang] ?? ""}
-        </Subtle>
+        <Subtle style={{ marginBottom: 8 }}>{sourcesSubText}</Subtle>
 
         <View style={{ marginTop: 4 }}>
           {(reference?.sources ?? []).map((source) => (
             <SourceItem
               key={source.id}
-              title={source.title[lang]}
-              subtitle={source.subtitle[lang]}
-              url={source.url?.[lang]}
+              title={source.title?.[lang] ?? source.title?.en ?? ""}
+              subtitle={source.subtitle?.[lang] ?? source.subtitle?.en ?? ""}
+              url={source.url?.[lang] ?? source.url?.en}
             />
           ))}
         </View>

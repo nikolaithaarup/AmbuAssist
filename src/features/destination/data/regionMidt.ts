@@ -59,10 +59,10 @@ export const REGION_MIDT_DEFAULT: Record<RegionCategory, HospitalCode> = {
   kirurgi_mave_tarm: "HEH",
   boernekirurgi: "HEH",
   ortopaedkirurgi: "HEH",
-  ortopaedkirurgi_boern_u16: "HEH_GEH",
+  ortopaedkirurgi_boern_u16: "HEH",
   karkirurgi: "RH",
   thoraxkirurgi: "RH",
-  neurokirurgi: "GLO_RH",
+  neurokirurgi: "RH",
   urologi: "HEH",
   plastkirurgi: "HEH",
   mammakirurgi: "GEH",
@@ -79,9 +79,9 @@ export const REGION_MIDT_DEFAULT: Record<RegionCategory, HospitalCode> = {
   neurologi_ekskl_apopleksi: "HEH",
   apopleksi_ekskl_trombolyse: "HEH",
 
-  gynaekologi: "HEH_GEH",
+  gynaekologi: "HEH",
   obstetrik: "HEH",
-  paediatri: "HEH_GEH",
+  paediatri: "HEH",
 
   billeddiagnostik: "HEH",
 
@@ -107,6 +107,9 @@ export const REGION_MIDT_MAP: Record<
 
   "Egedal (Smørum)": {
     ...REGION_MIDT_DEFAULT,
+    gynaekologi: "NOH",
+    obstetrik: "NOH",
+    paediatri: "NOH",
   },
 
   "Egedal (Ølstykke, Stenløse)": {
@@ -131,7 +134,7 @@ export const REGION_MIDT_MAP: Record<
 
   "Furesø (Værløse)": {
     ...REGION_MIDT_DEFAULT,
-    akutklinik: "GEH",
+    akutklinik: "HEH",
     gynaekologi: "NOH",
     obstetrik: "NOH",
     paediatri: "NOH",
@@ -139,8 +142,8 @@ export const REGION_MIDT_MAP: Record<
 
   Gentofte: {
     ...REGION_MIDT_DEFAULT,
-    akutklinik: "GEH",
-    billeddiagnostik: "GEH",
+    akutklinik: "HEH",
+    billeddiagnostik: "HEH",
   },
 
   Gladsaxe: {
@@ -153,11 +156,11 @@ export const REGION_MIDT_MAP: Record<
 
   "Lyngby-Taarbæk": {
     ...REGION_MIDT_DEFAULT,
-    akutklinik: "GEH",
+    akutklinik: "HEH",
     gynaekologi: "NOH",
     obstetrik: "NOH",
     paediatri: "NOH",
-    billeddiagnostik: "GEH",
+    billeddiagnostik: "HEH",
   },
 
   "Rudersdal (Birkerød)": {
@@ -170,11 +173,11 @@ export const REGION_MIDT_MAP: Record<
 
   "Rudersdal (Søllerød)": {
     ...REGION_MIDT_DEFAULT,
-    akutklinik: "GEH",
+    akutklinik: "HEH",
     gynaekologi: "NOH",
     obstetrik: "NOH",
     paediatri: "NOH",
-    billeddiagnostik: "GEH",
+    billeddiagnostik: "HEH",
   },
 
   Rødovre: {

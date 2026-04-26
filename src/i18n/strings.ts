@@ -173,6 +173,8 @@ export const en = {
   tool_bg_infection_desc:
     "Simple support for infection-related blood and urine findings.",
 
+  tool_sources_unavailable: "Sources are currently unavailable",
+
   bg_label_ph: "pH",
   bg_label_pco2: "pCO₂ (kPa)",
   bg_label_hco3: "HCO₃⁻ (mmol/L)",
@@ -1620,6 +1622,8 @@ export const da: typeof en = {
   tool_bg_infection_title: "Infektionshjælper",
   tool_bg_infection_desc:
     "Simpel støtte til infektionstolkning ud fra blod- og urinprøver.",
+
+  tool_sources_unavailable: "Kilder er ikke tilgængelige lige nu",
 
   tool_supportNumbers_title: "Support numre",
   tool_supportNumbers_desc: "Hurtig adgang til vigtige operative kontakter",

@@ -415,7 +415,7 @@ const PHONE_DATA: SeedPhoneDoc[] = [
     specialtyKey: "trombolyse_born",
     displayNameDa: "Trombolyse Børn",
     displayNameEn: "Thrombolysis Children",
-    phone: "+4535456381",
+    phone: "+4535450688",
   },
   {
     id: "RH_trombolyse_portor",

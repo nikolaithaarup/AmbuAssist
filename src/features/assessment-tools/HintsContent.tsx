@@ -1,10 +1,18 @@
 import { useMemo, useState } from "react";
-import { Image, Pressable, ScrollView, Text, View } from "react-native";
+import {
+  Alert,
+  Image,
+  Linking,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { useT } from "../../i18n/useT";
+import type { ReferenceDoc } from "../../services/referenceService";
 import { CollapsibleCard } from "../../ui/CollapsibleCard";
 import { Card, Row, Subtle, Title } from "../../ui/Ui";
 import { theme } from "../../ui/theme";
-import type { ReferenceDoc } from "../../services/referenceService";
 
 type Lang = "en" | "da";
 
@@ -302,6 +310,21 @@ function SourceItem({
   subtitle?: string;
   url?: string;
 }) {
+  const openUrl = async () => {
+    if (!url) return;
+
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (!supported) {
+        Alert.alert("Could not open link", url);
+        return;
+      }
+      await Linking.openURL(url);
+    } catch {
+      Alert.alert("Could not open link", url);
+    }
+  };
+
   return (
     <View
       style={{
@@ -332,6 +355,26 @@ function SourceItem({
           {subtitle}
         </Text>
       )}
+      {!!url && (
+        <Pressable
+          onPress={openUrl}
+          style={({ pressed }) => ({
+            opacity: pressed ? 0.75 : 1,
+            marginTop: 8,
+          })}
+        >
+          <Text
+            style={{
+              color: theme.colors.text,
+              fontSize: 13,
+              fontWeight: "800",
+              textDecorationLine: "underline",
+            }}
+          >
+            Open source
+          </Text>
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -350,6 +393,9 @@ export default function HintsContent({ lang, reference }: Props) {
 
   const current = useMemo(() => getNode(currentId), [currentId]);
   const isResult = current.kind === "RESULT";
+
+  const disclaimerText = reference?.disclaimer?.[lang] ?? "";
+  const sourcesSubText = reference?.sourcesSub?.[lang] ?? "";
 
   const onPick = (opt: Option) => {
     if (current.kind !== "QUESTION") return;
@@ -607,7 +653,7 @@ export default function HintsContent({ lang, reference }: Props) {
 
       <CollapsibleCard
         title={t("tool_disclaimer_title")}
-        subtitle={reference?.disclaimer[lang] ?? ""}
+        subtitle={disclaimerText}
       >
         <View
           style={{
@@ -625,25 +671,24 @@ export default function HintsContent({ lang, reference }: Props) {
               lineHeight: 20,
             }}
           >
-            {reference?.disclaimer[lang] ?? ""}
+            {disclaimerText}
           </Text>
         </View>
       </CollapsibleCard>
 
       <CollapsibleCard
         title={t("tool_sources_title")}
-        subtitle={reference?.sourcesSub[lang] ?? ""}
+        subtitle={sourcesSubText}
       >
-        <Subtle style={{ marginBottom: 8 }}>
-          {reference?.sourcesSub[lang] ?? ""}
-        </Subtle>
+        <Subtle style={{ marginBottom: 8 }}>{sourcesSubText}</Subtle>
 
         <View style={{ marginTop: 4 }}>
           {(reference?.sources ?? []).map((source) => (
             <SourceItem
               key={source.id}
-              title={source.title[lang]}
-              subtitle={source.subtitle[lang]}
+              title={source.title?.[lang] ?? source.title?.en ?? ""}
+              subtitle={source.subtitle?.[lang] ?? source.subtitle?.en ?? ""}
+              url={source.url?.[lang] ?? source.url?.en}
             />
           ))}
         </View>

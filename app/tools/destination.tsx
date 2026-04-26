@@ -16,6 +16,11 @@ import {
   getReference,
   type ReferenceDoc,
 } from "../../src/services/referenceService";
+import {
+  loadVisitationData,
+  LOCAL_VISITATION_DATA,
+  type BackendVisitationData,
+} from "../../src/services/visitationService";
 import { useSettings } from "../../src/state/settings";
 import { Background } from "../../src/ui/Background";
 import { CollapsibleCard } from "../../src/ui/CollapsibleCard";
@@ -39,17 +44,6 @@ import type {
   Kommune,
   RegionCategory,
 } from "../../src/features/destination/types";
-
-import {
-  BYEN_CATEGORIES,
-  BYEN_MAP,
-  STREET_SAMPLE,
-} from "../../src/features/destination/data/byen";
-
-import { REGION_BYEN_MAP } from "../../src/features/destination/data/regionByen";
-import { REGION_MIDT_MAP } from "../../src/features/destination/data/regionMidt";
-import { REGION_NORD_MAP } from "../../src/features/destination/data/regionNord";
-import { REGION_SYD_MAP } from "../../src/features/destination/data/regionSyd";
 
 import {
   hospitalLabel,
@@ -77,17 +71,6 @@ const VISITATION_BYEN_URL =
 const VISITATION_REGIONEN_URL =
   "https://drive.google.com/file/d/1HS25c5EPt1oP3WbzT6jA99TMiprOgvVh/view?usp=sharing";
 
-const REGION_ALL_MAP: Partial<
-  Record<Kommune, Partial<Record<RegionCategory, HospitalCode>>>
-> = {
-  ...REGION_NORD_MAP,
-  ...REGION_MIDT_MAP,
-  ...REGION_SYD_MAP,
-  ...REGION_BYEN_MAP,
-};
-
-const ALL_KOMMUNER = Object.keys(REGION_ALL_MAP) as Kommune[];
-
 const REGION_CATEGORY_LABEL_KEYS: Record<RegionCategory, string> = {
   traumecenter: "dest_reg_traumecenter",
   akutmodtagelse: "dest_reg_akutmodtagelse",
@@ -101,7 +84,7 @@ const REGION_CATEGORY_LABEL_KEYS: Record<RegionCategory, string> = {
   thoraxkirurgi: "dest_reg_thoraxkir",
   neurokirurgi: "dest_reg_neurokir",
   urologi: "dest_reg_urologi",
-  plastikkirurgi: "dest_reg_plastkir",
+  plastkirurgi: "dest_reg_plastkir",
   mammakirurgi: "dest_reg_mammakir",
   kardiologi: "dest_reg_kardiologi",
   lungemedicin: "dest_reg_lungemed",
@@ -388,6 +371,16 @@ export default function DestinationTool() {
   const { settings } = useSettings();
   const lang = settings.language === "da" ? "da" : "en";
 
+  const [visitationData, setVisitationData] = useState<BackendVisitationData>(
+    LOCAL_VISITATION_DATA,
+  );
+
+  const BYEN_CATEGORIES = visitationData.byen.categories;
+  const BYEN_MAP = visitationData.byen.map;
+  const STREET_SAMPLE = visitationData.byen.streetSample;
+  const REGION_ALL_MAP = visitationData.region.map;
+  const ALL_KOMMUNER = Object.keys(REGION_ALL_MAP) as Kommune[];
+
   const [reference, setReference] = useState<ReferenceDoc | null>(null);
 
   const [mode, setMode] = useState<InputMode>("gps");
@@ -435,6 +428,22 @@ export default function DestinationTool() {
   const GEOCODE_COOLDOWN_MS = 20_000;
   const GEOCODE_BLOCK_MS = 90_000;
   const GEOCODE_CACHE_DISTANCE = 0.0025;
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadData() {
+      const data = await loadVisitationData();
+      if (!active) return;
+      setVisitationData(data);
+    }
+
+    loadData();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -646,7 +655,7 @@ export default function DestinationTool() {
 
     if (!q) return all;
     return all.filter((street) => norm(street).includes(q));
-  }, [streetQ]);
+  }, [STREET_SAMPLE, streetQ]);
 
   const kommuneOptions = useMemo(() => {
     const q = norm(kommuneQ);
@@ -654,17 +663,25 @@ export default function DestinationTool() {
 
     if (!q) return all;
     return all.filter((k) => norm(k).includes(q));
-  }, [kommuneQ]);
+  }, [ALL_KOMMUNER, kommuneQ]);
 
   const regionCategoryOptions = useMemo(() => {
-    return (Object.keys(REGION_CATEGORY_LABEL_KEYS) as RegionCategory[]).sort(
-      (a, b) =>
-        getRegionCategoryLabel(t as TranslateFn, a).localeCompare(
-          getRegionCategoryLabel(t as TranslateFn, b),
-          "da",
-        ),
+    const backendKeys = visitationData.region.categories
+      .map((item) => item.key as RegionCategory)
+      .filter((key) => !!REGION_CATEGORY_LABEL_KEYS[key]);
+
+    const keys =
+      backendKeys.length > 0
+        ? backendKeys
+        : (Object.keys(REGION_CATEGORY_LABEL_KEYS) as RegionCategory[]);
+
+    return [...keys].sort((a, b) =>
+      getRegionCategoryLabel(t as TranslateFn, a).localeCompare(
+        getRegionCategoryLabel(t as TranslateFn, b),
+        "da",
+      ),
     );
-  }, [t]);
+  }, [t, visitationData.region.categories]);
 
   const resolvedHospital = useMemo<ResolvedHospital | null>(() => {
     if (area === "byen") {
@@ -694,7 +711,17 @@ export default function DestinationTool() {
       label: hospitalLabel(t as TranslateFn, code),
       extra: selectedKommune,
     };
-  }, [area, bydel, kommune, selectedStreet, byenCat, regCat, t]);
+  }, [
+    area,
+    bydel,
+    kommune,
+    selectedStreet,
+    byenCat,
+    regCat,
+    t,
+    BYEN_MAP,
+    REGION_ALL_MAP,
+  ]);
 
   useEffect(() => {
     const loadHospitalPhones = async () => {

@@ -60,6 +60,11 @@ export default function Home() {
       path: "/tools/trombolysis",
     },
     {
+      titleKey: "tool_burns_title",
+      descKey: "tool_burns_desc",
+      path: "/tools/brandsaar",
+    },
+    {
       titleKey: "tool_supportNumbers_title",
       descKey: "tool_supportNumbers_desc",
       path: "/tools/support-numbers",

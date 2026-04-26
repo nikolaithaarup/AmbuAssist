@@ -28,23 +28,6 @@ import { theme } from "../../src/ui/theme";
 type ThromHospital = "RH" | "BBH";
 const TROMBOLYSE_SPECIALTY_KEY = "trombolyse" as const;
 
-const HOSPITALS: Record<
-  ThromHospital,
-  {
-    name: string;
-    address: string;
-  }
-> = {
-  BBH: {
-    name: "Bispebjerg Neuro",
-    address: "Nielsine Nielsens Vej 41C, 2400 København",
-  },
-  RH: {
-    name: "Rigshospitalet",
-    address: "Blegdamsvej 9, 2100 København",
-  },
-};
-
 function formatDateTime(date: Date, lang: "da" | "en") {
   const locale = lang === "da" ? "da-DK" : "en-GB";
 
@@ -100,35 +83,75 @@ function SourceItem({
   subtitle?: string;
   url?: string;
 }) {
-  const openUrl = async () => {
+  const openSource = async () => {
     if (!url) return;
 
     try {
       const supported = await Linking.canOpenURL(url);
       if (!supported) {
-        Alert.alert("Could not open link", url);
+        Alert.alert("Kunne ikke åbne link", url);
         return;
       }
+
       await Linking.openURL(url);
     } catch {
-      Alert.alert("Could not open link", url);
+      Alert.alert("Fejl", "Linket kunne ikke åbnes.");
     }
   };
+
+  if (url) {
+    return (
+      <Pressable
+        onPress={openSource}
+        style={({ pressed }) => ({
+          paddingVertical: 10,
+          borderBottomWidth: 1,
+          borderBottomColor: "rgba(255,255,255,0.06)",
+          opacity: pressed ? 0.75 : 1,
+        })}
+      >
+        <Text
+          style={{
+            color: "#8ec5ff",
+            fontSize: 14,
+            fontWeight: "800",
+            lineHeight: 18,
+            textDecorationLine: "underline",
+          }}
+        >
+          {title}
+        </Text>
+
+        {!!subtitle && (
+          <Text
+            style={{
+              color: theme.colors.mutedText,
+              fontSize: 12,
+              lineHeight: 17,
+              marginTop: 4,
+            }}
+          >
+            {subtitle}
+          </Text>
+        )}
+      </Pressable>
+    );
+  }
 
   return (
     <View
       style={{
         paddingVertical: 10,
-        borderTopWidth: 1,
-        borderTopColor: theme.colors.border,
-        gap: 6,
+        borderBottomWidth: 1,
+        borderBottomColor: "rgba(255,255,255,0.06)",
       }}
     >
       <Text
         style={{
           color: theme.colors.text,
+          fontSize: 14,
           fontWeight: "800",
-          fontSize: 15,
+          lineHeight: 18,
         }}
       >
         {title}
@@ -138,25 +161,13 @@ function SourceItem({
         <Text
           style={{
             color: theme.colors.mutedText,
-            lineHeight: 20,
+            fontSize: 12,
+            lineHeight: 17,
+            marginTop: 4,
           }}
         >
           {subtitle}
         </Text>
-      )}
-
-      {!!url && (
-        <Pressable onPress={openUrl} style={chip(false)}>
-          <Text
-            style={{
-              color: theme.colors.text,
-              fontWeight: "800",
-              textAlign: "center",
-            }}
-          >
-            Open source
-          </Text>
-        </Pressable>
       )}
     </View>
   );
@@ -190,8 +201,6 @@ export default function TrombolysisPage() {
       ? t("trombolysis_rh")
       : t("trombolysis_bbh");
   }, [responsibility.hospitalCode, t]);
-
-  const hospitalDestination = HOSPITALS[responsibility.hospitalCode];
 
   useEffect(() => {
     let active = true;
@@ -272,26 +281,37 @@ export default function TrombolysisPage() {
     }
   };
 
-  const openNavigation = async () => {
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-      hospitalDestination.address,
-    )}&travelmode=driving`;
-
-    try {
-      await Linking.openURL(url);
-    } catch {
-      Alert.alert(
-        lang === "da"
-          ? "Kunne ikke åbne navigation"
-          : "Could not open navigation",
-      );
-    }
-  };
-
   const disclaimerText =
     reference?.disclaimer?.[lang] || t("trombolysis_disclaimer");
 
-  const sourcesSubText = reference?.sourcesSub?.[lang];
+  const sourcesSubText =
+    reference?.sourcesSub?.[lang] ||
+    (lang === "da"
+      ? "Kildegrundlag for trombolysevisitation, kontakt og ansvarshospital."
+      : "Source basis for thrombolysis destination, contact and responsible hospital.");
+
+  const renderedSources =
+    reference?.sources && reference.sources.length > 0
+      ? reference.sources.map((source) => ({
+          id: source.id ?? source.title?.[lang] ?? source.title?.en,
+          title: source.title?.[lang] || source.title?.en || "",
+          subtitle: source.subtitle?.[lang] || source.subtitle?.en || "",
+          url: source.url?.[lang] || source.url?.en,
+        }))
+      : [
+          {
+            id: "trombolysis-clinical-verification",
+            title:
+              lang === "da"
+                ? "Klinisk verifikation kræves"
+                : "Clinical verification required",
+            subtitle:
+              lang === "da"
+                ? "Resultater i dette værktøj er vejledende og skal altid verificeres mod gældende lokale instrukser, lægelig konference og klinisk vurdering."
+                : "Results in this tool are advisory and must always be verified against current local protocols, medical consultation and clinical judgement.",
+            url: undefined,
+          },
+        ];
 
   return (
     <Background>
@@ -346,44 +366,6 @@ export default function TrombolysisPage() {
                   {hospitalLabel}
                 </Text>
               </Row>
-
-              <View
-                style={{
-                  marginTop: 8,
-                  padding: 12,
-                  borderRadius: 18,
-                  borderWidth: 1,
-                  borderColor: theme.colors.border,
-                  backgroundColor: "rgba(255,255,255,0.03)",
-                  gap: 8,
-                }}
-              >
-                <Text
-                  style={{
-                    color: theme.colors.text,
-                    fontWeight: "900",
-                    fontSize: 16,
-                  }}
-                >
-                  {hospitalDestination.name}
-                </Text>
-
-                <Text style={{ color: theme.colors.mutedText, lineHeight: 20 }}>
-                  {hospitalDestination.address}
-                </Text>
-
-                <Pressable onPress={openNavigation} style={chip(false)}>
-                  <Text
-                    style={{
-                      color: theme.colors.text,
-                      fontWeight: "800",
-                      textAlign: "center",
-                    }}
-                  >
-                    {lang === "da" ? "Åbn kort" : "Open map"}
-                  </Text>
-                </Pressable>
-              </View>
             </View>
           </Card>
 
@@ -478,20 +460,36 @@ export default function TrombolysisPage() {
             </View>
           </Card>
 
-          <Card>
-            <Title>{t("tool_disclaimer_title")}</Title>
-            <Text
+          <CollapsibleCard
+            title={t("tool_disclaimer_title")}
+            subtitle={disclaimerText}
+          >
+            <View
               style={{
-                color: theme.colors.mutedText,
-                marginTop: 10,
-                lineHeight: 20,
+                borderRadius: 14,
+                borderWidth: 1,
+                borderColor: theme.colors.cardBorder,
+                padding: 12,
+                backgroundColor: "rgba(255,209,102,0.10)",
+                gap: 8,
               }}
             >
-              {disclaimerText}
-            </Text>
-          </Card>
+              <Text
+                style={{
+                  color: theme.colors.text,
+                  fontSize: 14,
+                  lineHeight: 20,
+                }}
+              >
+                {disclaimerText}
+              </Text>
+            </View>
+          </CollapsibleCard>
 
-          <CollapsibleCard title={t("tool_sources_title")}>
+          <CollapsibleCard
+            title={t("tool_sources_title")}
+            subtitle={sourcesSubText}
+          >
             {loadingReference ? (
               <View style={{ gap: 10 }}>
                 <ActivityIndicator />
@@ -499,35 +497,21 @@ export default function TrombolysisPage() {
                   {t("loading")}
                 </Text>
               </View>
-            ) : reference ? (
-              <View style={{ gap: 2 }}>
-                {!!sourcesSubText && (
-                  <Text
-                    style={{
-                      color: theme.colors.mutedText,
-                      lineHeight: 20,
-                      marginBottom: 8,
-                    }}
-                  >
-                    {sourcesSubText}
-                  </Text>
-                )}
-
-                {reference.sources?.map((source, index) => (
-                  <SourceItem
-                    key={source.id ?? String(index)}
-                    title={source.title?.[lang] || source.title?.en || ""}
-                    subtitle={
-                      source.subtitle?.[lang] || source.subtitle?.en || ""
-                    }
-                    url={source.url?.[lang] || source.url?.en}
-                  />
-                ))}
-              </View>
             ) : (
-              <Text style={{ color: theme.colors.mutedText }}>
-                {t("tool_sources_unavailable")}
-              </Text>
+              <>
+                <Subtle style={{ marginBottom: 8 }}>{sourcesSubText}</Subtle>
+
+                <View style={{ marginTop: 8 }}>
+                  {renderedSources.map((source) => (
+                    <SourceItem
+                      key={source.id}
+                      title={source.title}
+                      subtitle={source.subtitle}
+                      url={source.url}
+                    />
+                  ))}
+                </View>
+              </>
             )}
           </CollapsibleCard>
         </ScrollView>

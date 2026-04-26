@@ -57,7 +57,7 @@ export const REGION_SYD_DEFAULT: Record<RegionCategory, HospitalCode> = {
   ortopaedkirurgi_boern_u16: "HVH",
   karkirurgi: "RH",
   thoraxkirurgi: "RH",
-  neurokirurgi: "GLO_RH",
+  neurokirurgi: "RH",
   urologi: "HEH",
   plastkirurgi: "RH",
   mammakirurgi: "GEH",
@@ -74,15 +74,15 @@ export const REGION_SYD_DEFAULT: Record<RegionCategory, HospitalCode> = {
   neurologi_ekskl_apopleksi: "GLO",
   apopleksi_ekskl_trombolyse: "GLO",
 
-  gynaekologi: "AMH_HVH",
+  gynaekologi: "HVH",
   obstetrik: "HVH",
-  paediatri: "AMH_HVH",
+  paediatri: "HVH",
 
   billeddiagnostik: "GLO",
 
   klinisk_onkologi: "HEH",
   palliativ_enhed: "HEH",
-  oftalmologi: "GLO_NOH",
+  oftalmologi: "GLO",
   oere_naese_hals: "RH",
   audiologi: "BBH",
   odontologi: "RH",

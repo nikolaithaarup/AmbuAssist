@@ -104,6 +104,9 @@ export const en = {
 
   tool_supportNumbers_title: "Support numbers",
   tool_supportNumbers_desc: "Quick access to important operational contacts",
+
+  tool_burns_title: "Burns",
+  tool_burns_desc: "TBSA, RH contact and fluid estimate",
   support_numbers_sub: "Quick access to important operational contacts",
   support_numbers_loading: "Loading support numbers...",
   support_numbers_empty: "No support numbers found yet.",
@@ -1627,6 +1630,10 @@ export const da: typeof en = {
 
   tool_supportNumbers_title: "Support numre",
   tool_supportNumbers_desc: "Hurtig adgang til vigtige operative kontakter",
+
+  tool_burns_title: "Brandsår",
+  tool_burns_desc: "TBSA, RH kontakt og væskeestimat",
+
   support_numbers_sub: "Hurtig adgang til vigtige operative telefonnumre",
   support_numbers_loading: "Henter supportnumre...",
   support_numbers_empty: "Ingen supportnumre fundet endnu.",

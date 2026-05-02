@@ -28,7 +28,7 @@ function SourceItem({
   title: string;
   subtitle?: string;
   url?: string;
-}) {
+    }) {
   return (
     <View
       style={{

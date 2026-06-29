@@ -123,12 +123,15 @@ export type StreetBydel =
   | "Nørrebro";
 
 export type KommuneByen =
+  | "Amager"
   | "Bispebjerg"
   | "Bornholm"
   | "Brønshøj/Husum"
   | "Frederiksberg"
   | "Indre by"
+  | "Kgs. Enghave"
   | "Nørrebro"
+  | "Valby"
   | "Vanløse"
   | "Vesterbro"
   | "Østerbro";

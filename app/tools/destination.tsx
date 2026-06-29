@@ -47,8 +47,7 @@ import type {
 
 import {
   hospitalLabel,
-  mapKommuneByenToOfficialBydel,
-  mapPostcodeToBydel,
+  mapByenGeocodeToOfficialBydel,
   mapRegionCityToKommune,
   mapStreetBydelToOfficialBydel,
   norm,
@@ -1035,8 +1034,13 @@ export default function DestinationTool() {
           }
         }
 
-        const mappedBydel = mapPostcodeToBydel(postcode);
-        const officialBydel = mapKommuneByenToOfficialBydel(mappedBydel);
+        const officialBydel = mapByenGeocodeToOfficialBydel({
+          postcode,
+          city,
+          district,
+          subregion,
+          region,
+        });
 
         if (officialBydel) {
           setBydel(officialBydel);
@@ -1046,7 +1050,7 @@ export default function DestinationTool() {
         } else {
           Alert.alert(
             t("dest_area_notmapped_title"),
-            t("dest_area_notmapped_body"),
+            `Could not map Byen location.\n\ncity: ${city}\ndistrict: ${district}\nsubregion: ${subregion}\nregion: ${region}\npostcode: ${postcode}`,
           );
         }
       } else {

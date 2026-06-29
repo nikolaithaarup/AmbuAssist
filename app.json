@@ -2,7 +2,7 @@
   "expo": {
     "name": "AmbuAssist",
     "slug": "ambuassist",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "scheme": "ambuassist",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

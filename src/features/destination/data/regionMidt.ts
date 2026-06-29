@@ -65,7 +65,7 @@ export const REGION_MIDT_DEFAULT: Record<RegionCategory, HospitalCode> = {
   neurokirurgi: "RH",
   urologi: "HEH",
   plastkirurgi: "HEH",
-  mammakirurgi: "GEH",
+  mammakirurgi: "HEH",
 
   kardiologi: "HEH",
   lungemedicin: "HEH",

@@ -19,7 +19,8 @@
     "production": {
       "ios": {},
       "android": {
-        "track": "internal"
+        "track": "alpha",
+        "releaseStatus": "completed"
       }
     }
   }

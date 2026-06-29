@@ -14,45 +14,41 @@ export function norm(s?: string | null) {
     .trim();
 }
 
-const AMAGER_BYDEL: Bydel = "Amager (2300, 2770 og 2791)";
-const KGS_ENGHAVE_BYDEL: Bydel = "Kgs. Enghave (2450)";
-const VALBY_BYDEL: Bydel = "Valby (2500)";
+const AMAGER_OFFICIAL_BYDEL: Bydel = "Amager (2300, 2770 og 2791)";
 
-const BYEN_ALIAS_TO_BYDEL: Record<string, Bydel> = {
+const BYEN_ALIAS_TO_OFFICIAL_BYDEL: Record<string, Bydel> = {
   // Amager / København S / Tårnby / Dragør
-  "2300": AMAGER_BYDEL,
-  "2770": AMAGER_BYDEL,
-  "2791": AMAGER_BYDEL,
-  "københavn s": AMAGER_BYDEL,
-  "kobenhavn s": AMAGER_BYDEL,
-  amager: AMAGER_BYDEL,
-  "amager (2300, 2770 og 2791)": AMAGER_BYDEL,
-  "amager vest": AMAGER_BYDEL,
-  "amager øst": AMAGER_BYDEL,
-  "amager ost": AMAGER_BYDEL,
-  vestamager: AMAGER_BYDEL,
-  "vest amager": AMAGER_BYDEL,
-  sundby: AMAGER_BYDEL,
-  sundbyøster: AMAGER_BYDEL,
-  sundbyoster: AMAGER_BYDEL,
-  sundbyvester: AMAGER_BYDEL,
-  ørestad: AMAGER_BYDEL,
-  orestad: AMAGER_BYDEL,
-  "islands brygge": AMAGER_BYDEL,
-  tårnby: AMAGER_BYDEL,
-  tarnby: AMAGER_BYDEL,
-  dragør: AMAGER_BYDEL,
-  dragor: AMAGER_BYDEL,
+  "2300": AMAGER_OFFICIAL_BYDEL,
+  "2770": AMAGER_OFFICIAL_BYDEL,
+  "2791": AMAGER_OFFICIAL_BYDEL,
+  "københavn s": AMAGER_OFFICIAL_BYDEL,
+  "kobenhavn s": AMAGER_OFFICIAL_BYDEL,
+  "amager": AMAGER_OFFICIAL_BYDEL,
+  "amager vest": AMAGER_OFFICIAL_BYDEL,
+  "amager øst": AMAGER_OFFICIAL_BYDEL,
+  "amager ost": AMAGER_OFFICIAL_BYDEL,
+  "vestamager": AMAGER_OFFICIAL_BYDEL,
+  "vest amager": AMAGER_OFFICIAL_BYDEL,
+  "sundby": AMAGER_OFFICIAL_BYDEL,
+  "sundbyøster": AMAGER_OFFICIAL_BYDEL,
+  "sundbyoster": AMAGER_OFFICIAL_BYDEL,
+  "sundbyvester": AMAGER_OFFICIAL_BYDEL,
+  "ørestad": AMAGER_OFFICIAL_BYDEL,
+  "orestad": AMAGER_OFFICIAL_BYDEL,
+  "islands brygge": AMAGER_OFFICIAL_BYDEL,
+  "tårnby": AMAGER_OFFICIAL_BYDEL,
+  "tarnby": AMAGER_OFFICIAL_BYDEL,
+  "dragør": AMAGER_OFFICIAL_BYDEL,
+  "dragor": AMAGER_OFFICIAL_BYDEL,
 
-  // Other Byen aliases
-  "2450": KGS_ENGHAVE_BYDEL,
-  "kongens enghave": KGS_ENGHAVE_BYDEL,
-  "kgs enghave": KGS_ENGHAVE_BYDEL,
-  "kgs. enghave": KGS_ENGHAVE_BYDEL,
-  sydhavnen: KGS_ENGHAVE_BYDEL,
-
-  "2500": VALBY_BYDEL,
-  valby: VALBY_BYDEL,
+  // Other common geocoder/street-list aliases
+  "kongens enghave": "Kgs. Enghave (2450)",
+  "kgs enghave": "Kgs. Enghave (2450)",
+  "kgs. enghave": "Kgs. Enghave (2450)",
+  "sydhavnen": "Kgs. Enghave (2450)",
+  "2450": "Kgs. Enghave (2450)",
+  "valby": "Valby (2500)",
+  "2500": "Valby (2500)",
 };
 
 export function mapByenGeocodeToOfficialBydel(input: {
@@ -73,14 +69,12 @@ export function mapByenGeocodeToOfficialBydel(input: {
     .map((value) => norm(String(value)));
 
   for (const candidate of candidates) {
-    const aliasMatch = BYEN_ALIAS_TO_BYDEL[candidate];
+    const aliasMatch = BYEN_ALIAS_TO_OFFICIAL_BYDEL[candidate];
     if (aliasMatch) return aliasMatch;
   }
 
   const postcodeMatch = mapPostcodeToBydel(String(input.postcode ?? ""));
-  const officialBydel = mapKommuneByenToOfficialBydel(postcodeMatch);
-
-  return officialBydel || "";
+  return mapKommuneByenToOfficialBydel(postcodeMatch);
 }
 
 export function mapPostcodeToBydel(postcode?: string): KommuneByen | "" {
@@ -103,7 +97,7 @@ export function mapPostcodeToBydel(postcode?: string): KommuneByen | "" {
     return "Bornholm";
   }
 
-  // Amager / København S
+  // Amager / København S / Tårnby / Dragør
   if (["2300", "2770", "2791"].includes(pc)) return "Amager";
 
   // Bispebjerg / Brønshøj / Nørrebro area
@@ -160,6 +154,12 @@ export function mapPostcodeToBydel(postcode?: string): KommuneByen | "" {
   // Østerbro
   if (["2100", "2150"].includes(pc)) return "Østerbro";
 
+  // Kgs. Enghave / Sydhavnen
+  if (pc === "2450") return "Kgs. Enghave";
+
+  // Valby
+  if (pc === "2500") return "Valby";
+
   // Vanløse
   if (pc === "2720") return "Vanløse";
 
@@ -200,21 +200,27 @@ export function mapStreetBydelToKommuneByen(bydel?: string): KommuneByen | "" {
 
   if (b === "frederiksberg") return "Frederiksberg";
 
-  if (b === "amager" || b === "amager øst" || b === "amager ost") {
+  if (
+    b === "amager" ||
+    b === "amager vest" ||
+    b === "amager øst" ||
+    b === "amager ost" ||
+    b === "vestamager" ||
+    b === "vest amager"
+  ) {
     return "Amager";
   }
 
   if (
-    b === "vestamager" ||
-    b === "vest amager" ||
-    b === "amager vest" ||
-    b === "sundbyvester" ||
-    b === "ørestad" ||
-    b === "orestad" ||
-    b === "islands brygge"
+    b === "kongens enghave" ||
+    b === "kgs enghave" ||
+    b === "kgs. enghave" ||
+    b === "sydhavnen"
   ) {
-    return "Vestamager";
+    return "Kgs. Enghave";
   }
+
+  if (b === "valby") return "Valby";
 
   if (b === "indre by" || b === "christianshavn") {
     return "Indre by";
@@ -250,19 +256,22 @@ export function mapStreetBydelToKommuneByen(bydel?: string): KommuneByen | "" {
   return "";
 }
 
+/**
+ * Converts street-list bydeler into the official Byen matrix labels used by BYEN_MAP.
+ * This is the safer helper for GPS + street matching in Byen mode.
+ */
 export function mapStreetBydelToOfficialBydel(bydel?: string): Bydel | "" {
   const b = norm(bydel);
 
   if (
     b === "amager" ||
-    b === "amager (2300, 2770 og 2791)" ||
     b === "amager vest" ||
     b === "amager øst" ||
     b === "amager ost" ||
     b === "vestamager" ||
     b === "vest amager"
   ) {
-    return AMAGER_BYDEL;
+    return AMAGER_OFFICIAL_BYDEL;
   }
 
   if (b === "bispebjerg") return "Bispebjerg";
@@ -273,23 +282,18 @@ export function mapStreetBydelToOfficialBydel(bydel?: string): Bydel | "" {
 
   if (b === "christianshavn") return "Christianshavn";
   if (b === "frederiksberg") return "Frederiksberg (post-nr.)";
-  if (b === "frederiksberg (post-nr.)") return "Frederiksberg (post-nr.)";
   if (b === "indre by") return "Indre by";
 
   if (
     b === "kongens enghave" ||
     b === "kgs enghave" ||
     b === "kgs. enghave" ||
-    b === "kgs. enghave (2450)" ||
-    b === "kgs. enghave 2450" ||
     b === "sydhavnen"
   ) {
-    return KGS_ENGHAVE_BYDEL;
+    return "Kgs. Enghave (2450)";
   }
 
-  if (b === "valby" || b === "valby (2500)") {
-    return VALBY_BYDEL;
-  }
+  if (b === "valby") return "Valby (2500)";
 
   if (b === "indre nørrebro" || b === "indre norrebro") {
     return "Nørrebro - indre";
@@ -337,11 +341,7 @@ export function mapKommuneByenToOfficialBydel(
 ): Bydel | "" {
   switch (kommuneByen) {
     case "Amager":
-      return AMAGER_BYDEL;
-    case "Kgs. Enghave":
-      return KGS_ENGHAVE_BYDEL;
-    case "Valby":
-      return VALBY_BYDEL;
+      return AMAGER_OFFICIAL_BYDEL;
     case "Bispebjerg":
       return "Bispebjerg";
     case "Brønshøj/Husum":
@@ -350,8 +350,12 @@ export function mapKommuneByenToOfficialBydel(
       return "Frederiksberg (post-nr.)";
     case "Indre by":
       return "Indre by";
+    case "Kgs. Enghave":
+      return "Kgs. Enghave (2450)";
     case "Nørrebro":
       return "Nørrebro - indre";
+    case "Valby":
+      return "Valby (2500)";
     case "Vanløse":
       return "Vanløse";
     case "Vesterbro":

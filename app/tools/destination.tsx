@@ -43,14 +43,15 @@ import type {
   HospitalCode,
   Kommune,
   RegionCategory,
+  StreetSide,
 } from "../../src/features/destination/types";
 
 import {
   hospitalLabel,
   mapByenGeocodeToOfficialBydel,
   mapRegionCityToKommune,
-  mapStreetBydelToOfficialBydel,
   norm,
+  resolveStreetRoute,
 } from "../../src/features/destination/helpers";
 
 import {
@@ -136,6 +137,10 @@ function getRegionCategoryLabel(t: TranslateFn, category: RegionCategory) {
 
 function uniqueStrings(values: string[]) {
   return Array.from(new Set(values));
+}
+
+function sideLabel(side: StreetSide) {
+  return side === "even" ? "Lige" : "Ulige";
 }
 
 type ResolvedHospital = {
@@ -429,6 +434,9 @@ export default function DestinationTool() {
   const [bydel, setBydel] = useState<Bydel | "">("");
   const [kommune, setKommune] = useState<Kommune | "">("");
   const [selectedStreet, setSelectedStreet] = useState<string>("");
+  const [streetSide, setStreetSide] = useState<StreetSide | "">("");
+  const [streetRouteNeedsSide, setStreetRouteNeedsSide] = useState(false);
+  const [streetRouteMessage, setStreetRouteMessage] = useState("");
 
   const [byenCat, setByenCat] = useState<ByenCategory>("hospital");
   const [regCat, setRegCat] = useState<RegionCategory>("akutmodtagelse");
@@ -509,6 +517,12 @@ export default function DestinationTool() {
     setPhoneDropdownOpen(false);
   };
 
+  const resetStreetRouteState = () => {
+    setStreetSide("");
+    setStreetRouteNeedsSide(false);
+    setStreetRouteMessage("");
+  };
+
   const resetSelectionState = () => {
     setDetectedArea(null);
     setBydel("");
@@ -516,6 +530,7 @@ export default function DestinationTool() {
     setSelectedStreet("");
     setStreetQ("");
     setKommuneQ("");
+    resetStreetRouteState();
     setHospitalPhones([]);
     setSelectedPhoneId("");
     closeAllDropdowns();
@@ -743,6 +758,42 @@ export default function DestinationTool() {
     ];
   }, [lang, regionCategoryOptions]);
 
+  const applyStreetRoute = (street: string, side: StreetSide | "" = "") => {
+    const result = resolveStreetRoute(STREET_SAMPLE, street, side);
+
+    setDetectedArea(null);
+    setSelectedStreet(street);
+    setStreetQ(street);
+
+    if (result.status === "single") {
+      setBydel(result.officialBydel);
+      setStreetRouteNeedsSide(false);
+      setStreetRouteMessage("");
+      return true;
+    }
+
+    if (result.status === "needs_side" || result.status === "still_ambiguous") {
+      setBydel("");
+      setStreetRouteNeedsSide(true);
+      setStreetRouteMessage(result.message);
+      return false;
+    }
+
+    setBydel("");
+    setStreetRouteNeedsSide(false);
+    setStreetRouteMessage(result.message);
+    return false;
+  };
+
+  const selectStreetSide = (side: StreetSide) => {
+    setStreetSide(side);
+
+    const street = selectedStreet || streetQ;
+    if (!street) return;
+
+    applyStreetRoute(street, side);
+  };
+
   const resolvedHospital = useMemo<ResolvedHospital | null>(() => {
     if (area === "byen") {
       if (!bydel) return null;
@@ -751,12 +802,14 @@ export default function DestinationTool() {
       const code: HospitalCode =
         BYEN_MAP[selectedBydel]?.[byenCat] ?? "UNKNOWN";
 
+      const streetExtra = selectedStreet
+        ? `${selectedStreet}${streetSide ? ` (${sideLabel(streetSide).toLowerCase()})` : ""} • ${selectedBydel}`
+        : selectedBydel;
+
       return {
         code,
         label: hospitalLabel(t as TranslateFn, code),
-        extra: selectedStreet
-          ? `${selectedStreet} • ${selectedBydel}`
-          : selectedBydel,
+        extra: streetExtra,
       };
     }
 
@@ -776,6 +829,7 @@ export default function DestinationTool() {
     bydel,
     kommune,
     selectedStreet,
+    streetSide,
     byenCat,
     regCat,
     t,
@@ -904,16 +958,16 @@ export default function DestinationTool() {
     setByenCatOpen(false);
     setRegCatOpen(false);
     setPhoneDropdownOpen(false);
+    setStreetSide("");
+    setStreetRouteNeedsSide(false);
+    setStreetRouteMessage("");
 
     const exactStreet = STREET_SAMPLE.find(
       (row) => norm(row.street) === norm(text),
     );
 
     if (exactStreet) {
-      setDetectedArea(null);
-      setSelectedStreet(exactStreet.street);
-      const officialBydel = mapStreetBydelToOfficialBydel(exactStreet.bydel);
-      setBydel(officialBydel || "");
+      applyStreetRoute(exactStreet.street, "");
     } else {
       setSelectedStreet("");
       setBydel("");
@@ -1017,18 +1071,29 @@ export default function DestinationTool() {
 
       if (area === "byen") {
         if (street) {
-          const streetMatch = STREET_SAMPLE.find(
-            (row) => norm(row.street) === norm(street),
-          );
+          const routeResult = resolveStreetRoute(STREET_SAMPLE, street);
 
-          if (streetMatch) {
-            const officialBydel = mapStreetBydelToOfficialBydel(
-              streetMatch.bydel,
-            );
+          if (routeResult.status === "single") {
+            setSelectedStreet(street);
+            setStreetQ(street);
+            setStreetSide("");
+            setBydel(routeResult.officialBydel);
+            setStreetRouteNeedsSide(false);
+            setStreetRouteMessage("");
+            closeAllDropdowns();
+            return;
+          }
 
-            setSelectedStreet(streetMatch.street);
-            setStreetQ(streetMatch.street);
-            setBydel(officialBydel || "");
+          if (
+            routeResult.status === "needs_side" ||
+            routeResult.status === "still_ambiguous"
+          ) {
+            setSelectedStreet(street);
+            setStreetQ(street);
+            setStreetSide("");
+            setBydel("");
+            setStreetRouteNeedsSide(true);
+            setStreetRouteMessage(routeResult.message);
             closeAllDropdowns();
             return;
           }
@@ -1046,6 +1111,7 @@ export default function DestinationTool() {
           setBydel(officialBydel);
           setSelectedStreet("");
           setStreetQ("");
+          resetStreetRouteState();
           closeAllDropdowns();
         } else {
           Alert.alert(
@@ -1352,28 +1418,86 @@ export default function DestinationTool() {
                   onToggle={toggleStreetDropdown}
                   options={streetOptions}
                   onSelect={(value) => {
-                    const match = STREET_SAMPLE.find(
-                      (row) => norm(row.street) === norm(value),
-                    );
-
                     setDetectedArea(null);
                     setSelectedStreet(value);
                     setStreetQ(value);
                     setStreetOpen(false);
-
-                    if (match) {
-                      const officialBydel = mapStreetBydelToOfficialBydel(
-                        match.bydel,
-                      );
-                      setBydel(officialBydel || "");
-                    } else {
-                      setBydel("");
-                    }
+                    setStreetSide("");
+                    applyStreetRoute(value, "");
                   }}
                   placeholder={t("dest_street_placeholder")}
                   emptyText={t("dest_no_street_match")}
                   maxHeight={220}
                 />
+
+                {streetRouteNeedsSide && (
+                  <View
+                    style={{
+                      borderRadius: 14,
+                      borderWidth: 1,
+                      borderColor: theme.colors.cardBorder,
+                      padding: 12,
+                      backgroundColor: "rgba(255,209,102,0.10)",
+                      gap: 10,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: theme.colors.text,
+                        fontWeight: "900",
+                        lineHeight: 20,
+                      }}
+                    >
+                      Flere muligheder for samme gade
+                    </Text>
+
+                    <Text
+                      style={{
+                        color: theme.colors.mutedText,
+                        lineHeight: 19,
+                      }}
+                    >
+                      {streetRouteMessage ||
+                        "Vælg om adressen ligger på lige eller ulige side."}
+                    </Text>
+
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        gap: 10,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <Pressable
+                        onPress={() => selectStreetSide("even")}
+                        style={chip(streetSide === "even")}
+                      >
+                        <Text
+                          style={{
+                            color: theme.colors.text,
+                            fontWeight: "900",
+                          }}
+                        >
+                          Lige
+                        </Text>
+                      </Pressable>
+
+                      <Pressable
+                        onPress={() => selectStreetSide("odd")}
+                        style={chip(streetSide === "odd")}
+                      >
+                        <Text
+                          style={{
+                            color: theme.colors.text,
+                            fontWeight: "900",
+                          }}
+                        >
+                          Ulige
+                        </Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                )}
               </View>
             </Card>
           )}
@@ -1418,7 +1542,9 @@ export default function DestinationTool() {
 
             {!resolvedHospital ? (
               <Text style={{ color: theme.colors.mutedText, marginTop: 10 }}>
-                {t("dest_pick_more")}
+                {streetRouteNeedsSide
+                  ? "Vælg lige eller ulige for at få destination."
+                  : t("dest_pick_more")}
               </Text>
             ) : (
               <View style={{ marginTop: 12, gap: 14 }}>

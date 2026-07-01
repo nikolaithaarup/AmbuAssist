@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useT } from "../../../src/i18n/useT";
+import {
+  calculateNews2,
+  classifyNews2Escalation,
+  type Avpu,
+  type SpO2Scale,
+} from "../../../src/domain/news2/scoring";
 import { useSettings } from "../../../src/state/settings";
 import {
   getReference,
@@ -19,81 +25,11 @@ import {
 } from "../../../src/ui/Ui";
 import { theme } from "../../../src/ui/theme";
 
-type SpO2Scale = 1 | 2;
-
 function toNum(s: string) {
   const raw = String(s ?? "").trim();
   if (!raw) return NaN;
   const n = Number(raw.replace(",", "."));
   return Number.isFinite(n) ? n : NaN;
-}
-
-function scoreRR(rr: number) {
-  if (!Number.isFinite(rr)) return 0;
-  if (rr <= 8) return 3;
-  if (rr <= 11) return 1;
-  if (rr <= 20) return 0;
-  if (rr <= 24) return 2;
-  return 3;
-}
-
-function scoreSBP(sbp: number) {
-  if (!Number.isFinite(sbp)) return 0;
-  if (sbp <= 90) return 3;
-  if (sbp <= 100) return 2;
-  if (sbp <= 110) return 1;
-  if (sbp <= 219) return 0;
-  return 3;
-}
-
-function scoreHR(hr: number) {
-  if (!Number.isFinite(hr)) return 0;
-  if (hr <= 40) return 3;
-  if (hr <= 50) return 1;
-  if (hr <= 90) return 0;
-  if (hr <= 110) return 1;
-  if (hr <= 130) return 2;
-  return 3;
-}
-
-function scoreTemp(temp: number) {
-  if (!Number.isFinite(temp)) return 0;
-  if (temp <= 35.0) return 3;
-  if (temp <= 36.0) return 1;
-  if (temp <= 38.0) return 0;
-  if (temp <= 39.0) return 1;
-  return 2;
-}
-
-function scoreSpO2(scale: SpO2Scale, spo2: number, onO2: boolean) {
-  const o2Points = onO2 ? 2 : 0;
-
-  if (!Number.isFinite(spo2)) {
-    return { spo2Points: 0, o2Points };
-  }
-
-  if (scale === 1) {
-    if (spo2 <= 91) return { spo2Points: 3, o2Points };
-    if (spo2 <= 93) return { spo2Points: 2, o2Points };
-    if (spo2 <= 95) return { spo2Points: 1, o2Points };
-    return { spo2Points: 0, o2Points };
-  }
-
-  if (spo2 <= 83) return { spo2Points: 3, o2Points };
-  if (spo2 <= 85) return { spo2Points: 2, o2Points };
-  if (spo2 <= 87) return { spo2Points: 1, o2Points };
-  if (spo2 <= 92) return { spo2Points: 0, o2Points };
-  if (spo2 <= 94) return { spo2Points: 1, o2Points };
-  if (spo2 <= 96) return { spo2Points: 2, o2Points };
-  return { spo2Points: 3, o2Points };
-}
-
-function guidanceKey(total: number, anyThree: boolean) {
-  if (total === 0) return "news2_guidance_0";
-  if (total >= 7) return "news2_guidance_high";
-  if (anyThree) return "news2_guidance_any3";
-  if (total >= 5) return "news2_guidance_med";
-  return "news2_guidance_low";
 }
 
 function SourceItem({
@@ -154,7 +90,7 @@ export default function NEWS2() {
 
   const [onO2, setOnO2] = useState(false);
   const [scale, setScale] = useState<SpO2Scale>(1);
-  const [avpu, setAvpu] = useState<"A" | "V" | "P" | "U">("A");
+  const [avpu, setAvpu] = useState<Avpu>("A");
 
   useEffect(() => {
     let active = true;
@@ -179,36 +115,28 @@ export default function NEWS2() {
     const vHR = toNum(hr);
     const vT = toNum(temp);
 
-    const pRR = scoreRR(vRR);
-    const { spo2Points, o2Points } = scoreSpO2(scale, vSp, onO2);
-    const pSBP = scoreSBP(vSBP);
-    const pHR = scoreHR(vHR);
-    const pT = scoreTemp(vT);
-    const pC = avpu === "A" ? 0 : 3;
-
-    const parts = [pRR, spo2Points, o2Points, pSBP, pHR, pC, pT];
-    const total = parts.reduce((a, b) => a + b, 0);
-    const anyThree = parts.some((x) => x === 3);
+    const scores = calculateNews2({
+      rr: vRR,
+      spo2: vSp,
+      sbp: vSBP,
+      hr: vHR,
+      temp: vT,
+      onO2,
+      scale,
+      avpu,
+    });
 
     const filledCount = [rr, spo2, sbp, hr, temp].filter(
       (x) => String(x).trim().length > 0,
     ).length;
 
     return {
-      total,
-      anyThree,
+      ...scores,
       filledCount,
-      pRR,
-      spo2Points,
-      o2Points,
-      pSBP,
-      pHR,
-      pC,
-      pT,
     };
   }, [rr, spo2, sbp, hr, temp, onO2, scale, avpu]);
 
-  const gKey = guidanceKey(computed.total, computed.anyThree);
+  const gKey = classifyNews2Escalation(computed.total, computed.anyThree);
 
   function reset() {
     setRr("");

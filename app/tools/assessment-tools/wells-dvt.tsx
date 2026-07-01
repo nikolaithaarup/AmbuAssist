@@ -9,6 +9,13 @@ import {
 } from "react-native";
 import { useT } from "../../../src/i18n/useT";
 import {
+  calculateWellsDvtScore,
+  classifyWellsDvt,
+  scoreWellsDvtCriterion,
+  type WellsDvtCriterion,
+  type WellsDvtSelections,
+} from "../../../src/domain/wells-dvt/scoring";
+import {
   getReference,
   type ReferenceDoc,
 } from "../../../src/services/referenceService";
@@ -19,10 +26,9 @@ import { Card, Screen, Subtle, Title } from "../../../src/ui/Ui";
 import { theme } from "../../../src/ui/theme";
 
 type Item = {
-  key: string;
+  key: WellsDvtCriterion;
   labelEn: string;
   labelDa: string;
-  points: number;
 };
 
 const items: Item[] = [
@@ -30,7 +36,6 @@ const items: Item[] = [
     key: "cancer",
     labelEn: "Active cancer (treatment ongoing / within 6 months / palliative)",
     labelDa: "Aktiv cancer (behandling igang / indenfor 6 mdr / palliativ)",
-    points: 1,
   },
   {
     key: "paralysis",
@@ -38,63 +43,48 @@ const items: Item[] = [
       "Paralysis, paresis, or immobilisation of lower extremity (cast/splint)",
     labelDa:
       "Lammelse/parese eller immobilisering af underekstremitet (gips/skinne)",
-    points: 1,
   },
   {
     key: "bedridden",
     labelEn: "Bedridden ≥ 3 days OR major surgery within 4 weeks",
     labelDa: "Sengeleje ≥ 3 dage ELLER større operation indenfor 4 uger",
-    points: 1,
   },
   {
     key: "tenderness",
     labelEn: "Localized tenderness along the deep venous system",
     labelDa: "Ømhed langs det dybe venesystem",
-    points: 1,
   },
   {
     key: "swollen_leg",
     labelEn: "Entire leg swollen",
     labelDa: "Hævelse af hele underekstremiteten",
-    points: 1,
   },
   {
     key: "calf_3cm",
     labelEn: "Calf swelling ≥ 3 cm compared with the other side",
     labelDa: "Benomkreds ≥ 3 cm større end modsatte side",
-    points: 1,
   },
   {
     key: "pitting",
     labelEn: "Pitting oedema confined to the symptomatic leg",
     labelDa: "Pitting ødem (kun i symptomgivende ben)",
-    points: 1,
   },
   {
     key: "collateral",
     labelEn: "Collateral superficial veins (non-varicose)",
     labelDa: "Udvidede overfladiske vener (ikke varicer)",
-    points: 1,
   },
   {
     key: "previous",
     labelEn: "Previously documented DVT",
     labelDa: "Tidligere dokumenteret DVT",
-    points: 1,
   },
   {
     key: "alt_dx",
     labelEn: "Alternative diagnosis at least as likely as DVT",
     labelDa: "Anden diagnose mindst lige så sandsynlig som DVT",
-    points: -2,
   },
 ];
-
-function classifyWells(score: number) {
-  const likely = score >= 2;
-  const three = score <= 0 ? "low" : score <= 2 ? "moderate" : "high";
-  return { likely, three };
-}
 
 function SourceItem({
   title,
@@ -182,7 +172,7 @@ export default function WellsDvt() {
   const lang = settings.language === "da" ? "da" : "en";
 
   const [reference, setReference] = useState<ReferenceDoc | null>(null);
-  const [checked, setChecked] = useState<Record<string, boolean>>({});
+  const [checked, setChecked] = useState<WellsDvtSelections>({});
 
   useEffect(() => {
     let active = true;
@@ -206,14 +196,9 @@ export default function WellsDvt() {
     };
   }, []);
 
-  const score = useMemo(() => {
-    return items.reduce(
-      (sum, it) => sum + (checked[it.key] ? it.points : 0),
-      0,
-    );
-  }, [checked]);
+  const score = useMemo(() => calculateWellsDvtScore(checked), [checked]);
 
-  const result = useMemo(() => classifyWells(score), [score]);
+  const result = useMemo(() => classifyWellsDvt(score), [score]);
 
   const threeLabel =
     result.three === "low"
@@ -242,6 +227,7 @@ export default function WellsDvt() {
             {items.map((it) => {
               const isOn = !!checked[it.key];
               const label = lang === "da" ? it.labelDa : it.labelEn;
+              const points = scoreWellsDvtCriterion(it.key);
 
               return (
                 <Pressable
@@ -282,7 +268,7 @@ export default function WellsDvt() {
                     <Text
                       style={{ color: theme.colors.mutedText, fontSize: 13 }}
                     >
-                      {it.points > 0 ? `+${it.points}` : it.points}{" "}
+                      {points > 0 ? `+${points}` : points}{" "}
                       {t("news2_points")}
                     </Text>
                   </View>

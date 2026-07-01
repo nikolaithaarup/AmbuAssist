@@ -4,6 +4,7 @@ export const theme = {
     mutedText: "#B9B9B9",
     card: "rgba(40, 44, 38, 0.70)",
     cardBorder: "rgba(220, 220, 220, 0.14)",
+    border: "rgba(220, 220, 220, 0.14)",
     accent: "rgba(205, 205, 205, 0.35)",
     danger: "#FF6B6B",
     warn: "#FFD166",

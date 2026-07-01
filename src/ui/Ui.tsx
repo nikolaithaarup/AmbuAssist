@@ -7,15 +7,19 @@ import {
   TextInput,
   type TextInputProps,
   View,
+  type StyleProp,
   ViewStyle,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { theme } from "./theme";
 
-export function Screen({ children }: PropsWithChildren) {
+export function Screen({
+  children,
+  style,
+}: PropsWithChildren<{ style?: StyleProp<ViewStyle> }>) {
   return (
     <SafeAreaView style={styles.safe} edges={["left", "right", "bottom"]}>
-      <View style={styles.inner}>{children}</View>
+      <View style={[styles.inner, style]}>{children}</View>
     </SafeAreaView>
   );
 }
@@ -41,22 +45,31 @@ export function Subtle({
 export function PrimaryButton({
   label,
   onPress,
+  disabled = false,
 }: {
   label: string;
   onPress: () => void;
+  disabled?: boolean;
 }) {
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [styles.btn, pressed && { opacity: 0.85 }]}
+      disabled={disabled}
+      style={({ pressed }) => [
+        styles.btn,
+        (pressed || disabled) && { opacity: 0.85 },
+      ]}
     >
       <Text style={styles.btnText}>{label}</Text>
     </Pressable>
   );
 }
 
-export function Row({ children }: PropsWithChildren) {
-  return <View style={styles.row}>{children}</View>;
+export function Row({
+  children,
+  style,
+}: PropsWithChildren<{ style?: StyleProp<ViewStyle> }>) {
+  return <View style={[styles.row, style]}>{children}</View>;
 }
 
 export function Label({ children }: PropsWithChildren) {

@@ -8,6 +8,7 @@ import {
   View,
 } from "react-native";
 import { useT } from "../../../src/i18n/useT";
+import type { Key } from "../../../src/i18n/strings";
 import {
   getReference,
   type ReferenceDoc,
@@ -24,9 +25,9 @@ type OutcomeId = "none" | "spinal" | "timeCritical";
 
 type Step = {
   id: StepId;
-  titleKey: string;
-  questionKey: string;
-  noteKey?: string;
+  titleKey: Key;
+  questionKey: Key;
+  noteKey?: Key;
   yesNext?: StepId | OutcomeId;
   noNext?: StepId | OutcomeId;
 };

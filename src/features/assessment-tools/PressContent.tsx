@@ -1,13 +1,14 @@
 import { useMemo, useState } from "react";
 import { Alert, Linking, Pressable, Text, View } from "react-native";
 import { useT } from "../../i18n/useT";
+import type { Key } from "../../i18n/strings";
 import type { ReferenceDoc } from "../../services/referenceService";
 import { CollapsibleCard } from "../../ui/CollapsibleCard";
 import { Card, Subtle, Title } from "../../ui/Ui";
 import { theme } from "../../ui/theme";
 
-type Option = { labelKey: string; points: number };
-type Item = { key: string; titleKey: string; options: Option[] };
+type Option = { labelKey: Key; points: number };
+type Item = { key: string; titleKey: Key; options: Option[] };
 
 type Props = {
   lang: "en" | "da";
@@ -200,7 +201,7 @@ function ItemCard({
   onSelect,
 }: {
   item: Item;
-  t: (key: string) => string;
+  t: (key: Key) => string;
   selectedValue?: number;
   onSelect: (points: number) => void;
 }) {

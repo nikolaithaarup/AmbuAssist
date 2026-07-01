@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Alert, Linking, Pressable, Text, View } from "react-native";
 import { useT } from "../../i18n/useT";
+import type { Key } from "../../i18n/strings";
 import type { ReferenceDoc } from "../../services/referenceService";
 import { CollapsibleCard } from "../../ui/CollapsibleCard";
 import { Card, Subtle, Title } from "../../ui/Ui";
@@ -8,9 +9,9 @@ import { theme } from "../../ui/theme";
 
 type ABCStampSection = {
   key: string;
-  titleKey: string;
-  subtitleKey: string;
-  options: { key: string; labelKey: string }[];
+  titleKey: Key;
+  subtitleKey: Key;
+  options: { key: string; labelKey: Key }[];
 };
 
 type Props = {

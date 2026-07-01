@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Alert, Linking, Pressable, Text, View } from "react-native";
 import { useT } from "../../../src/i18n/useT";
+import type { Key } from "../../../src/i18n/strings";
 import { CollapsibleCard } from "../../../src/ui/CollapsibleCard";
 import { Card, Subtle, Title } from "../../../src/ui/Ui";
 import { theme } from "../../../src/ui/theme";
@@ -10,12 +11,12 @@ type FlaccKey = "face" | "legs" | "activity" | "cry" | "consolability";
 
 type FlaccOption = {
   points: 0 | 1 | 2;
-  labelKey: string;
+  labelKey: Key;
 };
 
 type FlaccItem = {
   key: FlaccKey;
-  titleKey: string;
+  titleKey: Key;
   options: FlaccOption[];
 };
 

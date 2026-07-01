@@ -1,4 +1,5 @@
 export type Area = "byen" | "region";
+export type StreetSide = "odd" | "even";
 
 export type ByenCategory =
   | "hospital"
@@ -190,7 +191,7 @@ export type StreetRow = {
   bydel: Bydel;
   from?: number;
   to?: number;
-  side?: "odd" | "even";
+  side?: StreetSide;
 };
 
 export type RawStreetRow = {
@@ -198,5 +199,5 @@ export type RawStreetRow = {
   bydel: string;
   from?: number;
   to?: number;
-  side?: "odd" | "even";
+  side?: StreetSide;
 };

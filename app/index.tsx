@@ -1,5 +1,5 @@
 // app/index.tsx
-import { useRouter } from "expo-router";
+import { type Href, useRouter } from "expo-router";
 import { Image, Pressable, ScrollView, View } from "react-native";
 import { useT } from "../src/i18n/useT";
 import { useSettings } from "../src/state/settings";
@@ -7,7 +7,7 @@ import { Background } from "../src/ui/Background";
 import { Card, Screen, Subtle, Title } from "../src/ui/Ui";
 import { theme } from "../src/ui/theme";
 
-type ToolLink = { titleKey: any; descKey: any; path: string };
+type ToolLink = { titleKey: any; descKey: any; path: Extract<Href, string> };
 
 function FullWidthToolCard({
   title,

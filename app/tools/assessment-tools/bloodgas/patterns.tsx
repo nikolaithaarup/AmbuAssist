@@ -182,7 +182,12 @@ export default function PatternsPage() {
     },
   ];
 
-  const renderedSources =
+  const renderedSources: Array<{
+    id: string;
+    title: string;
+    subtitle: string;
+    url?: string;
+  }> =
     reference?.sources && reference.sources.length > 0
       ? reference.sources.map((source) => ({
           id: source.id,

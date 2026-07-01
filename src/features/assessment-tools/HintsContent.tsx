@@ -541,7 +541,7 @@ export default function HintsContent({ lang, reference }: Props) {
 
         {history.length === 0 ? (
           <Text style={{ color: theme.colors.mutedText }}>
-            {t("hints_none")}
+            {lang === "da" ? "Ingen valg endnu." : "No selections yet."}
           </Text>
         ) : (
           <View style={{ gap: 8, marginTop: 10 }}>
@@ -573,7 +573,7 @@ export default function HintsContent({ lang, reference }: Props) {
                 }}
               >
                 <Text style={{ color: theme.colors.text, fontWeight: "900" }}>
-                  {t("hints_conclusion")}
+                  {lang === "da" ? "Konklusion" : "Conclusion"}
                 </Text>
                 <Text
                   style={{
@@ -608,7 +608,13 @@ export default function HintsContent({ lang, reference }: Props) {
             })}
           >
             <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
-              {flowExpanded ? t("hide") : t("show")}
+              {flowExpanded
+                ? lang === "da"
+                  ? "Skjul"
+                  : "Hide"
+                : lang === "da"
+                  ? "Vis"
+                  : "Show"}
             </Text>
           </Pressable>
         </Row>
@@ -621,7 +627,9 @@ export default function HintsContent({ lang, reference }: Props) {
             lineHeight: 18,
           }}
         >
-          {t("hints_tip")}
+          {lang === "da"
+            ? "Brug diagrammet som visuelt overblik."
+            : "Use the diagram as a visual overview."}
         </Text>
 
         {flowExpanded && (

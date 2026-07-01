@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Alert, Linking, Pressable, Text, View } from "react-native";
 import { useT } from "../../../src/i18n/useT";
+import type { Key } from "../../../src/i18n/strings";
 import { Card, Subtle, Title } from "../../../src/ui/Ui";
 import { theme } from "../../../src/ui/theme";
 import type { ReferenceDoc } from "../../services/referenceService";
@@ -10,12 +11,12 @@ type ApgarKey = "appearance" | "pulse" | "grimace" | "activity" | "respiration";
 
 type ApgarOption = {
   points: 0 | 1 | 2;
-  labelKey: string;
+  labelKey: Key;
 };
 
 type ApgarItem = {
   key: ApgarKey;
-  titleKey: string;
+  titleKey: Key;
   options: ApgarOption[];
 };
 

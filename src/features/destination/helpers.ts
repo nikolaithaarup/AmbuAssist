@@ -6,12 +6,44 @@ import type {
   KommuneMidt,
   KommuneNord,
   KommuneSyd,
+  RawStreetRow,
+  StreetSide,
 } from "./types";
 
 export function norm(s?: string | null) {
   return String(s ?? "")
     .toLowerCase()
     .trim();
+}
+
+export type StreetRouteResult =
+  | { status: "single"; officialBydel: Bydel; message: "" }
+  | { status: "needs_side" | "still_ambiguous" | "not_found"; message: string };
+
+export function resolveStreetRoute(
+  rows: RawStreetRow[],
+  street: string,
+  side: StreetSide | "" = "",
+): StreetRouteResult {
+  const matches = rows.filter((row) => norm(row.street) === norm(street));
+  if (matches.length === 0) {
+    return { status: "not_found", message: "Street was not found in the routing table." };
+  }
+
+  const sideMatches = side
+    ? matches.filter((row) => !row.side || row.side === side)
+    : matches;
+  const officialBydeler = Array.from(
+    new Set(sideMatches.map((row) => mapStreetBydelToOfficialBydel(row.bydel)).filter(Boolean)),
+  ) as Bydel[];
+
+  if (officialBydeler.length === 1) {
+    return { status: "single", officialBydel: officialBydeler[0], message: "" };
+  }
+  if (!side && matches.some((row) => row.side)) {
+    return { status: "needs_side", message: "Select odd or even house number." };
+  }
+  return { status: "still_ambiguous", message: "Street routing is ambiguous." };
 }
 
 const AMAGER_OFFICIAL_BYDEL: Bydel = "Amager (2300, 2770 og 2791)";

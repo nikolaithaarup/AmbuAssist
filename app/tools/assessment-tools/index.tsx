@@ -1,5 +1,5 @@
 // app/tools/assessment-tools/index.tsx
-import { useRouter } from "expo-router";
+import { type Href, useRouter } from "expo-router";
 import { Pressable, ScrollView, View } from "react-native";
 import { useT } from "../../../src/i18n/useT";
 import { Background } from "../../../src/ui/Background";
@@ -8,7 +8,7 @@ import { Card, Screen, Subtle, Title } from "../../../src/ui/Ui";
 type ToolLink = {
   titleKey: any;
   descKey: any;
-  path: string;
+  path: Extract<Href, string>;
 };
 
 export default function AssessmentToolsPage() {

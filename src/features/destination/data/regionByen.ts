@@ -97,10 +97,10 @@ export const REGION_BYEN_DEFAULT: Record<RegionCategory, HospitalCode> = {
   socialmedicin: "FRH",
 };
 
-export const REGION_BYEN_MAP: Record<
+export const REGION_BYEN_MAP: Partial<Record<
   KommuneByen,
   Record<RegionCategory, HospitalCode>
-> = {
+>> = {
   Bispebjerg: {
     ...REGION_BYEN_DEFAULT,
   },

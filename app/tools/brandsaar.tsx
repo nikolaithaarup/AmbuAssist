@@ -10,59 +10,23 @@ import {
 } from "react-native";
 
 import { chip } from "../../src/features/destination/ui";
+import {
+  calculateBurnFluids,
+  calculateTbsa,
+  getBurnZones,
+  isBurnFluidRelevant,
+} from "../../src/domain/burns/calculations";
+import type { BurnAgeGroup } from "../../src/domain/burns/constants";
 import { useSettings } from "../../src/state/settings";
 import { Background } from "../../src/ui/Background";
 import { CollapsibleCard } from "../../src/ui/CollapsibleCard";
 import { Card, Row, Screen, Subtle, Title } from "../../src/ui/Ui";
 import { theme } from "../../src/ui/theme";
 
-type AgeGroup = "adult" | "child";
-
 const RH_BURNS_PHONE = "+4535451245";
 
 const BURNS_SOURCE_URL =
   "https://drive.google.com/file/d/1d15X3jYTSIpkYOSs-muhuLSJ4WmtrH2I/view?usp=sharing";
-
-const adultZones = [
-  { id: "head", labelDa: "Hoved/hals", labelEn: "Head/neck", percent: 9 },
-  {
-    id: "frontTorso",
-    labelDa: "Forbryst/mave",
-    labelEn: "Anterior trunk",
-    percent: 18,
-  },
-  {
-    id: "backTorso",
-    labelDa: "Ryg",
-    labelEn: "Posterior trunk",
-    percent: 18,
-  },
-  { id: "leftArm", labelDa: "Venstre arm", labelEn: "Left arm", percent: 9 },
-  { id: "rightArm", labelDa: "Højre arm", labelEn: "Right arm", percent: 9 },
-  { id: "leftLeg", labelDa: "Venstre ben", labelEn: "Left leg", percent: 18 },
-  { id: "rightLeg", labelDa: "Højre ben", labelEn: "Right leg", percent: 18 },
-  { id: "perineum", labelDa: "Perineum", labelEn: "Perineum", percent: 1 },
-];
-
-const childZones = [
-  { id: "head", labelDa: "Hoved/hals", labelEn: "Head/neck", percent: 18 },
-  {
-    id: "frontTorso",
-    labelDa: "Forbryst/mave",
-    labelEn: "Anterior trunk",
-    percent: 18,
-  },
-  {
-    id: "backTorso",
-    labelDa: "Ryg",
-    labelEn: "Posterior trunk",
-    percent: 18,
-  },
-  { id: "leftArm", labelDa: "Venstre arm", labelEn: "Left arm", percent: 9 },
-  { id: "rightArm", labelDa: "Højre arm", labelEn: "Right arm", percent: 9 },
-  { id: "leftLeg", labelDa: "Venstre ben", labelEn: "Left leg", percent: 14 },
-  { id: "rightLeg", labelDa: "Højre ben", labelEn: "Right leg", percent: 14 },
-];
 
 function parseNumber(value: string) {
   const cleaned = value.replace(",", ".").replace(/[^\d.]/g, "");
@@ -222,34 +186,32 @@ export default function BurnsPage() {
   const { settings } = useSettings();
   const lang = settings.language === "da" ? "da" : "en";
 
-  const [ageGroup, setAgeGroup] = useState<AgeGroup>("adult");
+  const [ageGroup, setAgeGroup] = useState<BurnAgeGroup>("adult");
   const [selectedZones, setSelectedZones] = useState<string[]>([]);
   const [manualPercent, setManualPercent] = useState("");
   const [weight, setWeight] = useState("");
   const [useManual, setUseManual] = useState(false);
 
-  const zones = ageGroup === "adult" ? adultZones : childZones;
+  const zones = getBurnZones(ageGroup);
 
-  const selectedPercent = useMemo(() => {
-    return zones
-      .filter((zone) => selectedZones.includes(zone.id))
-      .reduce((sum, zone) => sum + zone.percent, 0);
-  }, [selectedZones, zones]);
+  const selectedPercent = useMemo(
+    () => calculateTbsa(ageGroup, selectedZones),
+    [ageGroup, selectedZones],
+  );
 
   const manualTbsa = parseNumber(manualPercent);
   const tbsa = useManual ? manualTbsa : selectedPercent;
   const patientWeight = parseNumber(weight);
 
-  const isFluidRelevant = ageGroup === "adult" ? tbsa >= 20 : tbsa >= 10;
+  const isFluidRelevant = isBurnFluidRelevant(ageGroup, tbsa);
 
-  const modifiedParklandTotal =
-    patientWeight > 0 && tbsa > 0 ? patientWeight * tbsa * 3 : 0;
-
-  const firstEightHours = modifiedParklandTotal / 2;
-  const nextSixteenHours = modifiedParklandTotal / 2;
-
-  const firstHourRate = firstEightHours / 8;
-  const laterHourRate = nextSixteenHours / 16;
+  const {
+    modifiedParklandTotal,
+    firstEightHours,
+    nextSixteenHours,
+    firstHourRate,
+    laterHourRate,
+  } = calculateBurnFluids(patientWeight, tbsa);
 
   const disclaimerText =
     lang === "da"

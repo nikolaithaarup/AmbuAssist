@@ -12,6 +12,7 @@ import {
 } from "react-native";
 
 import { useT } from "../../src/i18n/useT";
+import { resolveHospitalCode } from "../../src/domain/destination/resolution";
 import {
   getReference,
   type ReferenceDoc,
@@ -799,8 +800,13 @@ export default function DestinationTool() {
       if (!bydel) return null;
 
       const selectedBydel = bydel as Bydel;
-      const code: HospitalCode =
-        BYEN_MAP[selectedBydel]?.[byenCat] ?? "UNKNOWN";
+      const code =
+        resolveHospitalCode({
+          area: "byen",
+          bydel: selectedBydel,
+          category: byenCat,
+          map: BYEN_MAP,
+        }) ?? "UNKNOWN";
 
       const streetExtra = selectedStreet
         ? `${selectedStreet}${streetSide ? ` (${sideLabel(streetSide).toLowerCase()})` : ""} • ${selectedBydel}`
@@ -816,8 +822,13 @@ export default function DestinationTool() {
     if (!kommune) return null;
 
     const selectedKommune = kommune as Kommune;
-    const code: HospitalCode =
-      REGION_ALL_MAP[selectedKommune]?.[regCat] ?? "UNKNOWN";
+    const code =
+      resolveHospitalCode({
+        area: "region",
+        kommune: selectedKommune,
+        category: regCat,
+        map: REGION_ALL_MAP,
+      }) ?? "UNKNOWN";
 
     return {
       code,

@@ -11,7 +11,8 @@ import {
   mapStreetBydelToOfficialBydel,
   norm,
   resolveStreetRoute,
-} from "./helpers";
+} from "./routing";
+import { STREET_SAMPLE } from "../../features/destination/data/byen";
 
 describe("destination helpers", () => {
   test("normalizes casing and surrounding whitespace", () => {
@@ -103,6 +104,13 @@ describe("destination helpers", () => {
         status: "single",
         officialBydel: "Valby (2500)",
         message: "",
+      });
+    });
+
+    test("routes a known bundled street", () => {
+      expect(resolveStreetRoute(STREET_SAMPLE, "Ålekistevej")).toMatchObject({
+        status: "single",
+        officialBydel: "Vanløse",
       });
     });
 

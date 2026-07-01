@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 
 import { useT } from "../../../../src/i18n/useT";
+import type { Key } from "../../../../src/i18n/strings";
+import { findBloodGasPatterns } from "../../../../src/domain/bloodgas/patterns";
 import { useSettings } from "../../../../src/state/settings";
 import {
   getReference,
@@ -74,100 +76,10 @@ export default function PatternsPage() {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const patterns = useMemo(() => {
-    const findings: string[] = [];
-
-    const {
-      ph,
-      pco2,
-      po2,
-      hco3,
-      be,
-      so2,
-      na,
-      glucose,
-      lactate,
-      urea,
-      creatinine,
-    } = values;
-
-    const hasAnyInput = Object.values(values).some((v) => v !== undefined);
-    if (!hasAnyInput) return findings;
-
-    if (
-      ph !== undefined &&
-      hco3 !== undefined &&
-      glucose !== undefined &&
-      ph < 7.3 &&
-      hco3 < 18 &&
-      glucose > 11
-    ) {
-      findings.push(t("bg_pattern_dka"));
-    }
-
-    if (
-      glucose !== undefined &&
-      glucose > 30 &&
-      (ph === undefined || ph >= 7.3) &&
-      (hco3 === undefined || hco3 >= 18)
-    ) {
-      findings.push(t("bg_pattern_hhs"));
-    }
-
-    if (lactate !== undefined && lactate > 2) {
-      findings.push(t("bg_pattern_lactate_elevated"));
-    }
-
-    if (lactate !== undefined && lactate > 4) {
-      findings.push(t("bg_pattern_lactate_high"));
-    }
-
-    if (
-      lactate !== undefined &&
-      glucose !== undefined &&
-      lactate > 2 &&
-      glucose > 7 &&
-      (ph === undefined || ph >= 7.35)
-    ) {
-      findings.push(t("bg_pattern_dehydration"));
-    }
-
-    if (ph !== undefined && pco2 !== undefined && ph < 7.35 && pco2 > 6) {
-      findings.push(t("bg_pattern_respiratory_acidosis"));
-    }
-
-    if (
-      ph !== undefined &&
-      hco3 !== undefined &&
-      (hco3 < 22 || (be !== undefined && be < -3)) &&
-      ph < 7.35
-    ) {
-      findings.push(t("bg_pattern_metabolic_acidosis"));
-    }
-
-    if (na !== undefined && na < 130) {
-      findings.push(t("bg_pattern_hyponatremia"));
-    }
-
-    if (po2 !== undefined && po2 < 8) {
-      findings.push(t("bg_pattern_hypoxemia"));
-    }
-
-    if (so2 !== undefined && so2 < 90) {
-      findings.push(t("bg_pattern_low_so2"));
-    }
-
-    if (
-      creatinine !== undefined &&
-      creatinine > 110 &&
-      urea !== undefined &&
-      urea > 8
-    ) {
-      findings.push(t("bg_pattern_renal_impairment"));
-    }
-
-    return findings;
-  }, [values, t]);
+  const patterns = useMemo(
+    () => findBloodGasPatterns(values).map((code) => t(code as Key)),
+    [values, t],
+  );
 
   const fallbackSources = [
     {

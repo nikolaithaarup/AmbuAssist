@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 
 import { useT } from "../../../../src/i18n/useT";
+import type { Key } from "../../../../src/i18n/strings";
+import { interpretAcidBase } from "../../../../src/domain/bloodgas/acidBase";
 import { useSettings } from "../../../../src/state/settings";
 import {
   getReference,
@@ -22,13 +24,6 @@ import type {
   BloodGasFieldKey,
   BloodGasFormValues,
 } from "../../../../src/features/bloodgas/types";
-
-type Interpretation = {
-  summary: string;
-  detail: string;
-  compensation: string;
-  severity?: string;
-};
 
 const ACID_BASE_FIELDS: BloodGasFieldKey[] = ["ph", "pco2", "hco3", "be"];
 
@@ -64,96 +59,17 @@ export default function AcidBasePage() {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const result = useMemo<Interpretation | null>(() => {
-    const pH = values.ph;
-    const pCO2 = values.pco2;
-    const HCO3 = values.hco3;
-    const BE = values.be;
-
-    if (pH === undefined || pCO2 === undefined || HCO3 === undefined) {
-      return null;
-    }
-
-    const acidotic = pH < 7.35;
-    const alkalotic = pH > 7.45;
-
-    let summary = "";
-    let detail = "";
-    let compensation = "";
-    let severity = "";
-
-    if (acidotic) {
-      if (pCO2 > 6 && HCO3 >= 22) {
-        summary = t("bg_acidbase_resp_acidosis_title");
-        detail = t("bg_acidbase_resp_acidosis_body");
-        compensation =
-          HCO3 > 26 || (BE !== undefined && BE > 2)
-            ? t("bg_acidbase_comp_metabolic_present")
-            : t("bg_acidbase_comp_metabolic_limited");
-      } else if (HCO3 < 22 || (BE !== undefined && BE < -3)) {
-        if (pCO2 > 6) {
-          summary = t("bg_acidbase_mixed_acidosis_title");
-          detail = t("bg_acidbase_mixed_acidosis_body");
-          compensation = t("bg_acidbase_mixed_compensation");
-        } else {
-          summary = t("bg_acidbase_met_acidosis_title");
-          detail = t("bg_acidbase_met_acidosis_body");
-          compensation =
-            pCO2 < 4.5
-              ? t("bg_acidbase_comp_respiratory_present")
-              : t("bg_acidbase_comp_respiratory_limited");
-        }
-      } else {
-        summary = t("bg_acidbase_unclear_acidosis_title");
-        detail = t("bg_acidbase_unclear_acidosis_body");
-        compensation = t("bg_acidbase_verify_context");
-      }
-    } else if (alkalotic) {
-      if (pCO2 < 4.5 && HCO3 <= 26) {
-        summary = t("bg_acidbase_resp_alkalosis_title");
-        detail = t("bg_acidbase_resp_alkalosis_body");
-        compensation =
-          HCO3 < 22 || (BE !== undefined && BE < -3)
-            ? t("bg_acidbase_comp_metabolic_present")
-            : t("bg_acidbase_comp_metabolic_limited");
-      } else if (HCO3 > 26 || (BE !== undefined && BE > 3)) {
-        if (pCO2 < 4.5) {
-          summary = t("bg_acidbase_mixed_alkalosis_title");
-          detail = t("bg_acidbase_mixed_alkalosis_body");
-          compensation = t("bg_acidbase_mixed_compensation");
-        } else {
-          summary = t("bg_acidbase_met_alkalosis_title");
-          detail = t("bg_acidbase_met_alkalosis_body");
-          compensation =
-            pCO2 > 6
-              ? t("bg_acidbase_comp_respiratory_present")
-              : t("bg_acidbase_comp_respiratory_limited");
-        }
-      } else {
-        summary = t("bg_acidbase_unclear_alkalosis_title");
-        detail = t("bg_acidbase_unclear_alkalosis_body");
-        compensation = t("bg_acidbase_verify_context");
-      }
-    } else {
-      if (pCO2 > 6 && (HCO3 > 26 || (BE !== undefined && BE > 2))) {
-        summary = t("bg_acidbase_comp_resp_acidosis_title");
-        detail = t("bg_acidbase_comp_resp_acidosis_body");
-        compensation = t("bg_acidbase_compensated_note");
-      } else if (pCO2 < 4.5 && (HCO3 < 22 || (BE !== undefined && BE < -3))) {
-        summary = t("bg_acidbase_comp_resp_alkalosis_title");
-        detail = t("bg_acidbase_comp_resp_alkalosis_body");
-        compensation = t("bg_acidbase_compensated_note");
-      } else {
-        summary = t("bg_acidbase_near_normal_title");
-        detail = t("bg_acidbase_near_normal_body");
-        compensation = t("bg_acidbase_verify_context");
-      }
-    }
-
-    if (pH < 7.2) severity = t("bg_acidbase_severe_acidemia");
-    if (pH > 7.55) severity = t("bg_acidbase_severe_alkalemia");
-
-    return { summary, detail, compensation, severity };
+  const result = useMemo(() => {
+    const interpretation = interpretAcidBase(values);
+    if (!interpretation) return null;
+    return {
+      summary: t(interpretation.summaryCode as Key),
+      detail: t(interpretation.detailCode as Key),
+      compensation: t(interpretation.compensationCode as Key),
+      severity: interpretation.severityCode
+        ? t(interpretation.severityCode as Key)
+        : "",
+    };
   }, [values, t]);
 
   const fallbackSources = [

@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { ScrollView, Switch, Text, View } from "react-native";
 
 import { useT } from "../../../../src/i18n/useT";
+import type { Key } from "../../../../src/i18n/strings";
+import { findInfectionPatterns } from "../../../../src/domain/bloodgas/infection";
 import { useSettings } from "../../../../src/state/settings";
 import {
   getReference,
@@ -60,45 +62,13 @@ export default function InfectionPage() {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const results = useMemo(() => {
-    const findings: string[] = [];
-    const { crp, lactate, glucose } = values;
-
-    const hasAnyInput =
-      crp !== undefined ||
-      lactate !== undefined ||
-      glucose !== undefined ||
-      nitrite ||
-      leukocytes;
-
-    if (!hasAnyInput) return findings;
-
-    if (crp !== undefined) {
-      if (crp > 100) {
-        findings.push(t("bg_infection_crp_high"));
-      } else if (crp > 50) {
-        findings.push(t("bg_infection_crp_moderate"));
-      }
-    }
-
-    if (lactate !== undefined && lactate > 2) {
-      findings.push(t("bg_infection_lactate_elevated"));
-    }
-
-    if (glucose !== undefined && glucose > 11) {
-      findings.push(t("bg_infection_stress_hyperglycemia"));
-    }
-
-    if (nitrite && leukocytes) {
-      findings.push(t("bg_infection_uti_pattern"));
-    } else if (leukocytes) {
-      findings.push(t("bg_infection_leukocytes_only"));
-    } else if (nitrite) {
-      findings.push(t("bg_infection_nitrite_only"));
-    }
-
-    return findings;
-  }, [values, nitrite, leukocytes, t]);
+  const results = useMemo(
+    () =>
+      findInfectionPatterns(values, nitrite, leukocytes).map((code) =>
+        t(code as Key),
+      ),
+    [values, nitrite, leukocytes, t],
+  );
 
   const fallbackSources = [
     {

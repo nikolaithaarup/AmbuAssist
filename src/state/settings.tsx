@@ -8,12 +8,21 @@ import React, {
   useMemo,
   useState,
 } from "react";
+import {
+  convertDose,
+  toMg,
+  unitToMgFactor,
+  type DoseUnit,
+} from "../domain/medication/units";
+import {
+  estimateWeightKg,
+  type WeightFormula,
+} from "../domain/paediatric/weight";
+
+export { convertDose, estimateWeightKg, toMg, unitToMgFactor };
+export type { DoseUnit, WeightFormula };
 
 export type Language = "en" | "da";
-export type WeightFormula = "APLS_1_5" | "APLS_6_12" | "CUSTOM_LINEAR";
-
-// ✅ Added "IE" (stored form). UI can render it as IU/IE based on language.
-export type DoseUnit = "ug" | "mg" | "g" | "IE";
 
 export type MedConfig = {
   id: string;
@@ -48,44 +57,6 @@ const STORAGE_KEY = "ambuassist.settings.v3";
 
 // bump this when you change default meds/weights/etc and want the app to re-sync
 const DEFAULTS_REV = 2;
-
-// -------------------- unit helpers --------------------
-// NOTE: IE is NOT a mass unit, so we do NOT convert it to mg.
-// These helpers return NaN for IE to prevent silent wrong math.
-export function unitToMgFactor(u: DoseUnit): number {
-  switch (u) {
-    case "ug":
-      return 0.001;
-    case "mg":
-      return 1;
-    case "g":
-      return 1000;
-    case "IE":
-      return NaN;
-  }
-}
-
-export function toMg(value: number, unit: DoseUnit): number {
-  if (!Number.isFinite(value)) return NaN;
-  const f = unitToMgFactor(unit);
-  if (!Number.isFinite(f)) return NaN;
-  return value * f;
-}
-
-export function convertDose(
-  value: number,
-  from: DoseUnit,
-  to: DoseUnit,
-): number {
-  if (!Number.isFinite(value)) return NaN;
-
-  const fromF = unitToMgFactor(from);
-  const toF = unitToMgFactor(to);
-  if (!Number.isFinite(fromF) || !Number.isFinite(toF)) return NaN;
-
-  const mg = value * fromF;
-  return mg / toF;
-}
 
 // -------------------- helpers --------------------
 function isDoseUnit(x: any): x is DoseUnit {
@@ -436,19 +407,4 @@ export function useSettings() {
   const ctx = useContext(SettingsContext);
   if (!ctx) throw new Error("useSettings must be used within SettingsProvider");
   return ctx;
-}
-
-export function estimateWeightKg(ageYears: number, s: AppSettings) {
-  if (!Number.isFinite(ageYears) || ageYears <= 0) return NaN;
-
-  switch (s.formula) {
-    case "APLS_1_5":
-      return (ageYears + 4) * 2;
-    case "APLS_6_12":
-      return ageYears * 3 + 7;
-    case "CUSTOM_LINEAR":
-      return ageYears * s.customLinearA + s.customLinearB;
-    default:
-      return NaN;
-  }
 }

@@ -10,10 +10,10 @@ import {
   View,
 } from "react-native";
 import { useT } from "../../src/i18n/useT";
+import { calculateMedicationDose } from "../../src/domain/medication/calculations";
+import { calculateJoules } from "../../src/domain/paediatric/joules";
 import {
   estimateWeightKg,
-  toMg,
-  unitToMgFactor,
   useSettings,
   type AppSettings,
   type DoseUnit,
@@ -94,13 +94,6 @@ function fmtSmartMl(n: number) {
   }
 
   return fmtNum(trimTrailingZeros(n.toFixed(3)));
-}
-
-function fromMg(valueMg: number, unit: DoseUnit): number {
-  if (!Number.isFinite(valueMg)) return NaN;
-  const f = unitToMgFactor(unit);
-  if (!Number.isFinite(f) || f <= 0) return NaN;
-  return valueMg / f;
 }
 
 const UNITS: DoseUnit[] = ["ug", "mg", "g", "IE"];
@@ -342,13 +335,7 @@ export default function WeightJouleDose() {
         ? defaultJPerKg
         : NaN;
 
-    const rawJoules =
-      Number.isFinite(weightKg) && Number.isFinite(jPerKg)
-        ? weightKg * jPerKg
-        : NaN;
-
-    const joules = Number.isFinite(rawJoules) ? Math.min(rawJoules, 120) : NaN;
-    const joulesCapped = Number.isFinite(rawJoules) ? rawJoules > 120 : false;
+    const { joules, joulesCapped } = calculateJoules(weightKg, jPerKg);
 
     const medsArr = Array.isArray(settings.meds) ? settings.meds : [];
 
@@ -362,71 +349,15 @@ export default function WeightJouleDose() {
         const concentration = toNum(String(m.concentration));
         const concUnit = ((m.concUnit ?? doseUnit) as DoseUnit) ?? doseUnit;
 
-        const isIE = doseUnit === "IE";
-
-        let rawDoseDisplay = NaN;
-        let finalDoseDisplay = NaN;
-        let capped = false;
-        let ml = NaN;
-
-        if (isIE) {
-          const rawIE =
-            Number.isFinite(weightKg) && Number.isFinite(dosePerKg)
-              ? weightKg * dosePerKg
-              : NaN;
-
-          const hasMax = Number.isFinite(maxDose) && maxDose > 0;
-          const finalIE =
-            Number.isFinite(rawIE) && hasMax ? Math.min(rawIE, maxDose) : rawIE;
-
-          capped =
-            Number.isFinite(rawIE) && hasMax
-              ? rawIE > (maxDose as number)
-              : false;
-
-          rawDoseDisplay = rawIE;
-          finalDoseDisplay = finalIE;
-
-          if (
-            Number.isFinite(finalIE) &&
-            Number.isFinite(concentration) &&
-            concentration > 0 &&
-            concUnit === "IE"
-          ) {
-            ml = finalIE / concentration;
-          }
-        } else {
-          const rawDoseMg =
-            Number.isFinite(weightKg) && Number.isFinite(dosePerKg)
-              ? toMg(weightKg * dosePerKg, doseUnit)
-              : NaN;
-
-          const hasMax = Number.isFinite(maxDose) && maxDose > 0;
-          const maxMg = hasMax ? toMg(maxDose, doseUnit) : NaN;
-
-          const finalDoseMg =
-            Number.isFinite(rawDoseMg) && hasMax
-              ? Math.min(rawDoseMg, maxMg)
-              : rawDoseMg;
-
-          capped =
-            Number.isFinite(rawDoseMg) && hasMax ? rawDoseMg > maxMg : false;
-
-          const concMgPerMl =
-            Number.isFinite(concentration) && concentration > 0
-              ? toMg(concentration, concUnit)
-              : NaN;
-
-          ml =
-            Number.isFinite(finalDoseMg) &&
-            Number.isFinite(concMgPerMl) &&
-            concMgPerMl > 0
-              ? finalDoseMg / concMgPerMl
-              : NaN;
-
-          rawDoseDisplay = fromMg(rawDoseMg, doseUnit);
-          finalDoseDisplay = fromMg(finalDoseMg, doseUnit);
-        }
+        const { rawDoseDisplay, finalDoseDisplay, capped, ml } =
+          calculateMedicationDose({
+            weightKg,
+            dosePerKg,
+            doseUnit,
+            maxDose,
+            concentration,
+            concUnit,
+          });
 
         return {
           ...m,

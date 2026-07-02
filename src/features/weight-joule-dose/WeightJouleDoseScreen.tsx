@@ -20,6 +20,7 @@ import {
 } from "../../services/referenceService";
 import { Background } from "../../ui/Background";
 import { CollapsibleCard } from "../../ui/CollapsibleCard";
+import { NumberInput } from "../../ui/NumberInput";
 import {
   Card,
   Input,
@@ -261,8 +262,8 @@ export function WeightJouleDoseScreen() {
               {draft.formula === "CUSTOM_LINEAR" && (
                 <View style={{ marginTop: 10, gap: 10 }}>
                   <View style={{ gap: 6 }}>
-                    <Label>a</Label>
-                    <Input
+                    <NumberInput
+                      label="a"
                       value={String(draft.customLinearA)}
                       onChangeText={(tt) => {
                         if (tt.trim() === "") {
@@ -279,8 +280,8 @@ export function WeightJouleDoseScreen() {
                   </View>
 
                   <View style={{ gap: 6 }}>
-                    <Label>b</Label>
-                    <Input
+                    <NumberInput
+                      label="b"
                       value={String(draft.customLinearB)}
                       onChangeText={(tt) => {
                         if (tt.trim() === "") {
@@ -303,8 +304,9 @@ export function WeightJouleDoseScreen() {
               <Title>{t("settings_default_energy_title")}</Title>
 
               <View style={{ marginTop: 8, gap: 6 }}>
-                <Label>{t("settings_j_per_kg")}</Label>
-                <Input
+                <NumberInput
+                  label={t("settings_j_per_kg")}
+                  unit="J/kg"
                   value={String(draft.defaultJPerKg)}
                   onChangeText={(tt) => {
                     if (tt.trim() === "") {
@@ -486,7 +488,7 @@ export function WeightJouleDoseScreen() {
                           </TouchableOpacity>
 
                           <View style={{ flex: 1 }}>
-                            <Input
+                            <NumberInput
                               value={
                                 medText[m.id]?.dosePerKg ??
                                 (m.dosePerKg === undefined
@@ -554,7 +556,8 @@ export function WeightJouleDoseScreen() {
                           }}
                         >
                           <View style={{ flex: 1 }}>
-                            <Input
+                            <NumberInput
+                              unit={doseUnitLbl}
                               value={
                                 medText[m.id]?.maxDose ??
                                 (m.maxDose === undefined
@@ -601,9 +604,6 @@ export function WeightJouleDoseScreen() {
                               keyboardType={numKeyboard}
                             />
                           </View>
-                          <Text style={{ color: theme.colors.mutedText }}>
-                            {doseUnitLbl}
-                          </Text>
                         </View>
                       </View>
 
@@ -661,7 +661,7 @@ export function WeightJouleDoseScreen() {
                           </TouchableOpacity>
 
                           <View style={{ flex: 1 }}>
-                            <Input
+                            <NumberInput
                               value={
                                 medText[m.id]?.concentration ??
                                 (m.concentration === undefined

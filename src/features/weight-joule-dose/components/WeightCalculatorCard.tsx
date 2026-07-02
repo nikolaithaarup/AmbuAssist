@@ -1,4 +1,5 @@
-import { Card, Input, Label, Row } from "../../../ui/Ui";
+import { NumberInput } from "../../../ui/NumberInput";
+import { Card } from "../../../ui/Ui";
 import type { Translate } from "../types";
 
 export function WeightCalculatorCard({
@@ -22,18 +23,34 @@ export function WeightCalculatorCard({
 }) {
   return (
     <Card>
-      <Row>
-        <Label>{t("wjd_age")}</Label>
-        <Input value={ageYears} onChangeText={setAgeYears} placeholder={t("wjd_years")} keyboardType="number-pad" />
-      </Row>
-      <Row>
-        <Label>{t("wjd_weight_override")}</Label>
-        <Input value={weightKgOverride} onChangeText={setWeightKgOverride} placeholder={t("wjd_kg_optional")} keyboardType="decimal-pad" />
-      </Row>
-      <Row>
-        <Label>{t("wjd_jkg_override")}</Label>
-        <Input value={jPerKgOverride} onChangeText={setJPerKgOverride} placeholder={placeholderDefaultJ} keyboardType="decimal-pad" />
-      </Row>
+      <NumberInput
+        label={t("wjd_age")}
+        unit={t("wjd_years")}
+        value={ageYears}
+        onChangeText={setAgeYears}
+        placeholder={t("wjd_years")}
+        keyboardType="number-pad"
+        showClear
+        clearLabel={t("clear")}
+      />
+      <NumberInput
+        label={t("wjd_weight_override")}
+        unit="kg"
+        value={weightKgOverride}
+        onChangeText={setWeightKgOverride}
+        placeholder={t("wjd_kg_optional")}
+        showClear
+        clearLabel={t("clear")}
+      />
+      <NumberInput
+        label={t("wjd_jkg_override")}
+        unit="J/kg"
+        value={jPerKgOverride}
+        onChangeText={setJPerKgOverride}
+        placeholder={placeholderDefaultJ}
+        showClear
+        clearLabel={t("clear")}
+      />
     </Card>
   );
 }

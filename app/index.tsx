@@ -1,111 +1,181 @@
 // app/index.tsx
-import { type Href, useRouter } from "expo-router";
-import { Image, Pressable, ScrollView, View } from "react-native";
+import { useRouter } from "expo-router";
+import type { ReactNode } from "react";
+import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { useT } from "../src/i18n/useT";
+import {
+  getToolById,
+  HOME_TOOLS,
+  type HomeTool,
+} from "../src/navigation/toolRegistry";
 import { useSettings } from "../src/state/settings";
+import { useToolPreferences } from "../src/state/toolPreferences";
 import { Background } from "../src/ui/Background";
 import { InteractiveSurface } from "../src/ui/InteractiveSurface";
 import { Card, Screen, Subtle, Title } from "../src/ui/Ui";
 import { theme } from "../src/ui/theme";
 
-type ToolLink = { titleKey: any; descKey: any; path: Extract<Href, string> };
-
 function FullWidthToolCard({
   title,
   description,
   onPress,
+  favourite,
+  favouriteActionLabel,
+  onFavouritePress,
+  showDescription,
 }: {
   title: string;
   description: string;
   onPress: () => void;
+  favourite: boolean;
+  favouriteActionLabel: string;
+  onFavouritePress: () => void;
+  showDescription: boolean;
 }) {
   return (
-    <InteractiveSurface
-      onPress={onPress}
-      accessibilityLabel={title}
-      style={{ width: "100%" }}
+    <Card
+      style={{
+        width: "100%",
+        padding: 0,
+        gap: 0,
+        flexDirection: "row",
+      }}
     >
-      <Card
+      <InteractiveSurface
+        onPress={onFavouritePress}
+        accessibilityLabel={`${favouriteActionLabel}: ${title}`}
         style={{
-          paddingHorizontal: 18,
-          paddingVertical: theme.spacing.lg,
+          width: 52,
+          minHeight: theme.touchTarget.minimum,
+          alignItems: "center",
+          justifyContent: "center",
+          borderRightWidth: 1,
+          borderRightColor: theme.colors.cardBorder,
         }}
       >
-        <View style={{ alignItems: "center", gap: theme.spacing.xs }}>
-          <Title style={{ textAlign: "center", ...theme.typography.toolTitle }}>
+        <Text
+          accessible={false}
+          style={{
+            color: favourite ? theme.colors.ok : theme.colors.mutedText,
+            fontSize: 22,
+            lineHeight: 26,
+            fontWeight: "700",
+            opacity: favourite ? 0.9 : 0.65,
+          }}
+        >
+          {favourite ? "★" : "☆"}
+        </Text>
+      </InteractiveSurface>
+
+      <InteractiveSurface
+        onPress={onPress}
+        accessibilityLabel={title}
+        style={{
+          flex: 1,
+          paddingHorizontal: theme.spacing.lg,
+          paddingVertical: showDescription
+            ? theme.spacing.md
+            : theme.spacing.sm,
+          justifyContent: "center",
+        }}
+      >
+        <View style={{ alignItems: "flex-start", gap: theme.spacing.xxs }}>
+          <Title style={{ textAlign: "left", ...theme.typography.toolTitle }}>
             {title}
           </Title>
-          <Subtle
-            style={{
-              textAlign: "center",
-              ...theme.typography.toolDescription,
-            }}
-          >
-            {description}
-          </Subtle>
+          {showDescription && (
+            <Subtle
+              style={{
+                textAlign: "left",
+                ...theme.typography.toolDescription,
+                opacity: 0.72,
+              }}
+            >
+              {description}
+            </Subtle>
+          )}
         </View>
-      </Card>
-    </InteractiveSurface>
+      </InteractiveSurface>
+    </Card>
+  );
+}
+
+function ToolSection({
+  title,
+  tools,
+  renderTool,
+  showDescriptions,
+}: {
+  title: string;
+  tools: readonly HomeTool[];
+  renderTool: (tool: HomeTool, showDescription: boolean) => ReactNode;
+  showDescriptions: boolean;
+}) {
+  if (tools.length === 0) return null;
+
+  return (
+    <View style={{ gap: theme.spacing.sm }}>
+      <Text
+        style={{
+          color: theme.colors.text,
+          fontSize: 17,
+          lineHeight: 22,
+          fontWeight: "800",
+          paddingHorizontal: theme.spacing.xxs,
+        }}
+      >
+        {title}
+      </Text>
+      <View style={{ gap: theme.spacing.sm }}>
+        {tools.map((tool) => renderTool(tool, showDescriptions))}
+      </View>
+    </View>
   );
 }
 
 export default function Home() {
   const router = useRouter();
   const { setLanguage, settings } = useSettings();
+  const {
+    favouriteIds,
+    recentIds,
+    addToFavourites,
+    removeFromFavourites,
+    recordToolOpened,
+  } = useToolPreferences();
   const { t } = useT();
 
-  const mainTools: ToolLink[] = [
-    {
-      titleKey: "tool_dest_title",
-      descKey: "tool_dest_desc",
-      path: "/tools/destination",
-    },
-    {
-      titleKey: "tool_weightDose_title",
-      descKey: "tool_weightDose_desc",
-      path: "/tools/weight-joule-dose",
-    },
-    {
-      titleKey: "tool_trombolysis_title",
-      descKey: "tool_trombolysis_desc",
-      path: "/tools/trombolysis",
-    },
-    {
-      titleKey: "tool_burns_title",
-      descKey: "tool_burns_desc",
-      path: "/tools/brandsaar",
-    },
-    {
-      titleKey: "tool_supportNumbers_title",
-      descKey: "tool_supportNumbers_desc",
-      path: "/tools/support-numbers",
-    },
-    {
-      titleKey: "tool_exams_title",
-      descKey: "tool_exams_desc",
-      path: "/tools/exams",
-    },
-    {
-      titleKey: "tool_assessment_title",
-      descKey: "tool_assessment_desc",
-      path: "/tools/assessment-tools",
-    },
-    {
-      titleKey: "tool_meddisc_title",
-      descKey: "tool_meddisc_desc",
-      path: "/tools/medical-disclaimer",
-    },
-    {
-      titleKey: "tool_contact_title",
-      descKey: "tool_contact_desc",
-      path: "/tools/contact",
-    },
-    {
-      titleKey: "tool_about_title",
-      descKey: "tool_about_desc",
-      path: "/tools/about",
-    },
-  ];
+  const favouriteTools = favouriteIds.map(getToolById);
+  const recentTools = recentIds.map(getToolById);
+
+  function openTool(tool: HomeTool) {
+    recordToolOpened(tool.id);
+    router.push(tool.path);
+  }
+
+  function renderTool(tool: HomeTool, showDescription: boolean) {
+    const favourite = favouriteIds.includes(tool.id);
+    const favouriteActionLabel = favourite
+      ? t("home_remove_favourite")
+      : t("home_add_favourite");
+
+    return (
+      <FullWidthToolCard
+        key={tool.id}
+        title={t(tool.titleKey)}
+        description={t(tool.descKey)}
+        favourite={favourite}
+        favouriteActionLabel={favouriteActionLabel}
+        showDescription={showDescription}
+        onPress={() => openTool(tool)}
+        onFavouritePress={() =>
+          favourite
+            ? removeFromFavourites(tool.id)
+            : addToFavourites(tool.id)
+        }
+      />
+    );
+  }
 
   return (
     <Background>
@@ -207,15 +277,25 @@ export default function Home() {
             alignItems: "center",
           }}
         >
-          <View style={{ width: "100%", maxWidth: 520, gap: 12 }}>
-            {mainTools.map((tool) => (
-              <FullWidthToolCard
-                key={tool.path}
-                title={t(tool.titleKey)}
-                description={t(tool.descKey)}
-                onPress={() => router.push(tool.path)}
-              />
-            ))}
+          <View style={{ width: "100%", maxWidth: 520, gap: theme.spacing.xl }}>
+            <ToolSection
+              title={t("home_favourites")}
+              tools={favouriteTools}
+              renderTool={renderTool}
+              showDescriptions={false}
+            />
+            <ToolSection
+              title={t("home_recent")}
+              tools={recentTools}
+              renderTool={renderTool}
+              showDescriptions={false}
+            />
+            <ToolSection
+              title={t("home_all_tools")}
+              tools={HOME_TOOLS}
+              renderTool={renderTool}
+              showDescriptions
+            />
           </View>
         </ScrollView>
       </Screen>

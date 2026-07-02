@@ -19,6 +19,7 @@ export const en = {
   remove: "Remove",
   add: "Add",
   close: "Close",
+  clear: "Clear",
   default: "default",
   yes: "Yes",
   no: "No",
@@ -32,6 +33,11 @@ export const en = {
   tool_sources_title: "Sources and references",
   tool_answered: "Answered:",
   tool_filled: "Filled values:",
+  home_favourites: "Favourites",
+  home_recent: "Recently used",
+  home_all_tools: "All tools",
+  home_add_favourite: "Add to favourites",
+  home_remove_favourite: "Remove from favourites",
 
   // =========================================================
   // HOME TOOL CARDS
@@ -1487,6 +1493,7 @@ export const da: typeof en = {
   remove: "Fjern",
   add: "Tilføj",
   close: "Luk",
+  clear: "Ryd",
   default: "standard",
   yes: "Ja",
   no: "Nej",
@@ -1500,6 +1507,11 @@ export const da: typeof en = {
   tool_sources_title: "Kilder og referencer",
   tool_answered: "Besvaret:",
   tool_filled: "Udfyldte værdier:",
+  home_favourites: "Favoritter",
+  home_recent: "Senest brugt",
+  home_all_tools: "Alle værktøjer",
+  home_add_favourite: "Føj til favoritter",
+  home_remove_favourite: "Fjern fra favoritter",
 
   // =========================================================
   // HOME TOOL CARDS

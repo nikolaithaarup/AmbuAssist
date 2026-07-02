@@ -15,6 +15,7 @@ import { Card, Screen, Subtle, Title } from "../../../../src/ui/Ui";
 import { theme } from "../../../../src/ui/theme";
 
 import { BloodGasInputCard } from "../../../../src/features/bloodgas/BloodGasInputCard";
+import { BloodGasPageHeader, EmptyResult, ResultSection } from "../../../../src/features/bloodgas/BloodGasPresentation";
 import { SourceItem } from "../../../../src/features/bloodgas/SourceItem";
 import {
   makeEmptyBloodGasFormValues,
@@ -103,33 +104,21 @@ export default function AcidBasePage() {
   return (
     <Background>
       <Screen>
-        <View style={{ gap: 6, marginTop: 12 }}>
-          <Title>{t("tool_bg_acidbase_title")}</Title>
-          <Subtle>{t("tool_bg_acidbase_desc")}</Subtle>
-        </View>
+        <BloodGasPageHeader title={t("tool_bg_acidbase_title")} subtitle={t("tool_bg_acidbase_desc")} />
 
         <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
           <BloodGasInputCard
             values={form}
             onChange={handleChange}
             fields={ACID_BASE_FIELDS}
+            title={lang === "da" ? "Syre-base-værdier" : "Acid-base values"}
           />
 
-          <Card>
+          {!result ? (
+            <EmptyResult>{t("bg_acidbase_enter_values")}</EmptyResult>
+          ) : <Card style={{ gap: 18 }}>
             <Title>{t("result")}</Title>
-
-            {!result ? (
-              <Text
-                style={{
-                  color: theme.colors.mutedText,
-                  marginTop: 10,
-                  lineHeight: 20,
-                }}
-              >
-                {t("bg_acidbase_enter_values")}
-              </Text>
-            ) : (
-              <View style={{ gap: 10, marginTop: 10 }}>
+              <ResultSection label={lang === "da" ? "Primær fortolkning" : "Primary interpretation"} tone={result.severity ? "caution" : "neutral"}>
                 <Text
                   style={{
                     color: theme.colors.text,
@@ -139,23 +128,21 @@ export default function AcidBasePage() {
                 >
                   {result.summary}
                 </Text>
-
-                {!!result.severity && (
-                  <Text style={{ color: theme.colors.warn, fontWeight: "800" }}>
-                    {result.severity}
-                  </Text>
-                )}
-
                 <Text style={{ color: theme.colors.mutedText, lineHeight: 20 }}>
                   {result.detail}
                 </Text>
-
+              </ResultSection>
+              <ResultSection label={lang === "da" ? "Forslag til overvejelser" : "Suggested considerations"}>
                 <Text style={{ color: theme.colors.mutedText, lineHeight: 20 }}>
                   {result.compensation}
                 </Text>
-              </View>
-            )}
-          </Card>
+              </ResultSection>
+              {!!result.severity && (
+                <ResultSection label={lang === "da" ? "Advarsel" : "Warning"} tone="urgent">
+                  <Text style={{ color: theme.colors.danger, fontWeight: "800" }}>{result.severity}</Text>
+                </ResultSection>
+              )}
+          </Card>}
 
           <CollapsibleCard
             title={t("tool_disclaimer_title")}

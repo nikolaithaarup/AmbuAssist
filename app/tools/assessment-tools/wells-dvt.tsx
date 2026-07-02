@@ -24,6 +24,7 @@ import { Background } from "../../../src/ui/Background";
 import { CollapsibleCard } from "../../../src/ui/CollapsibleCard";
 import { Card, Screen, Subtle, Title } from "../../../src/ui/Ui";
 import { theme } from "../../../src/ui/theme";
+import { hapticReset } from "../../../src/ui/haptics";
 
 type Item = {
   key: WellsDvtCriterion;
@@ -211,6 +212,7 @@ export default function WellsDvt() {
   const sourcesSubText = reference?.sourcesSub?.[lang] ?? "";
 
   function reset() {
+    hapticReset();
     setChecked({});
   }
 

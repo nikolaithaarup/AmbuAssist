@@ -1,6 +1,9 @@
-import { View } from "react-native";
+import { Text, View } from "react-native";
 import { useT } from "../../i18n/useT";
 import { Card, Input, Label } from "../../ui/Ui";
+import { theme } from "../../ui/theme";
+import { useSettings } from "../../state/settings";
+import { parseNumber } from "./helpers";
 import type { BloodGasFieldKey, BloodGasFormValues } from "./types";
 
 type FieldConfig = {
@@ -49,19 +52,22 @@ type Props = {
   values: BloodGasFormValues;
   onChange: (key: BloodGasFieldKey, value: string) => void;
   fields: BloodGasFieldKey[];
+  title?: string;
 };
 
-export function BloodGasInputCard({ values, onChange, fields }: Props) {
+export function BloodGasInputCard({ values, onChange, fields, title }: Props) {
   const { t } = useT();
+  const { settings } = useSettings();
 
   return (
     <Card>
-      <View style={{ gap: 14 }}>
+      {title ? <Text style={{ color: theme.colors.text, fontSize: 17, fontWeight: "800" }}>{title}</Text> : null}
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
         {fields.map((fieldKey) => {
           const field = ALL_FIELDS[fieldKey];
 
           return (
-            <View key={field.key} style={{ gap: 8 }}>
+            <View key={field.key} style={{ gap: 8, minWidth: 140, flexGrow: 1, flexBasis: "46%" }}>
               <Label>{t(field.labelKey as any)}</Label>
               <Input
                 value={values[field.key]}
@@ -70,7 +76,14 @@ export function BloodGasInputCard({ values, onChange, fields }: Props) {
                 keyboardType="decimal-pad"
                 autoCapitalize="none"
                 autoCorrect={false}
+                selectTextOnFocus
+                style={values[field.key].trim() && parseNumber(values[field.key]) === undefined ? { borderColor: theme.colors.danger } : undefined}
               />
+              {values[field.key].trim() && parseNumber(values[field.key]) === undefined ? (
+                <Text style={{ color: theme.colors.danger, fontSize: 12 }}>
+                  {settings.language === "da" ? "Indtast et gyldigt tal" : "Enter a valid number"}
+                </Text>
+              ) : null}
             </View>
           );
         })}

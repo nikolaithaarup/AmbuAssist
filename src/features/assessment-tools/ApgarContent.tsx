@@ -4,6 +4,7 @@ import { useT } from "../../../src/i18n/useT";
 import type { Key } from "../../../src/i18n/strings";
 import { Card, Subtle, Title } from "../../../src/ui/Ui";
 import { theme } from "../../../src/ui/theme";
+import { hapticReset } from "../../../src/ui/haptics";
 import type { ReferenceDoc } from "../../services/referenceService";
 import { CollapsibleCard } from "../../ui/CollapsibleCard";
 
@@ -206,6 +207,7 @@ export default function ApgarContent({ lang, reference }: Props) {
   const sourcesSubText = reference?.sourcesSub?.[lang] ?? "";
 
   function reset() {
+    hapticReset();
     setSelected({});
   }
 

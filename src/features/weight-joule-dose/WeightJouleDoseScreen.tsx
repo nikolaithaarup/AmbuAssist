@@ -31,6 +31,7 @@ import {
   Title,
 } from "../../ui/Ui";
 import { theme } from "../../ui/theme";
+import { useSuccessHaptic } from "../../ui/useSuccessHaptic";
 import { DoseCalculatorCard } from "./components/DoseCalculatorCard";
 import { Header } from "./components/Header";
 import { ResultCard } from "./components/ResultCard";
@@ -126,6 +127,11 @@ export function WeightJouleDoseScreen() {
   const computed = isReady
     ? { ...weightCalculation, ...jouleCalculation, medRows }
     : null;
+  useSuccessHaptic(
+    !!computed &&
+      Number.isFinite(computed.weightKg) &&
+      Number.isFinite(computed.joules),
+  );
 
   if (!computed) {
     return (

@@ -4,6 +4,7 @@ import { Pressable, ScrollView, View } from "react-native";
 import { useT } from "../../../src/i18n/useT";
 import { Background } from "../../../src/ui/Background";
 import { Card, Screen, Subtle, Title } from "../../../src/ui/Ui";
+import { hapticToolOpen } from "../../../src/ui/haptics";
 
 type ToolLink = {
   titleKey: any;
@@ -76,17 +77,21 @@ export default function AssessmentToolsPage() {
             {tools.map((tool) => (
               <Pressable
                 key={tool.path}
-                onPress={() => router.push(tool.path)}
+                onPress={() => {
+                  hapticToolOpen();
+                  router.push(tool.path);
+                }}
                 style={({ pressed }) => ({
-                  opacity: pressed ? 0.7 : 1,
+                  opacity: pressed ? 0.86 : 1,
+                  transform: [{ scale: pressed ? 0.992 : 1 }],
                 })}
               >
-                <Card style={{ paddingHorizontal: 18, paddingVertical: 14 }}>
-                  <View style={{ alignItems: "center", gap: 6 }}>
-                    <Title style={{ textAlign: "center", fontSize: 16 }}>
+                <Card style={{ paddingHorizontal: 18, paddingVertical: 17, minHeight: 70 }}>
+                  <View style={{ alignItems: "flex-start", gap: 5 }}>
+                    <Title style={{ fontSize: 17 }}>
                       {t(tool.titleKey)}
                     </Title>
-                    <Subtle style={{ textAlign: "center", fontSize: 12 }}>
+                    <Subtle style={{ fontSize: 13 }}>
                       {t(tool.descKey)}
                     </Subtle>
                   </View>

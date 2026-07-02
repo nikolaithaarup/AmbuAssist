@@ -18,6 +18,7 @@ import { Background } from "../../../src/ui/Background";
 import { CollapsibleCard } from "../../../src/ui/CollapsibleCard";
 import { Card, Screen, Subtle, Title } from "../../../src/ui/Ui";
 import { theme } from "../../../src/ui/theme";
+import { hapticReset } from "../../../src/ui/haptics";
 
 type AnswerKey = "yes" | "no";
 type StepId = "penetrating" | "critical" | "tenderOrNeuro";
@@ -254,6 +255,7 @@ export default function SpinalTraumaFlow() {
   }
 
   function reset() {
+    hapticReset();
     setSelections([]);
     setShowInfo(false);
   }

@@ -6,6 +6,7 @@ import type { ReferenceDoc } from "../../services/referenceService";
 import { CollapsibleCard } from "../../ui/CollapsibleCard";
 import { Card, Subtle, Title } from "../../ui/Ui";
 import { theme } from "../../ui/theme";
+import { hapticReset } from "../../ui/haptics";
 
 type Option = { labelKey: Key; points: number };
 type Item = { key: string; titleKey: Key; options: Option[] };
@@ -354,6 +355,7 @@ export default function NihssContent({ lang, reference }: Props) {
   const sourcesSubText = reference?.sourcesSub?.[lang] ?? "";
 
   function reset() {
+    hapticReset();
     setSelected({});
   }
 

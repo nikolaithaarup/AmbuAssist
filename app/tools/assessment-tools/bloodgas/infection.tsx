@@ -15,6 +15,7 @@ import { Card, Row, Screen, Subtle, Title } from "../../../../src/ui/Ui";
 import { theme } from "../../../../src/ui/theme";
 
 import { BloodGasInputCard } from "../../../../src/features/bloodgas/BloodGasInputCard";
+import { BloodGasPageHeader, ResultSection } from "../../../../src/features/bloodgas/BloodGasPresentation";
 import { SourceItem } from "../../../../src/features/bloodgas/SourceItem";
 import {
   makeEmptyBloodGasFormValues,
@@ -101,16 +102,14 @@ export default function InfectionPage() {
   return (
     <Background>
       <Screen>
-        <View style={{ gap: 6, marginTop: 12 }}>
-          <Title>{t("tool_bg_infection_title")}</Title>
-          <Subtle>{t("tool_bg_infection_desc")}</Subtle>
-        </View>
+        <BloodGasPageHeader title={t("tool_bg_infection_title")} subtitle={t("tool_bg_infection_desc")} />
 
         <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
           <BloodGasInputCard
             values={form}
             onChange={handleChange}
             fields={INFECTION_FIELDS}
+            title={lang === "da" ? "Blodprøver" : "Blood tests"}
           />
 
           <Card>
@@ -155,7 +154,8 @@ export default function InfectionPage() {
                 {t("bg_infection_enter_values")}
               </Text>
             ) : (
-              <View style={{ gap: 8, marginTop: 10 }}>
+              <ResultSection label={lang === "da" ? "Understøttende fund" : "Supporting findings"} tone="caution">
+              <View style={{ gap: 8 }}>
                 {results.map((r, i) => (
                   <Text
                     key={`${r}-${i}`}
@@ -168,6 +168,7 @@ export default function InfectionPage() {
                   </Text>
                 ))}
               </View>
+              </ResultSection>
             )}
           </Card>
 

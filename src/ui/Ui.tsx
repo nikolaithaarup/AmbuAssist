@@ -57,7 +57,12 @@ export function PrimaryButton({
       disabled={disabled}
       style={({ pressed }) => [
         styles.btn,
-        (pressed || disabled) && { opacity: 0.85 },
+        pressed && {
+          opacity: 0.86,
+          transform: [{ scale: 0.99 }],
+          backgroundColor: theme.colors.pressed,
+        },
+        disabled && { opacity: 0.55 },
       ]}
     >
       <Text style={styles.btnText}>{label}</Text>
@@ -95,18 +100,32 @@ export function Input({
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "transparent" },
-  inner: { flex: 1, padding: 16, gap: 12 },
+  inner: { flex: 1, padding: 18, gap: 14 },
 
-  title: { color: theme.colors.text, fontSize: 30, fontWeight: "800" },
-  subtle: { color: theme.colors.mutedText, fontSize: 14, lineHeight: 18 },
+  title: {
+    color: theme.colors.text,
+    fontSize: theme.typography.title,
+    fontWeight: "800",
+    letterSpacing: -0.4,
+  },
+  subtle: {
+    color: theme.colors.mutedText,
+    fontSize: theme.typography.caption,
+    lineHeight: 19,
+  },
 
   card: {
     backgroundColor: theme.colors.card,
     borderColor: theme.colors.cardBorder,
     borderWidth: 1,
     borderRadius: theme.radius,
-    padding: 14,
-    gap: 10,
+    padding: 16,
+    gap: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.24,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 3,
   },
 
   row: { flexDirection: "row", alignItems: "center", gap: 10 },
@@ -118,18 +137,20 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.18)",
     borderRadius: 12,
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    minHeight: 46,
+    paddingVertical: 12,
     borderWidth: 1,
     borderColor: theme.colors.cardBorder,
   },
 
   btn: {
-    backgroundColor: "rgba(220,220,220,0.18)",
+    backgroundColor: theme.colors.accentSurface,
     borderColor: theme.colors.cardBorder,
     borderWidth: 1,
     borderRadius: 14,
-    paddingVertical: 14,
-    paddingHorizontal: 14,
+    minHeight: 50,
+    paddingVertical: 15,
+    paddingHorizontal: 18,
     alignItems: "center",
   },
   btnText: { color: theme.colors.text, fontSize: 16, fontWeight: "700" },

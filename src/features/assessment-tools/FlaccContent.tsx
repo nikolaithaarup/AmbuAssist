@@ -5,6 +5,7 @@ import type { Key } from "../../../src/i18n/strings";
 import { CollapsibleCard } from "../../../src/ui/CollapsibleCard";
 import { Card, Subtle, Title } from "../../../src/ui/Ui";
 import { theme } from "../../../src/ui/theme";
+import { hapticReset } from "../../../src/ui/haptics";
 import type { ReferenceDoc } from "../../services/referenceService";
 
 type FlaccKey = "face" | "legs" | "activity" | "cry" | "consolability";
@@ -208,6 +209,7 @@ export default function FlaccContent({ lang, reference }: Props) {
   const sourcesSubText = reference?.sourcesSub?.[lang] ?? "";
 
   function reset() {
+    hapticReset();
     setSelected({});
   }
 

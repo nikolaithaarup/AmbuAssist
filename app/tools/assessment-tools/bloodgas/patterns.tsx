@@ -15,6 +15,7 @@ import { Card, Screen, Subtle, Title } from "../../../../src/ui/Ui";
 import { theme } from "../../../../src/ui/theme";
 
 import { BloodGasInputCard } from "../../../../src/features/bloodgas/BloodGasInputCard";
+import { BloodGasPageHeader, ResultSection } from "../../../../src/features/bloodgas/BloodGasPresentation";
 import { SourceItem } from "../../../../src/features/bloodgas/SourceItem";
 import {
   makeEmptyBloodGasFormValues,
@@ -112,16 +113,14 @@ export default function PatternsPage() {
   return (
     <Background>
       <Screen>
-        <View style={{ gap: 6, marginTop: 12 }}>
-          <Title>{t("tool_bg_patterns_title")}</Title>
-          <Subtle>{t("tool_bg_patterns_desc")}</Subtle>
-        </View>
+        <BloodGasPageHeader title={t("tool_bg_patterns_title")} subtitle={t("tool_bg_patterns_desc")} />
 
         <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
           <BloodGasInputCard
             values={form}
             onChange={handleChange}
             fields={PATTERN_FIELDS}
+            title={lang === "da" ? "Blodgas- og laboratorieværdier" : "Blood gas and laboratory values"}
           />
 
           <Card>
@@ -138,7 +137,8 @@ export default function PatternsPage() {
                 {t("bg_patterns_enter_values")}
               </Text>
             ) : (
-              <View style={{ gap: 8, marginTop: 10 }}>
+              <ResultSection label={lang === "da" ? "Understøttende fund" : "Supporting findings"} tone="caution">
+              <View style={{ gap: 8 }}>
                 {patterns.map((pattern, i) => (
                   <Text
                     key={`${pattern}-${i}`}
@@ -151,6 +151,7 @@ export default function PatternsPage() {
                   </Text>
                 ))}
               </View>
+              </ResultSection>
             )}
           </Card>
 

@@ -5,6 +5,7 @@ import type { ReferenceDoc } from "../../services/referenceService";
 import { CollapsibleCard } from "../../ui/CollapsibleCard";
 import { Card, Subtle, Title } from "../../ui/Ui";
 import { theme } from "../../ui/theme";
+import { hapticReset } from "../../ui/haptics";
 
 const items = [
   { key: "confused", labelKey: "bvc_item_confused" },
@@ -114,6 +115,7 @@ export default function BvcContent({ lang, reference }: Props) {
   const sourcesSubText = reference?.sourcesSub?.[lang] ?? "";
 
   function reset() {
+    hapticReset();
     setChecked({});
   }
 

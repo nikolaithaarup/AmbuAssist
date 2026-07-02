@@ -1,40 +1,71 @@
-// app/index.tsx
-import { type Href, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { Image, Pressable, ScrollView, View } from "react-native";
+import { FAVOURITABLE_TOOLS, HOME_TOOLS, type ToolDefinition } from "../src/features/tools/catalog";
 import { useT } from "../src/i18n/useT";
+import { useFavourites } from "../src/state/favourites";
 import { useSettings } from "../src/state/settings";
 import { Background } from "../src/ui/Background";
-import { Card, Screen, Subtle, Title } from "../src/ui/Ui";
+import { hapticFavourite, hapticToolOpen } from "../src/ui/haptics";
 import { theme } from "../src/ui/theme";
-
-type ToolLink = { titleKey: any; descKey: any; path: Extract<Href, string> };
+import { Card, Screen, Subtle, Title } from "../src/ui/Ui";
 
 function FullWidthToolCard({
   title,
   description,
+  favourite,
   onPress,
+  onToggleFavourite,
 }: {
   title: string;
-  description: string;
+  description?: string;
+  favourite: boolean;
   onPress: () => void;
+  onToggleFavourite: () => void;
 }) {
   return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => ({
-        opacity: pressed ? 0.7 : 1,
-        width: "100%",
-      })}
+    <Card
+      style={{
+        paddingHorizontal: 0,
+        paddingVertical: 0,
+        minHeight: description ? 70 : 58,
+        flexDirection: "row",
+        alignItems: "stretch",
+      }}
     >
-      <Card style={{ paddingHorizontal: 18, paddingVertical: 16 }}>
-        <View style={{ alignItems: "center", gap: 6 }}>
-          <Title style={{ textAlign: "center", fontSize: 16 }}>{title}</Title>
-          <Subtle style={{ textAlign: "center", fontSize: 12 }}>
-            {description}
-          </Subtle>
+      <Pressable
+        accessibilityRole="button"
+        onPress={onPress}
+        style={({ pressed }) => ({
+          flex: 1,
+          justifyContent: "center",
+          paddingLeft: 18,
+          paddingVertical: description ? 17 : 14,
+          opacity: pressed ? 0.75 : 1,
+        })}
+      >
+        <View style={{ alignItems: "flex-start", gap: 5 }}>
+          <Title style={{ fontSize: 17, letterSpacing: -0.1 }}>{title}</Title>
+          {description ? <Subtle style={{ fontSize: 13 }}>{description}</Subtle> : null}
         </View>
-      </Card>
-    </Pressable>
+      </Pressable>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={favourite ? "Remove favourite" : "Add favourite"}
+        hitSlop={4}
+        onPress={onToggleFavourite}
+        style={({ pressed }) => ({
+          width: 58,
+          alignItems: "center",
+          justifyContent: "center",
+          opacity: pressed ? 0.6 : 1,
+          transform: [{ scale: pressed ? 0.92 : 1 }],
+        })}
+      >
+        <Title style={{ fontSize: 24, color: favourite ? theme.colors.warn : theme.colors.mutedText }}>
+          {favourite ? "★" : "☆"}
+        </Title>
+      </Pressable>
+    </Card>
   );
 }
 
@@ -42,169 +73,90 @@ export default function Home() {
   const router = useRouter();
   const { setLanguage, settings } = useSettings();
   const { t } = useT();
+  const { favourites, isFavourite, toggleFavourite } = useFavourites();
+  const favouriteTools = FAVOURITABLE_TOOLS.filter((tool) => favourites.includes(tool.path));
 
-  const mainTools: ToolLink[] = [
-    {
-      titleKey: "tool_dest_title",
-      descKey: "tool_dest_desc",
-      path: "/tools/destination",
-    },
-    {
-      titleKey: "tool_weightDose_title",
-      descKey: "tool_weightDose_desc",
-      path: "/tools/weight-joule-dose",
-    },
-    {
-      titleKey: "tool_trombolysis_title",
-      descKey: "tool_trombolysis_desc",
-      path: "/tools/trombolysis",
-    },
-    {
-      titleKey: "tool_burns_title",
-      descKey: "tool_burns_desc",
-      path: "/tools/brandsaar",
-    },
-    {
-      titleKey: "tool_supportNumbers_title",
-      descKey: "tool_supportNumbers_desc",
-      path: "/tools/support-numbers",
-    },
-    {
-      titleKey: "tool_exams_title",
-      descKey: "tool_exams_desc",
-      path: "/tools/exams",
-    },
-    {
-      titleKey: "tool_assessment_title",
-      descKey: "tool_assessment_desc",
-      path: "/tools/assessment-tools",
-    },
-    {
-      titleKey: "tool_meddisc_title",
-      descKey: "tool_meddisc_desc",
-      path: "/tools/medical-disclaimer",
-    },
-    {
-      titleKey: "tool_contact_title",
-      descKey: "tool_contact_desc",
-      path: "/tools/contact",
-    },
-    {
-      titleKey: "tool_about_title",
-      descKey: "tool_about_desc",
-      path: "/tools/about",
-    },
-  ];
+  const openTool = (tool: ToolDefinition) => {
+    hapticToolOpen();
+    router.push(tool.path);
+  };
+
+  const toggleTool = (tool: ToolDefinition) => {
+    hapticFavourite();
+    toggleFavourite(tool.path);
+  };
+
+  const renderTool = (tool: ToolDefinition, titleOnly = false) => (
+    <FullWidthToolCard
+      key={`${titleOnly ? "favourite" : "tool"}-${tool.path}`}
+      title={t(tool.titleKey)}
+      description={!titleOnly && tool.descKey ? t(tool.descKey) : undefined}
+      favourite={isFavourite(tool.path)}
+      onPress={() => openTool(tool)}
+      onToggleFavourite={() => toggleTool(tool)}
+    />
+  );
 
   return (
-    <Background>
-      <Screen>
-        <View style={{ gap: 0, alignItems: "center" }}>
+    <Background variant="home">
+      <Screen style={{ paddingTop: 8 }}>
+        <View style={{ gap: 0, alignItems: "center", paddingBottom: 12 }}>
           <Image
             source={require("../assets/her-icon.png")}
-            style={{
-              width: 130,
-              height: 130,
-              marginTop: 20,
-              marginBottom: 0,
-              opacity: 0.95,
-            }}
+            style={{ width: 88, height: 88, marginTop: 10, marginBottom: 0, opacity: 0.95 }}
             resizeMode="contain"
           />
-
           <Image
             source={require("../assets/ambuassist-logo.png")}
-            style={{
-              width: "100%",
-              maxWidth: 440,
-              height: 96,
-              marginTop: -20,
-              marginBottom: -10,
-            }}
+            style={{ width: "100%", maxWidth: 440, height: 76, marginTop: -14, marginBottom: -8 }}
             resizeMode="contain"
           />
+          <Subtle style={{ textAlign: "center", marginTop: 0, fontSize: 14 }}>{t("homeTagline")}</Subtle>
 
-          <Subtle style={{ textAlign: "center", marginTop: -2 }}>
-            {t("homeTagline")}
-          </Subtle>
-
-          <View
-            style={{
-              flexDirection: "row",
-              gap: 10,
-              marginTop: 10,
-              marginBottom: -10,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Pressable
-              onPress={() => setLanguage("en")}
-              style={({ pressed }) => ({
-                opacity: pressed ? 0.7 : 1,
-                padding: 6,
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: theme.colors.cardBorder,
-                backgroundColor:
-                  settings.language === "en"
-                    ? "rgba(220,220,220,0.18)"
-                    : "transparent",
-                alignSelf: "center",
-              })}
-              accessibilityRole="button"
-              accessibilityLabel="English"
-            >
-              <Image
-                source={require("../assets/flags/gb.png")}
-                style={{ width: 32, height: 32, borderRadius: 8 }}
-                resizeMode="cover"
-              />
-            </Pressable>
-
-            <Pressable
-              onPress={() => setLanguage("da")}
-              style={({ pressed }) => ({
-                opacity: pressed ? 0.7 : 1,
-                padding: 6,
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: theme.colors.cardBorder,
-                backgroundColor:
-                  settings.language === "da"
-                    ? "rgba(220,220,220,0.18)"
-                    : "transparent",
-                alignSelf: "center",
-              })}
-              accessibilityRole="button"
-              accessibilityLabel="Dansk"
-            >
-              <Image
-                source={require("../assets/flags/dk.png")}
-                style={{ width: 32, height: 32, borderRadius: 8 }}
-                resizeMode="cover"
-              />
-            </Pressable>
+          <View style={{ flexDirection: "row", gap: 10, marginTop: 14, marginBottom: 0, alignItems: "center", justifyContent: "center" }}>
+            {(["en", "da"] as const).map((language) => (
+              <Pressable
+                key={language}
+                onPress={() => setLanguage(language)}
+                style={({ pressed }) => ({
+                  opacity: pressed ? 0.82 : 1,
+                  transform: [{ scale: pressed ? 0.96 : 1 }],
+                  padding: 7,
+                  borderRadius: 14,
+                  borderWidth: 1,
+                  borderColor: theme.colors.cardBorder,
+                  backgroundColor: settings.language === language ? theme.colors.accentSurface : "transparent",
+                  alignSelf: "center",
+                })}
+                accessibilityRole="button"
+                accessibilityLabel={language === "en" ? "English" : "Dansk"}
+              >
+                <Image
+                  source={language === "en" ? require("../assets/flags/gb.png") : require("../assets/flags/dk.png")}
+                  style={{ width: 32, height: 32, borderRadius: 8 }}
+                  resizeMode="cover"
+                />
+              </Pressable>
+            ))}
           </View>
         </View>
 
-        <ScrollView
-          contentContainerStyle={{
-            paddingBottom: 24,
-            paddingTop: 10,
-            paddingHorizontal: 12,
-            alignItems: "center",
-          }}
-        >
-          <View style={{ width: "100%", maxWidth: 520, gap: 12 }}>
-            {mainTools.map((tool) => (
-              <FullWidthToolCard
-                key={tool.path}
-                title={t(tool.titleKey)}
-                description={t(tool.descKey)}
-                onPress={() => router.push(tool.path)}
-              />
-            ))}
+        <ScrollView contentContainerStyle={{ paddingBottom: 24, paddingTop: 8, paddingHorizontal: 8, alignItems: "center" }}>
+          <View style={{ width: "100%", maxWidth: 560, gap: 12 }}>
+            {favouriteTools.length > 0 ? (
+              <>
+                <Title style={{ fontSize: 19, marginBottom: 2 }}>
+                  {settings.language === "da" ? "Favoritter" : "Favourites"}
+                </Title>
+                {favouriteTools.map((tool) => renderTool(tool, true))}
+                <View style={{ height: 6 }} />
+              </>
+            ) : null}
+
+            <Title style={{ fontSize: 19, marginBottom: 2 }}>
+              {settings.language === "da" ? "Værktøjer" : "Tools"}
+            </Title>
+            {HOME_TOOLS.map((tool) => renderTool(tool))}
           </View>
         </ScrollView>
       </Screen>

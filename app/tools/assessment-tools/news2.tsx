@@ -24,6 +24,8 @@ import {
   Title,
 } from "../../../src/ui/Ui";
 import { theme } from "../../../src/ui/theme";
+import { useSuccessHaptic } from "../../../src/ui/useSuccessHaptic";
+import { hapticReset } from "../../../src/ui/haptics";
 
 function toNum(s: string) {
   const raw = String(s ?? "").trim();
@@ -137,8 +139,12 @@ export default function NEWS2() {
   }, [rr, spo2, sbp, hr, temp, onO2, scale, avpu]);
 
   const gKey = classifyNews2Escalation(computed.total, computed.anyThree);
+  useSuccessHaptic(
+    [rr, spo2, sbp, hr, temp].every((value) => Number.isFinite(toNum(value))),
+  );
 
   function reset() {
+    hapticReset();
     setRr("");
     setSpo2("");
     setSbp("");

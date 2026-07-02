@@ -22,6 +22,7 @@ import { Background } from "../../src/ui/Background";
 import { CollapsibleCard } from "../../src/ui/CollapsibleCard";
 import { Card, Row, Screen, Subtle, Title } from "../../src/ui/Ui";
 import { theme } from "../../src/ui/theme";
+import { useSuccessHaptic } from "../../src/ui/useSuccessHaptic";
 
 const RH_BURNS_PHONE = "+4535451245";
 
@@ -212,6 +213,7 @@ export default function BurnsPage() {
     firstHourRate,
     laterHourRate,
   } = calculateBurnFluids(patientWeight, tbsa);
+  useSuccessHaptic(patientWeight > 0 && tbsa > 0);
 
   const disclaimerText =
     lang === "da"

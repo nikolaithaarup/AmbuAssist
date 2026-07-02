@@ -6,12 +6,13 @@ Last updated: 2026-07-02
 
 AmbuAssist is an Expo 54 / React Native application using Expo Router, TypeScript in strict mode, Firebase/Firestore, AsyncStorage, and Danish/English translations.
 
-Verified from the current checkout on 2026-07-02:
+Current verified baseline:
 
-- `npm test -- --runInBand`: 18 test suites and 351 tests passing
+- `npm test -- --runInBand`: 23 test suites and 394 tests passing
 - `npx tsc --noEmit`: passing
 - Jest 29 is configured through the `jest-expo` preset
 - Test, watch, and coverage scripts are available in `package.json`
+- GitHub Actions CI is configured for tests and strict TypeScript checks and is required on `main`
 - The tests are characterization and regression coverage; they do not replace independent clinical validation
 
 ## Extracted domain modules
@@ -72,6 +73,19 @@ Visitation data now has runtime schema validation through Zod in `src/services/v
 - Fallback order is: valid remote data → valid cached data → bundled local visitation data.
 - Tests characterize valid payloads, malformed payloads, preservation of assignments, cache fallback, bundled-data fallback, and whether a cache write is permitted.
 
+## Runtime validation and fallback coverage
+
+- Runtime validation is implemented for visitation data, support numbers, and clinical references.
+- Remote and cached payloads are validated before use.
+- Invalid remote data cannot overwrite known-good cached data.
+- Offline and fallback characterization tests cover valid remote data, malformed payloads, cached data, and bundled fallback data.
+
+## Product and UX progress
+
+- Home screen redesign completed with the AmbuAssist dark premium visual system.
+- Favourites system implemented, persisted through AsyncStorage, and synchronized between tool-page stars and the Home favourites section.
+- Blood Gas prelaunch gate implemented with persisted acceptance and Danish/English warning content.
+
 ## Completed milestones
 
 1. Added Jest/Jest Expo test infrastructure and test, watch, and coverage commands.
@@ -87,6 +101,10 @@ Visitation data now has runtime schema validation through Zod in `src/services/v
 11. Extracted Wells DVT criterion scoring, totals, and two-/three-tier classifications, including the score-2 boundary behavior.
 12. Added GitHub Actions CI for pushes and pull requests using Node 22, npm caching, clean installation, tests, and strict TypeScript checks.
 13. Added Zod runtime validation and safe remote → cache → bundled-data fallback for visitation data.
+14. Added runtime validation for support numbers and clinical references.
+15. Added offline and fallback characterization tests for remote-backed data.
+16. Completed the Home screen redesign and synchronized persisted favourites across Home and tool pages.
+17. Added the persisted Blood Gas prelaunch warning gate while preserving tested clinical behavior.
 
 ## Remaining technical debt
 
@@ -94,7 +112,7 @@ Visitation data now has runtime schema validation through Zod in `src/services/v
 
 1. Add independently reviewed clinical fixtures for every scoring and calculation engine, including all threshold boundaries and invalid-input behavior.
 2. Define clinical-content ownership, source/version metadata, review dates, approval, rollback, and audit procedures.
-3. Add runtime schema validation for the remaining remote-data boundaries: clinical references, support numbers, hospital phone numbers, and their cached payloads.
+3. Add runtime schema validation for any remaining remote-data boundaries, including hospital phone numbers and their cached payloads.
 4. Verify cold-start, offline, stale-cache, malformed-data, denied-location, and fallback behavior.
 5. Add integrity tests for every bundled destination table, hospital code, and translation/source reference.
 
@@ -120,9 +138,16 @@ Visitation data now has runtime schema validation through Zod in `src/services/v
 - Requesting a street side with no matching row currently returns `still_ambiguous`, not `not_found`.
 - Some postcode/geocoder mappings intentionally choose a default official district where the destination matrix is more granular; these defaults need product and clinical review.
 
+## Remaining UX roadmap
+
+1. Build a shared `NumberInput` component for consistent numeric entry, validation feedback, units, and keyboard behavior.
+2. Continue tool-page polish while preserving clinical behavior and the shared visual system.
+3. Add Blood Gas OCR import after the manual-entry prelaunch workflow is validated; OCR must require explicit value review before analysis.
+4. Complete an accessibility audit covering screen readers, dynamic text, contrast, focus order, and touch targets.
+
 ## Recommended next steps
 
-1. Add runtime schemas and last-known-good fallback tests for clinical references, support numbers, and hospital phone numbers.
+1. Extend runtime schemas and last-known-good fallback tests to any remaining remote boundaries, including hospital phone numbers.
 2. Have a designated clinical reviewer approve the medication, paediatric, burns, NEWS2, Wells DVT, destination, and blood-gas fixtures and sources.
 3. Add destination-table integrity tests and decide the intended house-number/range behavior before changing routing.
 4. Add component-level tests around the highest-risk loading, malformed-data, offline, stale-cache, and reset flows.

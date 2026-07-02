@@ -8,7 +8,7 @@ AmbuAssist is an Expo 54 / React Native application using Expo Router, TypeScrip
 
 Verified from the current checkout on 2026-07-02:
 
-- `npm test -- --runInBand`: 16 test suites and 331 tests passing
+- `npm test -- --runInBand`: 18 test suites and 351 tests passing
 - `npx tsc --noEmit`: passing
 - Jest 29 is configured through the `jest-expo` preset
 - Test, watch, and coverage scripts are available in `package.json`
@@ -60,6 +60,18 @@ Verified from the current checkout on 2026-07-02:
 - `src/features/bloodgas/helpers.ts`: numeric blood-gas form parsing
 - `src/features/weight-joule-dose/utils`: parsing, formatting, and state helpers
 
+## Runtime data validation
+
+Visitation data now has runtime schema validation through Zod in `src/services/visitationSchema.ts`.
+
+- Firestore-loaded visitation payloads are validated before the app uses or caches them.
+- Cached visitation payloads are validated before use through the same schema.
+- Validation covers the payload structure, category keys, hospital codes, maps, and street sample rows.
+- Valid remote data is used and replaces the cache.
+- Invalid remote data is rejected and cannot overwrite a known-good cache.
+- Fallback order is: valid remote data → valid cached data → bundled local visitation data.
+- Tests characterize valid payloads, malformed payloads, preservation of assignments, cache fallback, bundled-data fallback, and whether a cache write is permitted.
+
 ## Completed milestones
 
 1. Added Jest/Jest Expo test infrastructure and test, watch, and coverage commands.
@@ -72,6 +84,9 @@ Verified from the current checkout on 2026-07-02:
 8. Extracted acid/base, pattern, infection, and basic blood-gas logic and connected the specialist screens to the new modules.
 9. Refactored the weight/joule/dose feature into a screen, hooks, components, and utilities backed by domain calculations.
 10. Preserved a passing strict TypeScript baseline after the extraction work.
+11. Extracted Wells DVT criterion scoring, totals, and two-/three-tier classifications, including the score-2 boundary behavior.
+12. Added GitHub Actions CI for pushes and pull requests using Node 22, npm caching, clean installation, tests, and strict TypeScript checks.
+13. Added Zod runtime validation and safe remote → cache → bundled-data fallback for visitation data.
 
 ## Remaining technical debt
 
@@ -79,27 +94,25 @@ Verified from the current checkout on 2026-07-02:
 
 1. Add independently reviewed clinical fixtures for every scoring and calculation engine, including all threshold boundaries and invalid-input behavior.
 2. Define clinical-content ownership, source/version metadata, review dates, approval, rollback, and audit procedures.
-3. Add runtime schema validation for Firestore references, visitation data, support numbers, and cached clinical data.
+3. Add runtime schema validation for the remaining remote-data boundaries: clinical references, support numbers, hospital phone numbers, and their cached payloads.
 4. Verify cold-start, offline, stale-cache, malformed-data, denied-location, and fallback behavior.
 5. Add integrity tests for every bundled destination table, hospital code, and translation/source reference.
 
 ### Architecture and maintainability
 
-1. Extract Wells DVT scoring and both two-tier and three-tier classification from its route component.
-2. Remove the remaining blood-gas compatibility layer once all consumers use `src/domain/bloodgas` directly, and confirm there is only one behavior path per tool.
-3. Continue reducing large route components, especially `app/tools/destination.tsx`, while preserving tested behavior.
-4. Consolidate duplicate/legacy destination data and confirm whether root legacy entry files can be removed.
-5. Reduce broad `any` usage in translation keys, remote-data normalization, destination code, and shared UI props.
-6. Split translations by feature while preserving strict key typing and add Danish/English parity tests.
+1. Remove the remaining blood-gas compatibility layer once all consumers use `src/domain/bloodgas` directly, and confirm there is only one behavior path per tool.
+2. Continue reducing large route components, especially `app/tools/destination.tsx`, while preserving tested behavior.
+3. Consolidate duplicate/legacy destination data and confirm whether root legacy entry files can be removed.
+4. Reduce broad `any` usage in translation keys, remote-data normalization, destination code, and shared UI props.
+5. Split translations by feature while preserving strict key typing and add Danish/English parity tests.
 
 ### Delivery and quality tooling
 
-1. Add CI that requires tests and TypeScript checks on every pull request.
-2. Add ESLint and formatting checks.
-3. Add React Native component tests for loading, error, offline, reset, and fallback states.
-4. Add privacy-conscious diagnostics for backend validation failures and fallback activation.
-5. Audit accessibility, dynamic text sizing, touch targets, contrast, and screen-reader behavior.
-6. Review dependency health: the current install reports 37 audit findings (3 low, 26 moderate, 7 high, and 1 critical) before assessing safe upgrades and Expo compatibility.
+1. Add ESLint and formatting checks.
+2. Add React Native component tests for loading, error, offline, reset, and fallback states.
+3. Add privacy-conscious diagnostics for backend validation failures and fallback activation.
+4. Audit accessibility, dynamic text sizing, touch targets, contrast, and screen-reader behavior.
+5. Review dependency health: the current install reports 37 audit findings (3 low, 26 moderate, 7 high, and 1 critical) before assessing safe upgrades and Expo compatibility.
 
 ### Known behavior ambiguities
 
@@ -109,12 +122,11 @@ Verified from the current checkout on 2026-07-02:
 
 ## Recommended next steps
 
-1. Add CI for `npm test -- --runInBand` and `npx tsc --noEmit` so the 16-suite/331-test baseline is enforced.
-2. Extract and characterize Wells scoring, especially the score-2 difference between two-tier and three-tier classification.
-3. Have a designated clinical reviewer approve the medication, paediatric, burns, NEWS2, destination, and blood-gas fixtures and sources.
-4. Add schema validation plus last-known-good fallback tests for remotely managed clinical data.
-5. Add destination-table integrity tests and decide the intended house-number/range behavior before changing routing.
+1. Add runtime schemas and last-known-good fallback tests for clinical references, support numbers, and hospital phone numbers.
+2. Have a designated clinical reviewer approve the medication, paediatric, burns, NEWS2, Wells DVT, destination, and blood-gas fixtures and sources.
+3. Add destination-table integrity tests and decide the intended house-number/range behavior before changing routing.
+4. Add component-level tests around the highest-risk loading, malformed-data, offline, stale-cache, and reset flows.
+5. Add privacy-conscious observability for validation failures and fallback activation without logging clinical or user-sensitive data.
 6. Audit dependencies, prioritize the critical/high findings, and upgrade only with tests and Expo compatibility checks.
-7. Add component-level tests around the highest-risk loading, invalid-data, offline, and reset flows.
 
 The preferred working sequence remains: characterize current behavior, extract pure logic without changing it, verify tests and TypeScript, obtain clinical review, and treat clinical-rule changes as separately approved work.

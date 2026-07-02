@@ -12,7 +12,7 @@ jest.mock("firebase/firestore", () => ({
   getDocs: (...args: unknown[]) => mockGetDocs(...args),
 }));
 
-jest.mock("../lib/firebase", () => ({ db: {} }));
+jest.mock("../lib/firebase", () => ({ db: {} }), { virtual: true });
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SUPPORT_NUMBERS_FALLBACK } from "../data/supportNumbersFallback";

@@ -73,8 +73,8 @@ export default function Home() {
   const router = useRouter();
   const { setLanguage, settings } = useSettings();
   const { t } = useT();
-  const { favourites, isFavourite, toggleFavourite } = useFavourites();
-  const favouriteTools = FAVOURITABLE_TOOLS.filter((tool) => favourites.includes(tool.path));
+  const { isFavourite, toggleFavourite } = useFavourites();
+  const favouriteTools = FAVOURITABLE_TOOLS.filter((tool) => isFavourite(tool.path));
 
   const openTool = (tool: ToolDefinition) => {
     hapticToolOpen();

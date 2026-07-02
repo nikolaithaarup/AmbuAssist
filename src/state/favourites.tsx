@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { normalizeFavouritePaths, toggleFavouritePath } from "../domain/favourites/favourites";
+import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { isFavouritePath, normalizeFavouritePath, normalizeFavouritePaths, toggleFavouritePath } from "../domain/favourites/favourites";
 
 const STORAGE_KEY = "ambuassist.favourites.v1";
 
@@ -15,18 +15,28 @@ const FavouritesContext = createContext<FavouritesContextValue | null>(null);
 export function FavouritesProvider({ children }: { children: ReactNode }) {
   const [favourites, setFavourites] = useState<string[]>([]);
   const [hasLoaded, setHasLoaded] = useState(false);
+  const loadedRef = useRef(false);
+  const pendingTogglesRef = useRef<string[]>([]);
 
   useEffect(() => {
     let active = true;
-    AsyncStorage.getItem(STORAGE_KEY)
-      .then((stored) => {
-        if (!active || stored === null) return;
-        setFavourites(normalizeFavouritePaths(JSON.parse(stored)));
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (active) setHasLoaded(true);
-      });
+    async function loadFavourites() {
+      let storedFavourites: string[] = [];
+      try {
+        const stored = await AsyncStorage.getItem(STORAGE_KEY);
+        if (stored !== null) storedFavourites = normalizeFavouritePaths(JSON.parse(stored));
+      } catch {}
+
+      if (!active) return;
+      for (const path of pendingTogglesRef.current) {
+        storedFavourites = toggleFavouritePath(storedFavourites, path);
+      }
+      pendingTogglesRef.current = [];
+      loadedRef.current = true;
+      setFavourites(storedFavourites);
+      setHasLoaded(true);
+    }
+    loadFavourites();
     return () => {
       active = false;
     };
@@ -37,9 +47,12 @@ export function FavouritesProvider({ children }: { children: ReactNode }) {
     AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(favourites)).catch(() => {});
   }, [favourites, hasLoaded]);
 
-  const isFavourite = useCallback((path: string) => favourites.includes(path), [favourites]);
+  const isFavourite = useCallback((path: string) => isFavouritePath(favourites, path), [favourites]);
   const toggleFavourite = useCallback((path: string) => {
-    setFavourites((current) => toggleFavouritePath(current, path));
+    const normalizedPath = normalizeFavouritePath(path);
+    if (!normalizedPath) return;
+    if (!loadedRef.current) pendingTogglesRef.current.push(normalizedPath);
+    setFavourites((current) => toggleFavouritePath(current, normalizedPath));
   }, []);
   const value = useMemo(() => ({ favourites, isFavourite, toggleFavourite }), [favourites, isFavourite, toggleFavourite]);
 

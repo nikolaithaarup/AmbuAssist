@@ -3,14 +3,6 @@ import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 
 import { db } from "../lib/firebase";
 
-import type {
-  Bydel,
-  ByenCategory,
-  HospitalCode,
-  Kommune,
-  RegionCategory,
-} from "../features/destination/types";
-
 import {
   BYEN_CATEGORIES,
   BYEN_MAP,
@@ -21,34 +13,19 @@ import { REGION_BYEN_MAP } from "../features/destination/data/regionByen";
 import { REGION_MIDT_MAP } from "../features/destination/data/regionMidt";
 import { REGION_NORD_MAP } from "../features/destination/data/regionNord";
 import { REGION_SYD_MAP } from "../features/destination/data/regionSyd";
+import {
+  parseVisitationData,
+  resolveVisitationUpdate,
+  type BackendVisitationData,
+} from "./visitationSchema";
+
+export type {
+  BackendVisitationData,
+  StreetSampleRow,
+  VisitationCategory,
+} from "./visitationSchema";
 
 const CACHE_KEY = "ambuassist_visitation_regionh_v1";
-
-export type VisitationCategory = {
-  key: string;
-  labelKey: string;
-};
-
-export type StreetSampleRow = {
-  street: string;
-  bydel: string;
-};
-
-export type BackendVisitationData = {
-  version: string;
-  updatedAt?: string;
-  byen: {
-    categories: VisitationCategory[];
-    map: Record<Bydel, Partial<Record<ByenCategory, HospitalCode>>>;
-    streetSample: StreetSampleRow[];
-  };
-  region: {
-    categories: VisitationCategory[];
-    map: Partial<
-      Record<Kommune, Partial<Record<RegionCategory, HospitalCode>>>
-    >;
-  };
-};
 
 export const LOCAL_VISITATION_DATA: BackendVisitationData = {
   version: "local",
@@ -68,19 +45,11 @@ export const LOCAL_VISITATION_DATA: BackendVisitationData = {
   },
 };
 
-function isObject(value: unknown): value is Record<string, any> {
-  return !!value && typeof value === "object" && !Array.isArray(value);
-}
-
 function safeParseCached(value: string | null): BackendVisitationData | null {
   if (!value) return null;
 
   try {
-    const parsed = JSON.parse(value);
-    if (!isObject(parsed)) return null;
-    if (!isObject(parsed.byen)) return null;
-    if (!isObject(parsed.region)) return null;
-    return parsed as BackendVisitationData;
+    return parseVisitationData(JSON.parse(value));
   } catch {
     return null;
   }
@@ -145,9 +114,19 @@ export async function loadVisitationData(): Promise<BackendVisitationData> {
       },
     };
 
-    await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(backendData));
+    const update = resolveVisitationUpdate(
+      backendData,
+      cached,
+      LOCAL_VISITATION_DATA,
+    );
+    if (!update.dataToCache) {
+      console.log("Could not use backend visitation data: validation failed");
+      return update.data;
+    }
 
-    return backendData;
+    await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(update.dataToCache));
+
+    return update.data;
   } catch (error) {
     console.log("Could not load backend visitation data:", error);
     return cached ?? LOCAL_VISITATION_DATA;

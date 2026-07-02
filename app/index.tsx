@@ -4,6 +4,7 @@ import { Image, Pressable, ScrollView, View } from "react-native";
 import { useT } from "../src/i18n/useT";
 import { useSettings } from "../src/state/settings";
 import { Background } from "../src/ui/Background";
+import { InteractiveSurface } from "../src/ui/InteractiveSurface";
 import { Card, Screen, Subtle, Title } from "../src/ui/Ui";
 import { theme } from "../src/ui/theme";
 
@@ -19,22 +20,32 @@ function FullWidthToolCard({
   onPress: () => void;
 }) {
   return (
-    <Pressable
+    <InteractiveSurface
       onPress={onPress}
-      style={({ pressed }) => ({
-        opacity: pressed ? 0.7 : 1,
-        width: "100%",
-      })}
+      accessibilityLabel={title}
+      style={{ width: "100%" }}
     >
-      <Card style={{ paddingHorizontal: 18, paddingVertical: 16 }}>
-        <View style={{ alignItems: "center", gap: 6 }}>
-          <Title style={{ textAlign: "center", fontSize: 16 }}>{title}</Title>
-          <Subtle style={{ textAlign: "center", fontSize: 12 }}>
+      <Card
+        style={{
+          paddingHorizontal: 18,
+          paddingVertical: theme.spacing.lg,
+        }}
+      >
+        <View style={{ alignItems: "center", gap: theme.spacing.xs }}>
+          <Title style={{ textAlign: "center", ...theme.typography.toolTitle }}>
+            {title}
+          </Title>
+          <Subtle
+            style={{
+              textAlign: "center",
+              ...theme.typography.toolDescription,
+            }}
+          >
             {description}
           </Subtle>
         </View>
       </Card>
-    </Pressable>
+    </InteractiveSurface>
   );
 }
 

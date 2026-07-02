@@ -1,41 +1,35 @@
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
+import {
+  parseReferencePayload,
+  type LangMap,
+  type ReferenceDoc,
+  type ReferencePayload,
+  type ReferenceSource,
+} from "./referenceSchema";
 
-export type Lang = "en" | "da";
-
-export type LangMap = {
-  en: string;
-  da: string;
-};
-
-export type ReferenceSource = {
-  id: string;
-  title: LangMap;
-  subtitle: LangMap;
-  url?: LangMap;
-};
-
-export type ReferenceDoc = {
-  key: string;
-  version: number;
-  updatedAt: string;
-  disclaimer: LangMap;
-  sourcesSub: LangMap;
-  sources: ReferenceSource[];
-};
+export type {
+  Lang,
+  LangMap,
+  ReferenceDoc,
+  ReferenceSource,
+} from "./referenceSchema";
 
 function emptyLangMap(): LangMap {
   return { en: "", da: "" };
 }
 
-function normalizeLangMap(value: any): LangMap {
+function normalizeLangMap(value?: LangMap): LangMap {
   return {
     en: typeof value?.en === "string" ? value.en : "",
     da: typeof value?.da === "string" ? value.da : "",
   };
 }
 
-function normalizeReferenceSource(source: any, index: number): ReferenceSource {
+function normalizeReferenceSource(
+  source: NonNullable<ReferencePayload["sources"]>[number],
+  index: number,
+): ReferenceSource {
   const normalized: ReferenceSource = {
     id: typeof source?.id === "string" ? source.id : String(index + 1),
     title: normalizeLangMap(source?.title),
@@ -50,16 +44,12 @@ function normalizeReferenceSource(source: any, index: number): ReferenceSource {
   return normalized;
 }
 
-function normalizeReference(raw: any, key: string): ReferenceDoc | null {
-  if (!raw || typeof raw !== "object") return null;
-
+function normalizeReference(raw: ReferencePayload, key: string): ReferenceDoc {
   return {
-    key: typeof raw.key === "string" ? raw.key : key,
-    version: typeof raw.version === "number" ? raw.version : 1,
-    updatedAt:
-      typeof raw.updatedAt === "string"
-        ? raw.updatedAt
-        : new Date().toISOString(),
+    key: raw.key ?? key,
+    version: raw.version ?? 1,
+    updatedAt: raw.updatedAt ?? new Date().toISOString(),
+    ...(raw.reviewDate ? { reviewDate: raw.reviewDate } : {}),
     disclaimer: raw?.disclaimer
       ? normalizeLangMap(raw.disclaimer)
       : emptyLangMap(),
@@ -81,7 +71,13 @@ export async function getReference(key: string): Promise<ReferenceDoc | null> {
       return null;
     }
 
-    return normalizeReference(snap.data(), key);
+    const validated = parseReferencePayload(snap.data());
+    if (!validated) {
+      console.warn(`Invalid reference payload for "${key}" from Firestore.`);
+      return null;
+    }
+
+    return normalizeReference(validated, key);
   } catch (error) {
     console.warn(`Failed to load reference "${key}" from Firestore:`, error);
     return null;

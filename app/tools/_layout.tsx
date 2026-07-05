@@ -3,11 +3,11 @@ import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import { useMemo } from "react";
 import { Platform, Pressable, StatusBar, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useT } from "../../src/i18n/useT";
+import { useFavourites } from "../../src/state/favourites";
 import { Background } from "../../src/ui/Background";
 import { hapticFavourite } from "../../src/ui/haptics";
 import { theme } from "../../src/ui/theme";
-import { useT } from "../../src/i18n/useT";
-import { useFavourites } from "../../src/state/favourites";
 
 const HEADER_BAR_HEIGHT = 58;
 const TITLE_KEYS: Record<string, any> = {
@@ -26,7 +26,8 @@ const TITLE_KEYS: Record<string, any> = {
   "/tools/assessment-tools/spinal-trauma": "tool_spine_title",
   "/tools/assessment-tools/neurological": "tool_neuro_title",
   "/tools/assessment-tools/paediatric": "tool_paediatric_title",
-  "/tools/assessment-tools/behavioural-geriatric": "tool_behaviouralGeriatric_title",
+  "/tools/assessment-tools/behavioural-geriatric":
+    "tool_behaviouralGeriatric_title",
   "/tools/assessment-tools/bloodgas": "tool_bloodgas_title",
   "/tools/assessment-tools/bloodgas/acid-base": "tool_bg_acidbase_title",
   "/tools/assessment-tools/bloodgas/patterns": "tool_bg_patterns_title",
@@ -47,7 +48,9 @@ export default function ToolsLayout() {
     const key = TITLE_KEYS[pathname];
     if (key) return t(key);
     const slug = pathname.split("/").filter(Boolean).at(-1) ?? "";
-    return slug.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+    return slug
+      .replaceAll("-", " ")
+      .replace(/\b\w/g, (letter) => letter.toUpperCase());
   }, [pathname, t]);
   const favourite = isFavourite(pathname);
 
@@ -73,7 +76,7 @@ export default function ToolsLayout() {
           <Pressable
             onPress={() => {
               if (router.canGoBack()) router.back();
-              else router.replace("/");
+              else router.replace("/home");
             }}
             hitSlop={10}
             style={({ pressed }) => ({
@@ -86,7 +89,13 @@ export default function ToolsLayout() {
               opacity: pressed ? 0.65 : 1,
             })}
           >
-            <Text style={{ fontSize: 16, fontWeight: "700", color: theme.colors.accentMuted }}>
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "700",
+                color: theme.colors.accentMuted,
+              }}
+            >
               ‹ Back
             </Text>
           </Pressable>
@@ -108,7 +117,9 @@ export default function ToolsLayout() {
         {showBack ? (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={favourite ? "Remove favourite" : "Add favourite"}
+            accessibilityLabel={
+              favourite ? "Remove favourite" : "Add favourite"
+            }
             onPress={() => {
               hapticFavourite();
               toggleFavourite(pathname);
@@ -141,7 +152,10 @@ export default function ToolsLayout() {
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: "transparent", paddingTop: topOffset },
+          contentStyle: {
+            backgroundColor: "transparent",
+            paddingTop: topOffset,
+          },
         }}
       />
     </Background>

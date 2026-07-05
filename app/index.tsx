@@ -1,164 +1,260 @@
+// app/index.tsx
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import { Image, Pressable, ScrollView, View } from "react-native";
-import { FAVOURITABLE_TOOLS, HOME_TOOLS, type ToolDefinition } from "../src/features/tools/catalog";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  TextInput,
+  View,
+} from "react-native";
+
 import { useT } from "../src/i18n/useT";
-import { useFavourites } from "../src/state/favourites";
-import { useSettings } from "../src/state/settings";
 import { Background } from "../src/ui/Background";
-import { hapticFavourite, hapticToolOpen } from "../src/ui/haptics";
+import { hapticToolOpen } from "../src/ui/haptics";
 import { theme } from "../src/ui/theme";
 import { Card, Screen, Subtle, Title } from "../src/ui/Ui";
 
-function FullWidthToolCard({
-  title,
-  description,
-  favourite,
-  onPress,
-  onToggleFavourite,
-}: {
-  title: string;
-  description?: string;
-  favourite: boolean;
-  onPress: () => void;
-  onToggleFavourite: () => void;
-}) {
-  return (
-    <Card
-      style={{
-        paddingHorizontal: 0,
-        paddingVertical: 0,
-        minHeight: description ? 70 : 58,
-        flexDirection: "row",
-        alignItems: "stretch",
-      }}
-    >
-      <Pressable
-        accessibilityRole="button"
-        onPress={onPress}
-        style={({ pressed }) => ({
-          flex: 1,
-          justifyContent: "center",
-          paddingLeft: 18,
-          paddingVertical: description ? 17 : 14,
-          opacity: pressed ? 0.75 : 1,
-        })}
-      >
-        <View style={{ alignItems: "flex-start", gap: 5 }}>
-          <Title style={{ fontSize: 17, letterSpacing: -0.1 }}>{title}</Title>
-          {description ? <Subtle style={{ fontSize: 13 }}>{description}</Subtle> : null}
-        </View>
-      </Pressable>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={favourite ? "Remove favourite" : "Add favourite"}
-        hitSlop={4}
-        onPress={onToggleFavourite}
-        style={({ pressed }) => ({
-          width: 58,
-          alignItems: "center",
-          justifyContent: "center",
-          opacity: pressed ? 0.6 : 1,
-          transform: [{ scale: pressed ? 0.92 : 1 }],
-        })}
-      >
-        <Title style={{ fontSize: 24, color: favourite ? theme.colors.warn : theme.colors.mutedText }}>
-          {favourite ? "★" : "☆"}
-        </Title>
-      </Pressable>
-    </Card>
-  );
-}
+const BAM_ID_PATTERN = /^[A-Z]{4}[0-9]{4}$/;
+const BAM_ID_STORAGE_KEY = "ambuassist:bamId";
 
-export default function Home() {
+export default function LoginLanding() {
   const router = useRouter();
-  const { setLanguage, settings } = useSettings();
   const { t } = useT();
-  const { favourites, isFavourite, toggleFavourite } = useFavourites();
-  const favouriteTools = FAVOURITABLE_TOOLS.filter((tool) => favourites.includes(tool.path));
 
-  const openTool = (tool: ToolDefinition) => {
-    hapticToolOpen();
-    router.push(tool.path);
+  const [bamId, setBamId] = useState("");
+  const [error, setError] = useState("");
+  const [checkingSavedLogin, setCheckingSavedLogin] = useState(true);
+  const [loggingIn, setLoggingIn] = useState(false);
+
+  const normalizedBamId = bamId.trim().toUpperCase();
+  const isValidBamId = BAM_ID_PATTERN.test(normalizedBamId);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkSavedLogin = async () => {
+      try {
+        const savedBamId = await AsyncStorage.getItem(BAM_ID_STORAGE_KEY);
+
+        if (savedBamId && BAM_ID_PATTERN.test(savedBamId)) {
+          router.replace("/home");
+          return;
+        }
+      } catch {
+        // If AsyncStorage fails, just show the login screen.
+      } finally {
+        if (isMounted) {
+          setCheckingSavedLogin(false);
+        }
+      }
+    };
+
+    checkSavedLogin();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [router]);
+
+  const handleLogin = async () => {
+    if (!isValidBamId) {
+      setError("Indtast et gyldigt BAM-ID");
+      return;
+    }
+
+    try {
+      setLoggingIn(true);
+      setError("");
+
+      await AsyncStorage.setItem(BAM_ID_STORAGE_KEY, normalizedBamId);
+
+      hapticToolOpen();
+      router.replace("/home");
+    } catch {
+      setError("Kunne ikke gemme login. Prøv igen.");
+      setLoggingIn(false);
+    }
   };
 
-  const toggleTool = (tool: ToolDefinition) => {
-    hapticFavourite();
-    toggleFavourite(tool.path);
+  const handleChange = (value: string) => {
+    const cleaned = value
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .toUpperCase()
+      .slice(0, 8);
+
+    setBamId(cleaned);
+
+    if (error) {
+      setError("");
+    }
   };
 
-  const renderTool = (tool: ToolDefinition, titleOnly = false) => (
-    <FullWidthToolCard
-      key={`${titleOnly ? "favourite" : "tool"}-${tool.path}`}
-      title={t(tool.titleKey)}
-      description={!titleOnly && tool.descKey ? t(tool.descKey) : undefined}
-      favourite={isFavourite(tool.path)}
-      onPress={() => openTool(tool)}
-      onToggleFavourite={() => toggleTool(tool)}
-    />
-  );
+  if (checkingSavedLogin) {
+    return (
+      <Background variant="home">
+        <Screen
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            paddingTop: 8,
+          }}
+        >
+          <ActivityIndicator />
+        </Screen>
+      </Background>
+    );
+  }
 
   return (
     <Background variant="home">
-      <Screen style={{ paddingTop: 8 }}>
-        <View style={{ gap: 0, alignItems: "center", paddingBottom: 12 }}>
-          <Image
-            source={require("../assets/her-icon.png")}
-            style={{ width: 88, height: 88, marginTop: 10, marginBottom: 0, opacity: 0.95 }}
-            resizeMode="contain"
-          />
-          <Image
-            source={require("../assets/ambuassist-logo.png")}
-            style={{ width: "100%", maxWidth: 440, height: 76, marginTop: -14, marginBottom: -8 }}
-            resizeMode="contain"
-          />
-          <Subtle style={{ textAlign: "center", marginTop: 0, fontSize: 14 }}>{t("homeTagline")}</Subtle>
+      <Screen
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          paddingTop: 8,
+        }}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={{
+            width: "100%",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              width: "100%",
+              maxWidth: 520,
+              alignItems: "center",
+              paddingHorizontal: 8,
+            }}
+          >
+            <Image
+              source={require("../assets/her-icon.png")}
+              style={{
+                width: 96,
+                height: 96,
+                marginBottom: 0,
+                opacity: 0.95,
+              }}
+              resizeMode="contain"
+            />
 
-          <View style={{ flexDirection: "row", gap: 10, marginTop: 14, marginBottom: 0, alignItems: "center", justifyContent: "center" }}>
-            {(["en", "da"] as const).map((language) => (
-              <Pressable
-                key={language}
-                onPress={() => setLanguage(language)}
-                style={({ pressed }) => ({
-                  opacity: pressed ? 0.82 : 1,
-                  transform: [{ scale: pressed ? 0.96 : 1 }],
-                  padding: 7,
-                  borderRadius: 14,
-                  borderWidth: 1,
-                  borderColor: theme.colors.cardBorder,
-                  backgroundColor: settings.language === language ? theme.colors.accentSurface : "transparent",
-                  alignSelf: "center",
-                })}
-                accessibilityRole="button"
-                accessibilityLabel={language === "en" ? "English" : "Dansk"}
-              >
-                <Image
-                  source={language === "en" ? require("../assets/flags/gb.png") : require("../assets/flags/dk.png")}
-                  style={{ width: 32, height: 32, borderRadius: 8 }}
-                  resizeMode="cover"
-                />
-              </Pressable>
-            ))}
-          </View>
-        </View>
+            <Image
+              source={require("../assets/ambuassist-logo.png")}
+              style={{
+                width: "100%",
+                maxWidth: 440,
+                height: 82,
+                marginTop: -12,
+                marginBottom: -8,
+              }}
+              resizeMode="contain"
+            />
 
-        <ScrollView contentContainerStyle={{ paddingBottom: 24, paddingTop: 8, paddingHorizontal: 8, alignItems: "center" }}>
-          <View style={{ width: "100%", maxWidth: 560, gap: 12 }}>
-            {favouriteTools.length > 0 ? (
-              <>
-                <Title style={{ fontSize: 19, marginBottom: 2 }}>
-                  {settings.language === "da" ? "Favoritter" : "Favourites"}
+            <Subtle
+              style={{
+                textAlign: "center",
+                marginTop: 0,
+                marginBottom: 24,
+                fontSize: 14,
+              }}
+            >
+              {t("homeTagline")}
+            </Subtle>
+
+            <Card
+              style={{
+                width: "100%",
+                paddingHorizontal: 18,
+                paddingVertical: 18,
+                gap: 14,
+              }}
+            >
+              <View style={{ gap: 6 }}>
+                <Title style={{ fontSize: 20, letterSpacing: -0.2 }}>
+                  Indtast BAM-ID
                 </Title>
-                {favouriteTools.map((tool) => renderTool(tool, true))}
-                <View style={{ height: 6 }} />
-              </>
-            ) : null}
+              </View>
 
-            <Title style={{ fontSize: 19, marginBottom: 2 }}>
-              {settings.language === "da" ? "Værktøjer" : "Tools"}
-            </Title>
-            {HOME_TOOLS.map((tool) => renderTool(tool))}
+              <TextInput
+                value={bamId}
+                onChangeText={handleChange}
+                placeholder="BAM-ID"
+                placeholderTextColor={theme.colors.mutedText}
+                autoCapitalize="characters"
+                autoCorrect={false}
+                maxLength={8}
+                returnKeyType="go"
+                editable={!loggingIn}
+                onSubmitEditing={handleLogin}
+                style={{
+                  width: "100%",
+                  minHeight: 54,
+                  borderRadius: 16,
+                  borderWidth: 1,
+                  borderColor: error
+                    ? theme.colors.warn
+                    : theme.colors.cardBorder,
+                  backgroundColor: "rgba(255,255,255,0.08)",
+                  color: "white",
+                  paddingHorizontal: 16,
+                  fontSize: 18,
+                  letterSpacing: 1.8,
+                  fontWeight: "700",
+                }}
+              />
+
+              {error ? (
+                <Subtle
+                  style={{
+                    color: theme.colors.warn,
+                    fontSize: 13,
+                  }}
+                >
+                  {error}
+                </Subtle>
+              ) : null}
+
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Log ind"
+                onPress={handleLogin}
+                disabled={loggingIn}
+                style={({ pressed }) => ({
+                  minHeight: 54,
+                  borderRadius: 16,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: isValidBamId
+                    ? theme.colors.accentSurface
+                    : "rgba(255,255,255,0.08)",
+                  borderWidth: 1,
+                  borderColor: isValidBamId
+                    ? theme.colors.cardBorder
+                    : "rgba(255,255,255,0.12)",
+                  opacity: pressed || loggingIn ? 0.78 : 1,
+                  transform: [{ scale: pressed ? 0.98 : 1 }],
+                })}
+              >
+                <Title
+                  style={{
+                    fontSize: 17,
+                    letterSpacing: -0.1,
+                    color: "white",
+                  }}
+                >
+                  {loggingIn ? "Logger ind..." : "Log ind"}
+                </Title>
+              </Pressable>
+            </Card>
           </View>
-        </ScrollView>
+        </KeyboardAvoidingView>
       </Screen>
     </Background>
   );

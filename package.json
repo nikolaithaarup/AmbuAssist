@@ -1,6 +1,6 @@
 {
   "name": "ambuassist",
-  "version": "1.0.0",
+  "version": "1.1.2",
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
@@ -13,7 +13,8 @@
     "seed:support-numbers": "tsx scripts/seedSupportNumbers.ts",
     "build:android": "npx eas-cli@latest build --platform android",
     "build:ios": "npx eas-cli@latest build --platform ios",
-    "build:all": "npx eas-cli@latest build --platform all"
+    "build:all": "npx eas-cli@latest build --platform all",
+    "build:submit:all": "npx eas-cli@latest build --platform all --profile production --auto-submit"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",

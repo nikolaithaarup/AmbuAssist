@@ -18,6 +18,11 @@ export default function AssessmentToolsPage() {
 
   const tools: ToolLink[] = [
     {
+      titleKey: "tool_burns_title",
+      descKey: "tool_burns_desc",
+      path: "/tools/brandsaar",
+    },
+    {
       titleKey: "tool_behaviouralGeriatric_title",
       descKey: "tool_behaviouralGeriatric_desc",
       path: "/tools/assessment-tools/behavioural-geriatric",

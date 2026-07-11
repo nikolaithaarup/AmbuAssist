@@ -6,7 +6,6 @@ export const HOME_TOOLS: ToolDefinition[] = [
   { path: "/tools/destination", titleKey: "tool_dest_title", descKey: "tool_dest_desc" },
   { path: "/tools/weight-joule-dose", titleKey: "tool_weightDose_title", descKey: "tool_weightDose_desc" },
   { path: "/tools/trombolysis", titleKey: "tool_trombolysis_title", descKey: "tool_trombolysis_desc" },
-  { path: "/tools/brandsaar", titleKey: "tool_burns_title", descKey: "tool_burns_desc" },
   { path: "/tools/support-numbers", titleKey: "tool_supportNumbers_title", descKey: "tool_supportNumbers_desc" },
   { path: "/tools/exams", titleKey: "tool_exams_title", descKey: "tool_exams_desc" },
   { path: "/tools/assessment-tools", titleKey: "tool_assessment_title", descKey: "tool_assessment_desc" },
@@ -17,6 +16,7 @@ export const HOME_TOOLS: ToolDefinition[] = [
 
 export const FAVOURITABLE_TOOLS: ToolDefinition[] = [
   ...HOME_TOOLS,
+  { path: "/tools/brandsaar", titleKey: "tool_burns_title" },
   { path: "/tools/assessment-tools/news2", titleKey: "tool_news2_title" },
   { path: "/tools/assessment-tools/wells-dvt", titleKey: "tool_wells_title" },
   { path: "/tools/assessment-tools/spinal-trauma", titleKey: "tool_spine_title" },

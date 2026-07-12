@@ -65,13 +65,13 @@ export const en = {
   // ASSESSMENT SECTION CARDS
   // =========================================================
 
-  tool_bloodgas_title: "Blood gas & patterns",
+  tool_bloodgas_title: "VGAS interpretation",
   tool_cardiacResus_title: "Cardiac arrest",
   tool_cardiacResus_desc: "Time and event support during cardiac arrest.",
   tool_cardiacResus_active_title: "Active cardiac arrest session",
   tool_cardiacResus_summary_title: "Cardiac arrest summary",
   tool_bloodgas_desc:
-    "Interpret blood gas, lactate, glucose and infection indicators",
+    "Venous blood gas, lactate, glucose and inflammation support",
 
   tool_bvc_title: "BVC",
   tool_bvc_desc: "Brøset Violence Checklist",
@@ -151,17 +151,17 @@ export const en = {
   bg_label_hgb: "cHgb (mmol/L)",
 
   bg_pattern_hhs:
-    "Possible HHS pattern – marked hyperglycaemia without clear severe ketoacidosis pattern.",
+    "Pattern with very high glucose without a clear acidosis pattern; assess with the full clinical context.",
   bg_pattern_metabolic_acidosis:
     "Metabolic acidosis pattern – low HCO₃⁻ / negative base excess with acidaemia.",
   bg_pattern_hyponatremia: "Hyponatraemia pattern – sodium is reduced.",
-  bg_pattern_hypoxemia: "Hypoxaemia pattern – pO₂ is reduced.",
+  bg_pattern_hypoxemia: "Low pO₂ on VGAS must be interpreted very cautiously and compared with SpO₂ and clinical context.",
   bg_pattern_low_so2: "Low oxygen saturation pattern – cSO₂ is reduced.",
   bg_pattern_renal_impairment:
-    "Possible renal impairment pattern – urea and creatinine are elevated.",
+    "Raised renal markers – assess with previous values, hydration, and clinical context.",
 
   bg_infection_lactate_elevated:
-    "Elevated lactate – consider hypoperfusion, sepsis, or significant physiological stress.",
+    "Elevated lactate is nonspecific and should be assessed with perfusion, clinical context, and other findings.",
   bg_infection_stress_hyperglycemia:
     "Hyperglycaemia may be stress-related, but should be interpreted clinically.",
 
@@ -267,11 +267,11 @@ export const en = {
   bg_patterns_sources_sub:
     "Review the underlying references and verify against local guidelines.",
 
-  bg_pattern_dka: "Possible DKA pattern – consider ketoacidosis.",
+  bg_pattern_dka: "Pattern with hyperglycaemia and acidosis; requires clinical confirmation.",
   bg_pattern_lactate_elevated:
     "Elevated lactate – consider infection, hypoperfusion, or metabolic stress.",
   bg_pattern_lactate_high:
-    "High lactate – urgent assessment for shock or significant hypoperfusion is relevant.",
+    "Markedly raised lactate – assess promptly with clinical context and repeat/verify as relevant locally.",
   bg_pattern_dehydration: "Pattern may fit dehydration or stress response.",
   bg_pattern_respiratory_acidosis:
     "Respiratory acidosis pattern – low pH with elevated pCO₂.",
@@ -1537,12 +1537,12 @@ export const da: typeof en = {
   // ASSESSMENT SECTION CARDS
   // =========================================================
 
-  tool_bloodgas_title: "Blodgas fortolkning",
+  tool_bloodgas_title: "VGAS-fortolkning",
   tool_cardiacResus_title: "Hjertestop",
   tool_cardiacResus_desc: "Tids- og hændelsesstøtte ved hjertestop.",
   tool_cardiacResus_active_title: "Aktiv hjertestop-session",
   tool_cardiacResus_summary_title: "Hjertestopoversigt",
-  tool_bloodgas_desc: "Fortolk blodgas, laktat, glukose og infektionsparametre",
+  tool_bloodgas_desc: "Støtte til venøs blodgas, laktat, glukose og inflammation",
 
   tool_bvc_title: "BVC",
   tool_bvc_desc: "Brøset Violence Checklist",
@@ -1609,17 +1609,17 @@ export const da: typeof en = {
   bg_label_hgb: "cHgb (mmol/L)",
 
   bg_pattern_hhs:
-    "Muligt HHS-mønster – udtalt hyperglykæmi uden tydeligt svært ketoacidosemønster.",
+    "Mønster med meget høj glukose uden tydeligt acidosemønster; vurder sammen med hele klinikken.",
   bg_pattern_metabolic_acidosis:
     "Metabolisk acidosemønster – lav HCO₃⁻ / negativ base excess sammen med acidæmi.",
   bg_pattern_hyponatremia: "Hyponatriæmi-mønster – natrium er nedsat.",
-  bg_pattern_hypoxemia: "Hypoksæmi-mønster – pO₂ er nedsat.",
+  bg_pattern_hypoxemia: "Lav pO₂ på VGAS skal vurderes meget forsigtigt og sammenholdes med SpO₂ og klinik.",
   bg_pattern_low_so2: "Lav iltmætning-mønster – cSO₂ er nedsat.",
   bg_pattern_renal_impairment:
-    "Muligt nyrepåvirkningsmønster – urea og kreatinin er forhøjede.",
+    "Forhøjede nyretal – vurder sammen med tidligere værdier, væskestatus og klinik.",
 
   bg_infection_lactate_elevated:
-    "Forhøjet laktat – overvej hypoperfusion, sepsis eller betydelig fysiologisk stress.",
+    "Forhøjet laktat er uspecifikt og bør vurderes sammen med perfusion, klinik og øvrige fund.",
   bg_infection_stress_hyperglycemia:
     "Hyperglykæmi kan være stressrelateret, men skal fortolkes klinisk.",
   tool_bg_acidbase_title: "Syre-base-hjælper",
@@ -1736,11 +1736,11 @@ export const da: typeof en = {
   bg_patterns_sources_sub:
     "Gennemgå de underliggende kilder og verificér mod lokale retningslinjer.",
 
-  bg_pattern_dka: "Muligt DKA-mønster – overvej ketoacidose.",
+  bg_pattern_dka: "Mønster med hyperglykæmi og acidose; kræver klinisk bekræftelse.",
   bg_pattern_lactate_elevated:
     "Forhøjet laktat – overvej infektion, hypoperfusion eller metabolisk stress.",
   bg_pattern_lactate_high:
-    "Højt laktat – hurtig vurdering for shock eller betydende hypoperfusion er relevant.",
+    "Udtalt forhøjet laktat – vurder hurtigt sammen med klinik og gentag/verificér efter lokale retningslinjer.",
   bg_pattern_dehydration:
     "Mønstret kan passe med dehydrering eller stressrespons.",
   bg_pattern_respiratory_acidosis:

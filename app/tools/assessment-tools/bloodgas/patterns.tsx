@@ -15,7 +15,7 @@ import { Card, Screen, Subtle, Title } from "../../../../src/ui/Ui";
 import { theme } from "../../../../src/ui/theme";
 
 import { BloodGasInputCard } from "../../../../src/features/bloodgas/BloodGasInputCard";
-import { BloodGasPageHeader, ResultSection } from "../../../../src/features/bloodgas/BloodGasPresentation";
+import { BloodGasPageHeader, BloodGasProvenance, ResultSection, VgasPo2Caution } from "../../../../src/features/bloodgas/BloodGasPresentation";
 import { SourceItem } from "../../../../src/features/bloodgas/SourceItem";
 import {
   makeEmptyBloodGasFormValues,
@@ -155,6 +155,11 @@ export default function PatternsPage() {
             )}
           </Card>
 
+          <Card style={{ gap: 14 }}>
+            <VgasPo2Caution />
+            <ResultSection label={lang === "da" ? "Sammenhold med klinik" : "Compare with clinical context"}><Subtle>{lang === "da" ? "Kontrollér værdier, enheder og klinik. Fund er mønsterstøtte og ikke en diagnose." : "Check values, units, and clinical context. Findings are pattern support, not a diagnosis."}</Subtle></ResultSection>
+          </Card>
+          <BloodGasProvenance />
           <CollapsibleCard
             title={t("tool_disclaimer_title")}
             subtitle={

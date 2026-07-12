@@ -1,6 +1,9 @@
 import { findBloodGasPatterns } from "./patterns";
 
 describe("blood-gas patterns", () => {
+  test("does not require pO2", () => {
+    expect(() => findBloodGasPatterns({ ph: 7.4, pco2: 5, hco3: 24 })).not.toThrow();
+  });
   test("returns no findings for missing or non-finite-only values", () => {
     expect(findBloodGasPatterns({})).toEqual([]);
     expect(findBloodGasPatterns({ ph: NaN, lactate: NaN })).toEqual([]);

@@ -7,14 +7,13 @@ import { VGAS_FIELDS } from "./fieldConfig";
 import { validateBloodGasField } from "./helpers";
 import type { BloodGasFieldKey, BloodGasFormValues } from "./types";
 
-type Props = { values: BloodGasFormValues; onChange: (key: BloodGasFieldKey, value: string) => void; fields: BloodGasFieldKey[]; title?: string };
+type Props = { values: BloodGasFormValues; onChange: (key: BloodGasFieldKey, value: string) => void; fields: BloodGasFieldKey[]; title?: string; embedded?: boolean };
 
-export function BloodGasInputCard({ values, onChange, fields, title }: Props) {
+export function BloodGasInputCard({ values, onChange, fields, title, embedded = false }: Props) {
   const { t } = useT();
   const { settings } = useSettings();
   const isDa = settings.language === "da";
-  return (
-    <Card>
+  const content = <>
       {title ? <Text style={{ color: theme.colors.text, fontSize: 17, fontWeight: "800" }}>{title}</Text> : null}
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
         {fields.map((fieldKey) => {
@@ -32,6 +31,6 @@ export function BloodGasInputCard({ values, onChange, fields, title }: Props) {
           );
         })}
       </View>
-    </Card>
-  );
+    </>;
+  return embedded ? <View style={{ gap: 12 }}>{content}</View> : <Card>{content}</Card>;
 }

@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import { BloodGasPageHeader, BloodGasProvenance, VgasPo2Caution } from "../../../../src/features/bloodgas/BloodGasPresentation";
+import { BloodGasPageHeader, BloodGasProvenance } from "../../../../src/features/bloodgas/BloodGasPresentation";
 import { useT } from "../../../../src/i18n/useT";
 import { useSettings } from "../../../../src/state/settings";
 import { Background } from "../../../../src/ui/Background";
@@ -43,7 +43,6 @@ export default function BloodGasPage() {
               </Pressable>
             ))}
           </View>
-          <Card style={{ gap: 12 }}><VgasPo2Caution /></Card>
           <BloodGasProvenance />
           <Card style={{ backgroundColor: "rgba(221,189,98,0.07)", borderColor: "rgba(221,189,98,0.25)" }}>
             <Text style={{ color: theme.colors.warn, fontWeight: "800" }}>

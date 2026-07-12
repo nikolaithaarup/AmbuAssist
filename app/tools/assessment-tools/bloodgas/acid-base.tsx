@@ -15,7 +15,7 @@ import { Card, Screen, Subtle, Title } from "../../../../src/ui/Ui";
 import { theme } from "../../../../src/ui/theme";
 
 import { BloodGasInputCard } from "../../../../src/features/bloodgas/BloodGasInputCard";
-import { BloodGasPageHeader, EmptyResult, ResultSection } from "../../../../src/features/bloodgas/BloodGasPresentation";
+import { BloodGasPageHeader, BloodGasProvenance, EmptyResult, ResultSection } from "../../../../src/features/bloodgas/BloodGasPresentation";
 import { SourceItem } from "../../../../src/features/bloodgas/SourceItem";
 import {
   makeEmptyBloodGasFormValues,
@@ -144,6 +144,7 @@ export default function AcidBasePage() {
               )}
           </Card>}
 
+          <BloodGasProvenance />
           <CollapsibleCard
             title={t("tool_disclaimer_title")}
             subtitle={

@@ -1,17 +1,23 @@
 import {
   addArrestEvent,
+  addAdrenalineTimerResetEvent,
+  addCycleTimerResetEvent,
   addShockEvent,
   addNoteEvent,
   createArrestSession,
   endArrestSession,
   endArrestSessionWithOutcome,
   findLatestAdrenalineEvent,
+  findLatestAdrenalineTimerAnchorEvent,
   getAdrenalineReminderSeconds,
   getCurrentCycleProgress,
+  getCycleDisplayState,
   getCycleNumber,
   getCycleRemainingSeconds,
   getElapsedSeconds,
   getSecondsSinceLastAdrenaline,
+  getSecondsSinceAdrenalineTimerAnchor,
+  getLatestCycleTimerResetEvent,
   isAdrenalineReminderDue,
   isPrechargeCueActive,
   resumeArrestSession,
@@ -195,5 +201,72 @@ describe("CardiacResus session utilities", () => {
     expect(resumed.status).toBe("active");
     expect(resumed.endedAt).toBeUndefined();
     expect(resumed.events).toEqual(ended.events);
+  });
+
+  test("uses original elapsed time when no cycle reset exists", () => {
+    const state = getCycleDisplayState(createArrestSession(START), "2026-07-12T10:03:40.000Z");
+    expect(state).toEqual({
+      cycleNumber: 2,
+      elapsedInCycleSeconds: 100,
+      remainingSeconds: 20,
+      progress: 100 / 120,
+      prechargeCueActive: false,
+    });
+  });
+
+  test("resets cycle phase while preserving cycle number and total elapsed time", () => {
+    const original = createArrestSession(START);
+    const resetAt = "2026-07-12T10:03:40.000Z";
+    const reset = addCycleTimerResetEvent(original, resetAt);
+    expect(getElapsedSeconds(reset.startedAt, resetAt)).toBe(220);
+    expect(getLatestCycleTimerResetEvent(reset)).toMatchObject({
+      type: "cycle_timer_reset",
+      metadata: { cycleNumberAtReset: 2 },
+    });
+    expect(getCycleDisplayState(reset, resetAt)).toMatchObject({ cycleNumber: 2, elapsedInCycleSeconds: 0, remainingSeconds: 120, progress: 0 });
+    expect(getCycleDisplayState(reset, "2026-07-12T10:05:39.000Z")).toMatchObject({ cycleNumber: 2, elapsedInCycleSeconds: 119, remainingSeconds: 1 });
+    expect(getCycleDisplayState(reset, "2026-07-12T10:05:40.000Z")).toMatchObject({ cycleNumber: 3, elapsedInCycleSeconds: 0, remainingSeconds: 120 });
+    expect(formatArrestEventLabel(reset.events.at(-1)!)).toBe("Cyklustimer nulstillet");
+  });
+
+  test("pre-charge cue follows reset-adjusted cycle phase", () => {
+    const session = createArrestSession(START);
+    const nearEnd = "2026-07-12T10:01:59.000Z";
+    expect(getCycleDisplayState(session, nearEnd).prechargeCueActive).toBe(true);
+    const reset = addCycleTimerResetEvent(session, nearEnd);
+    expect(getCycleDisplayState(reset, nearEnd).prechargeCueActive).toBe(false);
+    expect(getCycleDisplayState(reset, "2026-07-12T10:03:44.000Z").prechargeCueActive).toBe(true);
+  });
+
+  test("adrenaline timer reset becomes the latest anchor without increasing adrenaline count", () => {
+    let session = addArrestEvent(createArrestSession(START), "adrenaline_given", "2026-07-12T10:01:00.000Z");
+    session = addAdrenalineTimerResetEvent(session, "2026-07-12T10:03:00.000Z");
+    expect(findLatestAdrenalineTimerAnchorEvent(session)).toMatchObject({ type: "adrenaline_timer_reset" });
+    expect(getSecondsSinceAdrenalineTimerAnchor(session, "2026-07-12T10:03:20.000Z")).toBe(20);
+    expect(isAdrenalineReminderDue(session, "2026-07-12T10:06:59.000Z")).toBe(false);
+    expect(isAdrenalineReminderDue(session, "2026-07-12T10:07:00.000Z")).toBe(true);
+    expect(summarizeArrestSession(session).adrenalineCount).toBe(1);
+    expect(formatArrestEventLabel(session.events.at(-1)!)).toBe("Adrenalin-timer nulstillet");
+  });
+
+  test("does not create an adrenaline timer reset before a timer anchor exists", () => {
+    const session = createArrestSession(START);
+    expect(findLatestAdrenalineTimerAnchorEvent(session)).toBeNull();
+    expect(getSecondsSinceAdrenalineTimerAnchor(session, "2026-07-12T10:03:00.000Z")).toBeNull();
+    expect(addAdrenalineTimerResetEvent(session, "2026-07-12T10:03:00.000Z")).toBe(session);
+  });
+
+  test("timer resets do not affect clinical summary counts", () => {
+    let session = addArrestEvent(createArrestSession(START), "adrenaline_given", "2026-07-12T10:01:00.000Z");
+    session = addCycleTimerResetEvent(session, "2026-07-12T10:01:30.000Z");
+    session = addAdrenalineTimerResetEvent(session, "2026-07-12T10:02:00.000Z");
+    expect(summarizeArrestSession(session)).toMatchObject({
+      shockCount: 0,
+      adrenalineCount: 1,
+      amiodaroneCount: 0,
+      hasRosc: false,
+      hasMors: false,
+      totalRecordedEvents: 3,
+    });
   });
 });

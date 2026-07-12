@@ -6,7 +6,9 @@ export type ArrestEventType =
   | "rhythm_check"
   | "shock_delivered"
   | "cpr_cycle_marker"
+  | "cycle_timer_reset"
   | "adrenaline_given"
+  | "adrenaline_timer_reset"
   | "amiodarone_given"
   | "airway_event"
   | "rosc"
@@ -29,6 +31,7 @@ export type ArrestEvent = {
   correctedEventId?: string;
   metadata?: {
     shockRhythm?: ShockRhythm;
+    cycleNumberAtReset?: number;
   };
 };
 
@@ -54,6 +57,14 @@ export type ArrestSessionSummary = {
   hasMors: boolean;
   latestOutcome: "rosc" | "mors" | null;
   totalRecordedEvents: number;
+};
+
+export type CycleDisplayState = {
+  cycleNumber: number;
+  elapsedInCycleSeconds: number;
+  remainingSeconds: number;
+  progress: number;
+  prechargeCueActive: boolean;
 };
 
 type TimeValue = Date | string | number;
@@ -109,6 +120,41 @@ export function isPrechargeCueActive(
   return remaining > 0 && remaining <= window;
 }
 
+export function getLatestCycleTimerResetEvent(session: ArrestSession): ArrestEvent | null {
+  return session.events.reduce<ArrestEvent | null>((latest, event) => {
+    if (event.type !== "cycle_timer_reset") return latest;
+    if (!latest) return event;
+    return (toTimestamp(event.occurredAt) ?? 0) >= (toTimestamp(latest.occurredAt) ?? 0) ? event : latest;
+  }, null);
+}
+
+export function getCycleDisplayState(session: ArrestSession, now: TimeValue): CycleDisplayState {
+  const duration = Number.isFinite(session.cycleDurationSeconds) && session.cycleDurationSeconds > 0
+    ? Math.floor(session.cycleDurationSeconds)
+    : DEFAULT_CYCLE_DURATION_SECONDS;
+  const reset = getLatestCycleTimerResetEvent(session);
+  const anchorElapsed = reset
+    ? getElapsedSeconds(reset.occurredAt, now)
+    : getElapsedSeconds(session.startedAt, now);
+  const elapsedInCycleSeconds = anchorElapsed % duration;
+  const cyclesAfterAnchor = Math.floor(anchorElapsed / duration);
+  const baseCycleNumber = reset?.metadata?.cycleNumberAtReset && reset.metadata.cycleNumberAtReset > 0
+    ? Math.floor(reset.metadata.cycleNumberAtReset)
+    : 1;
+  const cycleNumber = reset
+    ? baseCycleNumber + cyclesAfterAnchor
+    : getCycleNumber(anchorElapsed, duration);
+  const remainingSeconds = getCycleRemainingSeconds(elapsedInCycleSeconds, duration);
+
+  return {
+    cycleNumber,
+    elapsedInCycleSeconds,
+    remainingSeconds,
+    progress: elapsedInCycleSeconds / duration,
+    prechargeCueActive: isPrechargeCueActive(elapsedInCycleSeconds, duration),
+  };
+}
+
 export function findLatestAdrenalineEvent(session: ArrestSession): ArrestEvent | null {
   return session.events.reduce<ArrestEvent | null>((latest, event) => {
     if (event.type !== "adrenaline_given") return latest;
@@ -119,8 +165,21 @@ export function findLatestAdrenalineEvent(session: ArrestSession): ArrestEvent |
   }, null);
 }
 
+export function findLatestAdrenalineTimerAnchorEvent(session: ArrestSession): ArrestEvent | null {
+  return session.events.reduce<ArrestEvent | null>((latest, event) => {
+    if (event.type !== "adrenaline_given" && event.type !== "adrenaline_timer_reset") return latest;
+    if (!latest) return event;
+    return (toTimestamp(event.occurredAt) ?? 0) >= (toTimestamp(latest.occurredAt) ?? 0) ? event : latest;
+  }, null);
+}
+
 export function getSecondsSinceLastAdrenaline(session: ArrestSession, now: TimeValue): number | null {
   const latest = findLatestAdrenalineEvent(session);
+  return latest ? getElapsedSeconds(latest.occurredAt, now) : null;
+}
+
+export function getSecondsSinceAdrenalineTimerAnchor(session: ArrestSession, now: TimeValue): number | null {
+  const latest = findLatestAdrenalineTimerAnchorEvent(session);
   return latest ? getElapsedSeconds(latest.occurredAt, now) : null;
 }
 
@@ -132,7 +191,7 @@ export function getAdrenalineReminderSeconds(session: ArrestSession): number {
 }
 
 export function isAdrenalineReminderDue(session: ArrestSession, now: TimeValue): boolean {
-  const secondsSince = getSecondsSinceLastAdrenaline(session, now);
+  const secondsSince = getSecondsSinceAdrenalineTimerAnchor(session, now);
   return secondsSince !== null && secondsSince >= getAdrenalineReminderSeconds(session);
 }
 
@@ -219,6 +278,18 @@ export function addNoteEvent(
   now: TimeValue,
 ): ArrestSession {
   return note.trim() ? addArrestEvent(session, "free_note", now, note) : session;
+}
+
+export function addCycleTimerResetEvent(session: ArrestSession, now: TimeValue): ArrestSession {
+  const display = getCycleDisplayState(session, now);
+  return addArrestEvent(session, "cycle_timer_reset", now, undefined, "manual", {
+    cycleNumberAtReset: display.cycleNumber,
+  });
+}
+
+export function addAdrenalineTimerResetEvent(session: ArrestSession, now: TimeValue): ArrestSession {
+  if (!findLatestAdrenalineTimerAnchorEvent(session)) return session;
+  return addArrestEvent(session, "adrenaline_timer_reset", now);
 }
 
 export function endArrestSession(session: ArrestSession, now: TimeValue): ArrestSession {

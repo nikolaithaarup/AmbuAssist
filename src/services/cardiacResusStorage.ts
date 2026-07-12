@@ -6,7 +6,8 @@ const LATEST_SESSION_KEY = "ambuassist.cardiac-resus.latest.v1";
 
 const KNOWN_EVENT_TYPES = new Set<ArrestEventType>([
   "session_started", "rhythm_check", "shock_delivered", "cpr_cycle_marker",
-  "adrenaline_given", "amiodarone_given", "airway_event", "rosc", "mors",
+  "cycle_timer_reset", "adrenaline_given", "adrenaline_timer_reset",
+  "amiodarone_given", "airway_event", "rosc", "mors",
   "transport_decision", "physician_instruction", "free_note", "session_ended",
 ]);
 
@@ -31,6 +32,9 @@ function parseEvent(value: unknown): ArrestEvent | null {
   const shockRhythm = event.metadata && typeof event.metadata === "object"
     ? (event.metadata as { shockRhythm?: unknown }).shockRhythm
     : undefined;
+  const cycleNumberAtReset = event.metadata && typeof event.metadata === "object"
+    ? (event.metadata as { cycleNumberAtReset?: unknown }).cycleNumberAtReset
+    : undefined;
 
   return {
     id: event.id,
@@ -42,7 +46,19 @@ function parseEvent(value: unknown): ArrestEvent | null {
     ...(knownType
       ? (originalNote ? { note: originalNote } : {})
       : { note: `Ukendt tidligere hændelse: ${event.type}${originalNote ? ` · ${originalNote}` : ""}` }),
-    ...(shockRhythm === "VF" || shockRhythm === "pVT" ? { metadata: { shockRhythm } } : {}),
+    ...(
+      shockRhythm === "VF" || shockRhythm === "pVT" ||
+      (Number.isFinite(cycleNumberAtReset) && Number(cycleNumberAtReset) > 0)
+        ? {
+            metadata: {
+              ...(shockRhythm === "VF" || shockRhythm === "pVT" ? { shockRhythm } : {}),
+              ...(Number.isFinite(cycleNumberAtReset) && Number(cycleNumberAtReset) > 0
+                ? { cycleNumberAtReset: Math.floor(Number(cycleNumberAtReset)) }
+                : {}),
+            },
+          }
+        : {}
+    ),
     ...(typeof event.correctedEventId === "string" ? { correctedEventId: event.correctedEventId } : {}),
   };
 }

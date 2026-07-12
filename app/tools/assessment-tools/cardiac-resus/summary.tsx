@@ -1,9 +1,9 @@
 import { type Href, useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
-import { summarizeArrestSession, type ArrestSession } from "../../../../src/domain/cardiac-resus/session";
-import { EVENT_LABELS_DA, formatElapsed } from "../../../../src/features/cardiac-resus/presentation";
-import { getLatestArrestSession } from "../../../../src/services/cardiacResusStorage";
+import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from "react-native";
+import { resumeArrestSession, summarizeArrestSession, type ArrestSession } from "../../../../src/domain/cardiac-resus/session";
+import { formatArrestEventLabel, formatElapsed } from "../../../../src/features/cardiac-resus/presentation";
+import { getLatestArrestSession, saveActiveArrestSession } from "../../../../src/services/cardiacResusStorage";
 import { Background } from "../../../../src/ui/Background";
 import { CollapsibleCard } from "../../../../src/ui/CollapsibleCard";
 import { Card, Screen, Subtle, Title } from "../../../../src/ui/Ui";
@@ -17,6 +17,7 @@ export default function CardiacResusSummary() {
   const router = useRouter();
   const [session, setSession] = useState<ArrestSession | null>(null);
   const [loading, setLoading] = useState(true);
+  const [resuming, setResuming] = useState(false);
 
   useFocusEffect(useCallback(() => {
     let mounted = true;
@@ -34,15 +35,27 @@ export default function CardiacResusSummary() {
   const latestOutcome = summary.latestOutcome === "rosc" ? "ROSC" : summary.latestOutcome === "mors" ? "MORS" : "Ikke registreret";
   const summaryRows = [
     ["Varighed", formatElapsed(summary.durationSeconds)],
-    ["Stød", String(summary.shockCount)],
+    ["Stød total", String(summary.shockCount)],
+    ["Stød VF", String(summary.shockVfCount)],
+    ["Stød pVT", String(summary.shockPvtCount)],
     ["Adrenalin", String(summary.adrenalineCount)],
     ["Amiodaron", String(summary.amiodaroneCount)],
-    ["Luftvej", String(summary.airwayCount)],
     ["ROSC", summary.hasRosc ? "Ja" : "Nej"],
     ["MORS", summary.hasMors ? "Ja" : "Nej"],
     ["Seneste udfald", latestOutcome],
     ["Hændelser i alt", String(summary.totalRecordedEvents)],
   ] as const;
+  const resumeSession = async () => {
+    if (resuming) return;
+    setResuming(true);
+    try {
+      await saveActiveArrestSession(resumeArrestSession(session));
+      router.replace("/tools/assessment-tools/cardiac-resus/session" as Href);
+    } catch {
+      setResuming(false);
+      Alert.alert("Sessionen kunne ikke genoptages", "Den aktive session kunne ikke gemmes lokalt.");
+    }
+  };
   return (
     <Background>
       <Screen>
@@ -65,10 +78,17 @@ export default function CardiacResusSummary() {
             {session.events.map((event) => (
               <View key={event.id} style={{ flexDirection: "row", gap: 10, paddingVertical: 7, borderBottomWidth: 1, borderBottomColor: theme.colors.divider }}>
                 <Text style={{ color: theme.colors.accentMuted, fontWeight: "800", fontVariant: ["tabular-nums"] }}>{formatElapsed(event.elapsedSeconds)}</Text>
-                <View style={{ flex: 1 }}><Text style={{ color: theme.colors.text, fontWeight: "700" }}>{EVENT_LABELS_DA[event.type]}</Text>{event.note ? <Subtle>{event.note}</Subtle> : null}</View>
+                <View style={{ flex: 1 }}><Text style={{ color: theme.colors.text, fontWeight: "700" }}>{formatArrestEventLabel(event)}</Text>{event.note ? <Subtle>{event.note}</Subtle> : null}</View>
               </View>
             ))}
           </CollapsibleCard>
+          <Pressable
+            disabled={resuming}
+            onPress={() => void resumeSession()}
+            style={({ pressed }) => ({ minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 14, borderWidth: 1, borderColor: theme.colors.cardBorder, backgroundColor: theme.colors.accentSurface, opacity: pressed || resuming ? 0.6 : 1 })}
+          >
+            <Text style={{ color: theme.colors.text, fontWeight: "900", fontSize: 16 }}>{resuming ? "Genoptager…" : "Genoptag hjertestop"}</Text>
+          </Pressable>
         </ScrollView>
       </Screen>
     </Background>

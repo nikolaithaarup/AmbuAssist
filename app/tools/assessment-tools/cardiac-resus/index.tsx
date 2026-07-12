@@ -4,11 +4,12 @@ import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from "rea
 import { createArrestSession, type ArrestSession } from "../../../../src/domain/cardiac-resus/session";
 import {
   clearActiveArrestSession,
-  getActiveArrestSession,
   getLatestArrestSession,
+  inspectActiveArrestSession,
   saveActiveArrestSession,
 } from "../../../../src/services/cardiacResusStorage";
 import { Background } from "../../../../src/ui/Background";
+import { ActionOverlay } from "../../../../src/features/cardiac-resus/ActionOverlay";
 import { hapticReset, hapticSuccess } from "../../../../src/ui/haptics";
 import { Card, PrimaryButton, Screen, Subtle, Title } from "../../../../src/ui/Ui";
 import { theme } from "../../../../src/ui/theme";
@@ -19,15 +20,20 @@ export default function CardiacResusLanding() {
   const router = useRouter();
   const [activeSession, setActiveSession] = useState<ArrestSession | null>(null);
   const [hasLatestSession, setHasLatestSession] = useState(false);
+  const [activeSessionCorrupted, setActiveSessionCorrupted] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showClearConfirmation, setShowClearConfirmation] = useState(false);
+  const [clearing, setClearing] = useState(false);
+  const [clearError, setClearError] = useState("");
 
   const refresh = useCallback(() => {
     let mounted = true;
     setLoading(true);
-    Promise.all([getActiveArrestSession(), getLatestArrestSession()])
-      .then(([active, latest]) => {
+    Promise.all([inspectActiveArrestSession(), getLatestArrestSession()])
+      .then(([activeInspection, latest]) => {
         if (!mounted) return;
-        setActiveSession(active);
+        setActiveSession(activeInspection.session);
+        setActiveSessionCorrupted(activeInspection.corrupted);
         setHasLatestSession(Boolean(latest));
       })
       .catch(() => {
@@ -56,22 +62,21 @@ export default function CardiacResusLanding() {
     }
   };
 
-  const confirmClear = () => {
-    Alert.alert("Ryd aktiv session?", "Den aktive session og dens registreringer slettes fra enheden.", [
-      { text: "Annuller", style: "cancel" },
-      {
-        text: "Ryd session",
-        style: "destructive",
-        onPress: () => {
-          clearActiveArrestSession()
-            .then(() => {
-              hapticReset();
-              setActiveSession(null);
-            })
-            .catch(() => Alert.alert("Sessionen kunne ikke ryddes"));
-        },
-      },
-    ]);
+  const clearSession = async () => {
+    if (clearing) return;
+    setClearing(true);
+    setClearError("");
+    try {
+      await clearActiveArrestSession();
+      hapticReset();
+      setActiveSession(null);
+      setActiveSessionCorrupted(false);
+      setShowClearConfirmation(false);
+    } catch {
+      setClearError("Den lokale aktive session kunne ikke fjernes. Prøv igen.");
+    } finally {
+      setClearing(false);
+    }
   };
 
   return (
@@ -100,18 +105,40 @@ export default function CardiacResusLanding() {
 
           {loading ? <ActivityIndicator color={theme.colors.accent} /> : (
             <View style={{ gap: 10 }}>
-              <PrimaryButton label={activeSession ? "Fortsæt aktiv session" : "Start session"} onPress={startSession} />
+              {activeSessionCorrupted ? (
+                <Card style={{ backgroundColor: "rgba(255,123,114,0.10)", borderColor: "rgba(255,123,114,0.42)" }}>
+                  <Title style={{ fontSize: 17 }}>Aktiv session kan ikke indlæses</Title>
+                  <Subtle>Den lokalt gemte session er beskadiget eller ufuldstændig. Ryd den for at kunne starte igen.</Subtle>
+                </Card>
+              ) : (
+                <PrimaryButton label={activeSession ? "Fortsæt aktiv session" : "Start session"} onPress={startSession} />
+              )}
               {hasLatestSession ? (
                 <PrimaryButton label="Se seneste hjertestop-session" onPress={() => router.push("/tools/assessment-tools/cardiac-resus/summary" as Href)} />
               ) : null}
-              {activeSession ? (
-                <Pressable onPress={confirmClear} style={({ pressed }) => ({ minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}>
+              {activeSession || activeSessionCorrupted ? (
+                <Pressable onPress={() => { setClearError(""); setShowClearConfirmation(true); }} style={({ pressed }) => ({ minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}>
                   <Text style={{ color: theme.colors.danger, fontWeight: "800" }}>Ryd aktiv session</Text>
                 </Pressable>
               ) : null}
             </View>
           )}
         </ScrollView>
+        {showClearConfirmation ? (
+          <ActionOverlay>
+            <Title style={{ fontSize: 21 }}>Ryd aktiv session?</Title>
+            <Text style={{ color: theme.colors.text, lineHeight: 21 }}>
+              Den lokale aktive session og dens registreringer fjernes fra denne enhed. Seneste afsluttede oversigt bevares.
+            </Text>
+            {clearError ? <Text style={{ color: theme.colors.danger, fontWeight: "700" }}>{clearError}</Text> : null}
+            <Pressable disabled={clearing} onPress={() => void clearSession()} style={({ pressed }) => ({ minHeight: 52, borderRadius: 14, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,123,114,0.48)", backgroundColor: "rgba(255,123,114,0.12)", opacity: pressed || clearing ? 0.6 : 1 })}>
+              <Text style={{ color: theme.colors.danger, fontWeight: "900" }}>{clearing ? "Rydder…" : "Ryd session"}</Text>
+            </Pressable>
+            <Pressable disabled={clearing} onPress={() => setShowClearConfirmation(false)} style={({ pressed }) => ({ minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}>
+              <Text style={{ color: theme.colors.accentMuted, fontWeight: "800" }}>Annuller</Text>
+            </Pressable>
+          </ActionOverlay>
+        ) : null}
       </Screen>
     </Background>
   );

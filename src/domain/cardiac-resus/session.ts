@@ -16,6 +16,8 @@ export type ArrestEventType =
   | "free_note"
   | "session_ended";
 
+export type ShockRhythm = "VF" | "pVT";
+
 export type ArrestEvent = {
   id: string;
   type: ArrestEventType;
@@ -25,6 +27,9 @@ export type ArrestEvent = {
   note?: string;
   source: "manual" | "system";
   correctedEventId?: string;
+  metadata?: {
+    shockRhythm?: ShockRhythm;
+  };
 };
 
 export type ArrestSession = {
@@ -40,6 +45,8 @@ export type ArrestSession = {
 export type ArrestSessionSummary = {
   durationSeconds: number;
   shockCount: number;
+  shockVfCount: number;
+  shockPvtCount: number;
   adrenalineCount: number;
   amiodaroneCount: number;
   airwayCount: number;
@@ -81,6 +88,25 @@ export function getCurrentCycleProgress(elapsedSeconds: number, cycleDurationSec
     ? cycleDurationSeconds
     : DEFAULT_CYCLE_DURATION_SECONDS;
   return (elapsed % duration) / duration;
+}
+
+export function getCycleRemainingSeconds(elapsedSeconds: number, cycleDurationSeconds: number): number {
+  const elapsed = Number.isFinite(elapsedSeconds) ? Math.max(0, Math.floor(elapsedSeconds)) : 0;
+  const duration = Number.isFinite(cycleDurationSeconds) && cycleDurationSeconds > 0
+    ? Math.floor(cycleDurationSeconds)
+    : DEFAULT_CYCLE_DURATION_SECONDS;
+  const position = elapsed % duration;
+  return position === 0 ? duration : duration - position;
+}
+
+export function isPrechargeCueActive(
+  elapsedSeconds: number,
+  cycleDurationSeconds: number,
+  cueWindowSeconds = 15,
+): boolean {
+  const window = Number.isFinite(cueWindowSeconds) ? Math.max(0, cueWindowSeconds) : 15;
+  const remaining = getCycleRemainingSeconds(elapsedSeconds, cycleDurationSeconds);
+  return remaining > 0 && remaining <= window;
 }
 
 export function findLatestAdrenalineEvent(session: ArrestSession): ArrestEvent | null {
@@ -125,6 +151,8 @@ export function summarizeArrestSession(session: ArrestSession): ArrestSessionSum
   return {
     durationSeconds: getElapsedSeconds(session.startedAt, session.endedAt ?? lastEventAt ?? session.startedAt),
     shockCount: count("shock_delivered"),
+    shockVfCount: session.events.filter((event) => event.type === "shock_delivered" && event.metadata?.shockRhythm === "VF").length,
+    shockPvtCount: session.events.filter((event) => event.type === "shock_delivered" && event.metadata?.shockRhythm === "pVT").length,
     adrenalineCount: count("adrenaline_given"),
     amiodaroneCount: count("amiodarone_given"),
     airwayCount: count("airway_event"),
@@ -157,6 +185,7 @@ export function addArrestEvent(
   now: TimeValue,
   note?: string,
   source: ArrestEvent["source"] = "manual",
+  metadata?: ArrestEvent["metadata"],
 ): ArrestSession {
   const startTimestamp = toTimestamp(session.startedAt) ?? 0;
   const requestedTimestamp = toTimestamp(now) ?? startTimestamp;
@@ -171,8 +200,25 @@ export function addArrestEvent(
     cycleNumber: getCycleNumber(elapsedSeconds, session.cycleDurationSeconds),
     source,
     ...(trimmedNote ? { note: trimmedNote } : {}),
+    ...(metadata ? { metadata } : {}),
   };
   return { ...session, events: [...session.events, event] };
+}
+
+export function addShockEvent(
+  session: ArrestSession,
+  rhythm: ShockRhythm,
+  now: TimeValue,
+): ArrestSession {
+  return addArrestEvent(session, "shock_delivered", now, undefined, "manual", { shockRhythm: rhythm });
+}
+
+export function addNoteEvent(
+  session: ArrestSession,
+  note: string,
+  now: TimeValue,
+): ArrestSession {
+  return note.trim() ? addArrestEvent(session, "free_note", now, note) : session;
 }
 
 export function endArrestSession(session: ArrestSession, now: TimeValue): ArrestSession {
@@ -180,4 +226,17 @@ export function endArrestSession(session: ArrestSession, now: TimeValue): Arrest
   const withEndEvent = addArrestEvent(session, "session_ended", now, undefined, "system");
   const endedAt = withEndEvent.events.at(-1)?.occurredAt ?? session.startedAt;
   return { ...withEndEvent, status: "ended", endedAt };
+}
+
+export function endArrestSessionWithOutcome(
+  session: ArrestSession,
+  outcome: "rosc" | "mors",
+  now: TimeValue,
+): ArrestSession {
+  return endArrestSession(addArrestEvent(session, outcome, now), now);
+}
+
+export function resumeArrestSession(session: ArrestSession): ArrestSession {
+  const { endedAt: _endedAt, ...rest } = session;
+  return { ...rest, status: "active" };
 }

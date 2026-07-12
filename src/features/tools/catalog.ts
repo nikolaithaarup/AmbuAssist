@@ -3,6 +3,7 @@ import type { Href } from "expo-router";
 export type ToolDefinition = { path: Extract<Href, string>; titleKey: any; descKey?: any };
 
 export const HOME_TOOLS: ToolDefinition[] = [
+  { path: "/tools/assessment-tools/cardiac-resus" as Extract<Href, string>, titleKey: "tool_cardiacResus_title", descKey: "tool_cardiacResus_desc" },
   { path: "/tools/destination", titleKey: "tool_dest_title", descKey: "tool_dest_desc" },
   { path: "/tools/weight-joule-dose", titleKey: "tool_weightDose_title", descKey: "tool_weightDose_desc" },
   { path: "/tools/trombolysis", titleKey: "tool_trombolysis_title", descKey: "tool_trombolysis_desc" },

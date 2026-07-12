@@ -66,6 +66,10 @@ export const en = {
   // =========================================================
 
   tool_bloodgas_title: "Blood gas & patterns",
+  tool_cardiacResus_title: "Cardiac arrest",
+  tool_cardiacResus_desc: "Time and event support during cardiac arrest.",
+  tool_cardiacResus_active_title: "Active cardiac arrest session",
+  tool_cardiacResus_summary_title: "Cardiac arrest summary",
   tool_bloodgas_desc:
     "Interpret blood gas, lactate, glucose and infection indicators",
 
@@ -1534,6 +1538,10 @@ export const da: typeof en = {
   // =========================================================
 
   tool_bloodgas_title: "Blodgas fortolkning",
+  tool_cardiacResus_title: "Hjertestop",
+  tool_cardiacResus_desc: "Tids- og hændelsesstøtte ved hjertestop.",
+  tool_cardiacResus_active_title: "Aktiv hjertestop-session",
+  tool_cardiacResus_summary_title: "Hjertestopoversigt",
   tool_bloodgas_desc: "Fortolk blodgas, laktat, glukose og infektionsparametre",
 
   tool_bvc_title: "BVC",

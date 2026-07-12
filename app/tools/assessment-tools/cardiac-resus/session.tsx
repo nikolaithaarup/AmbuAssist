@@ -201,9 +201,11 @@ export default function ActiveCardiacResusSession() {
         <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 28 }}>
           <Pressable onPress={() => { setActionError(""); setDialog("cycleReset"); }} style={({ pressed }) => ({ opacity: pressed ? 0.78 : 1 })}>
             <Card style={{ alignItems: "center", marginTop: 12, ...(cycleState.prechargeCueActive ? { backgroundColor: "rgba(255,123,114,0.15)", borderColor: "rgba(255,123,114,0.58)" } : {}) }}>
-              <Subtle>Forløbet tid</Subtle>
-              <Title style={{ fontSize: 46, fontVariant: ["tabular-nums"] }}>{formatElapsed(elapsed)}</Title>
               <Text style={{ color: theme.colors.text, fontWeight: "800", fontSize: 17 }}>HLR-cyklus {cycleState.cycleNumber}</Text>
+              <Title style={{ fontSize: 46, fontVariant: ["tabular-nums"] }}>{formatElapsed(cycleState.elapsedInCycleSeconds)}</Title>
+              <Text style={{ color: theme.colors.mutedText, fontSize: 14, fontWeight: "700", fontVariant: ["tabular-nums"] }}>
+                Forløbet tid: {formatElapsed(elapsed)}
+              </Text>
               <Subtle>{cycleState.remainingSeconds} sek. tilbage i cyklus</Subtle>
               {cycleState.prechargeCueActive ? (
                 <Text style={{ color: theme.colors.danger, fontWeight: "900", fontSize: 20 }}>Pre-charge nu</Text>

@@ -1,17 +1,23 @@
 import {
   addArrestEvent,
+  addShockEvent,
+  addNoteEvent,
   createArrestSession,
   endArrestSession,
+  endArrestSessionWithOutcome,
   findLatestAdrenalineEvent,
   getAdrenalineReminderSeconds,
   getCurrentCycleProgress,
   getCycleNumber,
+  getCycleRemainingSeconds,
   getElapsedSeconds,
   getSecondsSinceLastAdrenaline,
   isAdrenalineReminderDue,
+  isPrechargeCueActive,
+  resumeArrestSession,
   summarizeArrestSession,
 } from "./session";
-import { VISIBLE_EVENT_BUTTONS } from "../../features/cardiac-resus/presentation";
+import { formatArrestEventLabel, VISIBLE_EVENT_BUTTONS } from "../../features/cardiac-resus/presentation";
 
 const START = "2026-07-12T10:00:00.000Z";
 
@@ -103,6 +109,8 @@ describe("CardiacResus session utilities", () => {
     expect(summary).toEqual({
       durationSeconds: 240,
       shockCount: 2,
+      shockVfCount: 0,
+      shockPvtCount: 0,
       adrenalineCount: 1,
       amiodaroneCount: 1,
       airwayCount: 1,
@@ -118,6 +126,8 @@ describe("CardiacResus session utilities", () => {
     expect(summarizeArrestSession(session)).toEqual({
       durationSeconds: 0,
       shockCount: 0,
+      shockVfCount: 0,
+      shockPvtCount: 0,
       adrenalineCount: 0,
       amiodaroneCount: 0,
       airwayCount: 0,
@@ -128,9 +138,62 @@ describe("CardiacResus session utilities", () => {
     });
   });
 
-  test("default visible controls exclude legacy low-value events and include MORS", () => {
+  test("default visible controls contain only the approved six actions", () => {
     const types = VISIBLE_EVENT_BUTTONS.map((button) => button.type);
-    expect(types).not.toEqual(expect.arrayContaining(["rhythm_check", "cpr_cycle_marker", "physician_instruction"]));
-    expect(types).toContain("mors");
+    expect(types).toEqual(["shock_delivered", "adrenaline_given", "amiodarone_given", "rosc", "mors", "free_note"]);
+  });
+
+  test.each([
+    [0, 120, false],
+    [104, 16, false],
+    [105, 15, true],
+    [119, 1, true],
+    [120, 120, false],
+    [239, 1, true],
+    [-5, 120, false],
+    [NaN, 120, false],
+  ])("at %s seconds has %s remaining and pre-charge=%s", (elapsed, remaining, active) => {
+    expect(getCycleRemainingSeconds(elapsed, 120)).toBe(remaining);
+    expect(isPrechargeCueActive(elapsed, 120)).toBe(active);
+  });
+
+  test.each(["VF", "pVT"] as const)("stores and formats a %s shock", (rhythm) => {
+    const session = addShockEvent(createArrestSession(START), rhythm, "2026-07-12T10:01:00.000Z");
+    const shock = session.events.at(-1)!;
+    expect(shock.metadata).toEqual({ shockRhythm: rhythm });
+    expect(formatArrestEventLabel(shock)).toBe(`Stød afgivet · ${rhythm}`);
+    const summary = summarizeArrestSession(session);
+    expect(summary.shockCount).toBe(1);
+    expect(summary.shockVfCount).toBe(rhythm === "VF" ? 1 : 0);
+    expect(summary.shockPvtCount).toBe(rhythm === "pVT" ? 1 : 0);
+  });
+
+  test("stores trimmed note text and ignores an empty note", () => {
+    const session = createArrestSession(START);
+    const unchanged = addNoteEvent(session, "   ", "2026-07-12T10:01:00.000Z");
+    expect(unchanged).toBe(session);
+    const updated = addNoteEvent(session, "  Teamledernote  ", "2026-07-12T10:01:00.000Z");
+    expect(updated.events.at(-1)).toMatchObject({ type: "free_note", note: "Teamledernote" });
+  });
+
+  test.each(["rosc", "mors"] as const)("records %s and ends the session", (outcome) => {
+    const ended = endArrestSessionWithOutcome(createArrestSession(START), outcome, "2026-07-12T10:04:00.000Z");
+    expect(ended.status).toBe("ended");
+    expect(ended.endedAt).toBe("2026-07-12T10:04:00.000Z");
+    expect(summarizeArrestSession(ended).latestOutcome).toBe(outcome);
+  });
+
+  test("latest outcome follows chronological event order", () => {
+    let session = addArrestEvent(createArrestSession(START), "mors", "2026-07-12T10:03:00.000Z");
+    session = addArrestEvent(session, "rosc", "2026-07-12T10:04:00.000Z");
+    expect(summarizeArrestSession(session).latestOutcome).toBe("rosc");
+  });
+
+  test("resumes an ended session while preserving events and clearing endedAt", () => {
+    const ended = endArrestSession(createArrestSession(START), "2026-07-12T10:04:00.000Z");
+    const resumed = resumeArrestSession(ended);
+    expect(resumed.status).toBe("active");
+    expect(resumed.endedAt).toBeUndefined();
+    expect(resumed.events).toEqual(ended.events);
   });
 });

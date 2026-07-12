@@ -3,7 +3,7 @@ import type { ArrestEventType } from "../../domain/cardiac-resus/session";
 export const EVENT_LABELS_DA: Record<ArrestEventType, string> = {
   session_started: "Session startet",
   rhythm_check: "Rytmetjek registreret",
-  shock_delivered: "Stød givet",
+  shock_delivered: "Stød afgivet",
   cpr_cycle_marker: "HLR-cyklus registreret",
   adrenaline_given: "Adrenalin givet",
   amiodarone_given: "Amiodaron givet",
@@ -23,15 +23,22 @@ export const VISIBLE_EVENT_BUTTONS: {
   label: string;
   category: EventButtonCategory;
 }[] = [
-  { type: "shock_delivered", label: "Stød givet", category: "shock" },
+  { type: "shock_delivered", label: "Stød afgivet", category: "shock" },
   { type: "adrenaline_given", label: "Adrenalin givet", category: "medication" },
   { type: "amiodarone_given", label: "Amiodaron givet", category: "medication" },
-  { type: "airway_event", label: "Luftvej", category: "airway" },
   { type: "rosc", label: "ROSC", category: "outcome" },
   { type: "mors", label: "MORS", category: "outcome" },
-  { type: "transport_decision", label: "Transportbeslutning", category: "other" },
   { type: "free_note", label: "Note", category: "other" },
 ];
+
+export function formatArrestEventLabel(
+  event: { type: ArrestEventType; metadata?: { shockRhythm?: "VF" | "pVT" } },
+): string {
+  const label = event.type === "shock_delivered" ? "Stød afgivet" : EVENT_LABELS_DA[event.type];
+  return event.type === "shock_delivered" && event.metadata?.shockRhythm
+    ? `${label} · ${event.metadata.shockRhythm}`
+    : label;
+}
 
 export function formatElapsed(totalSeconds: number): string {
   const seconds = Number.isFinite(totalSeconds) ? Math.max(0, Math.floor(totalSeconds)) : 0;

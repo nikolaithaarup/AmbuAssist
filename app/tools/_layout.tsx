@@ -28,6 +28,9 @@ const TITLE_KEYS: Record<string, any> = {
   "/tools/assessment-tools/paediatric": "tool_paediatric_title",
   "/tools/assessment-tools/behavioural-geriatric":
     "tool_behaviouralGeriatric_title",
+  "/tools/assessment-tools/cardiac-resus": "tool_cardiacResus_title",
+  "/tools/assessment-tools/cardiac-resus/session": "tool_cardiacResus_active_title",
+  "/tools/assessment-tools/cardiac-resus/summary": "tool_cardiacResus_summary_title",
   "/tools/assessment-tools/bloodgas": "tool_bloodgas_title",
   "/tools/assessment-tools/bloodgas/acid-base": "tool_bg_acidbase_title",
   "/tools/assessment-tools/bloodgas/patterns": "tool_bg_patterns_title",

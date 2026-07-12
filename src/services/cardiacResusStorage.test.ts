@@ -17,7 +17,7 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
   },
 }));
 
-import { createArrestSession, endArrestSession } from "../domain/cardiac-resus/session";
+import { addAdrenalineTimerResetEvent, addArrestEvent, addCycleTimerResetEvent, createArrestSession, endArrestSession } from "../domain/cardiac-resus/session";
 import {
   clearActiveArrestSession,
   inspectActiveArrestSession,
@@ -74,5 +74,17 @@ describe("CardiacResus storage", () => {
     expect(result).toEqual({ activeDraftRemoved: false });
     expect(mockStorage.has(LATEST_KEY)).toBe(true);
     expect(mockStorage.has(ACTIVE_KEY)).toBe(true);
+  });
+
+  test("accepts and preserves timer reset event types and cycle metadata", () => {
+    let session = createArrestSession("2026-07-12T10:00:00.000Z");
+    session = addArrestEvent(session, "adrenaline_given", "2026-07-12T10:01:00.000Z");
+    session = addCycleTimerResetEvent(session, "2026-07-12T10:01:30.000Z");
+    session = addAdrenalineTimerResetEvent(session, "2026-07-12T10:02:00.000Z");
+    const parsed = parseStoredArrestSession(JSON.stringify(session));
+    expect(parsed?.events.map((event) => event.type)).toEqual([
+      "session_started", "adrenaline_given", "cycle_timer_reset", "adrenaline_timer_reset",
+    ]);
+    expect(parsed?.events[2].metadata).toEqual({ cycleNumberAtReset: 1 });
   });
 });

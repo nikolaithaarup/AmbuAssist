@@ -3,18 +3,18 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from "react-native";
 import {
   addArrestEvent,
+  addAdrenalineTimerResetEvent,
+  addCycleTimerResetEvent,
   addNoteEvent,
   addShockEvent,
   endArrestSession,
   endArrestSessionWithOutcome,
   getAdrenalineReminderSeconds,
-  getCurrentCycleProgress,
-  getCycleNumber,
-  getCycleRemainingSeconds,
+  findLatestAdrenalineTimerAnchorEvent,
+  getCycleDisplayState,
   getElapsedSeconds,
-  getSecondsSinceLastAdrenaline,
+  getSecondsSinceAdrenalineTimerAnchor,
   isAdrenalineReminderDue,
-  isPrechargeCueActive,
   type ArrestEventType,
   type ArrestSession,
 } from "../../../../src/domain/cardiac-resus/session";
@@ -34,7 +34,7 @@ const EVENT_BUTTON_COLORS: Record<EventButtonCategory, { background: string; bor
   other: { background: "rgba(255,255,255,0.06)", border: theme.colors.cardBorder },
 };
 
-type SessionDialog = "end" | "shock" | "rosc" | "mors" | "note" | "partial" | null;
+type SessionDialog = "end" | "shock" | "rosc" | "mors" | "note" | "cycleReset" | "adrenalineReset" | "partial" | null;
 
 export default function ActiveCardiacResusSession() {
   const router = useRouter();
@@ -68,11 +68,15 @@ export default function ActiveCardiacResusSession() {
   }, [router]);
 
   const elapsed = session ? getElapsedSeconds(session.startedAt, now) : 0;
-  const cycle = session ? getCycleNumber(elapsed, session.cycleDurationSeconds) : 1;
-  const progress = session ? getCurrentCycleProgress(elapsed, session.cycleDurationSeconds) : 0;
-  const cycleRemaining = session ? getCycleRemainingSeconds(elapsed, session.cycleDurationSeconds) : 120;
-  const prechargeCueActive = session ? isPrechargeCueActive(elapsed, session.cycleDurationSeconds) : false;
-  const secondsSinceAdrenaline = session ? getSecondsSinceLastAdrenaline(session, now) : null;
+  const cycleState = session ? getCycleDisplayState(session, now) : {
+    cycleNumber: 1,
+    elapsedInCycleSeconds: 0,
+    remainingSeconds: 120,
+    progress: 0,
+    prechargeCueActive: false,
+  };
+  const secondsSinceAdrenaline = session ? getSecondsSinceAdrenalineTimerAnchor(session, now) : null;
+  const adrenalineTimerAnchor = session ? findLatestAdrenalineTimerAnchorEvent(session) : null;
   const adrenalineReminderSeconds = session ? getAdrenalineReminderSeconds(session) : 240;
   const adrenalineReminderDue = session ? isAdrenalineReminderDue(session, now) : false;
   const adrenalineProgress = secondsSinceAdrenaline === null
@@ -129,6 +133,30 @@ export default function ActiveCardiacResusSession() {
     setDialog(null);
   };
 
+  const resetCycleTimer = () => {
+    setSession((current) => {
+      if (!current) return current;
+      const updated = addCycleTimerResetEvent(current, new Date());
+      sessionRef.current = updated;
+      saveActiveArrestSession(updated).catch(() => setActionError("Cyklustimeren kunne ikke gemmes lokalt."));
+      hapticToolOpen();
+      return updated;
+    });
+    setDialog(null);
+  };
+
+  const resetAdrenalineTimer = () => {
+    setSession((current) => {
+      if (!current) return current;
+      const updated = addAdrenalineTimerResetEvent(current, new Date());
+      sessionRef.current = updated;
+      saveActiveArrestSession(updated).catch(() => setActionError("Adrenalin-timeren kunne ikke gemmes lokalt."));
+      hapticToolOpen();
+      return updated;
+    });
+    setDialog(null);
+  };
+
   const finishSession = async (outcome?: "rosc" | "mors") => {
     const current = sessionRef.current;
     if (!current || ending) return;
@@ -171,41 +199,48 @@ export default function ActiveCardiacResusSession() {
     <Background>
       <Screen>
         <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 28 }}>
-          <Card style={{ alignItems: "center", marginTop: 12, ...(prechargeCueActive ? { backgroundColor: "rgba(255,123,114,0.15)", borderColor: "rgba(255,123,114,0.58)" } : {}) }}>
-            <Subtle>Forløbet tid</Subtle>
-            <Title style={{ fontSize: 46, fontVariant: ["tabular-nums"] }}>{formatElapsed(elapsed)}</Title>
-            <Text style={{ color: theme.colors.text, fontWeight: "800", fontSize: 17 }}>HLR-cyklus {cycle}</Text>
-            <Subtle>{cycleRemaining} sek. tilbage i cyklus</Subtle>
-            {prechargeCueActive ? (
-              <Text style={{ color: theme.colors.danger, fontWeight: "900", fontSize: 20 }}>Pre-charge nu</Text>
-            ) : null}
-            <View style={{ height: 8, width: "100%", borderRadius: 999, backgroundColor: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
-              <View style={{ height: "100%", width: `${progress * 100}%`, backgroundColor: theme.colors.accent }} />
-            </View>
-            <Subtle>Tidsmarkører og workflow-cues skal kontrolleres mod lokale retningslinjer og klinisk vurdering.</Subtle>
-          </Card>
+          <Pressable onPress={() => { setActionError(""); setDialog("cycleReset"); }} style={({ pressed }) => ({ opacity: pressed ? 0.78 : 1 })}>
+            <Card style={{ alignItems: "center", marginTop: 12, ...(cycleState.prechargeCueActive ? { backgroundColor: "rgba(255,123,114,0.15)", borderColor: "rgba(255,123,114,0.58)" } : {}) }}>
+              <Subtle>Forløbet tid</Subtle>
+              <Title style={{ fontSize: 46, fontVariant: ["tabular-nums"] }}>{formatElapsed(elapsed)}</Title>
+              <Text style={{ color: theme.colors.text, fontWeight: "800", fontSize: 17 }}>HLR-cyklus {cycleState.cycleNumber}</Text>
+              <Subtle>{cycleState.remainingSeconds} sek. tilbage i cyklus</Subtle>
+              {cycleState.prechargeCueActive ? (
+                <Text style={{ color: theme.colors.danger, fontWeight: "900", fontSize: 20 }}>Pre-charge nu</Text>
+              ) : null}
+              <View style={{ height: 8, width: "100%", borderRadius: 999, backgroundColor: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+                <View style={{ height: "100%", width: `${cycleState.progress * 100}%`, backgroundColor: theme.colors.accent }} />
+              </View>
+              <Subtle>Tryk for at justere cyklustimer.</Subtle>
+              <Subtle>Tidsmarkører og workflow-cues skal kontrolleres mod lokale retningslinjer og klinisk vurdering.</Subtle>
+            </Card>
+          </Pressable>
 
-          <Card style={adrenalineReminderDue ? { backgroundColor: "rgba(221,189,98,0.14)", borderColor: "rgba(221,189,98,0.48)" } : undefined}>
-            <Title style={{ fontSize: 18 }}>Adrenalin-timer</Title>
-            {secondsSinceAdrenaline === null ? (
-              <Subtle>Ingen adrenalin registreret endnu.</Subtle>
-            ) : (
-              <>
-                <Text style={{ color: theme.colors.text, fontWeight: "800", fontSize: 17 }}>
-                  Sidst registreret: {formatElapsed(secondsSinceAdrenaline)} siden
-                </Text>
-                <Subtle>Næste kontrol: ca. {formatElapsed(adrenalineReminderSeconds)} / 2 cyklusser</Subtle>
-                <View style={{ height: 8, width: "100%", borderRadius: 999, backgroundColor: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
-                  <View style={{ height: "100%", width: `${adrenalineProgress * 100}%`, backgroundColor: adrenalineReminderDue ? theme.colors.warn : theme.colors.accent }} />
-                </View>
-                {adrenalineReminderDue ? (
-                  <Text style={{ color: theme.colors.warn, fontWeight: "900", lineHeight: 20 }}>
-                    Kontrollér adrenalin efter lokale retningslinjer.
+          <Pressable disabled={secondsSinceAdrenaline === null} onPress={() => { setActionError(""); setDialog("adrenalineReset"); }} style={({ pressed }) => ({ opacity: pressed ? 0.78 : 1 })}>
+            <Card style={adrenalineReminderDue ? { backgroundColor: "rgba(221,189,98,0.14)", borderColor: "rgba(221,189,98,0.48)" } : undefined}>
+              <Title style={{ fontSize: 18 }}>Adrenalin-timer</Title>
+              {secondsSinceAdrenaline === null ? (
+                <Subtle>Ingen adrenalin registreret endnu. Timeren starter, når “Adrenalin givet” registreres.</Subtle>
+              ) : (
+                <>
+                  <Text style={{ color: theme.colors.text, fontWeight: "800", fontSize: 17 }}>
+                    Tid på timer: {formatElapsed(secondsSinceAdrenaline)}
                   </Text>
-                ) : null}
-              </>
-            )}
-          </Card>
+                  <Subtle>Næste kontrol: ca. {formatElapsed(adrenalineReminderSeconds)} / 2 cyklusser</Subtle>
+                  {adrenalineTimerAnchor?.type === "adrenaline_timer_reset" ? <Subtle>Timer nulstillet manuelt.</Subtle> : null}
+                  <View style={{ height: 8, width: "100%", borderRadius: 999, backgroundColor: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+                    <View style={{ height: "100%", width: `${adrenalineProgress * 100}%`, backgroundColor: adrenalineReminderDue ? theme.colors.warn : theme.colors.accent }} />
+                  </View>
+                  {adrenalineReminderDue ? (
+                    <Text style={{ color: theme.colors.warn, fontWeight: "900", lineHeight: 20 }}>
+                      Kontrollér adrenalin efter lokale retningslinjer.
+                    </Text>
+                  ) : null}
+                  <Subtle>Tryk for at nulstille timer.</Subtle>
+                </>
+              )}
+            </Card>
+          </Pressable>
 
           <Card>
             <Title style={{ fontSize: 19 }}>Registrér hændelse</Title>
@@ -267,6 +302,29 @@ export default function ActiveCardiacResusSession() {
                 {noteError ? <Text style={{ color: theme.colors.danger, fontWeight: "700" }}>{noteError}</Text> : null}
                 <Pressable onPress={saveNote} style={({ pressed }) => ({ minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 14, borderWidth: 1, borderColor: theme.colors.cardBorder, backgroundColor: theme.colors.accentSurface, opacity: pressed ? 0.65 : 1 })}><Text style={{ color: theme.colors.text, fontWeight: "900" }}>Gem note</Text></Pressable>
                 <Pressable onPress={() => setDialog(null)} style={({ pressed }) => ({ minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}><Text style={{ color: theme.colors.accentMuted, fontWeight: "800" }}>Annuller</Text></Pressable>
+              </>
+            ) : dialog === "cycleReset" || dialog === "adrenalineReset" ? (
+              <>
+                <Title style={{ fontSize: 21 }}>
+                  {dialog === "cycleReset" ? "Nulstil cyklustimer?" : "Nulstil adrenalin-timer?"}
+                </Title>
+                <Text style={{ color: theme.colors.text, lineHeight: 21 }}>
+                  {dialog === "cycleReset"
+                    ? "Brug kun dette, hvis I manuelt starter en ny HLR-cyklus eller har brug for at justere cyklustimeren. Den samlede hjertestoptid ændres ikke."
+                    : "Dette nulstiller kun timeren. Det registrerer ikke, at der er givet adrenalin."}
+                </Text>
+                {actionError ? <Text style={{ color: theme.colors.danger, fontWeight: "700" }}>{actionError}</Text> : null}
+                <Pressable
+                  onPress={dialog === "cycleReset" ? resetCycleTimer : resetAdrenalineTimer}
+                  style={({ pressed }) => ({ minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 14, borderWidth: 1, borderColor: theme.colors.cardBorder, backgroundColor: theme.colors.accentSurface, opacity: pressed ? 0.65 : 1 })}
+                >
+                  <Text style={{ color: theme.colors.text, fontWeight: "900" }}>
+                    {dialog === "cycleReset" ? "Nulstil cyklustimer" : "Nulstil timer"}
+                  </Text>
+                </Pressable>
+                <Pressable onPress={() => setDialog(null)} style={({ pressed }) => ({ minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}>
+                  <Text style={{ color: theme.colors.accentMuted, fontWeight: "800" }}>Annuller</Text>
+                </Pressable>
               </>
             ) : dialog === "partial" ? (
               <>

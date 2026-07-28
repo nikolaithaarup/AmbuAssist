@@ -10,6 +10,8 @@ jest.mock("firebase/firestore", () => ({
   doc: jest.fn(() => ({})),
   getDoc: (...args: unknown[]) => mockGetDoc(...args),
   getDocs: (...args: unknown[]) => mockGetDocs(...args),
+  query: jest.fn((value) => value),
+  where: jest.fn(() => ({})),
 }));
 
 jest.mock("../lib/firebase", () => ({ db: {} }), { virtual: true });
@@ -23,6 +25,7 @@ import {
   loadVisitationData,
 } from "./visitationService";
 import type { BackendVisitationData } from "./visitationSchema";
+import { getHospitalPhoneNumbersByCode } from "../dev/hospitalNumbers";
 
 const mockGetItem = AsyncStorage.getItem as jest.Mock;
 const mockSetItem = AsyncStorage.setItem as jest.Mock;
@@ -212,5 +215,20 @@ describe("offline and failure behavior", () => {
     mockGetDoc.mockRejectedValue(new Error("offline"));
 
     await expect(getReference("news2")).resolves.toBeNull();
+  });
+
+  test("uses complete bundled hospital numbers when Firestore is unavailable", async () => {
+    mockGetDocs.mockRejectedValue(new Error("offline"));
+
+    const numbers = await getHospitalPhoneNumbersByCode("BBH");
+
+    expect(numbers.length).toBeGreaterThan(1);
+    expect(numbers.every((item) => item.source === "bundled")).toBe(true);
+    expect(numbers).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ specialtyKey: "main" }),
+        expect.objectContaining({ specialtyKey: "kardiologi" }),
+      ]),
+    );
   });
 });

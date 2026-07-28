@@ -16,18 +16,42 @@ export function norm(s?: string | null) {
 }
 
 export type StreetRouteResult =
-  | { status: "single"; officialBydel: Bydel; message: ""; matchType: "exact" | "range" }
-  | { status: "needs_side" | "needs_house_number" | "still_ambiguous" | "not_found"; message: string };
+  | {
+      status: "single";
+      officialBydel: Bydel;
+      message: "";
+      matchType: "exact" | "range" | "postal";
+      matchedRule: RawStreetRow;
+    }
+  | { status: "needs_side" | "needs_house_number" | "needs_postal_code" | "still_ambiguous" | "not_found"; message: string };
 
 export function resolveStreetRoute(
   rows: RawStreetRow[],
   street: string,
   side: StreetSide | "" = "",
   houseNumber?: number,
+  postalCode?: string,
 ): StreetRouteResult {
   const matches = rows.filter((row) => norm(row.street) === norm(street));
   if (matches.length === 0) {
     return { status: "not_found", message: "Street was not found in the routing table." };
+  }
+  const unresolved = matches.find((row) => row.unresolvedReason);
+  if (unresolved) {
+    return {
+      status: "still_ambiguous",
+      message: unresolved.unresolvedReason ?? "Street routing is ambiguous.",
+    };
+  }
+
+  const constrainedByPostalCode = matches.some((row) => row.postalCodes?.length);
+  const postalMatches = postalCode
+    ? matches.filter(
+        (row) => !row.postalCodes?.length || row.postalCodes.includes(postalCode),
+      )
+    : matches;
+  if (postalCode && postalMatches.length === 0) {
+    return { status: "not_found", message: "Postal code is not covered by this street rule." };
   }
 
   const inferredSide: StreetSide | "" = houseNumber
@@ -36,8 +60,8 @@ export function resolveStreetRoute(
       : "odd"
     : side;
   const sideMatches = inferredSide
-    ? matches.filter((row) => !row.side || row.side === inferredSide)
-    : matches;
+    ? postalMatches.filter((row) => !row.side || row.side === inferredSide)
+    : postalMatches;
   const rangeMatches = houseNumber
     ? sideMatches.filter(
         (row) =>
@@ -56,8 +80,14 @@ export function resolveStreetRoute(
       message: "",
       matchType: matches.some((row) => row.from !== undefined || row.to !== undefined || row.side)
         ? "range"
-        : "exact",
+        : matches.some((row) => row.postalCodes?.length)
+          ? "postal"
+          : "exact",
+      matchedRule: rangeMatches[0],
     };
+  }
+  if (!postalCode && constrainedByPostalCode) {
+    return { status: "needs_postal_code", message: "Enter or confirm the postal code." };
   }
   if (houseNumber !== undefined && rangeMatches.length === 0) {
     return { status: "not_found", message: "House number is not covered by this street rule." };

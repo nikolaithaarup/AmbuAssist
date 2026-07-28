@@ -186,6 +186,10 @@ export type DetectedArea = {
   city?: string;
   district?: string;
   subregion?: string;
+  accuracyMeters?: number;
+  confidence?: "high" | "medium" | "poor";
+  locationSource?: "fresh" | "cached";
+  cachedAgeMs?: number;
 };
 
 export type StreetRow = {
@@ -194,6 +198,8 @@ export type StreetRow = {
   from?: number;
   to?: number;
   side?: StreetSide;
+  postalCodes?: string[];
+  unresolvedReason?: string;
 };
 
 export type RawStreetRow = {
@@ -202,4 +208,6 @@ export type RawStreetRow = {
   from?: number;
   to?: number;
   side?: StreetSide;
+  postalCodes?: string[];
+  unresolvedReason?: string;
 };

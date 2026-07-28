@@ -100,7 +100,7 @@ describe("destination helpers", () => {
     test("matches street names case-insensitively", () => {
       expect(
         resolveStreetRoute([{ street: "Testvej", bydel: "Valby" }], " testVEJ "),
-      ).toEqual({
+      ).toMatchObject({
         status: "single",
         officialBydel: "Valby (2500)",
         message: "",
@@ -156,6 +156,18 @@ describe("destination helpers", () => {
         status: "single",
         officialBydel: "Vanløse",
       });
+    });
+
+    test("requires and validates postal codes for postal splits", () => {
+      expect(resolveStreetRoute(STREET_SAMPLE, "Utterslevvej")).toMatchObject({
+        status: "needs_postal_code",
+      });
+      expect(
+        resolveStreetRoute(STREET_SAMPLE, "Utterslevvej", "", undefined, "2400"),
+      ).toMatchObject({ status: "single", officialBydel: "Bispebjerg" });
+      expect(
+        resolveStreetRoute(STREET_SAMPLE, "Utterslevvej", "", undefined, "9999"),
+      ).toMatchObject({ status: "not_found" });
     });
 
     test.each([

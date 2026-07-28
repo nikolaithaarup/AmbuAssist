@@ -9,10 +9,10 @@ describe("Danish address parsing", () => {
     expect(normalizeStreetName(input)).toBe(expected);
   });
 
-  test("extracts a number and suffix", () => {
-    expect(parseHouseNumber("Frederiksberg Allé 13B, 1621 København V")).toEqual({
+  test.each(["13A", "13B"])("extracts number and suffix from %s", (house) => {
+    expect(parseHouseNumber(`Frederiksberg Allé ${house}, 1621 København V`)).toEqual({
       number: 13,
-      suffix: "B",
+      suffix: house.slice(-1),
     });
   });
 
@@ -22,4 +22,3 @@ describe("Danish address parsing", () => {
     );
   });
 });
-

@@ -1,9 +1,38 @@
 export const LOCATION_POLICY = {
+  // Copenhagen blocks often contain parallel streets and visitation boundaries.
+  // Coordinates are therefore only a gate for reverse geocoding: the resolved
+  // address and routing rule remain authoritative.
+  highConfidenceAccuracyMeters: 40,
   maximumAccuracyMeters: 100,
   maximumCachedAgeMs: 120_000,
   timeoutMs: 12_000,
   retryCount: 1,
 } as const;
+
+export type LocationConfidence = "high" | "medium" | "poor";
+
+export function classifyLocationConfidence(input: {
+  accuracy: number | null;
+  hasStreet: boolean;
+  hasCompleteRoutingAddress: boolean;
+}): LocationConfidence {
+  if (
+    input.accuracy === null ||
+    input.accuracy > LOCATION_POLICY.maximumAccuracyMeters ||
+    !input.hasStreet
+  ) {
+    return "poor";
+  }
+
+  if (
+    input.accuracy <= LOCATION_POLICY.highConfidenceAccuracyMeters &&
+    input.hasCompleteRoutingAddress
+  ) {
+    return "high";
+  }
+
+  return "medium";
+}
 
 export type LocationCandidate = {
   timestamp: number;

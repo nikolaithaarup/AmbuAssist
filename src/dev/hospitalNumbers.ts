@@ -1,6 +1,6 @@
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../lib/firebase";
-import { HOSPITAL_MAIN_NUMBER_FALLBACK } from "../data/hospitalNumbersFallback";
+import { HOSPITAL_PHONE_FALLBACK } from "../data/hospitalNumbersFallback";
 
 export type HospitalPhoneNumber = {
   id: string;
@@ -12,6 +12,7 @@ export type HospitalPhoneNumber = {
   displayNameEn: string;
   phone: string;
   updatedAt?: string;
+  source: "firestore" | "bundled";
 };
 
 const COLLECTION_NAME = "hospital_numbers";
@@ -35,6 +36,7 @@ function mapDocToHospitalPhoneNumber(docSnap: any): HospitalPhoneNumber {
             : data.updatedAt,
         )
       : undefined,
+    source: "firestore",
   };
 }
 
@@ -73,21 +75,20 @@ export async function getHospitalPhoneNumbersByCode(
     if (__DEV__) console.warn("Using bundled hospital number fallback", error);
   }
 
-  const fallback = HOSPITAL_MAIN_NUMBER_FALLBACK.find(
-    ([code]) => code === hospitalCode,
-  );
-  if (!fallback) return [];
-  const [code, hospitalName, phone] = fallback;
-  return [{
-    id: `${code}_main_fallback`,
-    active: true,
-    hospitalCode: code,
-    hospitalName,
-    specialtyKey: "main",
-    displayNameDa: "Hovednummer (offline)",
-    displayNameEn: "Main number (offline)",
-    phone,
-  }];
+  return HOSPITAL_PHONE_FALLBACK
+    .filter((item) => item.hospitalCode === hospitalCode)
+    .map((item) => ({
+      ...item,
+      active: true,
+      source: "bundled" as const,
+      displayNameDa: `${item.displayNameDa} (offline)`,
+      displayNameEn: `${item.displayNameEn} (offline)`,
+    }))
+    .sort((a, b) => {
+      if (a.specialtyKey === "main" && b.specialtyKey !== "main") return 1;
+      if (b.specialtyKey === "main" && a.specialtyKey !== "main") return -1;
+      return a.displayNameDa.localeCompare(b.displayNameDa, "da");
+    });
 }
 
 export async function getHospitalPhoneNumber(

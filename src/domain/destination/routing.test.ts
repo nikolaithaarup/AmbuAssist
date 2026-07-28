@@ -104,6 +104,7 @@ describe("destination helpers", () => {
         status: "single",
         officialBydel: "Valby (2500)",
         message: "",
+        matchType: "exact",
       });
     });
 
@@ -143,14 +144,59 @@ describe("destination helpers", () => {
       });
     });
 
-    test("characterizes house-number ranges as currently ignored", () => {
+    test("routes explicit house-number ranges", () => {
       const rangedRows = [
         { street: "Rangevej", bydel: "Valby", from: 1, to: 49 },
         { street: "Rangevej", bydel: "Vanløse", from: 50, to: 100 },
       ];
       expect(resolveStreetRoute(rangedRows, "Rangevej")).toMatchObject({
-        status: "still_ambiguous",
+        status: "needs_house_number",
       });
+      expect(resolveStreetRoute(rangedRows, "Rangevej", "", 50)).toMatchObject({
+        status: "single",
+        officialBydel: "Vanløse",
+      });
+    });
+
+    test.each([
+      [1, "Vesterbro"],
+      [13, "Vesterbro"],
+      [14, "Frederiksberg (post-nr.)"],
+      [15, "Frederiksberg (post-nr.)"],
+      [101, "Frederiksberg (post-nr.)"],
+    ] as const)("routes Frederiksberg Allé %i", (number, expected) => {
+      expect(
+        resolveStreetRoute(STREET_SAMPLE, "Frederiksberg Allé", "", number),
+      ).toMatchObject({ status: "single", officialBydel: expected });
+    });
+
+    test.each([
+      ["Bellahøjvej", 106, "Brønshøj/Husum"],
+      ["Bellahøjvej", 107, "Vanløse"],
+      ["Bellahøjvej", 108, "Vanløse"],
+      ["Fanøgade", 24, "Østerbro - ydre"],
+      ["Fanøgade", 26, "Ryvang øst"],
+      ["Fanøgade", 27, "Østerbro - ydre"],
+      ["Fanøgade", 29, "Ryvang øst"],
+      ["Fuglsang Allé", 134, "Brønshøj/Husum"],
+      ["Fuglsang Allé", 135, "Vanløse"],
+      ["Fuglsang Allé", 136, "Vanløse"],
+      ["Gammel Kongevej", 10, "Indre by"],
+      ["Gammel Kongevej", 51, "Vesterbro"],
+    ] as const)("routes PDF boundary %s %i", (street, number, expected) => {
+      expect(resolveStreetRoute(STREET_SAMPLE, street, "", number)).toMatchObject({
+        status: "single",
+        officialBydel: expected,
+      });
+    });
+
+    test("all structured rows have valid non-overlapping bounds", () => {
+      for (const row of STREET_SAMPLE) {
+        if (row.from !== undefined && row.to !== undefined) {
+          expect(row.from).toBeLessThanOrEqual(row.to);
+        }
+        expect(mapStreetBydelToOfficialBydel(row.bydel)).not.toBe("");
+      }
     });
   });
 

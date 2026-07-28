@@ -9,36 +9,61 @@ import type {
   RawStreetRow,
   StreetSide,
 } from "./types";
+import { normalizeStreetName } from "./address";
 
 export function norm(s?: string | null) {
-  return String(s ?? "")
-    .toLowerCase()
-    .trim();
+  return normalizeStreetName(s);
 }
 
 export type StreetRouteResult =
-  | { status: "single"; officialBydel: Bydel; message: "" }
-  | { status: "needs_side" | "still_ambiguous" | "not_found"; message: string };
+  | { status: "single"; officialBydel: Bydel; message: ""; matchType: "exact" | "range" }
+  | { status: "needs_side" | "needs_house_number" | "still_ambiguous" | "not_found"; message: string };
 
 export function resolveStreetRoute(
   rows: RawStreetRow[],
   street: string,
   side: StreetSide | "" = "",
+  houseNumber?: number,
 ): StreetRouteResult {
   const matches = rows.filter((row) => norm(row.street) === norm(street));
   if (matches.length === 0) {
     return { status: "not_found", message: "Street was not found in the routing table." };
   }
 
-  const sideMatches = side
-    ? matches.filter((row) => !row.side || row.side === side)
+  const inferredSide: StreetSide | "" = houseNumber
+    ? houseNumber % 2 === 0
+      ? "even"
+      : "odd"
+    : side;
+  const sideMatches = inferredSide
+    ? matches.filter((row) => !row.side || row.side === inferredSide)
     : matches;
+  const rangeMatches = houseNumber
+    ? sideMatches.filter(
+        (row) =>
+          (row.from === undefined || houseNumber >= row.from) &&
+          (row.to === undefined || houseNumber <= row.to),
+      )
+    : sideMatches;
   const officialBydeler = Array.from(
-    new Set(sideMatches.map((row) => mapStreetBydelToOfficialBydel(row.bydel)).filter(Boolean)),
+    new Set(rangeMatches.map((row) => mapStreetBydelToOfficialBydel(row.bydel)).filter(Boolean)),
   ) as Bydel[];
 
   if (officialBydeler.length === 1) {
-    return { status: "single", officialBydel: officialBydeler[0], message: "" };
+    return {
+      status: "single",
+      officialBydel: officialBydeler[0],
+      message: "",
+      matchType: matches.some((row) => row.from !== undefined || row.to !== undefined || row.side)
+        ? "range"
+        : "exact",
+    };
+  }
+  if (houseNumber !== undefined && rangeMatches.length === 0) {
+    return { status: "not_found", message: "House number is not covered by this street rule." };
+  }
+  if (houseNumber === undefined && matches.some((row) => row.from !== undefined || row.to !== undefined)) {
+    return { status: "needs_house_number", message: "Enter or confirm the house number." };
   }
   if (!side && matches.some((row) => row.side)) {
     return { status: "needs_side", message: "Select odd or even house number." };
@@ -47,6 +72,24 @@ export function resolveStreetRoute(
 }
 
 const AMAGER_OFFICIAL_BYDEL: Bydel = "Amager (2300, 2770 og 2791)";
+
+const OFFICIAL_BYDELER: Bydel[] = [
+  AMAGER_OFFICIAL_BYDEL,
+  "Bispebjerg",
+  "Brønshøj/Husum",
+  "Christianshavn",
+  "Frederiksberg (post-nr.)",
+  "Indre by",
+  "Kgs. Enghave (2450)",
+  "Nørrebro - indre",
+  "Nørrebro - ydre",
+  "Ryvang øst",
+  "Valby (2500)",
+  "Vanløse",
+  "Vesterbro",
+  "Østerbro - indre",
+  "Østerbro - ydre",
+];
 
 const BYEN_ALIAS_TO_OFFICIAL_BYDEL: Record<string, Bydel> = {
   // Amager / København S / Tårnby / Dragør
@@ -294,6 +337,9 @@ export function mapStreetBydelToKommuneByen(bydel?: string): KommuneByen | "" {
  */
 export function mapStreetBydelToOfficialBydel(bydel?: string): Bydel | "" {
   const b = norm(bydel);
+
+  const alreadyOfficial = OFFICIAL_BYDELER.find((value) => norm(value) === b);
+  if (alreadyOfficial) return alreadyOfficial;
 
   if (
     b === "amager" ||

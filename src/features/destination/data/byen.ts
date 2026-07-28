@@ -1,4 +1,4 @@
-import type { Bydel, ByenCategory, HospitalCode, StreetRow } from "../types";
+import type { Bydel, ByenCategory, HospitalCode, RawStreetRow, StreetRow } from "../types";
 
 export const BYEN_CATEGORIES: { key: ByenCategory; labelKey: string }[] = [
   { key: "hospital", labelKey: "dest_cat_hospital" },
@@ -292,6 +292,9 @@ export function normalizeStreetRow(
   return {
     street: row.street.trim(),
     bydel: normalizedBydel,
+    from: row.from,
+    to: row.to,
+    side: row.side,
   };
 }
 
@@ -320,7 +323,7 @@ export function findStreetByName(
  * Raw sample copied from PDF wording.
  * You can keep the PDF names here, then normalize them before use.
  */
-export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
+export const STREET_SAMPLE_RAW: RawStreetRow[] = [
   { street: "Abel Catrines Gade", bydel: "Vesterbro" },
   { street: "Aberdeengade", bydel: "Indre Østerbro" },
   { street: "Abildgaardsgade", bydel: "Indre Østerbro" },
@@ -425,8 +428,10 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
   { street: "Bavnevang", bydel: "Brønshøj/Husum" },
   { street: "Bechgaardsgade", bydel: "Ryvang Øst" },
   { street: "Beldingvej", bydel: "Brønshøj/Husum" },
-  { street: "Bellahøjvej", bydel: "Brønshøj/Husum" },
-  { street: "Bellahøjvej (nr. 1–)", bydel: "Vanløse" },
+  // PDF p. 4: even 2-106 is Brønshøj/Husum; even 108+ and every odd number are Vanløse.
+  { street: "Bellahøjvej", bydel: "Brønshøj/Husum", from: 2, to: 106, side: "even" },
+  { street: "Bellahøjvej", bydel: "Vanløse", from: 108, side: "even" },
+  { street: "Bellahøjvej", bydel: "Vanløse", from: 1, side: "odd" },
   { street: "Bellisvej", bydel: "Vanløse" },
   { street: "Bellmans Plads", bydel: "Ryvang Øst" },
   { street: "Bellmansgade", bydel: "Ryvang Øst" },
@@ -532,8 +537,11 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
   { street: "Fakse Tværgade", bydel: "Indre Østerbro" },
   { street: "Faksingevej", bydel: "Brønshøj/Husum" },
   { street: "Falkevej", bydel: "Bispebjerg" },
-  { street: "Fanøgade", bydel: "Ydre Østerbro" },
-  { street: "Fanøgade (Nr. 26)", bydel: "Ryvang Øst" },
+  // PDF p. 13: 1-27 (odd) and 2-24 (even) are Ydre Østerbro; higher numbers are Ryvang Øst.
+  { street: "Fanøgade", bydel: "Ydre Østerbro", from: 1, to: 27, side: "odd" },
+  { street: "Fanøgade", bydel: "Ydre Østerbro", from: 2, to: 24, side: "even" },
+  { street: "Fanøgade", bydel: "Ryvang Øst", from: 29, side: "odd" },
+  { street: "Fanøgade", bydel: "Ryvang Øst", from: 26, side: "even" },
   { street: "Farumgade", bydel: "Ydre Nørrebro" },
   { street: "Farvergade", bydel: "Indre By" },
   { street: "Fenrisgade", bydel: "Ydre Nørrebro" },
@@ -567,8 +575,10 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
   { street: "Frederik V’s Vej", bydel: "Indre Østerbro" },
   { street: "Frederik VII’s Gade", bydel: "Indre Nørrebro" },
   { street: "Frederik VIII’s Palæ", bydel: "Indre By" },
-  { street: "Frederiksberg Allé (Nr. 1–13B)", bydel: "Vesterbro" },
-  { street: "Frederiksberg Allé (Nr. 15+)", bydel: "Frederiksberg" },
+  // PDF p. 14: odd 1-13B is Vesterbro; odd 15+ and every even number are Frederiksberg.
+  { street: "Frederiksberg Allé", bydel: "Vesterbro", from: 1, to: 13, side: "odd" },
+  { street: "Frederiksberg Allé", bydel: "Frederiksberg", from: 15, side: "odd" },
+  { street: "Frederiksberg Allé", bydel: "Frederiksberg", side: "even" },
   { street: "Frederiksberggade", bydel: "Indre By" },
   { street: "Frederiksborggade", bydel: "Indre By" },
   { street: "Frederiksborgvej", bydel: "Bispebjerg" },
@@ -590,9 +600,10 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
   { street: "Fuglagerv ej", bydel: "Vanløse" },
   { street: "Fuglefængevej", bydel: "Bispebjerg" },
   { street: "Fuglegavl", bydel: "Brønshøj/Husum" },
-  { street: "Fuglsang Allé (Nr. 2–134)", bydel: "Brønshøj/Husum" },
-  { street: "Fuglsang Allé (Nr. 136+)", bydel: "Vanløse" },
-  { street: "Fuglsang Allé (Nr. 1+)", bydel: "Indre Nørrebro" },
+  // PDF p. 15: even 2-134 is Brønshøj/Husum; even 136+ and every odd number are Vanløse.
+  { street: "Fuglsang Allé", bydel: "Brønshøj/Husum", from: 2, to: 134, side: "even" },
+  { street: "Fuglsang Allé", bydel: "Vanløse", from: 136, side: "even" },
+  { street: "Fuglsang Allé", bydel: "Vanløse", from: 1, side: "odd" },
   { street: "Fyensgade", bydel: "Indre Nørrebro" },
   { street: "Fyrbødervej", bydel: "Bispebjerg" },
   { street: "Fælledvej", bydel: "Indre Nørrebro" },
@@ -607,8 +618,9 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
   { street: "Gamle Gadelandet", bydel: "Brønshøj/Husum" },
   { street: "Gamle Carlsberg Vej", bydel: "Vesterbro" },
   { street: "Gammel Kalkbrænderivej", bydel: "Indre Østerbro" },
-  { street: "Gammel Kongevej (Nr. 2–10)", bydel: "Indre By" },
-  { street: "Gammel Kongevej (Nr. 1–51)", bydel: "Vesterbro" },
+  // PDF p. 16: the listed city sections are even 2-10 and odd 1-51.
+  { street: "Gammel Kongevej", bydel: "Indre By", from: 2, to: 10, side: "even" },
+  { street: "Gammel Kongevej", bydel: "Vesterbro", from: 1, to: 51, side: "odd" },
   { street: "Gammel Mønt", bydel: "Indre By" },
   { street: "Gammel Strand", bydel: "Indre By" },
   { street: "Gammel Torv", bydel: "Indre By" },

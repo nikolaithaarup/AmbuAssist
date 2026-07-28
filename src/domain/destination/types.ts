@@ -180,6 +180,8 @@ export type Kommune = KommuneNord | KommuneMidt | KommuneSyd | KommuneByen;
 
 export type DetectedArea = {
   label: string;
+  street?: string;
+  houseNumber?: number;
   postcode?: string;
   city?: string;
   district?: string;

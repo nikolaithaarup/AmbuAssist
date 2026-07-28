@@ -1,5 +1,6 @@
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../lib/firebase";
+import { HOSPITAL_MAIN_NUMBER_FALLBACK } from "../data/hospitalNumbersFallback";
 
 export type HospitalPhoneNumber = {
   id: string;
@@ -45,23 +46,48 @@ export async function getHospitalPhoneNumbersByCode(
     where("hospitalCode", "==", hospitalCode),
   );
 
-  const snap = await getDocs(q);
+  try {
+    const snap = await Promise.race([
+      getDocs(q),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("HOSPITAL_PHONE_TIMEOUT")), 5_000),
+      ),
+    ]);
 
-  const rows = snap.docs
-    .map(mapDocToHospitalPhoneNumber)
-    .filter((item) => item.active && !!item.phone);
+    const rows = snap.docs
+      .map(mapDocToHospitalPhoneNumber)
+      .filter((item) => item.active && !!item.phone);
 
-  rows.sort((a, b) => {
-    if (a.specialtyKey === "main" && b.specialtyKey !== "main") return 1;
-    if (b.specialtyKey === "main" && a.specialtyKey !== "main") return -1;
+    rows.sort((a, b) => {
+      if (a.specialtyKey === "main" && b.specialtyKey !== "main") return 1;
+      if (b.specialtyKey === "main" && a.specialtyKey !== "main") return -1;
 
-    const aName = a.displayNameDa || a.displayNameEn || a.specialtyKey;
-    const bName = b.displayNameDa || b.displayNameEn || b.specialtyKey;
+      const aName = a.displayNameDa || a.displayNameEn || a.specialtyKey;
+      const bName = b.displayNameDa || b.displayNameEn || b.specialtyKey;
 
-    return aName.localeCompare(bName, "da");
-  });
+      return aName.localeCompare(bName, "da");
+    });
 
-  return rows;
+    if (rows.length > 0) return rows;
+  } catch (error) {
+    if (__DEV__) console.warn("Using bundled hospital number fallback", error);
+  }
+
+  const fallback = HOSPITAL_MAIN_NUMBER_FALLBACK.find(
+    ([code]) => code === hospitalCode,
+  );
+  if (!fallback) return [];
+  const [code, hospitalName, phone] = fallback;
+  return [{
+    id: `${code}_main_fallback`,
+    active: true,
+    hospitalCode: code,
+    hospitalName,
+    specialtyKey: "main",
+    displayNameDa: "Hovednummer (offline)",
+    displayNameEn: "Main number (offline)",
+    phone,
+  }];
 }
 
 export async function getHospitalPhoneNumber(

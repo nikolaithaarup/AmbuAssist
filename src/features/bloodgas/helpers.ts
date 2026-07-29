@@ -1,8 +1,21 @@
 import type { BloodGasFormValues, ParsedBloodGasValues } from "./types";
+import { VGAS_FIELDS } from "./fieldConfig";
 
 export function parseNumber(value: string): number | undefined {
-  const n = parseFloat(String(value).replace(",", ".").trim());
-  return Number.isNaN(n) ? undefined : n;
+  const normalized = String(value).trim().replace(",", ".");
+  if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(normalized)) return undefined;
+  const n = Number(normalized);
+  return Number.isFinite(n) ? n : undefined;
+}
+
+export type FieldValidation = "empty" | "invalid" | "implausible" | "valid";
+
+export function validateBloodGasField(key: keyof BloodGasFormValues, raw: string): FieldValidation {
+  if (!raw.trim()) return "empty";
+  const value = parseNumber(raw);
+  if (value === undefined) return "invalid";
+  const { min, max } = VGAS_FIELDS[key].plausible;
+  return value < min || value > max ? "implausible" : "valid";
 }
 
 export function makeEmptyBloodGasFormValues(): BloodGasFormValues {
@@ -34,27 +47,17 @@ export function makeEmptyBloodGasFormValues(): BloodGasFormValues {
 export function parseBloodGasFormValues(
   values: BloodGasFormValues,
 ): ParsedBloodGasValues {
+  const safe = (key: keyof BloodGasFormValues) =>
+    validateBloodGasField(key, values[key]) === "valid" ? parseNumber(values[key]) : undefined;
   return {
-    ph: parseNumber(values.ph),
-    pco2: parseNumber(values.pco2),
-    po2: parseNumber(values.po2),
-    hco3: parseNumber(values.hco3),
-    be: parseNumber(values.be),
-    so2: parseNumber(values.so2),
+    ph: safe("ph"), pco2: safe("pco2"), po2: safe("po2"), hco3: safe("hco3"), be: safe("be"), so2: safe("so2"),
 
-    na: parseNumber(values.na),
-    k: parseNumber(values.k),
-    ca: parseNumber(values.ca),
-    cl: parseNumber(values.cl),
+    na: safe("na"), k: safe("k"), ca: safe("ca"), cl: safe("cl"),
 
-    glucose: parseNumber(values.glucose),
-    lactate: parseNumber(values.lactate),
-    urea: parseNumber(values.urea),
-    creatinine: parseNumber(values.creatinine),
+    glucose: safe("glucose"), lactate: safe("lactate"), urea: safe("urea"), creatinine: safe("creatinine"),
 
-    hct: parseNumber(values.hct),
-    hgb: parseNumber(values.hgb),
+    hct: safe("hct"), hgb: safe("hgb"),
 
-    crp: parseNumber(values.crp),
+    crp: safe("crp"),
   };
 }

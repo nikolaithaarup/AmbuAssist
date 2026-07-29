@@ -15,7 +15,7 @@ import { Card, Row, Screen, Subtle, Title } from "../../../../src/ui/Ui";
 import { theme } from "../../../../src/ui/theme";
 
 import { BloodGasInputCard } from "../../../../src/features/bloodgas/BloodGasInputCard";
-import { BloodGasPageHeader, ResultSection } from "../../../../src/features/bloodgas/BloodGasPresentation";
+import { BloodGasPageHeader, BloodGasProvenance, ResultSection } from "../../../../src/features/bloodgas/BloodGasPresentation";
 import { SourceItem } from "../../../../src/features/bloodgas/SourceItem";
 import {
   makeEmptyBloodGasFormValues,
@@ -172,6 +172,11 @@ export default function InfectionPage() {
             )}
           </Card>
 
+          <Card style={{ gap: 8 }}>
+            <Text style={{ color: theme.colors.warn, fontWeight: "900" }}>{lang === "da" ? "CRP / infektion" : "CRP / infection"}</Text>
+            <Subtle style={{ lineHeight: 20 }}>{lang === "da" ? "CRP skal vurderes sammen med klinik, vitalparametre, varighed, fokus og lokale retningslinjer. CRP alene kan ikke afgøre infektionstype eller behandlingsbehov." : "CRP must be assessed with clinical context, vital signs, duration, focus, and local guidelines. CRP alone cannot determine infection type or treatment need."}</Subtle>
+          </Card>
+          <BloodGasProvenance />
           <CollapsibleCard
             title={t("tool_disclaimer_title")}
             subtitle={

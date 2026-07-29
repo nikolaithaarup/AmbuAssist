@@ -1,210 +1,88 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
+import type { ScrollView as ScrollViewType } from "react-native";
 
+import { findInfectionPatterns } from "../../../../src/domain/bloodgas/infection";
+import { findBloodGasPatterns } from "../../../../src/domain/bloodgas/patterns";
+import { BloodGasPageHeader, BloodGasProvenance, ResultSection, VgasPo2Caution } from "../../../../src/features/bloodgas/BloodGasPresentation";
+import { GroupedBloodGasInput } from "../../../../src/features/bloodgas/GroupedBloodGasInput";
+import { getFormSummary } from "../../../../src/features/bloodgas/inputGroups";
+import { makeEmptyBloodGasFormValues, parseBloodGasFormValues } from "../../../../src/features/bloodgas/helpers";
+import type { BloodGasFieldKey, BloodGasFormValues } from "../../../../src/features/bloodgas/types";
 import { useT } from "../../../../src/i18n/useT";
 import type { Key } from "../../../../src/i18n/strings";
-import { findBloodGasPatterns } from "../../../../src/domain/bloodgas/patterns";
 import { useSettings } from "../../../../src/state/settings";
-import {
-  getReference,
-  type ReferenceDoc,
-} from "../../../../src/services/referenceService";
 import { Background } from "../../../../src/ui/Background";
 import { CollapsibleCard } from "../../../../src/ui/CollapsibleCard";
-import { Card, Screen, Subtle, Title } from "../../../../src/ui/Ui";
+import { Card, PrimaryButton, Screen, Subtle, Title } from "../../../../src/ui/Ui";
 import { theme } from "../../../../src/ui/theme";
-
-import { BloodGasInputCard } from "../../../../src/features/bloodgas/BloodGasInputCard";
-import { BloodGasPageHeader, ResultSection } from "../../../../src/features/bloodgas/BloodGasPresentation";
-import { SourceItem } from "../../../../src/features/bloodgas/SourceItem";
-import {
-  makeEmptyBloodGasFormValues,
-  parseBloodGasFormValues,
-} from "../../../../src/features/bloodgas/helpers";
-import type {
-  BloodGasFieldKey,
-  BloodGasFormValues,
-} from "../../../../src/features/bloodgas/types";
-
-const PATTERN_FIELDS: BloodGasFieldKey[] = [
-  "ph",
-  "pco2",
-  "po2",
-  "hco3",
-  "be",
-  "so2",
-  "na",
-  "k",
-  "ca",
-  "cl",
-  "glucose",
-  "lactate",
-  "urea",
-  "creatinine",
-  "hct",
-  "hgb",
-];
 
 export default function PatternsPage() {
   const { t } = useT();
   const { settings } = useSettings();
-  const lang = settings.language === "da" ? "da" : "en";
-
-  const [reference, setReference] = useState<ReferenceDoc | null>(null);
-  const [form, setForm] = useState<BloodGasFormValues>(
-    makeEmptyBloodGasFormValues(),
-  );
-
-  useEffect(() => {
-    let active = true;
-
-    async function loadReference() {
-      const data = await getReference("bg_patterns");
-      if (!active) return;
-      setReference(data);
-    }
-
-    loadReference();
-
-    return () => {
-      active = false;
-    };
-  }, []);
+  const isDa = settings.language === "da";
+  const scrollRef = useRef<ScrollViewType>(null);
+  const [form, setForm] = useState<BloodGasFormValues>(makeEmptyBloodGasFormValues());
+  const [submitted, setSubmitted] = useState(false);
 
   const values = useMemo(() => parseBloodGasFormValues(form), [form]);
+  const formSummary = useMemo(() => getFormSummary(form), [form]);
+  const patternCodes = useMemo(() => findBloodGasPatterns(values), [values]);
+  const infectionCodes = useMemo(() => findInfectionPatterns(values, false, false), [values]);
+  const patterns = patternCodes.map((code) => t(code as Key));
+  const infection = infectionCodes.map((code) => t(code as Key));
+  const acidBase = patternCodes.filter((code) => /acidosis|dka/.test(code)).map((code) => t(code as Key));
+  const electrolytesRenal = patternCodes.filter((code) => /hyponatremia|renal/.test(code)).map((code) => t(code as Key));
 
-  const handleChange = (key: BloodGasFieldKey, value: string) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
+  const onChange = (key: BloodGasFieldKey, value: string) => {
+    setForm((current) => ({ ...current, [key]: value }));
+    setSubmitted(false);
   };
 
-  const patterns = useMemo(
-    () => findBloodGasPatterns(values).map((code) => t(code as Key)),
-    [values, t],
-  );
+  const assess = () => {
+    setSubmitted(true);
+    if (!formSummary.issues) setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 50);
+  };
 
-  const fallbackSources = [
-    {
-      id: "bg-patterns-fallback-1",
-      title: t("bg_patterns_source_fallback_1_title"),
-      subtitle: t("bg_patterns_source_fallback_1_sub"),
-    },
-    {
-      id: "bg-patterns-fallback-2",
-      title: t("bg_patterns_source_fallback_2_title"),
-      subtitle: t("bg_patterns_source_fallback_2_sub"),
-    },
-  ];
+  const concise = [...patterns, ...infection].slice(0, 4);
+  if (concise.length < 4 && (form.po2.trim() || form.so2.trim())) concise.push(isDa ? "pO₂ på VGAS kan ikke bruges alene til sikker vurdering af iltning." : "VGAS pO₂ cannot assess oxygenation reliably on its own.");
 
-  const renderedSources: Array<{
-    id: string;
-    title: string;
-    subtitle: string;
-    url?: string;
-  }> =
-    reference?.sources && reference.sources.length > 0
-      ? reference.sources.map((source) => ({
-          id: source.id,
-          title: source.title[lang],
-          subtitle: source.subtitle[lang],
-          url: (source as any).url?.[lang] ?? (source as any).url ?? undefined,
-        }))
-      : fallbackSources;
+  return <Background><Screen>
+    <BloodGasPageHeader title={t("tool_bg_patterns_title")} subtitle={isDa ? "Manuel VGAS-indtastning og mønsterstøtte" : "Manual VGAS entry and pattern support"} />
+    <ScrollView ref={scrollRef} contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
+      <GroupedBloodGasInput values={form} onChange={onChange} isDa={isDa} />
 
-  return (
-    <Background>
-      <Screen>
-        <BloodGasPageHeader title={t("tool_bg_patterns_title")} subtitle={t("tool_bg_patterns_desc")} />
+      <Card style={{ padding: 12, gap: 7 }}>
+        <Text style={{ color: theme.colors.text, fontWeight: "900" }}>{isDa ? "Indtastede værdier" : "Entered values"}</Text>
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+          <Text style={{ color: theme.colors.accentMuted, fontWeight: "700" }}>{isDa ? `Indtastet: ${formSummary.entered} værdier` : `Entered: ${formSummary.entered} values`}</Text>
+          {formSummary.issues ? <Text style={{ color: theme.colors.danger, fontWeight: "800" }}>{isDa ? `${formSummary.issues} skal kontrolleres` : `${formSummary.issues} need checking`}</Text> : null}
+        </View>
+      </Card>
 
-        <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
-          <BloodGasInputCard
-            values={form}
-            onChange={handleChange}
-            fields={PATTERN_FIELDS}
-            title={lang === "da" ? "Blodgas- og laboratorieværdier" : "Blood gas and laboratory values"}
-          />
+      <PrimaryButton label={isDa ? "Vurder VGAS" : "Assess VGAS"} onPress={assess} />
+      {submitted && formSummary.issues ? <Card style={{ borderColor: theme.colors.danger }}><Text style={{ color: theme.colors.danger, fontWeight: "800" }}>{isDa ? "Ret værdier markeret med fejl før vurdering." : "Correct values marked with errors before assessment."}</Text></Card> : null}
 
-          <Card>
-            <Title>{t("result")}</Title>
+      {submitted && !formSummary.issues ? <View style={{ gap: 12 }}>
+        <Card style={{ gap: 12 }}>
+          <Title style={{ fontSize: 20 }}>{isDa ? "Samlet vurdering" : "Overall assessment"}</Title>
+          {concise.length ? concise.map((item, index) => <Text key={`${item}-${index}`} style={{ color: theme.colors.text, lineHeight: 21 }}>• {item}</Text>) : <Subtle>{isDa ? "Ingen tydelige mønsterfund ud fra de indtastede værdier. Kontrollér værdier, enheder og klinik." : "No clear pattern findings from the entered values. Check values, units, and clinical context."}</Subtle>}
+        </Card>
 
-            {patterns.length === 0 ? (
-              <Text
-                style={{
-                  color: theme.colors.mutedText,
-                  marginTop: 10,
-                  lineHeight: 20,
-                }}
-              >
-                {t("bg_patterns_enter_values")}
-              </Text>
-            ) : (
-              <ResultSection label={lang === "da" ? "Understøttende fund" : "Supporting findings"} tone="caution">
-              <View style={{ gap: 8 }}>
-                {patterns.map((pattern, i) => (
-                  <Text
-                    key={`${pattern}-${i}`}
-                    style={{
-                      color: theme.colors.mutedText,
-                      lineHeight: 20,
-                    }}
-                  >
-                    • {pattern}
-                  </Text>
-                ))}
-              </View>
-              </ResultSection>
-            )}
-          </Card>
+        <CollapsibleCard title={isDa ? "Syre-base" : "Acid-base"} subtitle={isDa ? "Respiratoriske og metaboliske mønstre" : "Respiratory and metabolic patterns"}>
+          <ResultSection label={isDa ? "Fund" : "Findings"}>{acidBase.length ? acidBase.map((item, i) => <Text key={i} style={{ color: theme.colors.mutedText, lineHeight: 20 }}>• {item}</Text>) : <Subtle>{isDa ? "Ingen tydelige syre-base-mønstre i de indtastede værdier." : "No clear acid-base patterns in the entered values."}</Subtle>}</ResultSection>
+        </CollapsibleCard>
 
-          <CollapsibleCard
-            title={t("tool_disclaimer_title")}
-            subtitle={
-              reference?.disclaimer[lang] ?? t("bg_patterns_disclaimer")
-            }
-          >
-            <View
-              style={{
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: theme.colors.cardBorder,
-                padding: 12,
-                backgroundColor: "rgba(255,209,102,0.10)",
-              }}
-            >
-              <Text
-                style={{
-                  color: theme.colors.text,
-                  fontSize: 14,
-                  lineHeight: 20,
-                }}
-              >
-                {reference?.disclaimer[lang] ?? t("bg_patterns_disclaimer")}
-              </Text>
-            </View>
-          </CollapsibleCard>
+        <CollapsibleCard title={isDa ? "VGAS og iltning" : "VGAS and oxygenation"} subtitle={isDa ? "Venøs pO₂ kræver forsigtig fortolkning" : "Venous pO₂ requires cautious interpretation"}><VgasPo2Caution /></CollapsibleCard>
 
-          <CollapsibleCard
-            title={t("tool_sources_title")}
-            subtitle={
-              reference?.sourcesSub[lang] ?? t("bg_patterns_sources_sub")
-            }
-          >
-            <Subtle style={{ marginBottom: 8 }}>
-              {reference?.sourcesSub[lang] ?? t("bg_patterns_sources_sub")}
-            </Subtle>
+        <CollapsibleCard title={isDa ? "Elektrolytter og nyretal" : "Electrolytes and renal markers"} subtitle={isDa ? "Detaljer fra mønsterstøtten" : "Pattern-support details"}>{electrolytesRenal.map((item, i) => <Text key={i} style={{ color: theme.colors.mutedText, lineHeight: 20 }}>• {item}</Text>)}<Subtle>{isDa ? "Vurder sammen med tidligere værdier, væskestatus, øvrige prøver og klinik." : "Assess with previous values, hydration status, other tests, and clinical context."}</Subtle></CollapsibleCard>
 
-            <View style={{ marginTop: 8 }}>
-              {renderedSources.map((source) => (
-                <SourceItem
-                  key={source.id}
-                  title={source.title}
-                  subtitle={source.subtitle}
-                  url={source.url}
-                />
-              ))}
-            </View>
-          </CollapsibleCard>
-        </ScrollView>
-      </Screen>
-    </Background>
-  );
+        <CollapsibleCard title={isDa ? "CRP / infektion" : "CRP / infection"} subtitle={isDa ? "CRP er uspecifik" : "CRP is nonspecific"}>
+          {infection.length ? infection.map((item, i) => <Text key={i} style={{ color: theme.colors.mutedText, lineHeight: 20 }}>• {item}</Text>) : <Subtle>{isDa ? "CRP alene kan ikke afgøre infektionstype eller behandlingsbehov." : "CRP alone cannot determine infection type or treatment need."}</Subtle>}
+        </CollapsibleCard>
+      </View> : null}
+
+      <BloodGasProvenance />
+    </ScrollView>
+  </Screen></Background>;
 }

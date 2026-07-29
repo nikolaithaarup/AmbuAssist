@@ -16,6 +16,11 @@ export type VisitationCategory = {
 export type StreetSampleRow = {
   street: string;
   bydel: string;
+  from?: number;
+  to?: number;
+  side?: "odd" | "even";
+  postalCodes?: string[];
+  unresolvedReason?: string;
 };
 
 export type BackendVisitationData = {
@@ -128,6 +133,8 @@ const streetSampleSchema = z
     from: z.number().optional(),
     to: z.number().optional(),
     side: z.enum(["odd", "even"]).optional(),
+    postalCodes: z.array(z.string().regex(/^\d{4}$/)).optional(),
+    unresolvedReason: z.string().optional(),
   })
   .passthrough();
 

@@ -14,6 +14,17 @@ import {
 import { useT } from "../../src/i18n/useT";
 import { resolveHospitalCode } from "../../src/domain/destination/resolution";
 import {
+  parseHouseNumber,
+  parseStreetName,
+} from "../../src/domain/destination/address";
+import {
+  classifyLocationConfidence,
+  isAcceptableCachedLocation,
+  isAccurateEnough,
+  LOCATION_POLICY,
+  withTimeout,
+} from "../../src/domain/destination/locationPolicy";
+import {
   getReference,
   type ReferenceDoc,
 } from "../../src/services/referenceService";
@@ -49,7 +60,6 @@ import type {
 
 import {
   hospitalLabel,
-  mapByenGeocodeToOfficialBydel,
   mapRegionCityToKommune,
   norm,
   resolveStreetRoute,
@@ -64,6 +74,23 @@ import { chip } from "../../src/features/destination/ui";
 
 type TranslateFn = (key: any) => string;
 type PhoneOptionValue = string;
+type LocationStatus =
+  | "initial"
+  | "permission"
+  | "locating"
+  | "resolving"
+  | "matched"
+  | "permission_denied"
+  | "services_disabled"
+  | "timeout"
+  | "poor_accuracy"
+  | "geocode_failed"
+  | "not_found"
+  | "error";
+
+const MANUAL_HOSPITAL_CODES: HospitalCode[] = [
+  "AMH", "BBH", "FRH", "GEH", "GLO", "HEH", "HVH", "NOH", "RH",
+];
 
 const VISITATION_BYEN_URL =
   "https://drive.google.com/file/d/18gnYztqAw40PxuGuP5N_iEDmksYk-eIX/view?usp=sharing";
@@ -437,22 +464,34 @@ export default function DestinationTool() {
   const [selectedStreet, setSelectedStreet] = useState<string>("");
   const [streetSide, setStreetSide] = useState<StreetSide | "">("");
   const [streetRouteNeedsSide, setStreetRouteNeedsSide] = useState(false);
+  const [streetRouteNeedsHouseNumber, setStreetRouteNeedsHouseNumber] = useState(false);
+  const [streetRouteNeedsPostalCode, setStreetRouteNeedsPostalCode] = useState(false);
   const [streetRouteMessage, setStreetRouteMessage] = useState("");
 
   const [byenCat, setByenCat] = useState<ByenCategory>("hospital");
   const [regCat, setRegCat] = useState<RegionCategory>("akutmodtagelse");
 
   const [streetQ, setStreetQ] = useState("");
+  const [houseNumberQ, setHouseNumberQ] = useState("");
+  const [postalCodeQ, setPostalCodeQ] = useState("");
   const [kommuneQ, setKommuneQ] = useState("");
 
   const [detectingLocation, setDetectingLocation] = useState(false);
   const [detectedArea, setDetectedArea] = useState<DetectedArea | null>(null);
+  const [locationStatus, setLocationStatus] = useState<LocationStatus>("initial");
+  const [locationMessage, setLocationMessage] = useState("");
+  const [diagnostics, setDiagnostics] = useState<Record<string, unknown>>({});
+  const locationRequestRef = useRef(0);
+  const locationInFlightRef = useRef(false);
+  const locationMountedRef = useRef(true);
 
   const [streetOpen, setStreetOpen] = useState(false);
   const [kommuneOpen, setKommuneOpen] = useState(false);
   const [byenCatOpen, setByenCatOpen] = useState(false);
   const [regCatOpen, setRegCatOpen] = useState(false);
   const [phoneDropdownOpen, setPhoneDropdownOpen] = useState(false);
+  const [manualHospitalOpen, setManualHospitalOpen] = useState(false);
+  const [manualHospitalCode, setManualHospitalCode] = useState<HospitalCode | "">("");
 
   const [hospitalPhones, setHospitalPhones] = useState<HospitalPhoneNumber[]>(
     [],
@@ -476,7 +515,16 @@ export default function DestinationTool() {
 
   const GEOCODE_COOLDOWN_MS = 20_000;
   const GEOCODE_BLOCK_MS = 90_000;
-  const GEOCODE_CACHE_DISTANCE = 0.0025;
+  const GEOCODE_CACHE_DISTANCE = 0.0005;
+
+  useEffect(() => {
+    locationMountedRef.current = true;
+    return () => {
+      locationMountedRef.current = false;
+      locationRequestRef.current += 1;
+      locationInFlightRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -516,11 +564,14 @@ export default function DestinationTool() {
     setByenCatOpen(false);
     setRegCatOpen(false);
     setPhoneDropdownOpen(false);
+    setManualHospitalOpen(false);
   };
 
   const resetStreetRouteState = () => {
     setStreetSide("");
     setStreetRouteNeedsSide(false);
+    setStreetRouteNeedsHouseNumber(false);
+    setStreetRouteNeedsPostalCode(false);
     setStreetRouteMessage("");
   };
 
@@ -530,10 +581,16 @@ export default function DestinationTool() {
     setKommune("");
     setSelectedStreet("");
     setStreetQ("");
+    setHouseNumberQ("");
+    setPostalCodeQ("");
     setKommuneQ("");
     resetStreetRouteState();
     setHospitalPhones([]);
     setSelectedPhoneId("");
+    setManualHospitalCode("");
+    setLocationStatus("initial");
+    setLocationMessage("");
+    setDiagnostics({});
     closeAllDropdowns();
   };
 
@@ -759,8 +816,19 @@ export default function DestinationTool() {
     ];
   }, [lang, regionCategoryOptions]);
 
-  const applyStreetRoute = (street: string, side: StreetSide | "" = "") => {
-    const result = resolveStreetRoute(STREET_SAMPLE, street, side);
+  const applyStreetRoute = (
+    street: string,
+    side: StreetSide | "" = "",
+    houseNumber?: number,
+    postalCode?: string,
+  ) => {
+    const result = resolveStreetRoute(
+      STREET_SAMPLE,
+      street,
+      side,
+      houseNumber,
+      postalCode,
+    );
 
     setDetectedArea(null);
     setSelectedStreet(street);
@@ -769,20 +837,51 @@ export default function DestinationTool() {
     if (result.status === "single") {
       setBydel(result.officialBydel);
       setStreetRouteNeedsSide(false);
+      setStreetRouteNeedsHouseNumber(false);
+      setStreetRouteNeedsPostalCode(false);
       setStreetRouteMessage("");
+      setDiagnostics((current) => ({
+        ...current,
+        normalizedStreetKey: norm(street),
+        matchStatus: result.status,
+        matchType: result.matchType,
+        matchedRule: result.matchedRule,
+        destinationDistrict: result.officialBydel,
+      }));
       return true;
     }
 
-    if (result.status === "needs_side" || result.status === "still_ambiguous") {
+    if (
+      result.status === "needs_side" ||
+      result.status === "needs_house_number" ||
+      result.status === "needs_postal_code" ||
+      result.status === "still_ambiguous"
+    ) {
       setBydel("");
-      setStreetRouteNeedsSide(true);
+      setStreetRouteNeedsSide(result.status === "needs_side");
+      setStreetRouteNeedsHouseNumber(result.status === "needs_house_number");
+      setStreetRouteNeedsPostalCode(result.status === "needs_postal_code");
       setStreetRouteMessage(result.message);
+      setDiagnostics((current) => ({
+        ...current,
+        normalizedStreetKey: norm(street),
+        matchStatus: result.status,
+        matchFailure: result.message,
+      }));
       return false;
     }
 
     setBydel("");
     setStreetRouteNeedsSide(false);
+    setStreetRouteNeedsHouseNumber(false);
+    setStreetRouteNeedsPostalCode(false);
     setStreetRouteMessage(result.message);
+    setDiagnostics((current) => ({
+      ...current,
+      normalizedStreetKey: norm(street),
+      matchStatus: result.status,
+      matchFailure: result.message,
+    }));
     return false;
   };
 
@@ -792,10 +891,23 @@ export default function DestinationTool() {
     const street = selectedStreet || streetQ;
     if (!street) return;
 
-    applyStreetRoute(street, side);
+    const number = Number(houseNumberQ);
+    applyStreetRoute(
+      street,
+      side,
+      Number.isFinite(number) && number > 0 ? number : undefined,
+      postalCodeQ || undefined,
+    );
   };
 
   const resolvedHospital = useMemo<ResolvedHospital | null>(() => {
+    if (manualHospitalCode) {
+      return {
+        code: manualHospitalCode,
+        label: hospitalLabel(t as TranslateFn, manualHospitalCode),
+        extra: lang === "da" ? "Valgt manuelt" : "Selected manually",
+      };
+    }
     if (area === "byen") {
       if (!bydel) return null;
 
@@ -846,6 +958,8 @@ export default function DestinationTool() {
     t,
     BYEN_MAP,
     REGION_ALL_MAP,
+    manualHospitalCode,
+    lang,
   ]);
 
   useEffect(() => {
@@ -971,14 +1085,23 @@ export default function DestinationTool() {
     setPhoneDropdownOpen(false);
     setStreetSide("");
     setStreetRouteNeedsSide(false);
+    setStreetRouteNeedsHouseNumber(false);
     setStreetRouteMessage("");
 
+    const parsedStreet = parseStreetName(undefined, text) ?? text;
     const exactStreet = STREET_SAMPLE.find(
-      (row) => norm(row.street) === norm(text),
+      (row) => norm(row.street) === norm(parsedStreet),
     );
 
     if (exactStreet) {
-      applyStreetRoute(exactStreet.street, "");
+      const parsed = parseHouseNumber(text);
+      if (parsed.number) setHouseNumberQ(String(parsed.number));
+      applyStreetRoute(
+        exactStreet.street,
+        "",
+        parsed.number,
+        postalCodeQ || undefined,
+      );
     } else {
       setSelectedStreet("");
       setBydel("");
@@ -1004,31 +1127,41 @@ export default function DestinationTool() {
   };
 
   const detectLocation = async () => {
-    if (detectingLocation) return;
+    if (locationInFlightRef.current) return;
+    locationInFlightRef.current = true;
+    const requestId = ++locationRequestRef.current;
 
     try {
       setDetectingLocation(true);
+      setLocationMessage("");
+      setLocationStatus("permission");
 
       const servicesEnabled = await Location.hasServicesEnabledAsync();
+      if (!locationMountedRef.current || requestId !== locationRequestRef.current) return;
       if (!servicesEnabled) {
-        Alert.alert(
-          t("dest_loc_error_title"),
-          "Location services are turned off on this device.",
+        setLocationStatus("services_disabled");
+        setLocationMessage(
+          lang === "da"
+            ? "Placeringstjenester er slået fra. Slå dem til, prøv igen, eller vælg hospital manuelt."
+            : "Location services are off. Enable them, retry, or choose a hospital manually.",
         );
         return;
       }
 
       const existingPerm = await Location.getForegroundPermissionsAsync();
+      if (!locationMountedRef.current || requestId !== locationRequestRef.current) return;
       let granted = existingPerm.granted;
 
       if (!granted) {
         const requestedPerm =
           await Location.requestForegroundPermissionsAsync();
+        if (!locationMountedRef.current || requestId !== locationRequestRef.current) return;
         granted = requestedPerm.granted;
       }
 
       if (!granted) {
-        Alert.alert(t("dest_loc_perm_title"), t("dest_loc_perm_body"));
+        setLocationStatus("permission_denied");
+        setLocationMessage(t("dest_loc_perm_body"));
         return;
       }
 
@@ -1040,25 +1173,92 @@ export default function DestinationTool() {
         }
       }
 
-      let pos = await Location.getLastKnownPositionAsync({
-        maxAge: 60_000,
-        requiredAccuracy: 200,
-      });
+      setLocationStatus("locating");
+      const locationStartedAt = Date.now();
+      let pos: Location.LocationObject | null = null;
+      let locationSource: "fresh" | "cached" = "fresh";
+      let timedOut = false;
+
+      for (let attempt = 0; attempt <= LOCATION_POLICY.retryCount; attempt += 1) {
+        try {
+          const candidate = await withTimeout(
+            Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
+          );
+          pos = candidate;
+          if (isAccurateEnough(candidate)) break;
+        } catch (error) {
+          timedOut = String((error as Error)?.message).includes("LOCATION_TIMEOUT");
+        }
+      }
+
+      if (!pos || !isAccurateEnough(pos)) {
+        const cached = await Location.getLastKnownPositionAsync({
+          maxAge: LOCATION_POLICY.maximumCachedAgeMs,
+          requiredAccuracy: LOCATION_POLICY.maximumAccuracyMeters,
+        });
+        if (cached && isAcceptableCachedLocation(cached)) {
+          pos = cached;
+          locationSource = "cached";
+        }
+      }
 
       if (!pos) {
-        pos = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.Balanced,
-        });
+        setLocationStatus(timedOut ? "timeout" : "error");
+        setLocationMessage(
+          timedOut
+            ? "GPS svarede ikke inden for 12 sekunder. Prøv igen, eller vælg hospital manuelt."
+            : t("dest_loc_error_body"),
+        );
+        return;
       }
+
+      if (!isAccurateEnough(pos)) {
+        setDiagnostics({
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+          accuracyMeters: pos.coords.accuracy,
+          locationSource,
+          cachedAgeMs:
+            locationSource === "cached"
+              ? Math.max(0, Date.now() - pos.timestamp)
+              : 0,
+          locationDurationMs: Date.now() - locationStartedAt,
+          confidence: "poor",
+          matchFailure: "GPS accuracy exceeds the safe reverse-geocoding gate.",
+        });
+        setLocationStatus("poor_accuracy");
+        setLocationMessage(
+          `GPS-usikkerheden er ${Math.round(pos.coords.accuracy ?? 0)} meter. Det er for upræcist til sikker gadevisitation.`,
+        );
+        return;
+      }
+
+      if (requestId !== locationRequestRef.current) return;
 
       const lat = pos.coords.latitude;
       const lon = pos.coords.longitude;
+      const accuracy = pos.coords.accuracy;
+      const cachedAgeMs =
+        locationSource === "cached" ? Math.max(0, Date.now() - pos.timestamp) : 0;
 
-      const geocoded = await getReverseGeocodeSafely(lat, lon);
+      setDiagnostics({
+        latitude: lat,
+        longitude: lon,
+        accuracyMeters: accuracy,
+        locationSource,
+        cachedAgeMs,
+        locationDurationMs: Date.now() - locationStartedAt,
+      });
+
+      setLocationStatus("resolving");
+      const reverseGeocodeStartedAt = Date.now();
+      const geocoded = await withTimeout(getReverseGeocodeSafely(lat, lon));
+      if (!locationMountedRef.current || requestId !== locationRequestRef.current) return;
       const first = geocoded[0];
 
       if (!first) {
-        Alert.alert(t("dest_loc_notfound_title"), t("dest_loc_notfound_body"));
+        setLocationStatus("geocode_failed");
+        setLocationMessage(t("dest_loc_notfound_body"));
         return;
       }
 
@@ -1066,23 +1266,52 @@ export default function DestinationTool() {
       const city = String(first.city ?? "").trim();
       const district = String(first.district ?? "").trim();
       const subregion = String(first.subregion ?? "").trim();
-      const street = String(first.street ?? "").trim();
+      const formattedAddress = String(first.formattedAddress ?? "").trim();
+      const street = parseStreetName(first.street, formattedAddress) ?? "";
+      const parsedNumber = parseHouseNumber(first.name, formattedAddress);
       const region = String(first.region ?? "").trim();
       const name = String(first.name ?? "").trim();
 
-      setDetectedArea({
+      setDiagnostics((current) => ({
+        ...current,
+        reverseGeocodeDurationMs: Date.now() - reverseGeocodeStartedAt,
+        rawReverseGeocode: first,
+        parsedStreet: street,
+        parsedHouseNumber: parsedNumber.number,
+        parsedPostalCode: postcode,
+        normalizedStreetKey: norm(street),
+      }));
+
+      const detectedAreaBase = {
         label: [street || name, district, city || subregion || region, postcode]
           .filter(Boolean)
           .join(", "),
+        street,
+        houseNumber: parsedNumber.number,
         postcode,
         city: city || subregion || region,
         district,
         subregion: subregion || region,
-      });
+        accuracyMeters: accuracy ?? undefined,
+        locationSource,
+        cachedAgeMs,
+      } as const;
 
       if (area === "byen") {
         if (street) {
-          const routeResult = resolveStreetRoute(STREET_SAMPLE, street);
+          const routeResult = resolveStreetRoute(
+            STREET_SAMPLE,
+            street,
+            "",
+            parsedNumber.number,
+            postcode || undefined,
+          );
+          const confidence = classifyLocationConfidence({
+            accuracy,
+            hasStreet: true,
+            hasCompleteRoutingAddress: routeResult.status === "single",
+          });
+          setDetectedArea({ ...detectedAreaBase, confidence });
 
           if (routeResult.status === "single") {
             setSelectedStreet(street);
@@ -1090,47 +1319,74 @@ export default function DestinationTool() {
             setStreetSide("");
             setBydel(routeResult.officialBydel);
             setStreetRouteNeedsSide(false);
+            setStreetRouteNeedsHouseNumber(false);
+            setStreetRouteNeedsPostalCode(false);
             setStreetRouteMessage("");
+            setDiagnostics((current) => ({
+              ...current,
+              confidence,
+              matchStatus: routeResult.status,
+              matchType: routeResult.matchType,
+              matchedRule: routeResult.matchedRule,
+              destinationDistrict: routeResult.officialBydel,
+            }));
             closeAllDropdowns();
+            setLocationStatus("matched");
+            setLocationMessage(
+              confidence === "medium"
+                ? "Adressen blev fundet, men GPS-præcisionen er middel. Kontrollér den viste adresse, eller ret den i gadesøgningen."
+                : "",
+            );
             return;
           }
 
           if (
             routeResult.status === "needs_side" ||
+            routeResult.status === "needs_house_number" ||
+            routeResult.status === "needs_postal_code" ||
             routeResult.status === "still_ambiguous"
           ) {
             setSelectedStreet(street);
             setStreetQ(street);
             setStreetSide("");
             setBydel("");
-            setStreetRouteNeedsSide(true);
+            setStreetRouteNeedsSide(routeResult.status === "needs_side");
+            setStreetRouteNeedsHouseNumber(
+              routeResult.status === "needs_house_number",
+            );
+            setStreetRouteNeedsPostalCode(
+              routeResult.status === "needs_postal_code",
+            );
             setStreetRouteMessage(routeResult.message);
+            setLocationStatus("not_found");
+            setSearchVisible(true);
+            setLocationMessage(
+              routeResult.status === "needs_house_number"
+                ? "Gaden er genkendt, men husnummeret mangler. Indtast det nedenfor, eller vælg hospital manuelt."
+                : routeResult.status === "needs_postal_code"
+                  ? "Gaden er genkendt, men postnummeret skal bekræftes. Indtast det nedenfor, eller vælg hospital manuelt."
+                  : "Gaden er genkendt, men PDF-reglen giver ikke ét sikkert resultat. Ret adressen, eller vælg hospital manuelt.",
+            );
             closeAllDropdowns();
             return;
           }
-        }
 
-        const officialBydel = mapByenGeocodeToOfficialBydel({
-          postcode,
-          city,
-          district,
-          subregion,
-          region,
-        });
-
-        if (officialBydel) {
-          setBydel(officialBydel);
-          setSelectedStreet("");
-          setStreetQ("");
-          resetStreetRouteState();
-          closeAllDropdowns();
-        } else {
-          Alert.alert(
-            t("dest_area_notmapped_title"),
-            `Could not map Byen location.\n\ncity: ${city}\ndistrict: ${district}\nsubregion: ${subregion}\nregion: ${region}\npostcode: ${postcode}`,
+          setLocationStatus("not_found");
+          setSearchVisible(true);
+          setLocationMessage(
+            "Vejen findes ikke i den officielle visitationstabel. Søg adressen manuelt, prøv GPS igen, eller vælg hospital manuelt.",
           );
+          return;
         }
+
+        setDetectedArea({ ...detectedAreaBase, confidence: "poor" });
+        setLocationStatus("not_found");
+        setSearchVisible(true);
+        setLocationMessage(
+          "Adresseopslaget returnerede ingen vej. Prøv GPS igen, indtast adressen manuelt, eller vælg hospital manuelt.",
+        );
       } else {
+        setDetectedArea(detectedAreaBase);
         const mappedKommune = mapRegionCityToKommune(
           city || district || subregion || region,
           subregion || region,
@@ -1140,45 +1396,43 @@ export default function DestinationTool() {
           setKommune(mappedKommune);
           setKommuneQ(mappedKommune);
           closeAllDropdowns();
+          setLocationStatus("matched");
         } else {
-          Alert.alert(
-            t("dest_kommune_notmapped_title"),
-            `Could not map location.\n\ncity: ${city}\ndistrict: ${district}\nsubregion: ${subregion}\nregion: ${region}\npostcode: ${postcode}`,
-          );
+          setLocationStatus("not_found");
+          setLocationMessage(t("dest_kommune_notmapped_body"));
         }
       }
     } catch (error: any) {
+      if (!locationMountedRef.current || requestId !== locationRequestRef.current) return;
       const message = String(error?.message ?? "");
       const lower = message.toLowerCase();
 
-      if (
+      if (message.includes("LOCATION_TIMEOUT")) {
+        setLocationStatus("timeout");
+        setLocationMessage("Adresseopslaget tog for lang tid. Prøv igen, eller vælg hospital manuelt.");
+      } else if (
         lower.includes("rate limit") ||
         lower.includes("too many requests") ||
         lower.includes("midlertidigt blokeret")
       ) {
-        Alert.alert(
-          t("dest_loc_error_title"),
-          "iPhone-adresseopslag er midlertidigt begrænset. Vent lidt og prøv igen.",
-        );
+        setLocationStatus("geocode_failed");
+        setLocationMessage("Adresseopslaget er midlertidigt begrænset. Vent lidt, prøv igen, eller vælg manuelt.");
       } else if (lower.includes("cooldown") || lower.includes("på cooldown")) {
-        Alert.alert(t("dest_loc_error_title"), message);
+        setLocationStatus("geocode_failed");
+        setLocationMessage(message);
       } else {
-        Alert.alert(
-          t("dest_loc_error_title"),
-          message || t("dest_loc_error_body"),
-        );
+        setLocationStatus("error");
+        setLocationMessage(message || t("dest_loc_error_body"));
       }
 
-      console.log("detectLocation error:", error);
+      if (__DEV__) console.warn("GPS detection failed:", message);
     } finally {
-      setDetectingLocation(false);
+      if (locationMountedRef.current && requestId === locationRequestRef.current) {
+        setDetectingLocation(false);
+      }
+      locationInFlightRef.current = false;
     }
   };
-
-  useEffect(() => {
-    detectLocation();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [area]);
 
   const showNeurokirNote = area === "region" && regCat === "neurokirurgi";
   const neurokirNote = t("dest_region_neurokir_note" as any);
@@ -1285,7 +1539,7 @@ export default function DestinationTool() {
                 style={chip(searchVisible)}
               >
                 <Text style={{ color: theme.colors.text, fontWeight: "900" }}>
-                  🔍
+                  {area === "byen" ? "🔍 Søg vej eller adresse" : "🔍"}
                 </Text>
               </Pressable>
             </View>
@@ -1348,8 +1602,15 @@ export default function DestinationTool() {
               {detectingLocation ? (
                 <View style={{ gap: 8, alignItems: "center" }}>
                   <ActivityIndicator />
-                  <Text style={{ color: theme.colors.mutedText }}>
-                    {t("dest_detecting")}
+                  <Text
+                    accessibilityLiveRegion="polite"
+                    style={{ color: theme.colors.mutedText }}
+                  >
+                    {locationStatus === "permission"
+                      ? "Anmoder om adgang til placering…"
+                      : locationStatus === "resolving"
+                        ? "Finder vej og visitationsområde…"
+                        : "Finder din placering…"}
                   </Text>
                 </View>
               ) : detectedArea ? (
@@ -1370,6 +1631,21 @@ export default function DestinationTool() {
                   <Text style={{ color: theme.colors.mutedText }}>
                     {detectedArea.label || t("dest_unknown_area")}
                   </Text>
+
+                  {detectedArea.accuracyMeters !== undefined && (
+                    <Text style={{ color: theme.colors.mutedText }}>
+                      GPS-præcision: ±{Math.round(detectedArea.accuracyMeters)} m
+                      {detectedArea.confidence
+                        ? ` • ${
+                            detectedArea.confidence === "high"
+                              ? "høj sikkerhed"
+                              : detectedArea.confidence === "medium"
+                                ? "middel sikkerhed – kontrollér adressen"
+                                : "lav sikkerhed"
+                          }`
+                        : ""}
+                    </Text>
+                  )}
 
                   {area === "byen" && !!bydel && (
                     <Text style={{ color: theme.colors.mutedText }}>
@@ -1401,15 +1677,37 @@ export default function DestinationTool() {
                 </View>
               ) : (
                 <Text style={{ color: theme.colors.mutedText }}>
-                  GPS forsøger automatisk at finde din lokation.
+                  Brug din aktuelle placering til at finde visitationsområdet, eller vælg hospital manuelt.
                 </Text>
               )}
+
+              {!!locationMessage && !detectingLocation && (
+                <Text
+                  accessibilityLiveRegion="assertive"
+                  style={{ color: theme.colors.warn, fontWeight: "700", lineHeight: 20 }}
+                >
+                  {locationMessage}
+                </Text>
+              )}
+
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Find visitation med GPS"
+                disabled={detectingLocation}
+                onPress={detectLocation}
+                style={chip(false)}
+              >
+                <Text style={{ color: theme.colors.text, fontWeight: "900", textAlign: "center" }}>
+                  {detectedArea ? "Prøv GPS igen" : "Find med GPS"}
+                </Text>
+              </Pressable>
             </View>
           </Card>
 
           {searchVisible && area === "byen" && (
             <Card>
               <View style={{ gap: 14 }}>
+                <Title>Søg vej eller adresse</Title>
                 <View style={{ gap: 8 }}>
                   <Label>{t("dest_street_placeholder")}</Label>
                   <Input
@@ -1434,12 +1732,79 @@ export default function DestinationTool() {
                     setStreetQ(value);
                     setStreetOpen(false);
                     setStreetSide("");
-                    applyStreetRoute(value, "");
+                    applyStreetRoute(
+                      value,
+                      "",
+                      undefined,
+                      postalCodeQ || undefined,
+                    );
                   }}
                   placeholder={t("dest_street_placeholder")}
                   emptyText={t("dest_no_street_match")}
                   maxHeight={220}
                 />
+
+                {!!selectedStreet && (
+                  <View style={{ gap: 8 }}>
+                    <Label>Husnummer</Label>
+                    <Input
+                      value={houseNumberQ}
+                      onChangeText={(value) => {
+                        const digits = value.replace(/\D/g, "");
+                        setHouseNumberQ(digits);
+                        const number = Number(digits);
+                        applyStreetRoute(
+                          selectedStreet,
+                          "",
+                          Number.isFinite(number) && number > 0 ? number : undefined,
+                          postalCodeQ || undefined,
+                        );
+                      }}
+                      placeholder="Fx 15"
+                      keyboardType="number-pad"
+                    />
+                    {streetRouteNeedsHouseNumber && (
+                      <Text style={{ color: theme.colors.warn, fontWeight: "700" }}>
+                        Denne gade er opdelt efter husnummer.
+                      </Text>
+                    )}
+                  </View>
+                )}
+
+                {!!selectedStreet && (
+                  <View style={{ gap: 8 }}>
+                    <Label>Postnummer (valgfrit)</Label>
+                    <Input
+                      value={postalCodeQ}
+                      onChangeText={(value) => {
+                        const digits = value.replace(/\D/g, "").slice(0, 4);
+                        setPostalCodeQ(digits);
+                        const number = Number(houseNumberQ);
+                        applyStreetRoute(
+                          selectedStreet,
+                          streetSide,
+                          Number.isFinite(number) && number > 0
+                            ? number
+                            : undefined,
+                          digits || undefined,
+                        );
+                      }}
+                      placeholder="Fx 2000"
+                      keyboardType="number-pad"
+                    />
+                    {streetRouteNeedsPostalCode && (
+                      <Text style={{ color: theme.colors.warn, fontWeight: "700" }}>
+                        Denne gade er opdelt efter postnummer.
+                      </Text>
+                    )}
+                  </View>
+                )}
+
+                {!!streetRouteMessage && !streetRouteNeedsSide && (
+                  <Text style={{ color: theme.colors.warn, fontWeight: "700" }}>
+                    {streetRouteMessage}
+                  </Text>
+                )}
 
                 {streetRouteNeedsSide && (
                   <View
@@ -1549,12 +1914,54 @@ export default function DestinationTool() {
           )}
 
           <Card>
+            <Title>{lang === "da" ? "Vælg hospital manuelt" : "Choose hospital manually"}</Title>
+            <Text style={{ color: theme.colors.mutedText, marginTop: 8, marginBottom: 10 }}>
+              {lang === "da"
+                ? "Tilgængelig uanset GPS, tilladelser og adresseopslag."
+                : "Available regardless of GPS, permissions, and address lookup."}
+            </Text>
+            <SimpleDropdown<HospitalCode>
+              label={lang === "da" ? "Hospital" : "Hospital"}
+              value={manualHospitalCode}
+              open={manualHospitalOpen}
+              onToggle={() => {
+                closeAllDropdowns();
+                setManualHospitalOpen((value) => !value);
+              }}
+              options={MANUAL_HOSPITAL_CODES}
+              onSelect={(value) => {
+                setManualHospitalCode(value);
+                setManualHospitalOpen(false);
+              }}
+              renderValue={(value) => hospitalLabel(t as TranslateFn, value)}
+              renderOption={(value) => (
+                <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
+                  {hospitalLabel(t as TranslateFn, value)}
+                </Text>
+              )}
+              placeholder={lang === "da" ? "Vælg hospital" : "Choose hospital"}
+              maxHeight={260}
+            />
+            {!!manualHospitalCode && (
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => setManualHospitalCode("")}
+                style={[chip(false), { marginTop: 10 }]}
+              >
+                <Text style={{ color: theme.colors.text, fontWeight: "800", textAlign: "center" }}>
+                  Brug automatisk resultat igen
+                </Text>
+              </Pressable>
+            )}
+          </Card>
+
+          <Card>
             <Title>{t("dest_result")}</Title>
 
             {!resolvedHospital ? (
               <Text style={{ color: theme.colors.mutedText, marginTop: 10 }}>
-                {streetRouteNeedsSide
-                  ? "Vælg lige eller ulige for at få destination."
+                {streetRouteNeedsSide || streetRouteNeedsHouseNumber
+                  ? "Angiv husnummer eller side for at få destination."
                   : t("dest_pick_more")}
               </Text>
             ) : (
@@ -1639,6 +2046,14 @@ export default function DestinationTool() {
                   </View>
                 </Row>
 
+                {!loadingHospitalPhones &&
+                  hospitalPhones.some((item) => item.source === "bundled") && (
+                    <Text style={{ color: theme.colors.warn, lineHeight: 19 }}>
+                      Firestore-kontakten kunne ikke hentes. Viser den lokale,
+                      operationelle offline-liste.
+                    </Text>
+                  )}
+
                 {selectedHospitalPhone && (
                   <Pressable
                     onPress={() =>
@@ -1683,6 +2098,25 @@ export default function DestinationTool() {
               </View>
             )}
           </Card>
+
+          {__DEV__ && Object.keys(diagnostics).length > 0 && (
+            <CollapsibleCard
+              title="GPS-diagnostik (kun udvikling)"
+              subtitle="Vises ikke i produktionsbuilds og sendes eller gemmes ikke."
+            >
+              <Text
+                selectable
+                style={{
+                  color: theme.colors.mutedText,
+                  fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
+                  fontSize: 12,
+                  lineHeight: 17,
+                }}
+              >
+                {JSON.stringify(diagnostics, null, 2)}
+              </Text>
+            </CollapsibleCard>
+          )}
 
           <CollapsibleCard
             title={t("tool_disclaimer_title")}

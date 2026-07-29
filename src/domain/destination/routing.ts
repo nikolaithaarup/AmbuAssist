@@ -9,36 +9,91 @@ import type {
   RawStreetRow,
   StreetSide,
 } from "./types";
+import { normalizeStreetName } from "./address";
 
 export function norm(s?: string | null) {
-  return String(s ?? "")
-    .toLowerCase()
-    .trim();
+  return normalizeStreetName(s);
 }
 
 export type StreetRouteResult =
-  | { status: "single"; officialBydel: Bydel; message: "" }
-  | { status: "needs_side" | "still_ambiguous" | "not_found"; message: string };
+  | {
+      status: "single";
+      officialBydel: Bydel;
+      message: "";
+      matchType: "exact" | "range" | "postal";
+      matchedRule: RawStreetRow;
+    }
+  | { status: "needs_side" | "needs_house_number" | "needs_postal_code" | "still_ambiguous" | "not_found"; message: string };
 
 export function resolveStreetRoute(
   rows: RawStreetRow[],
   street: string,
   side: StreetSide | "" = "",
+  houseNumber?: number,
+  postalCode?: string,
 ): StreetRouteResult {
   const matches = rows.filter((row) => norm(row.street) === norm(street));
   if (matches.length === 0) {
     return { status: "not_found", message: "Street was not found in the routing table." };
   }
+  const unresolved = matches.find((row) => row.unresolvedReason);
+  if (unresolved) {
+    return {
+      status: "still_ambiguous",
+      message: unresolved.unresolvedReason ?? "Street routing is ambiguous.",
+    };
+  }
 
-  const sideMatches = side
-    ? matches.filter((row) => !row.side || row.side === side)
+  const constrainedByPostalCode = matches.some((row) => row.postalCodes?.length);
+  const postalMatches = postalCode
+    ? matches.filter(
+        (row) => !row.postalCodes?.length || row.postalCodes.includes(postalCode),
+      )
     : matches;
+  if (postalCode && postalMatches.length === 0) {
+    return { status: "not_found", message: "Postal code is not covered by this street rule." };
+  }
+
+  const inferredSide: StreetSide | "" = houseNumber
+    ? houseNumber % 2 === 0
+      ? "even"
+      : "odd"
+    : side;
+  const sideMatches = inferredSide
+    ? postalMatches.filter((row) => !row.side || row.side === inferredSide)
+    : postalMatches;
+  const rangeMatches = houseNumber
+    ? sideMatches.filter(
+        (row) =>
+          (row.from === undefined || houseNumber >= row.from) &&
+          (row.to === undefined || houseNumber <= row.to),
+      )
+    : sideMatches;
   const officialBydeler = Array.from(
-    new Set(sideMatches.map((row) => mapStreetBydelToOfficialBydel(row.bydel)).filter(Boolean)),
+    new Set(rangeMatches.map((row) => mapStreetBydelToOfficialBydel(row.bydel)).filter(Boolean)),
   ) as Bydel[];
 
   if (officialBydeler.length === 1) {
-    return { status: "single", officialBydel: officialBydeler[0], message: "" };
+    return {
+      status: "single",
+      officialBydel: officialBydeler[0],
+      message: "",
+      matchType: matches.some((row) => row.from !== undefined || row.to !== undefined || row.side)
+        ? "range"
+        : matches.some((row) => row.postalCodes?.length)
+          ? "postal"
+          : "exact",
+      matchedRule: rangeMatches[0],
+    };
+  }
+  if (!postalCode && constrainedByPostalCode) {
+    return { status: "needs_postal_code", message: "Enter or confirm the postal code." };
+  }
+  if (houseNumber !== undefined && rangeMatches.length === 0) {
+    return { status: "not_found", message: "House number is not covered by this street rule." };
+  }
+  if (houseNumber === undefined && matches.some((row) => row.from !== undefined || row.to !== undefined)) {
+    return { status: "needs_house_number", message: "Enter or confirm the house number." };
   }
   if (!side && matches.some((row) => row.side)) {
     return { status: "needs_side", message: "Select odd or even house number." };
@@ -47,6 +102,24 @@ export function resolveStreetRoute(
 }
 
 const AMAGER_OFFICIAL_BYDEL: Bydel = "Amager (2300, 2770 og 2791)";
+
+const OFFICIAL_BYDELER: Bydel[] = [
+  AMAGER_OFFICIAL_BYDEL,
+  "Bispebjerg",
+  "Brønshøj/Husum",
+  "Christianshavn",
+  "Frederiksberg (post-nr.)",
+  "Indre by",
+  "Kgs. Enghave (2450)",
+  "Nørrebro - indre",
+  "Nørrebro - ydre",
+  "Ryvang øst",
+  "Valby (2500)",
+  "Vanløse",
+  "Vesterbro",
+  "Østerbro - indre",
+  "Østerbro - ydre",
+];
 
 const BYEN_ALIAS_TO_OFFICIAL_BYDEL: Record<string, Bydel> = {
   // Amager / København S / Tårnby / Dragør
@@ -294,6 +367,9 @@ export function mapStreetBydelToKommuneByen(bydel?: string): KommuneByen | "" {
  */
 export function mapStreetBydelToOfficialBydel(bydel?: string): Bydel | "" {
   const b = norm(bydel);
+
+  const alreadyOfficial = OFFICIAL_BYDELER.find((value) => norm(value) === b);
+  if (alreadyOfficial) return alreadyOfficial;
 
   if (
     b === "amager" ||

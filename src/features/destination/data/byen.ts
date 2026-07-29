@@ -1,4 +1,9 @@
-import type { Bydel, ByenCategory, HospitalCode, StreetRow } from "../types";
+import type { Bydel, ByenCategory, HospitalCode, RawStreetRow, StreetRow } from "../types";
+import { PDF_SIMPLE_STREET_ROWS } from "./byenPdfSimpleRows";
+import {
+  PDF_SPLIT_STREET_ROWS,
+  PDF_UNRESOLVED_STREETS,
+} from "./byenPdfSplitRows";
 
 export const BYEN_CATEGORIES: { key: ByenCategory; labelKey: string }[] = [
   { key: "hospital", labelKey: "dest_cat_hospital" },
@@ -222,6 +227,8 @@ export const BYEN_MAP: Record<Bydel, Record<ByenCategory, HospitalCode>> = {
  */
 const BYDEL_ALIASES: Record<string, Bydel> = {
   amager: "Amager (2300, 2770 og 2791)",
+  vestamager: "Amager (2300, 2770 og 2791)",
+  "sundby nord": "Amager (2300, 2770 og 2791)",
   "amager (2300, 2770 og 2791)": "Amager (2300, 2770 og 2791)",
 
   bispebjerg: "Bispebjerg",
@@ -292,6 +299,11 @@ export function normalizeStreetRow(
   return {
     street: row.street.trim(),
     bydel: normalizedBydel,
+    from: row.from,
+    to: row.to,
+    side: row.side,
+    postalCodes: row.postalCodes,
+    unresolvedReason: row.unresolvedReason,
   };
 }
 
@@ -320,7 +332,7 @@ export function findStreetByName(
  * Raw sample copied from PDF wording.
  * You can keep the PDF names here, then normalize them before use.
  */
-export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
+const MANUALLY_REVIEWED_STREET_ROWS: RawStreetRow[] = [
   { street: "Abel Catrines Gade", bydel: "Vesterbro" },
   { street: "Aberdeengade", bydel: "Indre Østerbro" },
   { street: "Abildgaardsgade", bydel: "Indre Østerbro" },
@@ -414,7 +426,9 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
   { street: "Banefløjsstien", bydel: "Brønshøj/Husum" },
   { street: "Banegårdspladsen", bydel: "Vesterbro" },
   { street: "Banevingen", bydel: "Ydre Nørrebro" },
-  { street: "Banevolden", bydel: "Vesterbro/Valby" },
+  // PDF gives a named-district division without a number boundary: stay ambiguous.
+  { street: "Banevolden", bydel: "Vesterbro" },
+  { street: "Banevolden", bydel: "Valby" },
 
   { street: "Banevænget", bydel: "Ydre Nørrebro" },
   { street: "Bangertsgade", bydel: "Indre Nørrebro" },
@@ -425,8 +439,10 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
   { street: "Bavnevang", bydel: "Brønshøj/Husum" },
   { street: "Bechgaardsgade", bydel: "Ryvang Øst" },
   { street: "Beldingvej", bydel: "Brønshøj/Husum" },
-  { street: "Bellahøjvej", bydel: "Brønshøj/Husum" },
-  { street: "Bellahøjvej (nr. 1–)", bydel: "Vanløse" },
+  // PDF p. 4: even 2-106 is Brønshøj/Husum; even 108+ and every odd number are Vanløse.
+  { street: "Bellahøjvej", bydel: "Brønshøj/Husum", from: 2, to: 106, side: "even" },
+  { street: "Bellahøjvej", bydel: "Vanløse", from: 108, side: "even" },
+  { street: "Bellahøjvej", bydel: "Vanløse", from: 1, side: "odd" },
   { street: "Bellisvej", bydel: "Vanløse" },
   { street: "Bellmans Plads", bydel: "Ryvang Øst" },
   { street: "Bellmansgade", bydel: "Ryvang Øst" },
@@ -532,8 +548,11 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
   { street: "Fakse Tværgade", bydel: "Indre Østerbro" },
   { street: "Faksingevej", bydel: "Brønshøj/Husum" },
   { street: "Falkevej", bydel: "Bispebjerg" },
-  { street: "Fanøgade", bydel: "Ydre Østerbro" },
-  { street: "Fanøgade (Nr. 26)", bydel: "Ryvang Øst" },
+  // PDF p. 13: 1-27 (odd) and 2-24 (even) are Ydre Østerbro; higher numbers are Ryvang Øst.
+  { street: "Fanøgade", bydel: "Ydre Østerbro", from: 1, to: 27, side: "odd" },
+  { street: "Fanøgade", bydel: "Ydre Østerbro", from: 2, to: 24, side: "even" },
+  { street: "Fanøgade", bydel: "Ryvang Øst", from: 29, side: "odd" },
+  { street: "Fanøgade", bydel: "Ryvang Øst", from: 26, side: "even" },
   { street: "Farumgade", bydel: "Ydre Nørrebro" },
   { street: "Farvergade", bydel: "Indre By" },
   { street: "Fenrisgade", bydel: "Ydre Nørrebro" },
@@ -567,8 +586,10 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
   { street: "Frederik V’s Vej", bydel: "Indre Østerbro" },
   { street: "Frederik VII’s Gade", bydel: "Indre Nørrebro" },
   { street: "Frederik VIII’s Palæ", bydel: "Indre By" },
-  { street: "Frederiksberg Allé (Nr. 1–13B)", bydel: "Vesterbro" },
-  { street: "Frederiksberg Allé (Nr. 15+)", bydel: "Frederiksberg" },
+  // PDF p. 14: odd 1-13B is Vesterbro; odd 15+ and every even number are Frederiksberg.
+  { street: "Frederiksberg Allé", bydel: "Vesterbro", from: 1, to: 13, side: "odd" },
+  { street: "Frederiksberg Allé", bydel: "Frederiksberg", from: 15, side: "odd" },
+  { street: "Frederiksberg Allé", bydel: "Frederiksberg", side: "even" },
   { street: "Frederiksberggade", bydel: "Indre By" },
   { street: "Frederiksborggade", bydel: "Indre By" },
   { street: "Frederiksborgvej", bydel: "Bispebjerg" },
@@ -590,9 +611,10 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
   { street: "Fuglagerv ej", bydel: "Vanløse" },
   { street: "Fuglefængevej", bydel: "Bispebjerg" },
   { street: "Fuglegavl", bydel: "Brønshøj/Husum" },
-  { street: "Fuglsang Allé (Nr. 2–134)", bydel: "Brønshøj/Husum" },
-  { street: "Fuglsang Allé (Nr. 136+)", bydel: "Vanløse" },
-  { street: "Fuglsang Allé (Nr. 1+)", bydel: "Indre Nørrebro" },
+  // PDF p. 15: even 2-134 is Brønshøj/Husum; even 136+ and every odd number are Vanløse.
+  { street: "Fuglsang Allé", bydel: "Brønshøj/Husum", from: 2, to: 134, side: "even" },
+  { street: "Fuglsang Allé", bydel: "Vanløse", from: 136, side: "even" },
+  { street: "Fuglsang Allé", bydel: "Vanløse", from: 1, side: "odd" },
   { street: "Fyensgade", bydel: "Indre Nørrebro" },
   { street: "Fyrbødervej", bydel: "Bispebjerg" },
   { street: "Fælledvej", bydel: "Indre Nørrebro" },
@@ -607,8 +629,9 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
   { street: "Gamle Gadelandet", bydel: "Brønshøj/Husum" },
   { street: "Gamle Carlsberg Vej", bydel: "Vesterbro" },
   { street: "Gammel Kalkbrænderivej", bydel: "Indre Østerbro" },
-  { street: "Gammel Kongevej (Nr. 2–10)", bydel: "Indre By" },
-  { street: "Gammel Kongevej (Nr. 1–51)", bydel: "Vesterbro" },
+  // PDF p. 16: the listed city sections are even 2-10 and odd 1-51.
+  { street: "Gammel Kongevej", bydel: "Indre By", from: 2, to: 10, side: "even" },
+  { street: "Gammel Kongevej", bydel: "Vesterbro", from: 1, to: 51, side: "odd" },
   { street: "Gammel Mønt", bydel: "Indre By" },
   { street: "Gammel Strand", bydel: "Indre By" },
   { street: "Gammel Torv", bydel: "Indre By" },
@@ -685,7 +708,8 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
   { street: "Hellestedvej", bydel: "Brønshøj/Husum" },
   { street: "Helsingborggade", bydel: "Ryvang Øst" },
   { street: "Helsinkigade", bydel: "Indre Østerbro" },
-  { street: "Hf. Aldersro", bydel: "Ydre Østerbro/Bispebjerg" },
+  { street: "Hf. Aldersro", bydel: "Ydre Østerbro" },
+  { street: "Hf. Aldersro", bydel: "Bispebjerg" },
   { street: "Hf. Amager Strand", bydel: "Amager" },
   { street: "Hf. Bellevue", bydel: "Brønshøj/Husum" },
   { street: "Hf. Bergmanshave", bydel: "Valby" },
@@ -774,7 +798,8 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
 
   // J
   { street: "J. A. Schwartz Gade", bydel: "Indre Østerbro" },
-  { street: "J. C. Jacobsens Gade", bydel: "Kgs. Enghave/Vesterbro" },
+  { street: "J. C. Jacobsens Gade", bydel: "Kgs. Enghave" },
+  { street: "J. C. Jacobsens Gade", bydel: "Vesterbro" },
   { street: "Jacob Erlandsens Gade", bydel: "Indre Østerbro" },
   { street: "Jacob Lindbergs Vej", bydel: "Bispebjerg" },
   { street: "Jagtvej (2-118)", bydel: "Indre Nørrebro" },
@@ -880,8 +905,12 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
   { street: "Lydersvej", bydel: "Indre Østerbro" },
   { street: "Lygten", bydel: "Bispebjerg" },
   { street: "Lynetten", bydel: "Christianshavn" },
-  { street: "Lyngbyvej", bydel: "Ydre Østerbro" },
-  { street: "Lyngbyvej", bydel: "Ryvang Øst" },
+  // PDF p. 33: Ydre Østerbro 2-36 even/1-199 odd; Ryvang Øst 38-200 even; remaining higher numbers Vanløse.
+  { street: "Lyngbyvej", bydel: "Ydre Østerbro", from: 2, to: 36, side: "even" },
+  { street: "Lyngbyvej", bydel: "Ydre Østerbro", from: 1, to: 199, side: "odd" },
+  { street: "Lyngbyvej", bydel: "Ryvang Øst", from: 38, to: 200, side: "even" },
+  { street: "Lyngbyvej", bydel: "Vanløse", from: 201, side: "odd" },
+  { street: "Lyngbyvej", bydel: "Vanløse", from: 202, side: "even" },
   { street: "Lyngholmvej", bydel: "Vanløse" },
   { street: "Lyngsies Plads", bydel: "Bispebjerg" },
   { street: "Lyngvigvej", bydel: "Vanløse" },
@@ -934,8 +963,9 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
   { street: "Mellemvangen", bydel: "Brønshøj/Husum" },
   { street: "Merløsevej", bydel: "Brønshøj/Husum" },
   { street: "Mesterstien", bydel: "Bispebjerg" },
-  { street: "Middelfartgade", bydel: "Indre Østerbro" },
-  { street: "Middelfartgade", bydel: "Ydre Østerbro" },
+  // PDF p. 35: even numbers are Indre Østerbro; odd numbers are Ydre Østerbro.
+  { street: "Middelfartgade", bydel: "Indre Østerbro", from: 2, side: "even" },
+  { street: "Middelfartgade", bydel: "Ydre Østerbro", from: 1, side: "odd" },
   { street: "Middelgrundsfortet", bydel: "Christianshavn" },
   { street: "Midgårdsgade", bydel: "Ydre Nørrebro" },
   { street: "Midtdyssen", bydel: "Christianshavn" },
@@ -1013,8 +1043,11 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
   { street: "Per Knutzons Vej", bydel: "Christianshavn" },
   { street: "Perlestikkervej", bydel: "Bispebjerg" },
   { street: "Pernillevej", bydel: "Bispebjerg" },
-  { street: "Peter Bangs Vej", bydel: "Frederiksberg" },
-  { street: "Peter Bangs Vej", bydel: "Vanløse" },
+  // PDF p. 40: Frederiksberg through 163 odd/224 even; Vanløse from 165 odd/226 even.
+  { street: "Peter Bangs Vej", bydel: "Frederiksberg", from: 1, to: 163, side: "odd" },
+  { street: "Peter Bangs Vej", bydel: "Frederiksberg", from: 2, to: 224, side: "even" },
+  { street: "Peter Bangs Vej", bydel: "Vanløse", from: 165, side: "odd" },
+  { street: "Peter Bangs Vej", bydel: "Vanløse", from: 226, side: "even" },
   { street: "Peter Fabers Gade", bydel: "Indre Nørrebro" },
   { street: "Peter Ibsens Allé", bydel: "Bispebjerg" },
   { street: "Peter Rørdams Vej", bydel: "Bispebjerg" },
@@ -1195,8 +1228,10 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
   { street: "Slien", bydel: "Vesterbro" },
   { street: "Slotsfogedvej", bydel: "Bispebjerg" },
   { street: "Slotsgade", bydel: "Indre Nørrebro" },
-  { street: "Slotsherresvej", bydel: "Vanløse" },
-  { street: "Slotsherresvej (nr. 94-160)", bydel: "Brønshøj/Husum" },
+  // PDF p. 47: Vanløse 2-92Z even/1-161 odd; Brønshøj-Husum 94-160 even.
+  { street: "Slotsherresvej", bydel: "Vanløse", from: 2, to: 92, side: "even" },
+  { street: "Slotsherresvej", bydel: "Vanløse", from: 1, to: 161, side: "odd" },
+  { street: "Slotsherresvej", bydel: "Brønshøj/Husum", from: 94, to: 160, side: "even" },
   { street: "Slotsholmsgade", bydel: "Indre By" },
   { street: "Slutterigade", bydel: "Indre By" },
   { street: "Slåenvej", bydel: "Vanløse" },
@@ -1220,8 +1255,9 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
   { street: "Sommerstedgade", bydel: "Vesterbro" },
   { street: "Sonnerupvej", bydel: "Brønshøj/Husum" },
   { street: "Sorgenfrigade", bydel: "Ydre Nørrebro" },
-  { street: "Sortedam Dossering", bydel: "Indre Nørrebro" },
-  { street: "Sortedam Dossering (nr. 47-)", bydel: "Indre Østerbro" },
+  // PDF p. 47: odd 1-45Z is Indre Nørrebro; odd 47+ is Indre Østerbro.
+  { street: "Sortedam Dossering", bydel: "Indre Nørrebro", from: 1, to: 45, side: "odd" },
+  { street: "Sortedam Dossering", bydel: "Indre Østerbro", from: 47, side: "odd" },
   { street: "Southamptongade", bydel: "Indre Østerbro" },
   { street: "Sorøgade", bydel: "Indre Østerbro" },
   { street: "Spanagervej", bydel: "Brønshøj/Husum" },
@@ -1260,7 +1296,9 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
   { street: "Sundkrogsgade", bydel: "Indre Østerbro" },
   { street: "Sundkrogskaj", bydel: "Indre Østerbro" },
   { street: "Svanegade", bydel: "Indre By" },
-  { street: "Svaneknoppen", bydel: "Østerbro" },
+  // PDF only says Østerbro; it does not distinguish the matrix's inner/outer rows.
+  { street: "Svaneknoppen", bydel: "Indre Østerbro" },
+  { street: "Svaneknoppen", bydel: "Ydre Østerbro" },
   { street: "Svanemøllens Kaserne", bydel: "Ryvang Øst" },
   { street: "Svanemøllestranden", bydel: "Ryvang Øst" },
   { street: "Svanemøllevej", bydel: "Ryvang Øst" },
@@ -1291,7 +1329,8 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
   { street: "Søkrogen", bydel: "Vanløse" },
   { street: "Søllerødgade", bydel: "Ydre Nørrebro" },
   { street: "Sølundsvej", bydel: "Ryvang Øst" },
-  { street: "Sølvgade", bydel: "Indre By/Indre Østerbro" },
+  { street: "Sølvgade", bydel: "Indre By" },
+  { street: "Sølvgade", bydel: "Indre Østerbro" },
   { street: "Sønder Boulevard", bydel: "Vesterbro" },
   { street: "Sønderborggade", bydel: "Indre Østerbro" },
   { street: "Søndervigvej", bydel: "Vanløse" },
@@ -1374,8 +1413,9 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
   { street: "Trelleborggade", bydel: "Indre Østerbro" },
   { street: "Trepkasgade", bydel: "Indre Østerbro" },
   { street: "Trianglen", bydel: "Indre Østerbro" },
-  { street: "Trommesalen", bydel: "Indre By" },
-  { street: "Trommesalen (ulige nr.)", bydel: "Vesterbro" },
+  // PDF p. 52: even numbers are Indre By; odd numbers are Vesterbro.
+  { street: "Trommesalen", bydel: "Indre By", from: 2, side: "even" },
+  { street: "Trommesalen", bydel: "Vesterbro", from: 1, side: "odd" },
   { street: "Tromsøsgade", bydel: "Indre Østerbro" },
   { street: "Trondhjems Plads", bydel: "Indre Østerbro" },
   { street: "Trondhjemsgade", bydel: "Indre Østerbro" },
@@ -1407,12 +1447,13 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
   { street: "Urbansgade", bydel: "Indre Østerbro" },
   { street: "Utterslev Torv", bydel: "Bispebjerg" },
   { street: "Utterslevgård", bydel: "Bispebjerg" },
-  { street: "Utterslevvej", bydel: "Bispebjerg" },
-  { street: "Utterslevvej", bydel: "Brønshøj/Husum" },
+  // PDF p. 54: the split is explicitly by postal code.
+  { street: "Utterslevvej", bydel: "Bispebjerg", postalCodes: ["2400"] },
+  { street: "Utterslevvej", bydel: "Brønshøj/Husum", postalCodes: ["2700"] },
 
   { street: "Vagtmestervej", bydel: "Bispebjerg" },
-  { street: "Valby Langgade", bydel: "Vesterbro" },
-  { street: "Valby Langgade", bydel: "Valby" },
+  { street: "Valby Langgade", bydel: "Vesterbro", postalCodes: ["1799"] },
+  { street: "Valby Langgade", bydel: "Valby", postalCodes: ["2500"] },
   { street: "Valdemar Holmers Gade", bydel: "Ydre Østerbro" },
   { street: "Valdemarsgade", bydel: "Vesterbro" },
   { street: "Valhalsgade", bydel: "Ydre Nørrebro" },
@@ -1430,8 +1471,8 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
   { street: "Vanløsetorv", bydel: "Vanløse" },
   { street: "Vardegade", bydel: "Indre Østerbro" },
   { street: "Varevej", bydel: "Indre Østerbro" },
-  { street: "Vasbygade", bydel: "Vesterbro" },
-  { street: "Vasbygade", bydel: "Kgs. Enghave" },
+  { street: "Vasbygade", bydel: "Vesterbro", postalCodes: ["1561"] },
+  { street: "Vasbygade", bydel: "Kgs. Enghave", postalCodes: ["2450"] },
 
   { street: "Ved Bellahøj Nord", bydel: "Brønshøj/Husum" },
   { street: "Ved Bellahøj Syd", bydel: "Brønshøj/Husum" },
@@ -1462,8 +1503,10 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
   { street: "Veksøvej", bydel: "Brønshøj/Husum" },
   { street: "Vendersgade", bydel: "Indre By" },
   { street: "Vendsysselvej", bydel: "Vanløse" },
-  { street: "Vennemindevej", bydel: "Ydre Østerbro" },
-  { street: "Vennemindevej", bydel: "Ryvang Øst" },
+  { street: "Vennemindevej", bydel: "Ydre Østerbro", from: 1, to: 37, side: "odd" },
+  { street: "Vennemindevej", bydel: "Ydre Østerbro", from: 2, to: 38, side: "even" },
+  { street: "Vennemindevej", bydel: "Ryvang Øst", from: 39, side: "odd" },
+  { street: "Vennemindevej", bydel: "Ryvang Øst", from: 40, side: "even" },
   { street: "Venøgade", bydel: "Ryvang Øst" },
   { street: "Veras Allé", bydel: "Vanløse" },
   { street: "Vermundsgade", bydel: "Ydre Nørrebro" },
@@ -1472,9 +1515,13 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
   { street: "Vester Søgade", bydel: "Indre By" },
   { street: "Vester Voldgade", bydel: "Indre By" },
 
-  { street: "Vesterbrogade", bydel: "Indre By" },
-  { street: "Vesterbrogade", bydel: "Vesterbro" },
-  { street: "Vesterbrogade", bydel: "Frederiksberg" },
+  // PDF p. 56: three complete parity/range bands.
+  { street: "Vesterbrogade", bydel: "Indre By", from: 2, to: 8, side: "even" },
+  { street: "Vesterbrogade", bydel: "Indre By", from: 1, to: 3, side: "odd" },
+  { street: "Vesterbrogade", bydel: "Vesterbro", from: 10, to: 150, side: "even" },
+  { street: "Vesterbrogade", bydel: "Vesterbro", from: 5, to: 151, side: "odd" },
+  { street: "Vesterbrogade", bydel: "Frederiksberg", from: 152, side: "even" },
+  { street: "Vesterbrogade", bydel: "Frederiksberg", from: 153, side: "odd" },
   { street: "Vesterbros Torv", bydel: "Vesterbro" },
   { street: "Vesterfælledvej", bydel: "Vesterbro" },
   { street: "Vestergade", bydel: "Indre By" },
@@ -1524,8 +1571,8 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
   { street: "Væbnervej", bydel: "Bispebjerg" },
   { street: "Vængeløddet", bydel: "Brønshøj/Husum" },
   { street: "Værftsbroen", bydel: "Christianshavn" },
-  { street: "Værnedamsvej", bydel: "Vesterbro" },
-  { street: "Værnedamsvej", bydel: "Frederiksberg" },
+  { street: "Værnedamsvej", bydel: "Vesterbro", from: 2, side: "even" },
+  { street: "Værnedamsvej", bydel: "Frederiksberg", from: 1, side: "odd" },
   { street: "Vævergade", bydel: "Indre Nørrebro" },
   { street: "Vølundsagde", bydel: "Ydre Nørrebro" },
 
@@ -1556,16 +1603,20 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
   { street: "Ørhagevej", bydel: "Vanløse" },
   { street: "Ørholmsgade", bydel: "Ydre Nørrebro" },
   { street: "Ørnevej", bydel: "Bispebjerg" },
-  { street: "Østbanegade", bydel: "Indre Østerbro" },
-  { street: "Østbanegade", bydel: "Ydre Østerbro" },
+  { street: "Østbanegade", bydel: "Indre Østerbro", from: 2, side: "even" },
+  { street: "Østbanegade", bydel: "Indre Østerbro", from: 1, to: 179, side: "odd" },
+  { street: "Østbanegade", bydel: "Ydre Østerbro", from: 181, side: "odd" },
   { street: "Øster Allé", bydel: "Indre Østerbro" },
   { street: "Øster Farimagsgade", bydel: "Indre By" },
   { street: "Øster Søgade", bydel: "Indre By" },
   { street: "Øster Voldgade", bydel: "Indre By" },
   { street: "Østerbro Vænge", bydel: "Indre Østerbro" },
-  { street: "Østerbrogade", bydel: "Indre Østerbro" },
-  { street: "Østerbrogade", bydel: "Ydre Østerbro" },
-  { street: "Østerbrogade", bydel: "Ryvang Øst" },
+  // PDF p. 60: five explicit parity/range bands.
+  { street: "Østerbrogade", bydel: "Indre Østerbro", from: 44, to: 156, side: "even" },
+  { street: "Østerbrogade", bydel: "Indre Østerbro", from: 19, to: 99, side: "odd" },
+  { street: "Østerbrogade", bydel: "Ydre Østerbro", from: 158, side: "even" },
+  { street: "Østerbrogade", bydel: "Ydre Østerbro", from: 101, to: 137, side: "odd" },
+  { street: "Østerbrogade", bydel: "Ryvang Øst", from: 139, side: "odd" },
   { street: "Østerfælled Torv", bydel: "Indre Østerbro" },
   { street: "Østergade", bydel: "Indre By" },
 
@@ -1580,12 +1631,11 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
   { street: "Åboulevard", bydel: "Indre Nørrebro" },
   { street: "Ådalsvej", bydel: "Vanløse" },
   { street: "Åfløjen", bydel: "Brønshøj/Husum" },
-  { street: "Ågade", bydel: "Indre Nørrebro" },
-  { street: "Ågade", bydel: "Ydre Nørrebro" },
+  { street: "Ågade", bydel: "Indre Nørrebro", from: 88, to: 110, side: "even" },
+  { street: "Ågade", bydel: "Ydre Nørrebro", from: 112, to: 154, side: "even" },
   { street: "Ågerupvej", bydel: "Brønshøj/Husum" },
   { street: "Åkandevej", bydel: "Brønshøj/Husum" },
   { street: "Ålborggade", bydel: "Indre Østerbro" },
-  { street: "Ålekistevej", bydel: "Vanløse" },
   { street: "Ålekistevej", bydel: "Vanløse" },
   { street: "Ålstrupvej", bydel: "Vanløse" },
   { street: "Åløkkevej", bydel: "Vanløse" },
@@ -1593,6 +1643,57 @@ export const STREET_SAMPLE_RAW: Array<{ street: string; bydel: string }> = [
   { street: "Århusgade", bydel: "Indre Østerbro" },
   { street: "Åvendingen", bydel: "Brønshøj/Husum" },
 ];
+
+const manuallyReviewedStreetKeys = new Set(
+  MANUALLY_REVIEWED_STREET_ROWS.map((row) => normalizeText(row.street)),
+);
+const splitStreetKeys = new Set(
+  PDF_SPLIT_STREET_ROWS.map((row) => normalizeText(row.street)),
+);
+const unresolvedStreetKeys = new Set(
+  Array.from(PDF_UNRESOLVED_STREETS.keys(), normalizeText),
+);
+
+/** PDF-derived simple rows plus manually reviewed split/exception overrides. */
+const combinedStreetRows: RawStreetRow[] = [
+  ...MANUALLY_REVIEWED_STREET_ROWS.filter(
+    (row) =>
+      !splitStreetKeys.has(normalizeText(row.street)) &&
+      !unresolvedStreetKeys.has(normalizeText(row.street)),
+  ),
+  ...PDF_SPLIT_STREET_ROWS.filter(
+    (row) => !unresolvedStreetKeys.has(normalizeText(row.street)),
+  ),
+  ...Array.from(PDF_UNRESOLVED_STREETS, ([street, unresolvedReason]) => ({
+    street,
+    bydel: "Indre by",
+    unresolvedReason,
+  })),
+  ...PDF_SIMPLE_STREET_ROWS.filter(
+    (row) =>
+      !manuallyReviewedStreetKeys.has(normalizeText(row.street)) &&
+      !splitStreetKeys.has(normalizeText(row.street)) &&
+      !unresolvedStreetKeys.has(normalizeText(row.street)),
+  ),
+];
+
+const seenStreetRuleSignatures = new Set<string>();
+export const STREET_SAMPLE_RAW: RawStreetRow[] = combinedStreetRows.filter(
+  (row) => {
+    const signature = JSON.stringify([
+      normalizeText(row.street).replaceAll("’", "'"),
+      normalizeText(row.bydel),
+      row.from,
+      row.to,
+      row.side,
+      row.postalCodes?.slice().sort(),
+      row.unresolvedReason,
+    ]);
+    if (seenStreetRuleSignatures.has(signature)) return false;
+    seenStreetRuleSignatures.add(signature);
+    return true;
+  },
+);
 
 /**
  * Normalized street list safe for app lookups.

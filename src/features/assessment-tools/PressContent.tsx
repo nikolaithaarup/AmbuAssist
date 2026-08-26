@@ -1,279 +1,51 @@
-import { useMemo, useState } from "react";
-import { Alert, Linking, Pressable, Text, View } from "react-native";
-import { useT } from "../../i18n/useT";
+import { useMemo } from "react";
+import type { AssessmentDefinition } from "../../domain/assessment-flow/flow";
+import {
+  calculatePressResult,
+  type PressItemId,
+} from "../../domain/assessments/press";
 import type { Key } from "../../i18n/strings";
+import { useT } from "../../i18n/useT";
 import type { ReferenceDoc } from "../../services/referenceService";
-import { CollapsibleCard } from "../../ui/CollapsibleCard";
 import { Card, Subtle, Title } from "../../ui/Ui";
-import { theme } from "../../ui/theme";
-import { hapticReset } from "../../ui/haptics";
+import {
+  AssessmentQuestionCard,
+  AssessmentResultCard,
+  getAssessmentUiLabels,
+  useAssessmentFlow,
+} from "../assessment-flow/AssessmentFlow";
+import { AssessmentReferenceCards } from "../assessment-flow/AssessmentReferenceCards";
 
-type Option = { labelKey: Key; points: number };
-type Item = { key: string; titleKey: Key; options: Option[] };
+type Item = { id: PressItemId; titleKey: Key; part: 1 | 2 };
+const items: readonly Item[] = [
+  { id: "p1_face", titleKey: "press_p1_face_title", part: 1 },
+  { id: "p1_arm", titleKey: "press_p1_arm_title", part: 1 },
+  { id: "p1_speech", titleKey: "press_p1_speech_title", part: 1 },
+  { id: "p1_other", titleKey: "press_p1_other_title", part: 1 },
+  { id: "p2_armDrift", titleKey: "press_p2_armDrift_title", part: 2 },
+  { id: "p2_loc", titleKey: "press_p2_loc_title", part: 2 },
+  { id: "p2_gaze", titleKey: "press_p2_gaze_title", part: 2 },
+];
 
-type Props = {
-  lang: "en" | "da";
-  reference: ReferenceDoc | null;
+const definition: AssessmentDefinition<PressItemId, number> = {
+  startStepId: items[0].id,
+  steps: items.map((item, index) => ({
+    id: item.id,
+    next: () => items[index + 1]?.id ?? null,
+  })),
 };
 
-const pressPart1Items: Item[] = [
-  {
-    key: "p1_face",
-    titleKey: "press_p1_face_title",
-    options: [
-      { labelKey: "press_opt_no", points: 0 },
-      { labelKey: "press_opt_yes", points: 1 },
-    ],
-  },
-  {
-    key: "p1_arm",
-    titleKey: "press_p1_arm_title",
-    options: [
-      { labelKey: "press_opt_no", points: 0 },
-      { labelKey: "press_opt_yes", points: 1 },
-    ],
-  },
-  {
-    key: "p1_speech",
-    titleKey: "press_p1_speech_title",
-    options: [
-      { labelKey: "press_opt_no", points: 0 },
-      { labelKey: "press_opt_yes", points: 1 },
-    ],
-  },
-  {
-    key: "p1_other",
-    titleKey: "press_p1_other_title",
-    options: [
-      { labelKey: "press_opt_no", points: 0 },
-      { labelKey: "press_opt_yes", points: 1 },
-    ],
-  },
-];
-
-const pressPart2Items: Item[] = [
-  {
-    key: "p2_armDrift",
-    titleKey: "press_p2_armDrift_title",
-    options: [
-      { labelKey: "press_opt_no", points: 0 },
-      { labelKey: "press_opt_yes", points: 1 },
-    ],
-  },
-  {
-    key: "p2_loc",
-    titleKey: "press_p2_loc_title",
-    options: [
-      { labelKey: "press_opt_no", points: 0 },
-      { labelKey: "press_opt_yes", points: 1 },
-    ],
-  },
-  {
-    key: "p2_gaze",
-    titleKey: "press_p2_gaze_title",
-    options: [
-      { labelKey: "press_opt_no", points: 0 },
-      { labelKey: "press_opt_yes", points: 1 },
-    ],
-  },
-];
-
-function SourceItem({
-  title,
-  subtitle,
-  url,
-}: {
-  title: string;
-  subtitle?: string;
-  url?: string;
+export default function PressContent({ lang, reference }: {
+  lang: "en" | "da";
+  reference: ReferenceDoc | null;
 }) {
-  const openUrl = async () => {
-    if (!url) return;
-
-    try {
-      const supported = await Linking.canOpenURL(url);
-      if (!supported) {
-        Alert.alert("Could not open link", url);
-        return;
-      }
-      await Linking.openURL(url);
-    } catch {
-      Alert.alert("Could not open link", url);
-    }
-  };
-
-  return (
-    <View
-      style={{
-        paddingVertical: 8,
-        borderBottomWidth: 1,
-        borderBottomColor: "rgba(255,255,255,0.06)",
-      }}
-    >
-      <Text
-        style={{
-          color: theme.colors.text,
-          fontSize: 14,
-          fontWeight: "800",
-          lineHeight: 18,
-        }}
-      >
-        {title}
-      </Text>
-      {!!subtitle && (
-        <Text
-          style={{
-            color: theme.colors.mutedText,
-            fontSize: 12,
-            lineHeight: 17,
-            marginTop: 2,
-          }}
-        >
-          {subtitle}
-        </Text>
-      )}
-      {!!url && (
-        <Pressable
-          onPress={openUrl}
-          style={({ pressed }) => ({
-            opacity: pressed ? 0.75 : 1,
-            marginTop: 8,
-          })}
-        >
-          <Text
-            style={{
-              color: theme.colors.text,
-              fontSize: 13,
-              fontWeight: "800",
-              textDecorationLine: "underline",
-            }}
-          >
-            Open source
-          </Text>
-        </Pressable>
-      )}
-    </View>
-  );
-}
-
-function OptionButton({
-  label,
-  points,
-  active,
-  onPress,
-}: {
-  label: string;
-  points: number;
-  active: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => ({
-        opacity: pressed ? 0.75 : 1,
-        paddingVertical: 10,
-        paddingHorizontal: 12,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: theme.colors.cardBorder,
-        backgroundColor: active ? "rgba(220,220,220,0.18)" : "rgba(0,0,0,0.10)",
-        marginTop: 8,
-      })}
-    >
-      <Text
-        style={{
-          color: theme.colors.text,
-          fontWeight: "800",
-          lineHeight: 18,
-        }}
-      >
-        {label}{" "}
-        <Text style={{ color: theme.colors.mutedText }}>({points})</Text>
-      </Text>
-    </Pressable>
-  );
-}
-
-function ItemCard({
-  item,
-  t,
-  selectedValue,
-  onSelect,
-}: {
-  item: Item;
-  t: (key: Key) => string;
-  selectedValue?: number;
-  onSelect: (points: number) => void;
-}) {
-  return (
-    <Card>
-      <Text
-        style={{
-          color: theme.colors.text,
-          fontSize: 16,
-          fontWeight: "900",
-        }}
-      >
-        {t(item.titleKey)}
-      </Text>
-
-      {item.options.map((op) => (
-        <OptionButton
-          key={`${item.key}_${op.labelKey}_${op.points}`}
-          label={t(op.labelKey)}
-          points={op.points}
-          active={selectedValue === op.points}
-          onPress={() => onSelect(op.points)}
-        />
-      ))}
-    </Card>
-  );
-}
-
-export default function PressContent({ lang, reference }: Props) {
   const { t } = useT();
-  const [selected, setSelected] = useState<Record<string, number>>({});
-
-  const part1Score = useMemo(
-    () =>
-      pressPart1Items.reduce(
-        (sum, it) =>
-          sum + (Number.isFinite(selected[it.key]) ? selected[it.key] : 0),
-        0,
-      ),
-    [selected],
+  const flow = useAssessmentFlow(definition);
+  const current = items.find((item) => item.id === flow.currentStepId);
+  const result = useMemo(
+    () => calculatePressResult(flow.state.answers),
+    [flow.state.answers],
   );
-
-  const part2Score = useMemo(
-    () =>
-      pressPart2Items.reduce(
-        (sum, it) =>
-          sum + (Number.isFinite(selected[it.key]) ? selected[it.key] : 0),
-        0,
-      ),
-    [selected],
-  );
-
-  const answeredCount = useMemo(
-    () =>
-      [...pressPart1Items, ...pressPart2Items].filter((it) =>
-        Number.isFinite(selected[it.key]),
-      ).length,
-    [selected],
-  );
-
-  const totalItems = pressPart1Items.length + pressPart2Items.length;
-  const allAnswered = answeredCount === totalItems;
-  const part1Positive = part1Score >= 1;
-
-  const disclaimerText = reference?.disclaimer?.[lang] ?? "";
-  const sourcesSubText = reference?.sourcesSub?.[lang] ?? "";
-
-  function reset() {
-    hapticReset();
-    setSelected({});
-  }
 
   return (
     <>
@@ -281,193 +53,45 @@ export default function PressContent({ lang, reference }: Props) {
         <Title>{t("press_title")}</Title>
         <Subtle>{t("press_sub")}</Subtle>
       </Card>
-
-      <Card>
-        <Text
-          style={{
-            color: theme.colors.text,
-            fontSize: 16,
-            fontWeight: "900",
-          }}
-        >
-          {t("press_part1_title")}
-        </Text>
-        <Subtle>{t("press_part1_sub")}</Subtle>
-      </Card>
-
-      {pressPart1Items.map((item) => (
-        <ItemCard
-          key={item.key}
-          item={item}
-          t={t}
-          selectedValue={selected[item.key]}
-          onSelect={(points) =>
-            setSelected((prev) => ({ ...prev, [item.key]: points }))
+      {flow.state.completed ? (
+        <AssessmentResultCard
+          score={`${t("press_part1_score")} ${result.part1Score} · ${t("press_part2_score")} ${result.part2Score}`}
+          interpretation={
+            result.part1Positive
+              ? t("press_part1_positive")
+              : t("press_part1_negative")
           }
+          supportingText={t("press_result_disclaimer")}
+          onReview={flow.back}
+          onRestart={flow.restart}
+          labels={getAssessmentUiLabels(lang)}
         />
-      ))}
-
-      <Card>
-        <Text
-          style={{
-            color: theme.colors.text,
-            fontSize: 16,
-            fontWeight: "900",
-          }}
-        >
-          {t("press_part2_title")}
-        </Text>
-        <Subtle>{t("press_part2_sub")}</Subtle>
-      </Card>
-
-      {pressPart2Items.map((item) => (
-        <ItemCard
-          key={item.key}
-          item={item}
-          t={t}
-          selectedValue={selected[item.key]}
-          onSelect={(points) =>
-            setSelected((prev) => ({ ...prev, [item.key]: points }))
+      ) : current ? (
+        <AssessmentQuestionCard
+          title={t(current.titleKey)}
+          subtitle={
+            current.part === 1
+              ? `${t("press_part1_title")} · ${t("press_part1_sub")}`
+              : `${t("press_part2_title")} · ${t("press_part2_sub")}`
           }
+          progress={flow.progress}
+          choices={[
+            { value: 0, label: t("press_opt_no"), badge: "0" },
+            { value: 1, label: t("press_opt_yes"), badge: "1" },
+          ]}
+          selected={flow.state.answers[current.id]}
+          onSelect={(answer) => flow.answer(current.id, answer)}
+          onBack={flow.back}
+          canGoBack={flow.state.position > 0}
+          labels={getAssessmentUiLabels(lang)}
         />
-      ))}
-
-      <Card>
-        <Title>{t("result")}</Title>
-
-        <Text
-          style={{
-            color: theme.colors.text,
-            fontSize: 20,
-            fontWeight: "900",
-          }}
-        >
-          {t("press_part1_score")} {part1Score}
-        </Text>
-
-        <Text
-          style={{
-            color: theme.colors.text,
-            fontSize: 20,
-            fontWeight: "900",
-            marginTop: 6,
-          }}
-        >
-          {t("press_part2_score")} {part2Score}
-        </Text>
-
-        <Text
-          style={{
-            color: theme.colors.mutedText,
-            fontSize: 12,
-            marginTop: 6,
-          }}
-        >
-          {t("tool_answered")} {answeredCount}/{totalItems}
-        </Text>
-
-        <View
-          style={{
-            marginTop: 10,
-            borderRadius: 14,
-            borderWidth: 1,
-            borderColor: theme.colors.cardBorder,
-            padding: 12,
-            backgroundColor: part1Positive
-              ? "rgba(255,209,102,0.12)"
-              : "rgba(140,233,154,0.10)",
-            gap: 8,
-          }}
-        >
-          <Text
-            style={{
-              color: theme.colors.text,
-              fontSize: 14,
-              lineHeight: 18,
-            }}
-          >
-            {allAnswered
-              ? part1Positive
-                ? t("press_part1_positive")
-                : t("press_part1_negative")
-              : t("press_needAll")}
-          </Text>
-
-          <Text
-            style={{
-              color: theme.colors.mutedText,
-              fontSize: 12,
-              lineHeight: 17,
-            }}
-          >
-            {t("press_result_disclaimer")}
-          </Text>
-        </View>
-
-        <View style={{ flexDirection: "row", gap: 10, marginTop: 12 }}>
-          <Pressable
-            onPress={reset}
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.75 : 1,
-              flex: 1,
-              paddingVertical: 10,
-              borderRadius: 14,
-              borderWidth: 1,
-              borderColor: theme.colors.cardBorder,
-              backgroundColor: "rgba(0,0,0,0.10)",
-              alignItems: "center",
-            })}
-          >
-            <Text style={{ color: theme.colors.text, fontWeight: "900" }}>
-              {t("reset")}
-            </Text>
-          </Pressable>
-        </View>
-      </Card>
-
-      <CollapsibleCard
-        title={t("tool_disclaimer_title")}
-        subtitle={disclaimerText}
-      >
-        <View
-          style={{
-            borderRadius: 14,
-            borderWidth: 1,
-            borderColor: theme.colors.cardBorder,
-            padding: 12,
-            backgroundColor: "rgba(255,209,102,0.10)",
-            gap: 8,
-          }}
-        >
-          <Text
-            style={{
-              color: theme.colors.text,
-              fontSize: 14,
-              lineHeight: 20,
-            }}
-          >
-            {disclaimerText}
-          </Text>
-        </View>
-      </CollapsibleCard>
-
-      <CollapsibleCard
-        title={t("tool_sources_title")}
-        subtitle={sourcesSubText}
-      >
-        <Subtle style={{ marginBottom: 8 }}>{sourcesSubText}</Subtle>
-
-        <View style={{ marginTop: 4 }}>
-          {(reference?.sources ?? []).map((source) => (
-            <SourceItem
-              key={source.id}
-              title={source.title?.[lang] ?? source.title?.en ?? ""}
-              subtitle={source.subtitle?.[lang] ?? source.subtitle?.en ?? ""}
-              url={source.url?.[lang] ?? source.url?.en}
-            />
-          ))}
-        </View>
-      </CollapsibleCard>
+      ) : null}
+      <AssessmentReferenceCards
+        reference={reference}
+        lang={lang}
+        disclaimerTitle={t("tool_disclaimer_title")}
+        sourcesTitle={t("tool_sources_title")}
+      />
     </>
   );
 }

@@ -18,7 +18,9 @@ import { Background } from "../../../src/ui/Background";
 import { CollapsibleCard } from "../../../src/ui/CollapsibleCard";
 import { Card, Screen, Subtle, Title } from "../../../src/ui/Ui";
 import { theme } from "../../../src/ui/theme";
-import { hapticReset } from "../../../src/ui/haptics";
+import type { AssessmentDefinition } from "../../../src/domain/assessment-flow/flow";
+import { useAssessmentFlow } from "../../../src/features/assessment-flow/AssessmentFlow";
+import { getSpinalTraumaTransition, isSpinalTraumaStep } from "../../../src/domain/assessments/spinalTrauma";
 
 type AnswerKey = "yes" | "no";
 type StepId = "penetrating" | "critical" | "tenderOrNeuro";
@@ -61,6 +63,22 @@ const steps: Step[] = [
     noNext: "none",
   },
 ];
+
+const flowDefinition: AssessmentDefinition<StepId, AnswerKey> = {
+  startStepId: "penetrating",
+  steps: steps.map((step) => ({
+    id: step.id,
+    next: (answer) => {
+      const next = getSpinalTraumaTransition(step.id, answer);
+      return isSpinalTraumaStep(next) ? next : null;
+    },
+  })),
+  totalSteps: (answers) => {
+    if (answers.penetrating === "yes") return 1;
+    if (answers.critical === "yes") return 2;
+    return 3;
+  },
+};
 
 function outcomeFromSelections(selections: Selection[]): OutcomeId | null {
   let current: StepId | OutcomeId = "penetrating";
@@ -177,7 +195,7 @@ export default function SpinalTraumaFlow() {
   const lang = settings.language === "da" ? "da" : "en";
 
   const [reference, setReference] = useState<ReferenceDoc | null>(null);
-  const [selections, setSelections] = useState<Selection[]>([]);
+  const flow = useAssessmentFlow(flowDefinition);
   const [showInfo, setShowInfo] = useState(false);
 
   useEffect(() => {
@@ -202,35 +220,11 @@ export default function SpinalTraumaFlow() {
     };
   }, []);
 
-  const currentStepId: StepId | null = useMemo(() => {
-    let current: StepId | OutcomeId = "penetrating";
-
-    const selMap = new Map<StepId, AnswerKey>();
-    selections.forEach((s) => selMap.set(s.stepId, s.answer));
-
-    for (let i = 0; i < 10; i++) {
-      if (
-        current === "none" ||
-        current === "spinal" ||
-        current === "timeCritical"
-      ) {
-        return null;
-      }
-
-      const step = steps.find((s) => s.id === current);
-      if (!step) return null;
-
-      const ans = selMap.get(step.id);
-      if (!ans) return step.id;
-
-      current =
-        ans === "yes"
-          ? (step.yesNext as StepId | OutcomeId)
-          : (step.noNext as StepId | OutcomeId);
-    }
-
-    return null;
-  }, [selections]);
+  const selections = flow.state.path.flatMap((stepId) => {
+    const answer = flow.state.answers[stepId];
+    return answer ? [{ stepId, answer }] : [];
+  });
+  const currentStepId = flow.currentStepId;
 
   const currentStep = useMemo(
     () => (currentStepId ? steps.find((s) => s.id === currentStepId) : null),
@@ -243,20 +237,15 @@ export default function SpinalTraumaFlow() {
   );
 
   function answer(stepId: StepId, a: AnswerKey) {
-    setSelections((prev) => {
-      const idx = prev.findIndex((x) => x.stepId === stepId);
-      const trimmed = idx >= 0 ? prev.slice(0, idx) : prev.slice();
-      return [...trimmed, { stepId, answer: a }];
-    });
+    flow.answer(stepId, a);
   }
 
   function back() {
-    setSelections((prev) => prev.slice(0, -1));
+    flow.back();
   }
 
   function reset() {
-    hapticReset();
-    setSelections([]);
+    flow.restart();
     setShowInfo(false);
   }
 

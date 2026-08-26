@@ -1,399 +1,54 @@
-import { useMemo, useState } from "react";
-import { Alert, Linking, Pressable, Text, View } from "react-native";
-import { useT } from "../../../src/i18n/useT";
-import type { Key } from "../../../src/i18n/strings";
-import { Card, Subtle, Title } from "../../../src/ui/Ui";
-import { theme } from "../../../src/ui/theme";
-import { hapticReset } from "../../../src/ui/haptics";
+import type { Key } from "../../i18n/strings";
+import { useT } from "../../i18n/useT";
 import type { ReferenceDoc } from "../../services/referenceService";
-import { CollapsibleCard } from "../../ui/CollapsibleCard";
+import { classifyApgar, sumAssessmentAnswers } from "../../domain/assessments/simpleScores";
+import {
+  FixedChoiceAssessment,
+  type FixedChoiceItem,
+} from "../assessment-flow/FixedChoiceAssessment";
 
-type ApgarKey = "appearance" | "pulse" | "grimace" | "activity" | "respiration";
-
-type ApgarOption = {
-  points: 0 | 1 | 2;
-  labelKey: Key;
-};
-
-type ApgarItem = {
-  key: ApgarKey;
+const definitions: readonly {
+  id: string;
   titleKey: Key;
-  options: ApgarOption[];
-};
-
-const items: ApgarItem[] = [
-  {
-    key: "appearance",
-    titleKey: "apgar_appearance_title",
-    options: [
-      { points: 0, labelKey: "apgar_appearance_0" },
-      { points: 1, labelKey: "apgar_appearance_1" },
-      { points: 2, labelKey: "apgar_appearance_2" },
-    ],
-  },
-  {
-    key: "pulse",
-    titleKey: "apgar_pulse_title",
-    options: [
-      { points: 0, labelKey: "apgar_pulse_0" },
-      { points: 1, labelKey: "apgar_pulse_1" },
-      { points: 2, labelKey: "apgar_pulse_2" },
-    ],
-  },
-  {
-    key: "grimace",
-    titleKey: "apgar_grimace_title",
-    options: [
-      { points: 0, labelKey: "apgar_grimace_0" },
-      { points: 1, labelKey: "apgar_grimace_1" },
-      { points: 2, labelKey: "apgar_grimace_2" },
-    ],
-  },
-  {
-    key: "activity",
-    titleKey: "apgar_activity_title",
-    options: [
-      { points: 0, labelKey: "apgar_activity_0" },
-      { points: 1, labelKey: "apgar_activity_1" },
-      { points: 2, labelKey: "apgar_activity_2" },
-    ],
-  },
-  {
-    key: "respiration",
-    titleKey: "apgar_respiration_title",
-    options: [
-      { points: 0, labelKey: "apgar_respiration_0" },
-      { points: 1, labelKey: "apgar_respiration_1" },
-      { points: 2, labelKey: "apgar_respiration_2" },
-    ],
-  },
+  options: readonly Key[];
+}[] = [
+  { id: "appearance", titleKey: "apgar_appearance_title", options: ["apgar_appearance_0", "apgar_appearance_1", "apgar_appearance_2"] },
+  { id: "pulse", titleKey: "apgar_pulse_title", options: ["apgar_pulse_0", "apgar_pulse_1", "apgar_pulse_2"] },
+  { id: "grimace", titleKey: "apgar_grimace_title", options: ["apgar_grimace_0", "apgar_grimace_1", "apgar_grimace_2"] },
+  { id: "activity", titleKey: "apgar_activity_title", options: ["apgar_activity_0", "apgar_activity_1", "apgar_activity_2"] },
+  { id: "respiration", titleKey: "apgar_respiration_title", options: ["apgar_respiration_0", "apgar_respiration_1", "apgar_respiration_2"] },
 ];
 
-function ScorePill({
-  active,
-  children,
-}: {
-  active: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <View
-      style={{
-        width: 26,
-        height: 26,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: theme.colors.cardBorder,
-        backgroundColor: active ? "rgba(255,209,102,0.25)" : "transparent",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <Text style={{ color: theme.colors.text, fontWeight: "900" }}>
-        {children}
-      </Text>
-    </View>
-  );
-}
-
-function SourceItem({
-  title,
-  subtitle,
-  url,
-}: {
-  title: string;
-  subtitle?: string;
-  url?: string;
-}) {
-  const openUrl = async () => {
-    if (!url) return;
-
-    try {
-      const supported = await Linking.canOpenURL(url);
-      if (!supported) {
-        Alert.alert("Could not open link", url);
-        return;
-      }
-      await Linking.openURL(url);
-    } catch {
-      Alert.alert("Could not open link", url);
-    }
-  };
-
-  return (
-    <View
-      style={{
-        paddingVertical: 8,
-        borderBottomWidth: 1,
-        borderBottomColor: "rgba(255,255,255,0.06)",
-      }}
-    >
-      <Text
-        style={{
-          color: theme.colors.text,
-          fontSize: 14,
-          fontWeight: "800",
-          lineHeight: 18,
-        }}
-      >
-        {title}
-      </Text>
-      {!!subtitle && (
-        <Text
-          style={{
-            color: theme.colors.mutedText,
-            fontSize: 12,
-            lineHeight: 17,
-            marginTop: 2,
-          }}
-        >
-          {subtitle}
-        </Text>
-      )}
-      {!!url && (
-        <Pressable
-          onPress={openUrl}
-          style={({ pressed }) => ({
-            opacity: pressed ? 0.75 : 1,
-            marginTop: 8,
-          })}
-        >
-          <Text
-            style={{
-              color: theme.colors.text,
-              fontSize: 13,
-              fontWeight: "800",
-              textDecorationLine: "underline",
-            }}
-          >
-            Open source
-          </Text>
-        </Pressable>
-      )}
-    </View>
-  );
-}
-
-type Props = {
-  lang: "en" | "da";
-  reference: ReferenceDoc | null;
-};
-
-export default function ApgarContent({ lang, reference }: Props) {
+export default function ApgarContent({ lang, reference }: { lang: "en" | "da"; reference: ReferenceDoc | null }) {
   const { t } = useT();
-
-  const [selected, setSelected] = useState<
-    Partial<Record<ApgarKey, 0 | 1 | 2>>
-  >({});
-
-  const total = useMemo(() => {
-    return items.reduce((sum, it) => sum + (selected[it.key] ?? 0), 0);
-  }, [selected]);
-
-  const answeredCount = useMemo(() => {
-    return items.filter((it) => selected[it.key] !== undefined).length;
-  }, [selected]);
-
-  const allAnswered = answeredCount === items.length;
-
-  const interpretationKey =
-    total >= 7
-      ? "apgar_interp_ok"
-      : total >= 4
-        ? "apgar_interp_mod"
-        : "apgar_interp_crit";
-
-  const disclaimerText = reference?.disclaimer?.[lang] ?? "";
-  const sourcesSubText = reference?.sourcesSub?.[lang] ?? "";
-
-  function reset() {
-    hapticReset();
-    setSelected({});
-  }
-
+  const items: FixedChoiceItem<number>[] = definitions.map((item) => ({
+    id: item.id,
+    title: t(item.titleKey),
+    choices: item.options.map((labelKey, points) => ({
+      value: points,
+      label: t(labelKey),
+      badge: String(points),
+    })),
+  }));
   return (
-    <>
-      <Card>
-        <Title>{t("apgar_title")}</Title>
-        <Subtle>{t("apgar_sub")}</Subtle>
-      </Card>
-
-      {items.map((it) => {
-        const current = selected[it.key];
-        return (
-          <Card key={it.key}>
-            <Text
-              style={{
-                color: theme.colors.text,
-                fontSize: 16,
-                fontWeight: "900",
-                marginBottom: 8,
-              }}
-            >
-              {t(it.titleKey)}
-            </Text>
-
-            <View style={{ gap: 8 }}>
-              {it.options.map((opt) => {
-                const on = current === opt.points;
-                return (
-                  <Pressable
-                    key={opt.points}
-                    onPress={() =>
-                      setSelected((p) => ({ ...p, [it.key]: opt.points }))
-                    }
-                    style={({ pressed }) => ({
-                      opacity: pressed ? 0.75 : 1,
-                      borderRadius: 14,
-                      borderWidth: 1,
-                      borderColor: theme.colors.cardBorder,
-                      padding: 12,
-                      backgroundColor: on
-                        ? "rgba(255,209,102,0.10)"
-                        : "rgba(0,0,0,0.10)",
-                      flexDirection: "row",
-                      alignItems: "flex-start",
-                      gap: 10,
-                    })}
-                  >
-                    <ScorePill active={on}>{opt.points}</ScorePill>
-                    <Text
-                      style={{
-                        color: theme.colors.text,
-                        fontWeight: "800",
-                        flex: 1,
-                        lineHeight: 18,
-                      }}
-                    >
-                      {t(opt.labelKey)}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </Card>
-        );
-      })}
-
-      <Card>
-        <Title>{t("result")}</Title>
-
-        <Text
-          style={{
-            color: theme.colors.text,
-            fontSize: 22,
-            fontWeight: "900",
-          }}
-        >
-          {t("apgar_scoreLabel")} {total} / 10
-        </Text>
-
-        <Text
-          style={{
-            color: theme.colors.mutedText,
-            fontSize: 12,
-            marginTop: 4,
-          }}
-        >
-          {t("tool_answered")} {answeredCount}/{items.length}
-        </Text>
-
-        <View
-          style={{
-            marginTop: 10,
-            borderRadius: 14,
-            borderWidth: 1,
-            borderColor: theme.colors.cardBorder,
-            padding: 12,
-            backgroundColor:
-              total <= 3
-                ? "rgba(255,107,107,0.12)"
-                : total <= 6
-                  ? "rgba(255,209,102,0.12)"
-                  : "rgba(140,233,154,0.10)",
-            gap: 8,
-          }}
-        >
-          <Text style={{ color: theme.colors.text, lineHeight: 18 }}>
-            {allAnswered ? t(interpretationKey) : t("apgar_needAll")}
-          </Text>
-
-          <Text
-            style={{
-              color: theme.colors.mutedText,
-              fontSize: 12,
-              lineHeight: 17,
-            }}
-          >
-            {t("apgar_result_disclaimer")}
-          </Text>
-        </View>
-
-        <View style={{ flexDirection: "row", gap: 10, marginTop: 12 }}>
-          <Pressable
-            onPress={reset}
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.75 : 1,
-              flex: 1,
-              paddingVertical: 10,
-              borderRadius: 14,
-              borderWidth: 1,
-              borderColor: theme.colors.cardBorder,
-              backgroundColor: "rgba(0,0,0,0.10)",
-              alignItems: "center",
-            })}
-          >
-            <Text style={{ color: theme.colors.text, fontWeight: "900" }}>
-              {t("reset")}
-            </Text>
-          </Pressable>
-        </View>
-      </Card>
-
-      <CollapsibleCard
-        title={t("tool_disclaimer_title")}
-        subtitle={disclaimerText}
-      >
-        <View
-          style={{
-            borderRadius: 14,
-            borderWidth: 1,
-            borderColor: theme.colors.cardBorder,
-            padding: 12,
-            backgroundColor: "rgba(255,209,102,0.10)",
-          }}
-        >
-          <Text
-            style={{
-              color: theme.colors.text,
-              fontSize: 14,
-              lineHeight: 20,
-            }}
-          >
-            {disclaimerText}
-          </Text>
-        </View>
-      </CollapsibleCard>
-
-      <CollapsibleCard
-        title={t("tool_sources_title")}
-        subtitle={sourcesSubText}
-      >
-        <Subtle style={{ marginBottom: 8 }}>{sourcesSubText}</Subtle>
-
-        <View style={{ marginTop: 8 }}>
-          {(reference?.sources ?? []).map((source) => (
-            <SourceItem
-              key={source.id}
-              title={source.title?.[lang] ?? source.title?.en ?? ""}
-              subtitle={source.subtitle?.[lang] ?? source.subtitle?.en ?? ""}
-              url={source.url?.[lang] ?? source.url?.en}
-            />
-          ))}
-        </View>
-      </CollapsibleCard>
-
-      <Subtle style={{ textAlign: "center" }}>{t("apgar_disclaimer")}</Subtle>
-    </>
+    <FixedChoiceAssessment
+      title={t("apgar_title")}
+      intro={t("apgar_sub")}
+      items={items}
+      evaluate={(answers) => {
+        const total = sumAssessmentAnswers(definitions.map((item) => item.id), answers);
+        const interpretationKey = { ok: "apgar_interp_ok", moderate: "apgar_interp_mod", critical: "apgar_interp_crit" }[classifyApgar(total)] as Key;
+        return {
+          score: `${t("apgar_scoreLabel")} ${total} / 10`,
+          interpretation: t(interpretationKey),
+          supportingText: t("apgar_result_disclaimer"),
+        };
+      }}
+      reference={reference}
+      lang={lang}
+      disclaimerTitle={t("tool_disclaimer_title")}
+      sourcesTitle={t("tool_sources_title")}
+      footer={t("apgar_disclaimer")}
+    />
   );
 }

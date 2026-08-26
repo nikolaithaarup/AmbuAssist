@@ -516,7 +516,7 @@ export const en = {
   // WELLS (DVT)
   // =========================================================
   wells_title: "Wells score (DVT)",
-  wells_sub: "Tick findings — score and interpretation update live.",
+  wells_sub: "Answer each finding — score and interpretation appear when complete.",
   wells_score: "Score",
   wells_twoLevel: "Two-level",
   wells_threeLevel: "Three-level (classic)",
@@ -1992,7 +1992,7 @@ export const da: typeof en = {
   // WELLS (DVT)
   // =========================================================
   wells_title: "Wells-score (DVT)",
-  wells_sub: "Afkryds fund — score og tolkning opdateres live.",
+  wells_sub: "Besvar hvert fund — score og tolkning vises, når alle er besvaret.",
   wells_score: "Score",
   wells_twoLevel: "To-niveau",
   wells_threeLevel: "Tre-niveau (klassisk)",

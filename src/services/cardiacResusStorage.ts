@@ -9,6 +9,7 @@ const KNOWN_EVENT_TYPES = new Set<ArrestEventType>([
   "cycle_timer_reset", "adrenaline_given", "adrenaline_timer_reset",
   "amiodarone_given", "airway_event", "rosc", "mors",
   "transport_decision", "physician_instruction", "free_note", "session_ended",
+  "event_correction",
 ]);
 
 function isValidTimestamp(value: unknown): value is string {
@@ -114,6 +115,27 @@ export async function getActiveArrestSession(): Promise<ArrestSession | null> {
 export async function saveActiveArrestSession(session: ArrestSession): Promise<void> {
   if (session.status !== "active") throw new Error("Only active sessions can be saved as drafts");
   await AsyncStorage.setItem(ACTIVE_SESSION_KEY, JSON.stringify(session));
+}
+
+export type SerializedArrestSessionWriter = {
+  save: (session: ArrestSession) => Promise<void>;
+  flush: () => Promise<void>;
+};
+
+export function createSerializedArrestSessionWriter(
+  persist: (session: ArrestSession) => Promise<void> = saveActiveArrestSession,
+): SerializedArrestSessionWriter {
+  let pending: Promise<void> = Promise.resolve();
+  return {
+    save(session) {
+      const write = pending.catch(() => undefined).then(() => persist(session));
+      pending = write;
+      return write;
+    },
+    flush() {
+      return pending;
+    },
+  };
 }
 
 export async function clearActiveArrestSession(): Promise<void> {

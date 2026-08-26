@@ -15,6 +15,7 @@ export const EVENT_LABELS_DA: Record<ArrestEventType, string> = {
   transport_decision: "Transportbeslutning registreret",
   physician_instruction: "Lægelig ordre registreret",
   free_note: "Note registreret",
+  event_correction: "Registrering rettet",
   session_ended: "Session afsluttet",
 };
 

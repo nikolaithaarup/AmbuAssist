@@ -500,6 +500,9 @@ export default function DestinationTool() {
   const [loadingHospitalPhones, setLoadingHospitalPhones] = useState(false);
 
   const selectedSpecialtyKey = area === "byen" ? byenCat : regCat;
+  const selectedCategoryLabel = area === "byen"
+    ? t(BYEN_CATEGORIES.find((item) => item.key === byenCat)?.labelKey as any)
+    : getRegionCategoryLabel(t as TranslateFn, regCat);
 
   const lastGeocodeAtRef = useRef(0);
   const lastGeocodeCoordsRef = useRef<{ lat: number; lon: number } | null>(
@@ -891,11 +894,11 @@ export default function DestinationTool() {
     const street = selectedStreet || streetQ;
     if (!street) return;
 
-    const number = Number(houseNumberQ);
+    const number = parseHouseNumber(houseNumberQ).number;
     applyStreetRoute(
       street,
       side,
-      Number.isFinite(number) && number > 0 ? number : undefined,
+      number,
       postalCodeQ || undefined,
     );
   };
@@ -1632,18 +1635,14 @@ export default function DestinationTool() {
                     {detectedArea.label || t("dest_unknown_area")}
                   </Text>
 
-                  {detectedArea.accuracyMeters !== undefined && (
+                  {detectedArea.accuracyMeters !== undefined && detectedArea.confidence !== "high" && (
                     <Text style={{ color: theme.colors.mutedText }}>
                       GPS-præcision: ±{Math.round(detectedArea.accuracyMeters)} m
-                      {detectedArea.confidence
-                        ? ` • ${
-                            detectedArea.confidence === "high"
-                              ? "høj sikkerhed"
-                              : detectedArea.confidence === "medium"
-                                ? "middel sikkerhed – kontrollér adressen"
-                                : "lav sikkerhed"
-                          }`
-                        : ""}
+                      {detectedArea.confidence === "medium"
+                        ? " • middel sikkerhed – kontrollér adressen"
+                        : detectedArea.confidence === "poor"
+                          ? " • lav sikkerhed"
+                          : ""}
                     </Text>
                   )}
 
@@ -1750,18 +1749,19 @@ export default function DestinationTool() {
                     <Input
                       value={houseNumberQ}
                       onChangeText={(value) => {
-                        const digits = value.replace(/\D/g, "");
-                        setHouseNumberQ(digits);
-                        const number = Number(digits);
+                        const displayed = value.replace(/[^0-9a-zæøå]/giu, "").slice(0, 6);
+                        setHouseNumberQ(displayed);
+                        const number = parseHouseNumber(displayed).number;
                         applyStreetRoute(
                           selectedStreet,
                           "",
-                          Number.isFinite(number) && number > 0 ? number : undefined,
+                          number,
                           postalCodeQ || undefined,
                         );
                       }}
-                      placeholder="Fx 15"
-                      keyboardType="number-pad"
+                      placeholder="Fx 15A"
+                      keyboardType="default"
+                      autoCapitalize="characters"
                     />
                     {streetRouteNeedsHouseNumber && (
                       <Text style={{ color: theme.colors.warn, fontWeight: "700" }}>
@@ -1779,13 +1779,11 @@ export default function DestinationTool() {
                       onChangeText={(value) => {
                         const digits = value.replace(/\D/g, "").slice(0, 4);
                         setPostalCodeQ(digits);
-                        const number = Number(houseNumberQ);
+                        const number = parseHouseNumber(houseNumberQ).number;
                         applyStreetRoute(
                           selectedStreet,
                           streetSide,
-                          Number.isFinite(number) && number > 0
-                            ? number
-                            : undefined,
+                          number,
                           digits || undefined,
                         );
                       }}
@@ -1913,49 +1911,7 @@ export default function DestinationTool() {
             </Card>
           )}
 
-          <Card>
-            <Title>{lang === "da" ? "Vælg hospital manuelt" : "Choose hospital manually"}</Title>
-            <Text style={{ color: theme.colors.mutedText, marginTop: 8, marginBottom: 10 }}>
-              {lang === "da"
-                ? "Tilgængelig uanset GPS, tilladelser og adresseopslag."
-                : "Available regardless of GPS, permissions, and address lookup."}
-            </Text>
-            <SimpleDropdown<HospitalCode>
-              label={lang === "da" ? "Hospital" : "Hospital"}
-              value={manualHospitalCode}
-              open={manualHospitalOpen}
-              onToggle={() => {
-                closeAllDropdowns();
-                setManualHospitalOpen((value) => !value);
-              }}
-              options={MANUAL_HOSPITAL_CODES}
-              onSelect={(value) => {
-                setManualHospitalCode(value);
-                setManualHospitalOpen(false);
-              }}
-              renderValue={(value) => hospitalLabel(t as TranslateFn, value)}
-              renderOption={(value) => (
-                <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
-                  {hospitalLabel(t as TranslateFn, value)}
-                </Text>
-              )}
-              placeholder={lang === "da" ? "Vælg hospital" : "Choose hospital"}
-              maxHeight={260}
-            />
-            {!!manualHospitalCode && (
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => setManualHospitalCode("")}
-                style={[chip(false), { marginTop: 10 }]}
-              >
-                <Text style={{ color: theme.colors.text, fontWeight: "800", textAlign: "center" }}>
-                  Brug automatisk resultat igen
-                </Text>
-              </Pressable>
-            )}
-          </Card>
-
-          <Card>
+          <Card style={resolvedHospital ? { backgroundColor: theme.colors.cardElevated, borderColor: theme.colors.accent } : undefined}>
             <Title>{t("dest_result")}</Title>
 
             {!resolvedHospital ? (
@@ -1979,6 +1935,26 @@ export default function DestinationTool() {
                     }}
                   >
                     {resolvedHospital.label}
+                  </Text>
+                </Row>
+
+                {!!resolvedHospital.extra && (
+                  <Row style={{ alignItems: "flex-start" }}>
+                    <Text style={{ color: theme.colors.mutedText, width: 130 }}>
+                      Grundlag
+                    </Text>
+                    <Text style={{ color: theme.colors.text, fontWeight: "700", flex: 1 }}>
+                      {resolvedHospital.extra}
+                    </Text>
+                  </Row>
+                )}
+
+                <Row style={{ alignItems: "flex-start" }}>
+                  <Text style={{ color: theme.colors.mutedText, width: 130 }}>
+                    {t("dest_category")}
+                  </Text>
+                  <Text style={{ color: theme.colors.text, fontWeight: "700", flex: 1 }}>
+                    {selectedCategoryLabel}
                   </Text>
                 </Row>
 
@@ -2073,6 +2049,19 @@ export default function DestinationTool() {
                   </Pressable>
                 )}
 
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => {
+                    setManualHospitalCode("");
+                    setSearchVisible(true);
+                  }}
+                  style={({ pressed }) => ({ minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}
+                >
+                  <Text style={{ color: theme.colors.accentMuted, fontWeight: "900" }}>
+                    {area === "byen" ? "Ret adresse" : "Ret område"}
+                  </Text>
+                </Pressable>
+
                 {!loadingHospitalPhones &&
                   resolvedHospital.code !== "UNKNOWN" &&
                   hospitalPhones.length === 0 && (
@@ -2098,6 +2087,45 @@ export default function DestinationTool() {
               </View>
             )}
           </Card>
+
+          <CollapsibleCard
+            title={lang === "da" ? "Vælg hospital manuelt" : "Choose hospital manually"}
+            subtitle={lang === "da" ? "Brug kun hvis automatisk visitation ikke kan afklares." : "Use when automatic destination cannot be resolved."}
+            defaultOpen={!!manualHospitalCode}
+          >
+            <Text style={{ color: theme.colors.mutedText, marginBottom: 10 }}>
+              {lang === "da"
+                ? "Tilgængelig uanset GPS, tilladelser og adresseopslag."
+                : "Available regardless of GPS, permissions, and address lookup."}
+            </Text>
+            <SimpleDropdown<HospitalCode>
+              label="Hospital"
+              value={manualHospitalCode}
+              open={manualHospitalOpen}
+              onToggle={() => {
+                closeAllDropdowns();
+                setManualHospitalOpen((value) => !value);
+              }}
+              options={MANUAL_HOSPITAL_CODES}
+              onSelect={(value) => {
+                setManualHospitalCode(value);
+                setManualHospitalOpen(false);
+              }}
+              renderValue={(value) => hospitalLabel(t as TranslateFn, value)}
+              renderOption={(value) => (
+                <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
+                  {hospitalLabel(t as TranslateFn, value)}
+                </Text>
+              )}
+              placeholder={lang === "da" ? "Vælg hospital" : "Choose hospital"}
+              maxHeight={260}
+            />
+            {!!manualHospitalCode && (
+              <Pressable accessibilityRole="button" onPress={() => setManualHospitalCode("")} style={[chip(false), { marginTop: 10 }]}>
+                <Text style={{ color: theme.colors.text, fontWeight: "800", textAlign: "center" }}>Brug automatisk resultat igen</Text>
+              </Pressable>
+            )}
+          </CollapsibleCard>
 
           {__DEV__ && Object.keys(diagnostics).length > 0 && (
             <CollapsibleCard

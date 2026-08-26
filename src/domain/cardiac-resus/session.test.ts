@@ -5,10 +5,13 @@ import {
   addShockEvent,
   addNoteEvent,
   createArrestSession,
+  correctLatestManualArrestEvent,
   endArrestSession,
   endArrestSessionWithOutcome,
   findLatestAdrenalineEvent,
   findLatestAdrenalineTimerAnchorEvent,
+  findLatestCorrectableArrestEvent,
+  getCorrectedArrestEventIds,
   getAdrenalineReminderSeconds,
   getCurrentCycleProgress,
   getCycleDisplayState,
@@ -65,6 +68,11 @@ describe("CardiacResus session utilities", () => {
     const ended = endArrestSession(createArrestSession(START), "2026-07-12T10:03:00.000Z");
     expect(ended).toMatchObject({ status: "ended", endedAt: "2026-07-12T10:03:00.000Z" });
     expect(ended.events.at(-1)).toMatchObject({ type: "session_ended", elapsedSeconds: 180, source: "system" });
+  });
+
+  test("rejects late manual events after a session has ended", () => {
+    const ended = endArrestSession(createArrestSession(START), "2026-07-12T10:03:00.000Z");
+    expect(addArrestEvent(ended, "adrenaline_given", "2026-07-12T10:03:01.000Z")).toBe(ended);
   });
 
   test("defensively clamps times before the session start", () => {
@@ -268,5 +276,66 @@ describe("CardiacResus session utilities", () => {
       hasMors: false,
       totalRecordedEvents: 3,
     });
+  });
+
+  test("suppresses an identical rapid manual tap but accepts a later event", () => {
+    let session = addArrestEvent(createArrestSession(START), "adrenaline_given", "2026-07-12T10:01:00.000Z");
+    const duplicate = addArrestEvent(session, "adrenaline_given", "2026-07-12T10:01:00.500Z");
+    expect(duplicate).toBe(session);
+    session = addArrestEvent(session, "adrenaline_given", "2026-07-12T10:01:01.000Z");
+    expect(summarizeArrestSession(session).adrenalineCount).toBe(2);
+  });
+
+  test("accepts different medication events in rapid succession", () => {
+    let session = addArrestEvent(createArrestSession(START), "adrenaline_given", "2026-07-12T10:01:00.000Z");
+    session = addArrestEvent(session, "amiodarone_given", "2026-07-12T10:01:00.100Z");
+    expect(summarizeArrestSession(session)).toMatchObject({ adrenalineCount: 1, amiodaroneCount: 1 });
+  });
+
+  test("accepts a shock followed rapidly by another event", () => {
+    let session = addShockEvent(createArrestSession(START), "VF", "2026-07-12T10:01:00.000Z");
+    session = addArrestEvent(session, "adrenaline_given", "2026-07-12T10:01:00.100Z");
+    expect(session.events.slice(-2).map((event) => event.type)).toEqual(["shock_delivered", "adrenaline_given"]);
+  });
+
+  test("treats shock rhythm as part of rapid-event identity", () => {
+    let session = addShockEvent(createArrestSession(START), "VF", "2026-07-12T10:01:00.000Z");
+    session = addShockEvent(session, "pVT", "2026-07-12T10:01:00.100Z");
+    expect(summarizeArrestSession(session)).toMatchObject({ shockCount: 2, shockVfCount: 1, shockPvtCount: 1 });
+  });
+
+  test("correction is append-only and removes the target from clinical state", () => {
+    let session = addShockEvent(createArrestSession(START), "VF", "2026-07-12T10:01:00.000Z");
+    const shockId = session.events.at(-1)!.id;
+    session = correctLatestManualArrestEvent(session, "2026-07-12T10:01:10.000Z");
+    expect(session.events.at(-1)).toMatchObject({ type: "event_correction", correctedEventId: shockId });
+    expect(session.events.some((event) => event.id === shockId)).toBe(true);
+    expect(getCorrectedArrestEventIds(session)).toEqual(new Set([shockId]));
+    expect(summarizeArrestSession(session)).toMatchObject({ shockCount: 0, totalRecordedEvents: 0 });
+    expect(findLatestCorrectableArrestEvent(session)).toBeNull();
+  });
+
+  test.each([
+    ["adrenaline_given", "adrenalineCount"],
+    ["amiodarone_given", "amiodaroneCount"],
+    ["airway_event", "airwayCount"],
+  ] as const)("correcting %s removes it from %s", (type, countKey) => {
+    let session = addArrestEvent(createArrestSession(START), type, "2026-07-12T10:01:00.000Z");
+    session = correctLatestManualArrestEvent(session, "2026-07-12T10:01:10.000Z");
+    expect(summarizeArrestSession(session)[countKey]).toBe(0);
+  });
+
+  test("correcting the newest event exposes the previous one as the next correctable entry", () => {
+    let session = addArrestEvent(createArrestSession(START), "adrenaline_given", "2026-07-12T10:01:00.000Z");
+    session = addArrestEvent(session, "amiodarone_given", "2026-07-12T10:02:00.000Z");
+    session = correctLatestManualArrestEvent(session, "2026-07-12T10:02:10.000Z");
+    expect(findLatestCorrectableArrestEvent(session)?.type).toBe("adrenaline_given");
+  });
+
+  test("correcting a timer anchor restores the previous absolute-time anchor", () => {
+    let session = addArrestEvent(createArrestSession(START), "adrenaline_given", "2026-07-12T10:01:00.000Z");
+    session = addAdrenalineTimerResetEvent(session, "2026-07-12T10:03:00.000Z");
+    session = correctLatestManualArrestEvent(session, "2026-07-12T10:03:10.000Z");
+    expect(getSecondsSinceAdrenalineTimerAnchor(session, "2026-07-12T10:04:00.000Z")).toBe(180);
   });
 });

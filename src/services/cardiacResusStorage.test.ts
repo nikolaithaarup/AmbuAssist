@@ -20,6 +20,7 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
 import { addAdrenalineTimerResetEvent, addArrestEvent, addCycleTimerResetEvent, createArrestSession, endArrestSession } from "../domain/cardiac-resus/session";
 import {
   clearActiveArrestSession,
+  createSerializedArrestSessionWriter,
   inspectActiveArrestSession,
   parseStoredArrestSession,
   saveActiveArrestSession,
@@ -86,5 +87,44 @@ describe("CardiacResus storage", () => {
       "session_started", "adrenaline_given", "cycle_timer_reset", "adrenaline_timer_reset",
     ]);
     expect(parsed?.events[2].metadata).toEqual({ cycleNumberAtReset: 1 });
+  });
+
+  test("serialized writer cannot let an older slow save overwrite a newer session", async () => {
+    const calls: number[] = [];
+    const resolvers: Array<() => void> = [];
+    const writer = createSerializedArrestSessionWriter(async (session) => {
+      calls.push(session.events.length);
+      await new Promise<void>((resolve) => resolvers.push(resolve));
+    });
+    const first = createArrestSession("2026-07-12T10:00:00.000Z");
+    const second = addArrestEvent(first, "adrenaline_given", "2026-07-12T10:01:00.000Z");
+    const firstWrite = writer.save(first);
+    const secondWrite = writer.save(second);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(calls).toEqual([1]);
+    resolvers.shift()?.();
+    await firstWrite;
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(calls).toEqual([1, 2]);
+    resolvers.shift()?.();
+    await secondWrite;
+    await expect(writer.flush()).resolves.toBeUndefined();
+  });
+
+  test("serialized writer continues with a newer save after an earlier failure", async () => {
+    const calls: number[] = [];
+    const writer = createSerializedArrestSessionWriter(async (session) => {
+      calls.push(session.events.length);
+      if (calls.length === 1) throw new Error("first write failed");
+    });
+    const first = createArrestSession("2026-07-12T10:00:00.000Z");
+    const second = addArrestEvent(first, "adrenaline_given", "2026-07-12T10:01:00.000Z");
+
+    await expect(writer.save(first)).rejects.toThrow("first write failed");
+    await expect(writer.save(second)).resolves.toBeUndefined();
+    await expect(writer.flush()).resolves.toBeUndefined();
+    expect(calls).toEqual([1, 2]);
   });
 });

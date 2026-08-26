@@ -1,5 +1,6 @@
 export const DEFAULT_CYCLE_DURATION_SECONDS = 120;
 export const ADRENALINE_REMINDER_CYCLES = 2;
+export const RAPID_EVENT_GUARD_MILLISECONDS = 800;
 
 export type ArrestEventType =
   | "session_started"
@@ -16,6 +17,7 @@ export type ArrestEventType =
   | "transport_decision"
   | "physician_instruction"
   | "free_note"
+  | "event_correction"
   | "session_ended";
 
 export type ShockRhythm = "VF" | "pVT";
@@ -121,7 +123,7 @@ export function isPrechargeCueActive(
 }
 
 export function getLatestCycleTimerResetEvent(session: ArrestSession): ArrestEvent | null {
-  return session.events.reduce<ArrestEvent | null>((latest, event) => {
+  return getEffectiveArrestEvents(session).reduce<ArrestEvent | null>((latest, event) => {
     if (event.type !== "cycle_timer_reset") return latest;
     if (!latest) return event;
     return (toTimestamp(event.occurredAt) ?? 0) >= (toTimestamp(latest.occurredAt) ?? 0) ? event : latest;
@@ -156,7 +158,7 @@ export function getCycleDisplayState(session: ArrestSession, now: TimeValue): Cy
 }
 
 export function findLatestAdrenalineEvent(session: ArrestSession): ArrestEvent | null {
-  return session.events.reduce<ArrestEvent | null>((latest, event) => {
+  return getEffectiveArrestEvents(session).reduce<ArrestEvent | null>((latest, event) => {
     if (event.type !== "adrenaline_given") return latest;
     if (!latest) return event;
     const latestTime = toTimestamp(latest.occurredAt) ?? 0;
@@ -166,7 +168,7 @@ export function findLatestAdrenalineEvent(session: ArrestSession): ArrestEvent |
 }
 
 export function findLatestAdrenalineTimerAnchorEvent(session: ArrestSession): ArrestEvent | null {
-  return session.events.reduce<ArrestEvent | null>((latest, event) => {
+  return getEffectiveArrestEvents(session).reduce<ArrestEvent | null>((latest, event) => {
     if (event.type !== "adrenaline_given" && event.type !== "adrenaline_timer_reset") return latest;
     if (!latest) return event;
     return (toTimestamp(event.occurredAt) ?? 0) >= (toTimestamp(latest.occurredAt) ?? 0) ? event : latest;
@@ -196,12 +198,13 @@ export function isAdrenalineReminderDue(session: ArrestSession, now: TimeValue):
 }
 
 export function summarizeArrestSession(session: ArrestSession): ArrestSessionSummary {
-  const count = (type: ArrestEventType) => session.events.filter((event) => event.type === type).length;
+  const effectiveEvents = getEffectiveArrestEvents(session);
+  const count = (type: ArrestEventType) => effectiveEvents.filter((event) => event.type === type).length;
   const lastEventAt = session.events.reduce<string | undefined>((latest, event) => {
     if (!latest) return event.occurredAt;
     return (toTimestamp(event.occurredAt) ?? 0) >= (toTimestamp(latest) ?? 0) ? event.occurredAt : latest;
   }, undefined);
-  const outcomes = session.events.filter((event) => event.type === "rosc" || event.type === "mors");
+  const outcomes = effectiveEvents.filter((event) => event.type === "rosc" || event.type === "mors");
   const latestOutcomeEvent = outcomes.reduce<ArrestEvent | null>((latest, event) => {
     if (!latest) return event;
     return (toTimestamp(event.occurredAt) ?? 0) >= (toTimestamp(latest.occurredAt) ?? 0) ? event : latest;
@@ -210,8 +213,8 @@ export function summarizeArrestSession(session: ArrestSession): ArrestSessionSum
   return {
     durationSeconds: getElapsedSeconds(session.startedAt, session.endedAt ?? lastEventAt ?? session.startedAt),
     shockCount: count("shock_delivered"),
-    shockVfCount: session.events.filter((event) => event.type === "shock_delivered" && event.metadata?.shockRhythm === "VF").length,
-    shockPvtCount: session.events.filter((event) => event.type === "shock_delivered" && event.metadata?.shockRhythm === "pVT").length,
+    shockVfCount: effectiveEvents.filter((event) => event.type === "shock_delivered" && event.metadata?.shockRhythm === "VF").length,
+    shockPvtCount: effectiveEvents.filter((event) => event.type === "shock_delivered" && event.metadata?.shockRhythm === "pVT").length,
     adrenalineCount: count("adrenaline_given"),
     amiodaroneCount: count("amiodarone_given"),
     airwayCount: count("airway_event"),
@@ -220,7 +223,7 @@ export function summarizeArrestSession(session: ArrestSession): ArrestSessionSum
     latestOutcome: latestOutcomeEvent?.type === "rosc" || latestOutcomeEvent?.type === "mors"
       ? latestOutcomeEvent.type
       : null,
-    totalRecordedEvents: session.events.filter((event) => event.source === "manual").length,
+    totalRecordedEvents: effectiveEvents.filter((event) => event.source === "manual" && event.type !== "event_correction").length,
   };
 }
 
@@ -246,11 +249,24 @@ export function addArrestEvent(
   source: ArrestEvent["source"] = "manual",
   metadata?: ArrestEvent["metadata"],
 ): ArrestSession {
+  if (session.status === "ended" && source === "manual") return session;
   const startTimestamp = toTimestamp(session.startedAt) ?? 0;
   const requestedTimestamp = toTimestamp(now) ?? startTimestamp;
   const timestamp = Math.max(startTimestamp, requestedTimestamp);
   const elapsedSeconds = getElapsedSeconds(session.startedAt, timestamp);
   const trimmedNote = note?.trim();
+  const previous = session.events.at(-1);
+  if (
+    source === "manual" &&
+    type !== "event_correction" &&
+    previous?.source === "manual" &&
+    previous.type === type &&
+    timestamp - (toTimestamp(previous.occurredAt) ?? 0) < RAPID_EVENT_GUARD_MILLISECONDS &&
+    (previous.note ?? "") === (trimmedNote ?? "") &&
+    (previous.metadata?.shockRhythm ?? null) === (metadata?.shockRhythm ?? null)
+  ) {
+    return session;
+  }
   const event: ArrestEvent = {
     id: makeId("event", timestamp),
     type,
@@ -262,6 +278,47 @@ export function addArrestEvent(
     ...(metadata ? { metadata } : {}),
   };
   return { ...session, events: [...session.events, event] };
+}
+
+export function getEffectiveArrestEvents(session: ArrestSession): ArrestEvent[] {
+  const correctedIds = getCorrectedArrestEventIds(session);
+  return session.events.filter((event) => !correctedIds.has(event.id));
+}
+
+export function getCorrectedArrestEventIds(session: ArrestSession): Set<string> {
+  return new Set(
+    session.events.flatMap((event) => event.type === "event_correction" && event.correctedEventId ? [event.correctedEventId] : []),
+  );
+}
+
+export function findLatestCorrectableArrestEvent(session: ArrestSession): ArrestEvent | null {
+  if (session.status !== "active") return null;
+  return [...getEffectiveArrestEvents(session)].reverse().find(
+    (event) => event.source === "manual" && event.type !== "event_correction",
+  ) ?? null;
+}
+
+export function correctLatestManualArrestEvent(
+  session: ArrestSession,
+  now: TimeValue,
+): ArrestSession {
+  const target = findLatestCorrectableArrestEvent(session);
+  if (!target) return session;
+  const corrected = addArrestEvent(
+    session,
+    "event_correction",
+    now,
+    "Seneste registrering markeret som rettet",
+  );
+  const correction = corrected.events.at(-1);
+  if (!correction || correction.type !== "event_correction") return session;
+  return {
+    ...corrected,
+    events: [
+      ...corrected.events.slice(0, -1),
+      { ...correction, correctedEventId: target.id },
+    ],
+  };
 }
 
 export function addShockEvent(

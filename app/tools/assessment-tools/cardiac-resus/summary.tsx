@@ -1,7 +1,7 @@
 import { type Href, useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from "react-native";
-import { resumeArrestSession, summarizeArrestSession, type ArrestSession } from "../../../../src/domain/cardiac-resus/session";
+import { getCorrectedArrestEventIds, resumeArrestSession, summarizeArrestSession, type ArrestSession } from "../../../../src/domain/cardiac-resus/session";
 import { formatArrestEventLabel, formatElapsed } from "../../../../src/features/cardiac-resus/presentation";
 import { getLatestArrestSession, saveActiveArrestSession } from "../../../../src/services/cardiacResusStorage";
 import { Background } from "../../../../src/ui/Background";
@@ -32,6 +32,7 @@ export default function CardiacResusSummary() {
   );
 
   const summary = summarizeArrestSession(session);
+  const correctedEventIds = getCorrectedArrestEventIds(session);
   const latestOutcome = summary.latestOutcome === "rosc" ? "ROSC" : summary.latestOutcome === "mors" ? "MORS" : "Ikke registreret";
   const summaryRows = [
     ["Varighed", formatElapsed(summary.durationSeconds)],
@@ -75,12 +76,14 @@ export default function CardiacResusSummary() {
             </View>
           </Card>
           <CollapsibleCard title="Hændelseslog" subtitle={`${session.events.length} tidsstemplede registreringer`}>
-            {session.events.map((event) => (
-              <View key={event.id} style={{ flexDirection: "row", gap: 10, paddingVertical: 7, borderBottomWidth: 1, borderBottomColor: theme.colors.divider }}>
+            {session.events.map((event) => {
+              const corrected = correctedEventIds.has(event.id);
+              return (
+              <View key={event.id} accessibilityLabel={corrected ? `${formatArrestEventLabel(event)}. Rettet og ikke medregnet.` : undefined} style={{ flexDirection: "row", gap: 10, paddingVertical: 7, borderBottomWidth: 1, borderBottomColor: theme.colors.divider, opacity: corrected ? 0.58 : 1 }}>
                 <Text style={{ color: theme.colors.accentMuted, fontWeight: "800", fontVariant: ["tabular-nums"] }}>{formatElapsed(event.elapsedSeconds)}</Text>
-                <View style={{ flex: 1 }}><Text style={{ color: theme.colors.text, fontWeight: "700" }}>{formatArrestEventLabel(event)}</Text>{event.note ? <Subtle>{event.note}</Subtle> : null}</View>
+                <View style={{ flex: 1 }}><Text style={{ color: theme.colors.text, fontWeight: "700", textDecorationLine: corrected ? "line-through" : "none" }}>{formatArrestEventLabel(event)}</Text>{corrected ? <Subtle>Rettet · medregnes ikke</Subtle> : null}{event.note ? <Subtle>{event.note}</Subtle> : null}</View>
               </View>
-            ))}
+            );})}
           </CollapsibleCard>
           <Pressable
             disabled={resuming}

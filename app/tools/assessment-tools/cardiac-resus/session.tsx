@@ -1,16 +1,19 @@
 import { type Href, useRouter } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Alert, AppState, Pressable, ScrollView, Text, View } from "react-native";
 import {
   addArrestEvent,
   addAdrenalineTimerResetEvent,
   addCycleTimerResetEvent,
   addNoteEvent,
   addShockEvent,
+  correctLatestManualArrestEvent,
   endArrestSession,
   endArrestSessionWithOutcome,
   getAdrenalineReminderSeconds,
   findLatestAdrenalineTimerAnchorEvent,
+  findLatestCorrectableArrestEvent,
+  getCorrectedArrestEventIds,
   getCycleDisplayState,
   getElapsedSeconds,
   getSecondsSinceAdrenalineTimerAnchor,
@@ -20,7 +23,7 @@ import {
 } from "../../../../src/domain/cardiac-resus/session";
 import { formatArrestEventLabel, formatElapsed, VISIBLE_EVENT_BUTTONS, type EventButtonCategory } from "../../../../src/features/cardiac-resus/presentation";
 import { ActionOverlay } from "../../../../src/features/cardiac-resus/ActionOverlay";
-import { getActiveArrestSession, saveActiveArrestSession, saveEndedArrestSession } from "../../../../src/services/cardiacResusStorage";
+import { createSerializedArrestSessionWriter, getActiveArrestSession, saveEndedArrestSession } from "../../../../src/services/cardiacResusStorage";
 import { Background } from "../../../../src/ui/Background";
 import { hapticSuccess, hapticToolOpen } from "../../../../src/ui/haptics";
 import { Card, Input, Screen, Subtle, Title } from "../../../../src/ui/Ui";
@@ -34,7 +37,7 @@ const EVENT_BUTTON_COLORS: Record<EventButtonCategory, { background: string; bor
   other: { background: "rgba(255,255,255,0.06)", border: theme.colors.cardBorder },
 };
 
-type SessionDialog = "end" | "shock" | "rosc" | "mors" | "note" | "cycleReset" | "adrenalineReset" | "partial" | null;
+type SessionDialog = "end" | "shock" | "rosc" | "mors" | "note" | "correct" | "cycleReset" | "adrenalineReset" | "partial" | null;
 
 export default function ActiveCardiacResusSession() {
   const router = useRouter();
@@ -48,6 +51,7 @@ export default function ActiveCardiacResusSession() {
   const [noteError, setNoteError] = useState("");
   const [actionError, setActionError] = useState("");
   const sessionRef = useRef<ArrestSession | null>(null);
+  const [saveWriter] = useState(() => createSerializedArrestSessionWriter());
 
   useEffect(() => {
     let mounted = true;
@@ -64,7 +68,10 @@ export default function ActiveCardiacResusSession() {
       .catch(() => Alert.alert("Sessionen kunne ikke indlæses"))
       .finally(() => { if (mounted) setLoading(false); });
     const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => { mounted = false; clearInterval(timer); };
+    const appStateSubscription = AppState.addEventListener("change", (state) => {
+      if (state === "active") setNow(Date.now());
+    });
+    return () => { mounted = false; clearInterval(timer); appStateSubscription.remove(); };
   }, [router]);
 
   const elapsed = session ? getElapsedSeconds(session.startedAt, now) : 0;
@@ -86,16 +93,35 @@ export default function ActiveCardiacResusSession() {
     () => showAllEvents ? [...(session?.events ?? [])].reverse() : session?.events.slice(-3).reverse() ?? [],
     [session, showAllEvents],
   );
+  const correctedEventIds = useMemo(
+    () => session ? getCorrectedArrestEventIds(session) : new Set<string>(),
+    [session],
+  );
+  const latestCorrectableEvent = useMemo(
+    () => session ? findLatestCorrectableArrestEvent(session) : null,
+    [session],
+  );
+
+  const commitSessionUpdate = (
+    update: (current: ArrestSession) => ArrestSession,
+    failureMessage: string,
+  ): boolean => {
+    const current = sessionRef.current;
+    if (!current) return false;
+    const updated = update(current);
+    if (updated === current) return false;
+    sessionRef.current = updated;
+    setSession(updated);
+    saveWriter.save(updated).catch(() => setActionError(failureMessage));
+    hapticToolOpen();
+    return true;
+  };
 
   const recordEvent = (type: ArrestEventType) => {
-    setSession((current) => {
-      if (!current) return current;
-      const updated = addArrestEvent(current, type, new Date());
-      sessionRef.current = updated;
-      saveActiveArrestSession(updated).catch(() => setActionError("Hændelsen kunne ikke gemmes lokalt."));
-      hapticToolOpen();
-      return updated;
-    });
+    commitSessionUpdate(
+      (current) => addArrestEvent(current, type, new Date()),
+      "Hændelsen kunne ikke gemmes lokalt.",
+    );
   };
 
   const recordShock = () => {
@@ -104,15 +130,10 @@ export default function ActiveCardiacResusSession() {
   };
 
   const recordShockRhythm = (rhythm: "VF" | "pVT") => {
-    setSession((current) => {
-      if (!current) return current;
-      const updated = addShockEvent(current, rhythm, new Date());
-      sessionRef.current = updated;
-      saveActiveArrestSession(updated).catch(() => setActionError("Hændelsen kunne ikke gemmes lokalt."));
-      hapticToolOpen();
-      setDialog(null);
-      return updated;
-    });
+    if (commitSessionUpdate(
+      (current) => addShockEvent(current, rhythm, new Date()),
+      "Hændelsen kunne ikke gemmes lokalt.",
+    )) setDialog(null);
   };
 
   const saveNote = () => {
@@ -120,40 +141,36 @@ export default function ActiveCardiacResusSession() {
       setNoteError("Skriv en note før du gemmer.");
       return;
     }
-    setSession((current) => {
-      if (!current) return current;
-      const updated = addNoteEvent(current, noteText, new Date());
-      sessionRef.current = updated;
-      saveActiveArrestSession(updated).catch(() => setActionError("Noten kunne ikke gemmes lokalt."));
-      hapticToolOpen();
-      return updated;
-    });
+    commitSessionUpdate(
+      (current) => addNoteEvent(current, noteText, new Date()),
+      "Noten kunne ikke gemmes lokalt.",
+    );
     setNoteText("");
     setNoteError("");
     setDialog(null);
   };
 
   const resetCycleTimer = () => {
-    setSession((current) => {
-      if (!current) return current;
-      const updated = addCycleTimerResetEvent(current, new Date());
-      sessionRef.current = updated;
-      saveActiveArrestSession(updated).catch(() => setActionError("Cyklustimeren kunne ikke gemmes lokalt."));
-      hapticToolOpen();
-      return updated;
-    });
+    commitSessionUpdate(
+      (current) => addCycleTimerResetEvent(current, new Date()),
+      "Cyklustimeren kunne ikke gemmes lokalt.",
+    );
     setDialog(null);
   };
 
   const resetAdrenalineTimer = () => {
-    setSession((current) => {
-      if (!current) return current;
-      const updated = addAdrenalineTimerResetEvent(current, new Date());
-      sessionRef.current = updated;
-      saveActiveArrestSession(updated).catch(() => setActionError("Adrenalin-timeren kunne ikke gemmes lokalt."));
-      hapticToolOpen();
-      return updated;
-    });
+    commitSessionUpdate(
+      (current) => addAdrenalineTimerResetEvent(current, new Date()),
+      "Adrenalin-timeren kunne ikke gemmes lokalt.",
+    );
+    setDialog(null);
+  };
+
+  const correctLatestEvent = () => {
+    commitSessionUpdate(
+      (current) => correctLatestManualArrestEvent(current, new Date()),
+      "Rettelsen kunne ikke gemmes lokalt.",
+    );
     setDialog(null);
   };
 
@@ -167,6 +184,7 @@ export default function ActiveCardiacResusSession() {
     sessionRef.current = ended;
     setSession(ended);
     try {
+      await saveWriter.flush();
       const result = await saveEndedArrestSession(ended);
       hapticSuccess();
       if (!result.activeDraftRemoved) {
@@ -266,15 +284,26 @@ export default function ActiveCardiacResusSession() {
                 <Text style={{ color: theme.colors.accentMuted, fontWeight: "800" }}>{showAllEvents ? "Skjul" : "Vis alle"}</Text>
               </Pressable>
             </View>
-            {displayedEvents.map((event) => (
-              <View key={event.id} style={{ flexDirection: "row", gap: 10, paddingVertical: 7, borderBottomWidth: 1, borderBottomColor: theme.colors.divider }}>
+            {displayedEvents.map((event) => {
+              const corrected = correctedEventIds.has(event.id);
+              return (
+              <View key={event.id} accessibilityLabel={corrected ? `${formatArrestEventLabel(event)}. Rettet og ikke medregnet.` : undefined} style={{ flexDirection: "row", gap: 10, paddingVertical: 7, borderBottomWidth: 1, borderBottomColor: theme.colors.divider, opacity: corrected ? 0.58 : 1 }}>
                 <Text style={{ color: theme.colors.accentMuted, fontWeight: "800", fontVariant: ["tabular-nums"] }}>{formatElapsed(event.elapsedSeconds)}</Text>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ color: theme.colors.text, fontWeight: "700" }}>{formatArrestEventLabel(event)}</Text>
+                  <Text style={{ color: theme.colors.text, fontWeight: "700", textDecorationLine: corrected ? "line-through" : "none" }}>{formatArrestEventLabel(event)}</Text>
+                  {corrected ? <Subtle>Rettet · medregnes ikke</Subtle> : null}
                   {event.note ? <Subtle>{event.note}</Subtle> : null}
                 </View>
               </View>
-            ))}
+            );})}
+            {latestCorrectableEvent ? (
+              <Pressable
+                onPress={() => { setActionError(""); setDialog("correct"); }}
+                style={({ pressed }) => ({ minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}
+              >
+                <Text style={{ color: theme.colors.accentMuted, fontWeight: "900" }}>Ret seneste registrering</Text>
+              </Pressable>
+            ) : null}
           </Card>
 
           <Pressable disabled={ending} onPress={confirmEnd} style={({ pressed }) => ({ minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 14, borderWidth: 1, borderColor: "rgba(255,123,114,0.45)", backgroundColor: "rgba(255,123,114,0.10)", opacity: pressed || ending ? 0.55 : 1 })}>
@@ -304,6 +333,19 @@ export default function ActiveCardiacResusSession() {
                 {noteError ? <Text style={{ color: theme.colors.danger, fontWeight: "700" }}>{noteError}</Text> : null}
                 <Pressable onPress={saveNote} style={({ pressed }) => ({ minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 14, borderWidth: 1, borderColor: theme.colors.cardBorder, backgroundColor: theme.colors.accentSurface, opacity: pressed ? 0.65 : 1 })}><Text style={{ color: theme.colors.text, fontWeight: "900" }}>Gem note</Text></Pressable>
                 <Pressable onPress={() => setDialog(null)} style={({ pressed }) => ({ minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}><Text style={{ color: theme.colors.accentMuted, fontWeight: "800" }}>Annuller</Text></Pressable>
+              </>
+            ) : dialog === "correct" ? (
+              <>
+                <Title style={{ fontSize: 21 }}>Ret seneste registrering?</Title>
+                <Text style={{ color: theme.colors.text, lineHeight: 21 }}>
+                  Den seneste aktive brugerregistrering markeres som rettet. Historikken slettes ikke, og optællinger/timere ser bort fra den rettede registrering.
+                </Text>
+                <Pressable onPress={correctLatestEvent} style={({ pressed }) => ({ minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 14, borderWidth: 1, borderColor: theme.colors.cardBorder, backgroundColor: theme.colors.accentSurface, opacity: pressed ? 0.65 : 1 })}>
+                  <Text style={{ color: theme.colors.text, fontWeight: "900" }}>Markér som rettet</Text>
+                </Pressable>
+                <Pressable onPress={() => setDialog(null)} style={({ pressed }) => ({ minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}>
+                  <Text style={{ color: theme.colors.accentMuted, fontWeight: "800" }}>Annuller</Text>
+                </Pressable>
               </>
             ) : dialog === "cycleReset" || dialog === "adrenalineReset" ? (
               <>

@@ -69,6 +69,9 @@ export const en = {
 
   tool_about_title: "About",
   tool_about_desc: "What AmbuAssist is, what it does, and what it does not do.",
+  tool_about_support_title: "About & support",
+  tool_about_support_desc:
+    "Disclaimer, contact, feedback, and information about AmbuAssist.",
 
   // =========================================================
   // ASSESSMENT SECTION CARDS
@@ -1375,6 +1378,9 @@ export const en = {
   about_title: "About AmbuAssist",
   about_sub:
     "A lightweight support app for prehospital and clinical reference use.",
+  about_support_title: "About & support",
+  about_support_sub:
+    "Medical disclaimer, contact, feedback, and app information in one place.",
 
   about_what_title: "What AmbuAssist is",
   about_what_body:
@@ -1550,6 +1556,9 @@ export const da: typeof en = {
 
   tool_about_title: "Om appen",
   tool_about_desc: "Hvad AmbuAssist er, hvad den gør, og hvad den ikke gør.",
+  tool_about_support_title: "Om & support",
+  tool_about_support_desc:
+    "Disclaimer, kontakt, feedback og information om AmbuAssist.",
 
   // =========================================================
   // ASSESSMENT SECTION CARDS
@@ -2854,6 +2863,9 @@ export const da: typeof en = {
   // =========================================================
   about_title: "Om AmbuAssist",
   about_sub: "En let støtteapp til præhospital og klinisk referencebrug.",
+  about_support_title: "Om & support",
+  about_support_sub:
+    "Medicinsk disclaimer, kontakt, feedback og appinformation samlet ét sted.",
 
   about_what_title: "Hvad AmbuAssist er",
   about_what_body:

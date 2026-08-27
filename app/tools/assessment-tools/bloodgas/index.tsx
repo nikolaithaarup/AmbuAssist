@@ -1,10 +1,11 @@
 import { useRouter } from "expo-router";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { BloodGasPageHeader, BloodGasProvenance } from "../../../../src/features/bloodgas/BloodGasPresentation";
 import { useT } from "../../../../src/i18n/useT";
 import { useSettings } from "../../../../src/state/settings";
 import { Background } from "../../../../src/ui/Background";
-import { Card, Screen, Subtle, Title } from "../../../../src/ui/Ui";
+import { NavigationCard } from "../../../../src/ui/NavigationCard";
+import { Card, Screen, Subtle } from "../../../../src/ui/Ui";
 import { theme } from "../../../../src/ui/theme";
 
 const TOOLS = [
@@ -25,22 +26,12 @@ export default function BloodGasPage() {
         <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
           <View style={{ gap: 12 }}>
             {TOOLS.map((tool) => (
-              <Pressable
+              <NavigationCard
                 key={tool.path}
-                accessibilityRole="button"
+                title={t(tool.titleKey)}
+                description={t(tool.descKey)}
                 onPress={() => router.push(tool.path)}
-                style={({ pressed }) => ({ opacity: pressed ? 0.76 : 1, transform: [{ scale: pressed ? 0.992 : 1 }] })}
-              >
-                <Card style={{ minHeight: 88, justifyContent: "center" }}>
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
-                    <View style={{ flex: 1, gap: 5 }}>
-                      <Title style={{ fontSize: 18 }}>{t(tool.titleKey)}</Title>
-                      <Subtle style={{ lineHeight: 19 }}>{t(tool.descKey)}</Subtle>
-                    </View>
-                    <Text style={{ color: theme.colors.accentMuted, fontSize: 24 }}>›</Text>
-                  </View>
-                </Card>
-              </Pressable>
+              />
             ))}
           </View>
           <BloodGasProvenance />

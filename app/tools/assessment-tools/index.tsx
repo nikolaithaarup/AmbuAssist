@@ -1,10 +1,11 @@
 // app/tools/assessment-tools/index.tsx
 import { type Href, useRouter } from "expo-router";
-import { Pressable, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useT } from "../../../src/i18n/useT";
 import { Background } from "../../../src/ui/Background";
-import { Card, Screen, Subtle, Title } from "../../../src/ui/Ui";
 import { hapticToolOpen } from "../../../src/ui/haptics";
+import { NavigationCard } from "../../../src/ui/NavigationCard";
+import { Screen, Subtle, Title } from "../../../src/ui/Ui";
 
 type ToolLink = {
   titleKey: any;
@@ -14,7 +15,7 @@ type ToolLink = {
 
 export default function AssessmentToolsPage() {
   const router = useRouter();
-  const { t } = useT();
+  const { lang, t } = useT();
 
   const tools: ToolLink[] = [
     {
@@ -71,7 +72,14 @@ export default function AssessmentToolsPage() {
           }}
         >
           <View style={{ width: "100%", maxWidth: 520, gap: 12 }}>
-            <Title style={{ textAlign: "center" }}>
+            <Title
+              style={{
+                textAlign: "center",
+                fontSize: lang === "da" ? 22 : 28,
+                lineHeight: lang === "da" ? 27 : 34,
+                letterSpacing: lang === "da" ? -0.35 : 0,
+              }}
+            >
               {t("tool_assessment_title")}
             </Title>
 
@@ -80,28 +88,15 @@ export default function AssessmentToolsPage() {
             </Subtle>
 
             {tools.map((tool) => (
-              <Pressable
+              <NavigationCard
                 key={tool.path}
+                title={t(tool.titleKey)}
+                description={t(tool.descKey)}
                 onPress={() => {
                   hapticToolOpen();
                   router.push(tool.path);
                 }}
-                style={({ pressed }) => ({
-                  opacity: pressed ? 0.86 : 1,
-                  transform: [{ scale: pressed ? 0.992 : 1 }],
-                })}
-              >
-                <Card style={{ paddingHorizontal: 18, paddingVertical: 17, minHeight: 70 }}>
-                  <View style={{ alignItems: "flex-start", gap: 5 }}>
-                    <Title style={{ fontSize: 17 }}>
-                      {t(tool.titleKey)}
-                    </Title>
-                    <Subtle style={{ fontSize: 13 }}>
-                      {t(tool.descKey)}
-                    </Subtle>
-                  </View>
-                </Card>
-              </Pressable>
+              />
             ))}
           </View>
         </ScrollView>

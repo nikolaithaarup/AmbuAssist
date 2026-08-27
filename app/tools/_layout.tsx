@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { Platform, Pressable, StatusBar, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useT } from "../../src/i18n/useT";
+import { FAVOURITABLE_TOOLS } from "../../src/features/tools/catalog";
 import { useFavourites } from "../../src/state/favourites";
 import { Background } from "../../src/ui/Background";
 import { hapticFavourite } from "../../src/ui/haptics";
@@ -21,6 +22,7 @@ const TITLE_KEYS: Record<string, any> = {
   "/tools/medical-disclaimer": "tool_meddisc_title",
   "/tools/contact": "tool_contact_title",
   "/tools/about": "tool_about_title",
+  "/tools/about-support": "tool_about_support_title",
   "/tools/assessment-tools/news2": "tool_news2_title",
   "/tools/assessment-tools/wells-dvt": "tool_wells_title",
   "/tools/assessment-tools/spinal-trauma": "tool_spine_title",
@@ -56,6 +58,9 @@ export default function ToolsLayout() {
       .replace(/\b\w/g, (letter) => letter.toUpperCase());
   }, [pathname, t]);
   const favourite = isFavourite(pathname);
+  const canFavourite = FAVOURITABLE_TOOLS.some(
+    (tool) => tool.path === pathname,
+  );
 
   return (
     <Background>
@@ -111,13 +116,13 @@ export default function ToolsLayout() {
             fontSize: 15,
             fontWeight: "800",
             textAlign: "center",
-            marginHorizontal: 86,
+            marginHorizontal: 74,
           }}
         >
           {title}
         </Text>
 
-        {showBack ? (
+        {showBack && canFavourite ? (
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={

@@ -10,10 +10,13 @@ export const HOME_TOOLS: ToolDefinition[] = [
   { path: "/tools/support-numbers", titleKey: "tool_supportNumbers_title", descKey: "tool_supportNumbers_desc" },
   { path: "/tools/exams", titleKey: "tool_exams_title", descKey: "tool_exams_desc" },
   { path: "/tools/assessment-tools", titleKey: "tool_assessment_title", descKey: "tool_assessment_desc" },
-  { path: "/tools/medical-disclaimer", titleKey: "tool_meddisc_title", descKey: "tool_meddisc_desc" },
-  { path: "/tools/contact", titleKey: "tool_contact_title", descKey: "tool_contact_desc" },
-  { path: "/tools/about", titleKey: "tool_about_title", descKey: "tool_about_desc" },
 ];
+
+export const ABOUT_SUPPORT_TOOL: ToolDefinition = {
+  path: "/tools/about-support",
+  titleKey: "tool_about_support_title",
+  descKey: "tool_about_support_desc",
+};
 
 export const FAVOURITABLE_TOOLS: ToolDefinition[] = [
   ...HOME_TOOLS,

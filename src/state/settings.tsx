@@ -18,6 +18,10 @@ import {
   estimateWeightKg,
   type WeightFormula,
 } from "../domain/paediatric/weight";
+import {
+  normalizeDestinationCategoryFavouritePreference,
+  type DestinationCategoryFavouritePreference,
+} from "../domain/destination/categoryFavourites";
 
 export { convertDose, estimateWeightKg, toMg, unitToMgFactor };
 export type { DoseUnit, WeightFormula };
@@ -48,6 +52,9 @@ export type AppSettings = {
   customLinearB: number;
 
   meds: MedConfig[];
+
+  /** null means the user has never customized; [] is intentionally empty. */
+  destinationCategoryFavourites: DestinationCategoryFavouritePreference;
 
   // 👇 add this (not required for UI, only for migrations)
   defaultsRev?: number;
@@ -158,6 +165,7 @@ const defaultSettings: AppSettings = {
   formula: "APLS_1_5",
   customLinearA: 2,
   customLinearB: 8,
+  destinationCategoryFavourites: null,
   meds: [
     {
       id: "fentanyl",
@@ -260,6 +268,7 @@ function migrateV1toV2(v1: AppSettingsV1): AppSettings {
     customLinearB: Number.isFinite(Number(v1.customLinearB))
       ? Number(v1.customLinearB)
       : defaultSettings.customLinearB,
+    destinationCategoryFavourites: null,
     meds: migratedMeds,
     defaultsRev: 0,
   });
@@ -313,6 +322,10 @@ function mergeWithDefaults(loaded: AppSettings): AppSettings {
     customLinearB: Number.isFinite(Number(loaded.customLinearB))
       ? Number(loaded.customLinearB)
       : defaultSettings.customLinearB,
+    destinationCategoryFavourites:
+      normalizeDestinationCategoryFavouritePreference(
+        loaded.destinationCategoryFavourites,
+      ),
     meds: nextMeds,
   };
 }

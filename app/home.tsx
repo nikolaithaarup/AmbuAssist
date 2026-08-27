@@ -1,73 +1,14 @@
 import { useRouter } from "expo-router";
 import { Image, Pressable, ScrollView, View } from "react-native";
-import { FAVOURITABLE_TOOLS, HOME_TOOLS, type ToolDefinition } from "../src/features/tools/catalog";
+import { ABOUT_SUPPORT_TOOL, FAVOURITABLE_TOOLS, HOME_TOOLS, type ToolDefinition } from "../src/features/tools/catalog";
 import { useT } from "../src/i18n/useT";
 import { useFavourites } from "../src/state/favourites";
 import { useSettings } from "../src/state/settings";
 import { Background } from "../src/ui/Background";
 import { hapticFavourite, hapticToolOpen } from "../src/ui/haptics";
+import { NavigationCard } from "../src/ui/NavigationCard";
 import { theme } from "../src/ui/theme";
-import { Card, Screen, Subtle, Title } from "../src/ui/Ui";
-
-function FullWidthToolCard({
-  title,
-  description,
-  favourite,
-  onPress,
-  onToggleFavourite,
-}: {
-  title: string;
-  description?: string;
-  favourite: boolean;
-  onPress: () => void;
-  onToggleFavourite: () => void;
-}) {
-  return (
-    <Card
-      style={{
-        paddingHorizontal: 0,
-        paddingVertical: 0,
-        minHeight: description ? 70 : 58,
-        flexDirection: "row",
-        alignItems: "stretch",
-      }}
-    >
-      <Pressable
-        accessibilityRole="button"
-        onPress={onPress}
-        style={({ pressed }) => ({
-          flex: 1,
-          justifyContent: "center",
-          paddingLeft: 18,
-          paddingVertical: description ? 17 : 14,
-          opacity: pressed ? 0.75 : 1,
-        })}
-      >
-        <View style={{ alignItems: "flex-start", gap: 5 }}>
-          <Title style={{ fontSize: 17, letterSpacing: -0.1 }}>{title}</Title>
-          {description ? <Subtle style={{ fontSize: 13 }}>{description}</Subtle> : null}
-        </View>
-      </Pressable>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={favourite ? "Remove favourite" : "Add favourite"}
-        hitSlop={4}
-        onPress={onToggleFavourite}
-        style={({ pressed }) => ({
-          width: 58,
-          alignItems: "center",
-          justifyContent: "center",
-          opacity: pressed ? 0.6 : 1,
-          transform: [{ scale: pressed ? 0.92 : 1 }],
-        })}
-      >
-        <Title style={{ fontSize: 24, color: favourite ? theme.colors.warn : theme.colors.mutedText }}>
-          {favourite ? "★" : "☆"}
-        </Title>
-      </Pressable>
-    </Card>
-  );
-}
+import { Screen, Subtle, Title } from "../src/ui/Ui";
 
 export default function Home() {
   const router = useRouter();
@@ -87,7 +28,7 @@ export default function Home() {
   };
 
   const renderTool = (tool: ToolDefinition, titleOnly = false) => (
-    <FullWidthToolCard
+    <NavigationCard
       key={`${titleOnly ? "favourite" : "tool"}-${tool.path}`}
       title={t(tool.titleKey)}
       description={!titleOnly && tool.descKey ? t(tool.descKey) : undefined}
@@ -157,6 +98,18 @@ export default function Home() {
               {settings.language === "da" ? "Værktøjer" : "Tools"}
             </Title>
             {HOME_TOOLS.map((tool) => renderTool(tool))}
+
+            <View style={{ height: 8 }} />
+            <Title style={{ fontSize: 16, marginBottom: 0, color: theme.colors.mutedText }}>
+              {settings.language === "da" ? "App & support" : "App & support"}
+            </Title>
+            <NavigationCard
+              testID="home-about-support"
+              title={t(ABOUT_SUPPORT_TOOL.titleKey)}
+              description={t(ABOUT_SUPPORT_TOOL.descKey)}
+              secondary
+              onPress={() => openTool(ABOUT_SUPPORT_TOOL)}
+            />
           </View>
         </ScrollView>
       </Screen>

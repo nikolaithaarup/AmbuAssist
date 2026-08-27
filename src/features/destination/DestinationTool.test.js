@@ -140,7 +140,7 @@ describe("DestinationTool simplified entry flow", () => {
     const root = renderer.root;
     const text = renderedText(root);
 
-    expect(text).toContain("Kategori");
+    expect(text).toContain("Visitationstype");
     expect(text).toContain("Find destination med GPS");
     expect(text).toContain("Søg adresse manuelt");
     expect(text).toContain("Vælg hospital manuelt");
@@ -181,7 +181,9 @@ describe("DestinationTool simplified entry flow", () => {
     const renderer = await renderTool();
     const root = renderer.root;
     act(() => {
-      root.findByProps({ accessibilityLabel: "Akutmodtagelse" }).props.onPress();
+      root
+        .findByProps({ testID: "destination-all-categories-toggle" })
+        .props.onPress();
     });
 
     const text = renderedText(root);
@@ -214,14 +216,77 @@ describe("DestinationTool simplified entry flow", () => {
       destinationCategoryFavourites: [],
     };
     const renderer = await renderTool();
+    expect(renderedText(renderer.root)).not.toContain("Favoritter");
+    expect(renderedText(renderer.root)).toContain("Alle visitationer");
     act(() => {
       renderer.root
-        .findByProps({ accessibilityLabel: "Akutmodtagelse" })
+        .findByProps({ testID: "destination-all-categories-toggle" })
         .props.onPress();
     });
     expect(renderedText(renderer.root)).not.toContain("Favoritter");
-    expect(renderedText(renderer.root)).toContain("Alle visitationer");
     expect(renderedText(renderer.root)).toContain("Kardiologi");
+  });
+
+  test("selects a favourite category directly from its compact chip", async () => {
+    const renderer = await renderTool();
+    const root = renderer.root;
+
+    act(() => {
+      root
+        .findByProps({
+          testID:
+            "destination-favourite-category-neurologi_ekskl_apopleksi",
+        })
+        .props.onPress();
+    });
+
+    expect(
+      root.findByProps({
+        testID: "destination-favourite-category-neurologi_ekskl_apopleksi",
+      }).props.accessibilityState,
+    ).toEqual({ selected: true });
+  });
+
+  test("searches all categories and closes the sheet after selection", async () => {
+    const renderer = await renderTool();
+    const root = renderer.root;
+
+    act(() => {
+      root
+        .findByProps({ testID: "destination-all-categories-toggle" })
+        .props.onPress();
+    });
+    expect(
+      root.findByProps({ testID: "destination-all-categories-toggle" }).props
+        .accessibilityState,
+    ).toEqual({ expanded: true });
+
+    act(() => {
+      root
+        .findByProps({ testID: "destination-category-search" })
+        .props.onChangeText("kardio");
+    });
+    expect(renderedText(root)).toContain("Kardiologi");
+    expect(
+      root.findAllByProps({
+        testID: "destination-category-option-traumecenter",
+      }),
+    ).toHaveLength(0);
+
+    act(() => {
+      root
+        .findByProps({ testID: "destination-category-option-kardiologi" })
+        .props.onPress();
+    });
+    expect(
+      root.findByProps({ testID: "destination-all-categories-toggle" }).props
+        .accessibilityState,
+    ).toEqual({ expanded: false });
+    expect(
+      root
+        .findAllByProps({ accessibilityLabel: "Kardiologi" })
+        .some((node) => node.props.accessibilityState?.selected === true),
+    ).toBe(true);
   });
 
   test("a regional-only category fails explicitly after Copenhagen routing", async () => {
@@ -239,22 +304,14 @@ describe("DestinationTool simplified entry flow", () => {
     const renderer = await renderTool();
     const root = renderer.root;
     act(() => {
-      root.findByProps({ accessibilityLabel: "Akutmodtagelse" }).props.onPress();
+      root
+        .findByProps({ testID: "destination-all-categories-toggle" })
+        .props.onPress();
     });
     act(() => {
-      const traumaOption = root
-        .findAll(
-          (node) =>
-            typeof node.props.onPress === "function" &&
-            node.findAllByType(Text).some(
-              (textNode) => textNode.props.children === "Traumecenter",
-            ),
-        )
-        .find(
-          (node) =>
-            !String(node.props.accessibilityLabel ?? "").includes("favorit"),
-        );
-      traumaOption.props.onPress();
+      root
+        .findByProps({ testID: "destination-category-option-traumecenter" })
+        .props.onPress();
     });
     await pressGps(root);
 

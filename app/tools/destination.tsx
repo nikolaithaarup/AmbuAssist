@@ -85,6 +85,7 @@ import {
 } from "../../src/dev/hospitalNumbers";
 
 import { chip } from "../../src/features/destination/ui";
+import { DestinationCategoryPicker } from "../../src/features/destination/DestinationCategoryPicker";
 
 type TranslateFn = (key: any) => string;
 type PhoneOptionValue = string;
@@ -195,7 +196,6 @@ type SimpleDropdownProps<T extends string> = {
   onSelect: (value: T) => void;
   renderValue?: (value: T) => ReactNode;
   renderOption?: (value: T, selected: boolean) => ReactNode;
-  renderOptionAction?: (value: T) => ReactNode;
   placeholder?: string;
   emptyText?: string;
   maxHeight?: number;
@@ -211,7 +211,6 @@ function SimpleDropdown<T extends string>({
   onSelect,
   renderValue,
   renderOption,
-  renderOptionAction,
   placeholder = "Choose...",
   emptyText = "No matches found.",
   maxHeight = 220,
@@ -257,7 +256,6 @@ function SimpleDropdown<T extends string>({
             </Text>
           )}
         </Pressable>
-        {renderOptionAction?.(option)}
       </View>
     );
   };
@@ -740,23 +738,6 @@ export default function DestinationTool() {
       ),
     [regionCategoryOptions, settings.destinationCategoryFavourites],
   );
-
-  const regionCategorySections = useMemo(() => {
-    const other = regionCategoryOptions.filter(
-      (category) => !favouriteCategoryOptions.includes(category),
-    );
-
-    return [
-      {
-        title: lang === "da" ? "Favoritter" : "Favourites",
-        options: favouriteCategoryOptions,
-      },
-      {
-        title: lang === "da" ? "Alle visitationer" : "All visitations",
-        options: other,
-      },
-    ];
-  }, [favouriteCategoryOptions, lang, regionCategoryOptions]);
 
   const toggleCategoryFavourite = (category: DestinationCategoryIntent) => {
     setSettings((current) => {
@@ -1526,57 +1507,19 @@ export default function DestinationTool() {
 
         <ScrollView contentContainerStyle={{ gap: 18, paddingBottom: 24 }}>
           <View style={{ gap: 14, paddingTop: 4 }}>
-            <SimpleDropdown<RegionCategory>
-              label={t("dest_category")}
-              value={regCat}
-              open={regCatOpen}
-              onToggle={toggleRegCatDropdown}
+            <DestinationCategoryPicker
+              lang={lang}
+              selected={regCat}
+              favourites={favouriteCategoryOptions}
               options={regionCategoryOptions}
-              sections={regionCategorySections}
-              onSelect={(value) => {
-                setRegCat(value);
-                setRegCatOpen(false);
-              }}
-              renderValue={(value) =>
+              open={regCatOpen}
+              getLabel={(value) =>
                 getRegionCategoryLabel(t as TranslateFn, value)
               }
-              renderOptionAction={(value) => {
-                const favourite = favouriteCategoryOptions.includes(value);
-                const label = getRegionCategoryLabel(t as TranslateFn, value);
-                return (
-                  <Pressable
-                    testID={`destination-category-favourite-${value}`}
-                    accessibilityRole="button"
-                    accessibilityLabel={
-                      favourite
-                        ? `${lang === "da" ? "Fjern favorit" : "Remove favourite"}: ${label}`
-                        : `${lang === "da" ? "Tilføj favorit" : "Add favourite"}: ${label}`
-                    }
-                    accessibilityState={{ selected: favourite }}
-                    onPress={() => toggleCategoryFavourite(value)}
-                    style={{
-                      width: 48,
-                      minHeight: 48,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: favourite
-                          ? theme.colors.warn
-                          : theme.colors.mutedText,
-                        fontSize: 24,
-                        fontWeight: "900",
-                      }}
-                    >
-                      {favourite ? "★" : "☆"}
-                    </Text>
-                  </Pressable>
-                );
-              }}
-              placeholder={t("dest_category")}
-              maxHeight={280}
+              onOpen={toggleRegCatDropdown}
+              onClose={() => setRegCatOpen(false)}
+              onSelect={setRegCat}
+              onToggleFavourite={toggleCategoryFavourite}
             />
 
             {categoryUnavailable && (

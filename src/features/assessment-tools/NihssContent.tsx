@@ -46,8 +46,6 @@ export default function NihssContent({ lang, reference }: { lang: "en" | "da"; r
       }}
       reference={reference}
       lang={lang}
-      disclaimerTitle={t("tool_disclaimer_title")}
-      sourcesTitle={t("tool_sources_title")}
     />
   );
 }

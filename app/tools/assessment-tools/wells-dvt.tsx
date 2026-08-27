@@ -75,8 +75,6 @@ export default function WellsDvt() {
               }}
               reference={reference}
               lang={lang}
-              disclaimerTitle={t("tool_disclaimer_title")}
-              sourcesTitle={t("tool_sources_title")}
             />
           </View>
         </ScrollView>

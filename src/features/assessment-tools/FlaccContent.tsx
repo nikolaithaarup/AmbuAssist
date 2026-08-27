@@ -38,8 +38,6 @@ export default function FlaccContent({ lang, reference }: { lang: "en" | "da"; r
       }}
       reference={reference}
       lang={lang}
-      disclaimerTitle={t("tool_disclaimer_title")}
-      sourcesTitle={t("tool_sources_title")}
       footer={t("flacc_disclaimer")}
     />
   );

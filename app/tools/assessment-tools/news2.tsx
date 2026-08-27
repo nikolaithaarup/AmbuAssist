@@ -13,7 +13,7 @@ import {
   type ReferenceDoc,
 } from "../../../src/services/referenceService";
 import { Background } from "../../../src/ui/Background";
-import { CollapsibleCard } from "../../../src/ui/CollapsibleCard";
+import { ClinicalDisclosure } from "../../../src/ui/ClinicalDisclosure";
 import {
   Card,
   Input,
@@ -32,49 +32,6 @@ function toNum(s: string) {
   if (!raw) return NaN;
   const n = Number(raw.replace(",", "."));
   return Number.isFinite(n) ? n : NaN;
-}
-
-function SourceItem({
-  title,
-  subtitle,
-  url,
-}: {
-  title: string;
-  subtitle?: string;
-  url?: string;
-}) {
-  return (
-    <View
-      style={{
-        paddingVertical: 8,
-        borderBottomWidth: 1,
-        borderBottomColor: "rgba(255,255,255,0.06)",
-      }}
-    >
-      <Text
-        style={{
-          color: theme.colors.text,
-          fontSize: 14,
-          fontWeight: "800",
-          lineHeight: 18,
-        }}
-      >
-        {title}
-      </Text>
-      {!!subtitle && (
-        <Text
-          style={{
-            color: theme.colors.mutedText,
-            fontSize: 12,
-            lineHeight: 17,
-            marginTop: 2,
-          }}
-        >
-          {subtitle}
-        </Text>
-      )}
-    </View>
-  );
 }
 
 export default function NEWS2() {
@@ -412,50 +369,16 @@ export default function NEWS2() {
             </View>
           </Card>
 
-          <CollapsibleCard
-            title={t("tool_disclaimer_title")}
-            subtitle={reference?.disclaimer[lang] ?? ""}
-          >
-            <View
-              style={{
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: theme.colors.cardBorder,
-                padding: 12,
-                backgroundColor: "rgba(255,209,102,0.10)",
-              }}
-            >
-              <Text
-                style={{
-                  color: theme.colors.text,
-                  fontSize: 14,
-                  lineHeight: 20,
-                }}
-              >
-                {reference?.disclaimer[lang] ?? ""}
-              </Text>
-            </View>
-          </CollapsibleCard>
-
-          <CollapsibleCard
-            title={t("tool_sources_title")}
-            subtitle={reference?.sourcesSub[lang] ?? ""}
-          >
-            <Subtle style={{ marginBottom: 8 }}>
-              {reference?.sourcesSub[lang] ?? ""}
-            </Subtle>
-
-            <View style={{ marginTop: 4 }}>
-              {(reference?.sources ?? []).map((source) => (
-                <SourceItem
-                  key={source.id}
-                  title={source.title[lang]}
-                  subtitle={source.subtitle[lang]}
-                  url={source.url?.[lang]}
-                />
-              ))}
-            </View>
-          </CollapsibleCard>
+          <ClinicalDisclosure
+            disclaimer={reference?.disclaimer[lang] ?? ""}
+            sourcesIntro={reference?.sourcesSub[lang] ?? ""}
+            sources={(reference?.sources ?? []).map((source) => ({
+              id: source.id,
+              title: source.title[lang],
+              subtitle: source.subtitle[lang],
+              url: source.url?.[lang],
+            }))}
+          />
         </ScrollView>
       </Screen>
     </Background>

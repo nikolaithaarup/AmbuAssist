@@ -69,8 +69,6 @@ export default function AbcStampContent({ lang, reference }: { lang: "en" | "da"
       })}
       reference={reference}
       lang={lang}
-      disclaimerTitle={t("tool_disclaimer_title")}
-      sourcesTitle={t("tool_sources_title")}
     />
   );
 }

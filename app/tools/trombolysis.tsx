@@ -21,7 +21,7 @@ import {
 } from "../../src/services/referenceService";
 import { useSettings } from "../../src/state/settings";
 import { Background } from "../../src/ui/Background";
-import { CollapsibleCard } from "../../src/ui/CollapsibleCard";
+import { ClinicalDisclosure } from "../../src/ui/ClinicalDisclosure";
 import { Card, Row, Screen, Subtle, Title } from "../../src/ui/Ui";
 import { theme } from "../../src/ui/theme";
 
@@ -74,105 +74,6 @@ function getResponsibleHospital(now: Date): {
   };
 }
 
-function SourceItem({
-  title,
-  subtitle,
-  url,
-}: {
-  title: string;
-  subtitle?: string;
-  url?: string;
-}) {
-  const openSource = async () => {
-    if (!url) return;
-
-    try {
-      const supported = await Linking.canOpenURL(url);
-      if (!supported) {
-        Alert.alert("Kunne ikke åbne link", url);
-        return;
-      }
-
-      await Linking.openURL(url);
-    } catch {
-      Alert.alert("Fejl", "Linket kunne ikke åbnes.");
-    }
-  };
-
-  if (url) {
-    return (
-      <Pressable
-        onPress={openSource}
-        style={({ pressed }) => ({
-          paddingVertical: 10,
-          borderBottomWidth: 1,
-          borderBottomColor: "rgba(255,255,255,0.06)",
-          opacity: pressed ? 0.75 : 1,
-        })}
-      >
-        <Text
-          style={{
-            color: "#8ec5ff",
-            fontSize: 14,
-            fontWeight: "800",
-            lineHeight: 18,
-            textDecorationLine: "underline",
-          }}
-        >
-          {title}
-        </Text>
-
-        {!!subtitle && (
-          <Text
-            style={{
-              color: theme.colors.mutedText,
-              fontSize: 12,
-              lineHeight: 17,
-              marginTop: 4,
-            }}
-          >
-            {subtitle}
-          </Text>
-        )}
-      </Pressable>
-    );
-  }
-
-  return (
-    <View
-      style={{
-        paddingVertical: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: "rgba(255,255,255,0.06)",
-      }}
-    >
-      <Text
-        style={{
-          color: theme.colors.text,
-          fontSize: 14,
-          fontWeight: "800",
-          lineHeight: 18,
-        }}
-      >
-        {title}
-      </Text>
-
-      {!!subtitle && (
-        <Text
-          style={{
-            color: theme.colors.mutedText,
-            fontSize: 12,
-            lineHeight: 17,
-            marginTop: 4,
-          }}
-        >
-          {subtitle}
-        </Text>
-      )}
-    </View>
-  );
-}
-
 export default function TrombolysisPage() {
   const { t } = useT();
   const { settings } = useSettings();
@@ -184,7 +85,6 @@ export default function TrombolysisPage() {
   const [loadingHospitalPhone, setLoadingHospitalPhone] = useState(true);
 
   const [reference, setReference] = useState<ReferenceDoc | null>(null);
-  const [loadingReference, setLoadingReference] = useState(true);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -238,8 +138,6 @@ export default function TrombolysisPage() {
     let active = true;
 
     async function loadReference() {
-      setLoadingReference(true);
-
       try {
         const result = await getReference("trombolysis");
         if (!active) return;
@@ -248,10 +146,6 @@ export default function TrombolysisPage() {
         console.error("Error loading trombolysis reference:", error);
         if (!active) return;
         setReference(null);
-      } finally {
-        if (active) {
-          setLoadingReference(false);
-        }
       }
     }
 
@@ -460,60 +354,11 @@ export default function TrombolysisPage() {
             </View>
           </Card>
 
-          <CollapsibleCard
-            title={t("tool_disclaimer_title")}
-            subtitle={disclaimerText}
-          >
-            <View
-              style={{
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: theme.colors.cardBorder,
-                padding: 12,
-                backgroundColor: "rgba(255,209,102,0.10)",
-                gap: 8,
-              }}
-            >
-              <Text
-                style={{
-                  color: theme.colors.text,
-                  fontSize: 14,
-                  lineHeight: 20,
-                }}
-              >
-                {disclaimerText}
-              </Text>
-            </View>
-          </CollapsibleCard>
-
-          <CollapsibleCard
-            title={t("tool_sources_title")}
-            subtitle={sourcesSubText}
-          >
-            {loadingReference ? (
-              <View style={{ gap: 10 }}>
-                <ActivityIndicator />
-                <Text style={{ color: theme.colors.mutedText }}>
-                  {t("loading")}
-                </Text>
-              </View>
-            ) : (
-              <>
-                <Subtle style={{ marginBottom: 8 }}>{sourcesSubText}</Subtle>
-
-                <View style={{ marginTop: 8 }}>
-                  {renderedSources.map((source) => (
-                    <SourceItem
-                      key={source.id}
-                      title={source.title}
-                      subtitle={source.subtitle}
-                      url={source.url}
-                    />
-                  ))}
-                </View>
-              </>
-            )}
-          </CollapsibleCard>
+          <ClinicalDisclosure
+            disclaimer={disclaimerText}
+            sourcesIntro={sourcesSubText}
+            sources={renderedSources}
+          />
         </ScrollView>
       </Screen>
     </Background>

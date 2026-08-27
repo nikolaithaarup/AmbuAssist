@@ -31,8 +31,6 @@ export function FixedChoiceAssessment<Answer>({
   evaluate,
   reference,
   lang,
-  disclaimerTitle,
-  sourcesTitle,
   footer,
 }: {
   title: string;
@@ -41,8 +39,6 @@ export function FixedChoiceAssessment<Answer>({
   evaluate: (answers: Partial<Record<string, Answer>>) => FixedChoiceResult;
   reference: ReferenceDoc | null;
   lang: "en" | "da";
-  disclaimerTitle: string;
-  sourcesTitle: string;
   footer?: string;
 }) {
   const ids = items.map((item) => item.id).join("|");
@@ -92,8 +88,6 @@ export function FixedChoiceAssessment<Answer>({
       <AssessmentReferenceCards
         reference={reference}
         lang={lang}
-        disclaimerTitle={disclaimerTitle}
-        sourcesTitle={sourcesTitle}
       />
       {footer ? <Subtle style={{ textAlign: "center" }}>{footer}</Subtle> : null}
     </>

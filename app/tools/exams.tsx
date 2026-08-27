@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useT } from "../../src/i18n/useT";
 import { Background } from "../../src/ui/Background";
-import { CollapsibleCard } from "../../src/ui/CollapsibleCard";
+import { ClinicalDisclosure } from "../../src/ui/ClinicalDisclosure";
 import { Card, Screen, Subtle, Title } from "../../src/ui/Ui";
 import { theme } from "../../src/ui/theme";
 
@@ -211,49 +211,6 @@ function SectionLabel({ label }: { label: string }) {
   );
 }
 
-function SourceItem({
-  title,
-  subtitle,
-  url,
-}: {
-  title: string;
-  subtitle?: string;
-  url?: string;
-}) {
-  return (
-    <View
-      style={{
-        paddingVertical: 8,
-        borderBottomWidth: 1,
-        borderBottomColor: "rgba(255,255,255,0.06)",
-      }}
-    >
-      <Text
-        style={{
-          color: theme.colors.text,
-          fontSize: 14,
-          fontWeight: "800",
-          lineHeight: 18,
-        }}
-      >
-        {title}
-      </Text>
-      {!!subtitle && (
-        <Text
-          style={{
-            color: theme.colors.mutedText,
-            fontSize: 12,
-            lineHeight: 17,
-            marginTop: 2,
-          }}
-        >
-          {subtitle}
-        </Text>
-      )}
-    </View>
-  );
-}
-
 export default function Exams() {
   const { t } = useT();
   const [openId, setOpenId] = useState<string | null>(null);
@@ -417,54 +374,15 @@ export default function Exams() {
             </View>
           ))}
 
-          <CollapsibleCard
-            title={t("tool_disclaimer_title")}
-            subtitle={t("exams_page_disclaimer")}
-          >
-            <View
-              style={{
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: theme.colors.cardBorder,
-                padding: 12,
-                backgroundColor: "rgba(255,209,102,0.10)",
-              }}
-            >
-              <Text
-                style={{
-                  color: theme.colors.text,
-                  fontSize: 14,
-                  lineHeight: 20,
-                }}
-              >
-                {t("exams_page_disclaimer")}
-              </Text>
-            </View>
-          </CollapsibleCard>
-
-          <CollapsibleCard
-            title={t("tool_sources_title")}
-            subtitle={t("exams_sources_sub")}
-          >
-            <Subtle style={{ marginBottom: 8 }}>
-              {t("exams_sources_sub")}
-            </Subtle>
-
-            <View style={{ marginTop: 8 }}>
-              <SourceItem
-                title={t("exams_source_1_title")}
-                subtitle={t("exams_source_1_sub")}
-              />
-              <SourceItem
-                title={t("exams_source_2_title")}
-                subtitle={t("exams_source_2_sub")}
-              />
-              <SourceItem
-                title={t("exams_source_3_title")}
-                subtitle={t("exams_source_3_sub")}
-              />
-            </View>
-          </CollapsibleCard>
+          <ClinicalDisclosure
+            disclaimer={t("exams_page_disclaimer")}
+            sourcesIntro={t("exams_sources_sub")}
+            sources={[
+              { id: "exams-1", title: t("exams_source_1_title"), subtitle: t("exams_source_1_sub") },
+              { id: "exams-2", title: t("exams_source_2_title"), subtitle: t("exams_source_2_sub") },
+              { id: "exams-3", title: t("exams_source_3_title"), subtitle: t("exams_source_3_sub") },
+            ]}
+          />
         </ScrollView>
       </Screen>
     </Background>

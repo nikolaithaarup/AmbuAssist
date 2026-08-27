@@ -265,8 +265,6 @@ export default function HintsContent({ lang, reference }: { lang: Lang; referenc
       <AssessmentReferenceCards
         reference={reference}
         lang={lang}
-        disclaimerTitle={t("tool_disclaimer_title")}
-        sourcesTitle={t("tool_sources_title")}
       />
     </>
   );

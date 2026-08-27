@@ -30,6 +30,15 @@ export const en = {
 
   tool_disclaimer_title: "Medical disclaimer",
   tool_sources_title: "Sources and references",
+  clinical_disclosure_label: "Sources & medical disclaimer",
+  clinical_disclosure_title: "Sources & medical disclaimer",
+  clinical_disclosure_source: "source",
+  clinical_disclosure_sources: "sources",
+  clinical_disclosure_close: "Close sources and medical disclaimer",
+  clinical_disclosure_open_source: "Open source",
+  clinical_disclosure_link_error: "Could not open link",
+  clinical_disclosure_no_sources: "No tool-specific sources are available.",
+  clinical_disclosure_missing_disclaimer: "No tool-specific disclaimer is available.",
   tool_answered: "Answered:",
   tool_filled: "Filled values:",
 
@@ -1502,6 +1511,15 @@ export const da: typeof en = {
 
   tool_disclaimer_title: "Medicinsk disclaimer",
   tool_sources_title: "Kilder og referencer",
+  clinical_disclosure_label: "Kilder & medicinsk disclaimer",
+  clinical_disclosure_title: "Kilder & medicinsk disclaimer",
+  clinical_disclosure_source: "kilde",
+  clinical_disclosure_sources: "kilder",
+  clinical_disclosure_close: "Luk kilder og medicinsk disclaimer",
+  clinical_disclosure_open_source: "Åbn kilde",
+  clinical_disclosure_link_error: "Kunne ikke åbne link",
+  clinical_disclosure_no_sources: "Der er ingen værktøjsspecifikke kilder tilgængelige.",
+  clinical_disclosure_missing_disclaimer: "Der er ingen værktøjsspecifik disclaimer tilgængelig.",
   tool_answered: "Besvaret:",
   tool_filled: "Udfyldte værdier:",
 

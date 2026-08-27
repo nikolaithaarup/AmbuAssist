@@ -42,8 +42,6 @@ export default function BvcContent({ lang, reference }: { lang: "en" | "da"; ref
       }}
       reference={reference}
       lang={lang}
-      disclaimerTitle={t("tool_disclaimer_title")}
-      sourcesTitle={t("tool_sources_title")}
     />
   );
 }

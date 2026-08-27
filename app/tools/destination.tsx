@@ -35,6 +35,7 @@ import {
 } from "../../src/services/visitationService";
 import { useSettings } from "../../src/state/settings";
 import { Background } from "../../src/ui/Background";
+import { ClinicalDisclosure } from "../../src/ui/ClinicalDisclosure";
 import { CollapsibleCard } from "../../src/ui/CollapsibleCard";
 import {
   Card,
@@ -335,105 +336,6 @@ function SimpleDropdown<T extends string>({
             </ScrollView>
           )}
         </View>
-      )}
-    </View>
-  );
-}
-
-function SourceItem({
-  title,
-  subtitle,
-  url,
-}: {
-  title: string;
-  subtitle?: string;
-  url?: string;
-}) {
-  const openSource = async () => {
-    if (!url) return;
-
-    try {
-      const supported = await Linking.canOpenURL(url);
-      if (!supported) {
-        Alert.alert("Kunne ikke åbne link", url);
-        return;
-      }
-
-      await Linking.openURL(url);
-    } catch {
-      Alert.alert("Fejl", "Linket kunne ikke åbnes.");
-    }
-  };
-
-  if (url) {
-    return (
-      <Pressable
-        onPress={openSource}
-        style={({ pressed }) => ({
-          paddingVertical: 10,
-          borderBottomWidth: 1,
-          borderBottomColor: "rgba(255,255,255,0.06)",
-          opacity: pressed ? 0.75 : 1,
-        })}
-      >
-        <Text
-          style={{
-            color: "#8ec5ff",
-            fontSize: 14,
-            fontWeight: "800",
-            lineHeight: 18,
-            textDecorationLine: "underline",
-          }}
-        >
-          {title}
-        </Text>
-
-        {!!subtitle && (
-          <Text
-            style={{
-              color: theme.colors.mutedText,
-              fontSize: 12,
-              lineHeight: 17,
-              marginTop: 4,
-            }}
-          >
-            {subtitle}
-          </Text>
-        )}
-      </Pressable>
-    );
-  }
-
-  return (
-    <View
-      style={{
-        paddingVertical: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: "rgba(255,255,255,0.06)",
-      }}
-    >
-      <Text
-        style={{
-          color: theme.colors.text,
-          fontSize: 14,
-          fontWeight: "800",
-          lineHeight: 18,
-        }}
-      >
-        {title}
-      </Text>
-
-      {!!subtitle && (
-        <Text
-          style={{
-            color: theme.colors.mutedText,
-            fontSize: 12,
-            lineHeight: 17,
-            marginTop: 4,
-          }}
-        >
-          {subtitle}
-        </Text>
       )}
     </View>
   );
@@ -2146,51 +2048,11 @@ export default function DestinationTool() {
             </CollapsibleCard>
           )}
 
-          <CollapsibleCard
-            title={t("tool_disclaimer_title")}
-            subtitle={reference?.disclaimer[lang] ?? t("dest_page_disclaimer")}
-          >
-            <View
-              style={{
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: theme.colors.cardBorder,
-                padding: 12,
-                backgroundColor: "rgba(255,209,102,0.10)",
-                gap: 8,
-              }}
-            >
-              <Text
-                style={{
-                  color: theme.colors.text,
-                  fontSize: 14,
-                  lineHeight: 20,
-                }}
-              >
-                {reference?.disclaimer[lang] ?? t("dest_page_disclaimer")}
-              </Text>
-            </View>
-          </CollapsibleCard>
-
-          <CollapsibleCard
-            title={t("tool_sources_title")}
-            subtitle={reference?.sourcesSub[lang] ?? t("dest_sources_sub")}
-          >
-            <Subtle style={{ marginBottom: 8 }}>
-              {reference?.sourcesSub[lang] ?? t("dest_sources_sub")}
-            </Subtle>
-
-            <View style={{ marginTop: 8 }}>
-              {renderedSources.map((source) => (
-                <SourceItem
-                  key={source.id}
-                  title={source.title}
-                  subtitle={source.subtitle}
-                  url={source.url}
-                />
-              ))}
-            </View>
-          </CollapsibleCard>
+          <ClinicalDisclosure
+            disclaimer={reference?.disclaimer[lang] ?? t("dest_page_disclaimer")}
+            sourcesIntro={reference?.sourcesSub[lang] ?? t("dest_sources_sub")}
+            sources={renderedSources}
+          />
         </ScrollView>
       </Screen>
     </Background>

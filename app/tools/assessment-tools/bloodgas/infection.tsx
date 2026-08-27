@@ -10,13 +10,12 @@ import {
   type ReferenceDoc,
 } from "../../../../src/services/referenceService";
 import { Background } from "../../../../src/ui/Background";
-import { CollapsibleCard } from "../../../../src/ui/CollapsibleCard";
+import { ClinicalDisclosure } from "../../../../src/ui/ClinicalDisclosure";
 import { Card, Row, Screen, Subtle, Title } from "../../../../src/ui/Ui";
 import { theme } from "../../../../src/ui/theme";
 
 import { BloodGasInputCard } from "../../../../src/features/bloodgas/BloodGasInputCard";
 import { BloodGasPageHeader, BloodGasProvenance, ResultSection } from "../../../../src/features/bloodgas/BloodGasPresentation";
-import { SourceItem } from "../../../../src/features/bloodgas/SourceItem";
 import {
   makeEmptyBloodGasFormValues,
   parseBloodGasFormValues,
@@ -177,54 +176,11 @@ export default function InfectionPage() {
             <Subtle style={{ lineHeight: 20 }}>{lang === "da" ? "CRP skal vurderes sammen med klinik, vitalparametre, varighed, fokus og lokale retningslinjer. CRP alene kan ikke afgøre infektionstype eller behandlingsbehov." : "CRP must be assessed with clinical context, vital signs, duration, focus, and local guidelines. CRP alone cannot determine infection type or treatment need."}</Subtle>
           </Card>
           <BloodGasProvenance />
-          <CollapsibleCard
-            title={t("tool_disclaimer_title")}
-            subtitle={
-              reference?.disclaimer[lang] ?? t("bg_infection_disclaimer")
-            }
-          >
-            <View
-              style={{
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: theme.colors.cardBorder,
-                padding: 12,
-                backgroundColor: "rgba(255,209,102,0.10)",
-              }}
-            >
-              <Text
-                style={{
-                  color: theme.colors.text,
-                  fontSize: 14,
-                  lineHeight: 20,
-                }}
-              >
-                {reference?.disclaimer[lang] ?? t("bg_infection_disclaimer")}
-              </Text>
-            </View>
-          </CollapsibleCard>
-
-          <CollapsibleCard
-            title={t("tool_sources_title")}
-            subtitle={
-              reference?.sourcesSub[lang] ?? t("bg_infection_sources_sub")
-            }
-          >
-            <Subtle style={{ marginBottom: 8 }}>
-              {reference?.sourcesSub[lang] ?? t("bg_infection_sources_sub")}
-            </Subtle>
-
-            <View style={{ marginTop: 8 }}>
-              {renderedSources.map((source) => (
-                <SourceItem
-                  key={source.id}
-                  title={source.title}
-                  subtitle={source.subtitle}
-                  url={source.url}
-                />
-              ))}
-            </View>
-          </CollapsibleCard>
+          <ClinicalDisclosure
+            disclaimer={reference?.disclaimer[lang] ?? t("bg_infection_disclaimer")}
+            sourcesIntro={reference?.sourcesSub[lang] ?? t("bg_infection_sources_sub")}
+            sources={renderedSources}
+          />
         </ScrollView>
       </Screen>
     </Background>

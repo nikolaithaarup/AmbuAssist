@@ -19,7 +19,7 @@ import {
   type ReferenceDoc,
 } from "../../services/referenceService";
 import { Background } from "../../ui/Background";
-import { CollapsibleCard } from "../../ui/CollapsibleCard";
+import { ClinicalDisclosure } from "../../ui/ClinicalDisclosure";
 import {
   Card,
   Input,
@@ -35,7 +35,6 @@ import { useSuccessHaptic } from "../../ui/useSuccessHaptic";
 import { DoseCalculatorCard } from "./components/DoseCalculatorCard";
 import { Header } from "./components/Header";
 import { ResultCard } from "./components/ResultCard";
-import { SourceFolderLink, SourceItem } from "./components/SourceLinks";
 import { WeightCalculatorCard } from "./components/WeightCalculatorCard";
 import { useDoseCalculation } from "./hooks/useDoseCalculation";
 import { useJouleCalculation } from "./hooks/useJouleCalculation";
@@ -929,59 +928,20 @@ export function WeightJouleDoseScreen() {
 
           <DoseCalculatorCard t={t} lang={lang} rows={computed.medRows} />
 
-          <CollapsibleCard
-            title={t("tool_disclaimer_title")}
-            subtitle={reference?.disclaimer[lang] ?? t("wjd_page_disclaimer")}
-          >
-            <View
-              style={{
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: theme.colors.cardBorder,
-                padding: 12,
-                backgroundColor: "rgba(255,209,102,0.10)",
-              }}
-            >
-              <Text
-                style={{
-                  color: theme.colors.text,
-                  fontSize: 14,
-                  lineHeight: 20,
-                }}
-              >
-                {reference?.disclaimer[lang] ?? t("wjd_page_disclaimer")}
-              </Text>
-            </View>
-          </CollapsibleCard>
-
-          <CollapsibleCard
-            title={t("tool_sources_title")}
-            subtitle={reference?.sourcesSub[lang] ?? t("wjd_sources_sub")}
-          >
-            <Subtle style={{ marginBottom: 8 }}>
-              {reference?.sourcesSub[lang] ?? t("wjd_sources_sub")}
-            </Subtle>
-
-            <View style={{ marginTop: 8 }}>
-              {renderedSources.map((source) => (
-                <SourceItem
-                  key={source.id}
-                  title={source.title}
-                  subtitle={source.subtitle}
-                  url={source.url}
-                />
-              ))}
-
-              <SourceFolderLink
-                label={
-                  lang === "da"
-                    ? "Åbn samlet mappe med medicinkilder"
-                    : "Open folder with medication sources"
-                }
-                url={MEDICINE_FOLDER_URL}
-              />
-            </View>
-          </CollapsibleCard>
+          <ClinicalDisclosure
+            disclaimer={reference?.disclaimer[lang] ?? t("wjd_page_disclaimer")}
+            sourcesIntro={reference?.sourcesSub[lang] ?? t("wjd_sources_sub")}
+            sources={[
+              ...renderedSources,
+              {
+                id: "medicine-source-folder",
+                title: lang === "da"
+                  ? "Samlet mappe med medicinkilder"
+                  : "Folder with medication sources",
+                url: MEDICINE_FOLDER_URL,
+              },
+            ]}
+          />
         </ScrollView>
       </Screen>
     </Background>

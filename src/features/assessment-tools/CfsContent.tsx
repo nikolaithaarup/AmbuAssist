@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
-import { Alert, Linking, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { useT } from "../../i18n/useT";
 import type { Key } from "../../i18n/strings";
 import type { ReferenceDoc } from "../../services/referenceService";
-import { CollapsibleCard } from "../../ui/CollapsibleCard";
+import { ClinicalDisclosure } from "../../ui/ClinicalDisclosure";
 import { Card, Subtle, Title } from "../../ui/Ui";
 import { theme } from "../../ui/theme";
 import { hapticReset } from "../../ui/haptics";
@@ -35,84 +35,6 @@ function clampScore(v: number | null): number | null {
   if (v == null) return null;
   if (!Number.isFinite(v)) return null;
   return Math.max(1, Math.min(9, Math.round(v)));
-}
-
-function SourceItem({
-  title,
-  subtitle,
-  url,
-}: {
-  title: string;
-  subtitle?: string;
-  url?: string;
-}) {
-  const openUrl = async () => {
-    if (!url) return;
-
-    try {
-      const supported = await Linking.canOpenURL(url);
-      if (!supported) {
-        Alert.alert("Could not open link", url);
-        return;
-      }
-      await Linking.openURL(url);
-    } catch {
-      Alert.alert("Could not open link", url);
-    }
-  };
-
-  return (
-    <View
-      style={{
-        paddingVertical: 8,
-        borderBottomWidth: 1,
-        borderBottomColor: "rgba(255,255,255,0.06)",
-      }}
-    >
-      <Text
-        style={{
-          color: theme.colors.text,
-          fontSize: 14,
-          fontWeight: "800",
-          lineHeight: 18,
-        }}
-      >
-        {title}
-      </Text>
-      {!!subtitle && (
-        <Text
-          style={{
-            color: theme.colors.mutedText,
-            fontSize: 12,
-            lineHeight: 17,
-            marginTop: 2,
-          }}
-        >
-          {subtitle}
-        </Text>
-      )}
-      {!!url && (
-        <Pressable
-          onPress={openUrl}
-          style={({ pressed }) => ({
-            opacity: pressed ? 0.75 : 1,
-            marginTop: 8,
-          })}
-        >
-          <Text
-            style={{
-              color: theme.colors.text,
-              fontSize: 13,
-              fontWeight: "800",
-              textDecorationLine: "underline",
-            }}
-          >
-            Open source
-          </Text>
-        </Pressable>
-      )}
-    </View>
-  );
 }
 
 export default function CfsContent({ lang, reference }: Props) {
@@ -280,48 +202,16 @@ export default function CfsContent({ lang, reference }: Props) {
         </Card>
       )}
 
-      <CollapsibleCard
-        title={t("tool_disclaimer_title")}
-        subtitle={disclaimerText}
-      >
-        <View
-          style={{
-            borderRadius: 14,
-            borderWidth: 1,
-            borderColor: theme.colors.cardBorder,
-            padding: 12,
-            backgroundColor: "rgba(255,209,102,0.10)",
-          }}
-        >
-          <Text
-            style={{
-              color: theme.colors.text,
-              fontSize: 14,
-              lineHeight: 20,
-            }}
-          >
-            {disclaimerText}
-          </Text>
-        </View>
-      </CollapsibleCard>
-
-      <CollapsibleCard
-        title={t("tool_sources_title")}
-        subtitle={sourcesSubText}
-      >
-        <Subtle style={{ marginBottom: 8 }}>{sourcesSubText}</Subtle>
-
-        <View style={{ marginTop: 4 }}>
-          {(reference?.sources ?? []).map((source) => (
-            <SourceItem
-              key={source.id}
-              title={source.title?.[lang] ?? source.title?.en ?? ""}
-              subtitle={source.subtitle?.[lang] ?? source.subtitle?.en ?? ""}
-              url={source.url?.[lang] ?? source.url?.en}
-            />
-          ))}
-        </View>
-      </CollapsibleCard>
+      <ClinicalDisclosure
+        disclaimer={disclaimerText}
+        sourcesIntro={sourcesSubText}
+        sources={(reference?.sources ?? []).map((source) => ({
+          id: source.id,
+          title: source.title?.[lang] ?? source.title?.en ?? "",
+          subtitle: source.subtitle?.[lang] ?? source.subtitle?.en ?? "",
+          url: source.url?.[lang] ?? source.url?.en,
+        }))}
+      />
     </>
   );
 }

@@ -41,7 +41,6 @@ import {
   Card,
   Input,
   Label,
-  Row,
   Screen,
   Subtle,
   Title,
@@ -51,7 +50,6 @@ import { theme } from "../../src/ui/theme";
 import type {
   Area,
   Bydel,
-  ByenCategory,
   DetectedArea,
   HospitalCode,
   Kommune,
@@ -61,10 +59,18 @@ import type {
 
 import {
   hospitalLabel,
-  mapRegionCityToKommune,
   norm,
   resolveStreetRoute,
 } from "../../src/features/destination/helpers";
+import {
+  deriveAutomaticRoutingStrategy,
+  getByenCategory,
+  getCanonicalRoutingRows,
+  getCanonicalStreetLabel,
+  getConfidenceUx,
+  matchManualLocation,
+  type ManualLocationMatch,
+} from "../../src/domain/destination/automaticRouting";
 
 import {
   getHospitalPhoneNumbersByCode,
@@ -75,6 +81,7 @@ import { chip } from "../../src/features/destination/ui";
 
 type TranslateFn = (key: any) => string;
 type PhoneOptionValue = string;
+type ManualLocationOption = `street:${string}` | `kommune:${Kommune}`;
 type LocationStatus =
   | "initial"
   | "permission"
@@ -168,10 +175,6 @@ function uniqueStrings(values: string[]) {
   return Array.from(new Set(values));
 }
 
-function sideLabel(side: StreetSide) {
-  return side === "even" ? "Lige" : "Ulige";
-}
-
 type ResolvedHospital = {
   code: HospitalCode;
   label: string;
@@ -226,8 +229,11 @@ function SimpleDropdown<T extends string>({
     return (
       <Pressable
         key={option}
+        accessibilityRole="button"
+        accessibilityState={{ selected }}
         onPress={() => onSelect(option)}
         style={{
+          minHeight: 48,
           borderRadius: 10,
           paddingHorizontal: 10,
           paddingVertical: 12,
@@ -255,6 +261,11 @@ function SimpleDropdown<T extends string>({
       {!!label && <Label>{label}</Label>}
 
       <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={
+          typeof displayValue === "string" ? displayValue : label
+        }
+        accessibilityState={{ expanded: open }}
         onPress={onToggle}
         style={{
           borderRadius: 12,
@@ -341,6 +352,47 @@ function SimpleDropdown<T extends string>({
   );
 }
 
+function DestinationPrimaryButton({
+  label,
+  onPress,
+  disabled = false,
+}: {
+  label: string;
+  onPress: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled }}
+      disabled={disabled}
+      onPress={onPress}
+      style={({ pressed }) => ({
+        minHeight: 52,
+        borderRadius: 14,
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: theme.colors.primary,
+        opacity: disabled ? 0.55 : pressed ? 0.82 : 1,
+      })}
+    >
+      <Text
+        style={{
+          color: theme.colors.text,
+          fontSize: 16,
+          fontWeight: "900",
+          textAlign: "center",
+        }}
+      >
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
 export default function DestinationTool() {
   const { t } = useT();
   const { settings } = useSettings();
@@ -350,33 +402,39 @@ export default function DestinationTool() {
     LOCAL_VISITATION_DATA,
   );
 
-  const BYEN_CATEGORIES = visitationData.byen.categories;
   const BYEN_MAP = visitationData.byen.map;
-  const STREET_SAMPLE = visitationData.byen.streetSample;
+  const STREET_SAMPLE = useMemo(
+    () =>
+      getCanonicalRoutingRows(
+        visitationData.byen.streetSample,
+        LOCAL_VISITATION_DATA.byen.streetSample,
+      ),
+    [visitationData.byen.streetSample],
+  );
   const REGION_ALL_MAP = visitationData.region.map;
-  const ALL_KOMMUNER = Object.keys(REGION_ALL_MAP) as Kommune[];
+  const ALL_KOMMUNER = useMemo(
+    () => Object.keys(REGION_ALL_MAP) as Kommune[],
+    [REGION_ALL_MAP],
+  );
 
   const [reference, setReference] = useState<ReferenceDoc | null>(null);
 
-  const [area, setArea] = useState<Area>("region");
+  const [area, setArea] = useState<Area | null>(null);
   const [searchVisible, setSearchVisible] = useState(false);
+  const [requiresAddressConfirmation, setRequiresAddressConfirmation] =
+    useState(false);
 
   const [bydel, setBydel] = useState<Bydel | "">("");
   const [kommune, setKommune] = useState<Kommune | "">("");
   const [selectedStreet, setSelectedStreet] = useState<string>("");
-  const [streetSide, setStreetSide] = useState<StreetSide | "">("");
-  const [streetRouteNeedsSide, setStreetRouteNeedsSide] = useState(false);
   const [streetRouteNeedsHouseNumber, setStreetRouteNeedsHouseNumber] = useState(false);
   const [streetRouteNeedsPostalCode, setStreetRouteNeedsPostalCode] = useState(false);
-  const [streetRouteMessage, setStreetRouteMessage] = useState("");
 
-  const [byenCat, setByenCat] = useState<ByenCategory>("hospital");
   const [regCat, setRegCat] = useState<RegionCategory>("akutmodtagelse");
 
   const [streetQ, setStreetQ] = useState("");
   const [houseNumberQ, setHouseNumberQ] = useState("");
   const [postalCodeQ, setPostalCodeQ] = useState("");
-  const [kommuneQ, setKommuneQ] = useState("");
 
   const [detectingLocation, setDetectingLocation] = useState(false);
   const [detectedArea, setDetectedArea] = useState<DetectedArea | null>(null);
@@ -388,11 +446,11 @@ export default function DestinationTool() {
   const locationMountedRef = useRef(true);
 
   const [streetOpen, setStreetOpen] = useState(false);
-  const [kommuneOpen, setKommuneOpen] = useState(false);
-  const [byenCatOpen, setByenCatOpen] = useState(false);
   const [regCatOpen, setRegCatOpen] = useState(false);
   const [phoneDropdownOpen, setPhoneDropdownOpen] = useState(false);
   const [manualHospitalOpen, setManualHospitalOpen] = useState(false);
+  const [manualHospitalSectionVisible, setManualHospitalSectionVisible] =
+    useState(false);
   const [manualHospitalCode, setManualHospitalCode] = useState<HospitalCode | "">("");
 
   const [hospitalPhones, setHospitalPhones] = useState<HospitalPhoneNumber[]>(
@@ -401,10 +459,12 @@ export default function DestinationTool() {
   const [selectedPhoneId, setSelectedPhoneId] = useState<string>("");
   const [loadingHospitalPhones, setLoadingHospitalPhones] = useState(false);
 
-  const selectedSpecialtyKey = area === "byen" ? byenCat : regCat;
-  const selectedCategoryLabel = area === "byen"
-    ? t(BYEN_CATEGORIES.find((item) => item.key === byenCat)?.labelKey as any)
-    : getRegionCategoryLabel(t as TranslateFn, regCat);
+  const selectedSpecialtyKey =
+    area === "byen" ? getByenCategory(regCat) ?? regCat : regCat;
+  const selectedCategoryLabel = getRegionCategoryLabel(
+    t as TranslateFn,
+    regCat,
+  );
 
   const lastGeocodeAtRef = useRef(0);
   const lastGeocodeCoordsRef = useRef<{ lat: number; lon: number } | null>(
@@ -465,43 +525,14 @@ export default function DestinationTool() {
 
   const closeAllDropdowns = () => {
     setStreetOpen(false);
-    setKommuneOpen(false);
-    setByenCatOpen(false);
     setRegCatOpen(false);
     setPhoneDropdownOpen(false);
     setManualHospitalOpen(false);
   };
 
   const resetStreetRouteState = () => {
-    setStreetSide("");
-    setStreetRouteNeedsSide(false);
     setStreetRouteNeedsHouseNumber(false);
     setStreetRouteNeedsPostalCode(false);
-    setStreetRouteMessage("");
-  };
-
-  const resetSelectionState = () => {
-    setDetectedArea(null);
-    setBydel("");
-    setKommune("");
-    setSelectedStreet("");
-    setStreetQ("");
-    setHouseNumberQ("");
-    setPostalCodeQ("");
-    setKommuneQ("");
-    resetStreetRouteState();
-    setHospitalPhones([]);
-    setSelectedPhoneId("");
-    setManualHospitalCode("");
-    setLocationStatus("initial");
-    setLocationMessage("");
-    setDiagnostics({});
-    closeAllDropdowns();
-  };
-
-  const switchArea = (nextArea: Area) => {
-    setArea(nextArea);
-    resetSelectionState();
   };
 
   const toggleSearchVisible = () => {
@@ -516,34 +547,6 @@ export default function DestinationTool() {
     setStreetOpen((prev) => {
       const next = !prev;
       if (next) {
-        setKommuneOpen(false);
-        setByenCatOpen(false);
-        setRegCatOpen(false);
-        setPhoneDropdownOpen(false);
-      }
-      return next;
-    });
-  };
-
-  const toggleKommuneDropdown = () => {
-    setKommuneOpen((prev) => {
-      const next = !prev;
-      if (next) {
-        setStreetOpen(false);
-        setByenCatOpen(false);
-        setRegCatOpen(false);
-        setPhoneDropdownOpen(false);
-      }
-      return next;
-    });
-  };
-
-  const toggleByenCatDropdown = () => {
-    setByenCatOpen((prev) => {
-      const next = !prev;
-      if (next) {
-        setStreetOpen(false);
-        setKommuneOpen(false);
         setRegCatOpen(false);
         setPhoneDropdownOpen(false);
       }
@@ -556,8 +559,6 @@ export default function DestinationTool() {
       const next = !prev;
       if (next) {
         setStreetOpen(false);
-        setKommuneOpen(false);
-        setByenCatOpen(false);
         setPhoneDropdownOpen(false);
       }
       return next;
@@ -569,8 +570,6 @@ export default function DestinationTool() {
       const next = !prev;
       if (next) {
         setStreetOpen(false);
-        setKommuneOpen(false);
-        setByenCatOpen(false);
         setRegCatOpen(false);
       }
       return next;
@@ -666,21 +665,41 @@ export default function DestinationTool() {
 
   const streetOptions = useMemo(() => {
     const q = norm(streetQ);
-    const all = uniqueStrings(STREET_SAMPLE.map((r) => r.street)).sort((a, b) =>
-      a.localeCompare(b, "da"),
-    );
+    const all = uniqueStrings(
+      STREET_SAMPLE.map((r) => getCanonicalStreetLabel(r.street)),
+    ).sort((a, b) => a.localeCompare(b, "da"));
 
     if (!q) return all;
     return all.filter((street) => norm(street).includes(q));
   }, [STREET_SAMPLE, streetQ]);
 
   const kommuneOptions = useMemo(() => {
-    const q = norm(kommuneQ);
+    const q = norm(streetQ);
     const all = [...ALL_KOMMUNER].sort((a, b) => a.localeCompare(b, "da"));
 
     if (!q) return all;
     return all.filter((k) => norm(k).includes(q));
-  }, [ALL_KOMMUNER, kommuneQ]);
+  }, [ALL_KOMMUNER, streetQ]);
+
+  const manualLocationSections = useMemo<
+    DropdownSection<ManualLocationOption>[]
+  >(
+    () => [
+      {
+        title: lang === "da" ? "Gader i København" : "Streets in Copenhagen",
+        options: streetOptions.map(
+          (street) => `street:${street}` as ManualLocationOption,
+        ),
+      },
+      {
+        title: lang === "da" ? "Kommuner i regionen" : "Municipalities",
+        options: kommuneOptions.map(
+          (item) => `kommune:${item}` as ManualLocationOption,
+        ),
+      },
+    ],
+    [kommuneOptions, lang, streetOptions],
+  );
 
   const regionCategoryOptions = useMemo(() => {
     const backendKeys = visitationData.region.categories
@@ -735,16 +754,20 @@ export default function DestinationTool() {
       postalCode,
     );
 
+    setArea("byen");
+    setKommune("");
     setDetectedArea(null);
+    setManualHospitalCode("");
+    setRequiresAddressConfirmation(false);
     setSelectedStreet(street);
     setStreetQ(street);
 
     if (result.status === "single") {
       setBydel(result.officialBydel);
-      setStreetRouteNeedsSide(false);
       setStreetRouteNeedsHouseNumber(false);
       setStreetRouteNeedsPostalCode(false);
-      setStreetRouteMessage("");
+      setLocationStatus("matched");
+      setLocationMessage("");
       setDiagnostics((current) => ({
         ...current,
         normalizedStreetKey: norm(street),
@@ -763,10 +786,11 @@ export default function DestinationTool() {
       result.status === "still_ambiguous"
     ) {
       setBydel("");
-      setStreetRouteNeedsSide(result.status === "needs_side");
-      setStreetRouteNeedsHouseNumber(result.status === "needs_house_number");
+      setStreetRouteNeedsHouseNumber(
+        result.status === "needs_house_number" || result.status === "needs_side",
+      );
       setStreetRouteNeedsPostalCode(result.status === "needs_postal_code");
-      setStreetRouteMessage(result.message);
+      setLocationStatus("not_found");
       setDiagnostics((current) => ({
         ...current,
         normalizedStreetKey: norm(street),
@@ -777,10 +801,9 @@ export default function DestinationTool() {
     }
 
     setBydel("");
-    setStreetRouteNeedsSide(false);
     setStreetRouteNeedsHouseNumber(false);
     setStreetRouteNeedsPostalCode(false);
-    setStreetRouteMessage(result.message);
+    setLocationStatus("not_found");
     setDiagnostics((current) => ({
       ...current,
       normalizedStreetKey: norm(street),
@@ -788,21 +811,6 @@ export default function DestinationTool() {
       matchFailure: result.message,
     }));
     return false;
-  };
-
-  const selectStreetSide = (side: StreetSide) => {
-    setStreetSide(side);
-
-    const street = selectedStreet || streetQ;
-    if (!street) return;
-
-    const number = parseHouseNumber(houseNumberQ).number;
-    applyStreetRoute(
-      street,
-      side,
-      number,
-      postalCodeQ || undefined,
-    );
   };
 
   const resolvedHospital = useMemo<ResolvedHospital | null>(() => {
@@ -813,20 +821,24 @@ export default function DestinationTool() {
         extra: lang === "da" ? "Valgt manuelt" : "Selected manually",
       };
     }
+    if (requiresAddressConfirmation) return null;
     if (area === "byen") {
       if (!bydel) return null;
 
       const selectedBydel = bydel as Bydel;
+      const byenCategory = getByenCategory(regCat);
       const code =
-        resolveHospitalCode({
-          area: "byen",
-          bydel: selectedBydel,
-          category: byenCat,
-          map: BYEN_MAP,
-        }) ?? "UNKNOWN";
+        byenCategory
+          ? resolveHospitalCode({
+              area: "byen",
+              bydel: selectedBydel,
+              category: byenCategory,
+              map: BYEN_MAP,
+            }) ?? "UNKNOWN"
+          : "UNKNOWN";
 
       const streetExtra = selectedStreet
-        ? `${selectedStreet}${streetSide ? ` (${sideLabel(streetSide).toLowerCase()})` : ""} • ${selectedBydel}`
+        ? `${selectedStreet}${houseNumberQ ? ` ${houseNumberQ}` : ""}${postalCodeQ ? `, ${postalCodeQ}` : ""} • ${selectedBydel}`
         : selectedBydel;
 
       return {
@@ -836,7 +848,7 @@ export default function DestinationTool() {
       };
     }
 
-    if (!kommune) return null;
+    if (area !== "region" || !kommune) return null;
 
     const selectedKommune = kommune as Kommune;
     const code =
@@ -857,17 +869,20 @@ export default function DestinationTool() {
     bydel,
     kommune,
     selectedStreet,
-    streetSide,
-    byenCat,
+    houseNumberQ,
+    postalCodeQ,
     regCat,
     t,
     BYEN_MAP,
     REGION_ALL_MAP,
     manualHospitalCode,
+    requiresAddressConfirmation,
     lang,
   ]);
 
   useEffect(() => {
+    let active = true;
+
     const loadHospitalPhones = async () => {
       if (!resolvedHospital || resolvedHospital.code === "UNKNOWN") {
         setHospitalPhones([]);
@@ -882,6 +897,7 @@ export default function DestinationTool() {
         const results = await getHospitalPhoneNumbersByCode(
           resolvedHospital.code,
         );
+        if (!active) return;
 
         setHospitalPhones(results);
 
@@ -894,14 +910,18 @@ export default function DestinationTool() {
         setSelectedPhoneId(preferred?.id ?? "");
       } catch (error) {
         console.error("Error loading hospital phones:", error);
+        if (!active) return;
         setHospitalPhones([]);
         setSelectedPhoneId("");
       } finally {
-        setLoadingHospitalPhones(false);
+        if (active) setLoadingHospitalPhones(false);
       }
     };
 
     loadHospitalPhones();
+    return () => {
+      active = false;
+    };
   }, [resolvedHospital?.code, selectedSpecialtyKey]);
 
   const selectedHospitalPhone = useMemo(() => {
@@ -981,54 +1001,58 @@ export default function DestinationTool() {
     );
   };
 
+  const applyManualLocationMatch = (
+    match: ManualLocationMatch,
+    rawInput: string,
+  ) => {
+    if (match.area === "byen") {
+      setHouseNumberQ(match.displayedHouseNumber);
+      setPostalCodeQ(match.postcode ?? "");
+      applyStreetRoute(
+        match.street,
+        "",
+        parseHouseNumber(match.displayedHouseNumber).number,
+        match.postcode,
+      );
+      return;
+    }
+
+    if (match.area === "region") {
+      setArea("region");
+      setKommune(match.kommune);
+      setSelectedStreet("");
+      setStreetQ(rawInput);
+      setHouseNumberQ("");
+      setPostalCodeQ("");
+      setDetectedArea(null);
+      setManualHospitalCode("");
+      setRequiresAddressConfirmation(false);
+      resetStreetRouteState();
+      setLocationStatus("matched");
+      setLocationMessage("");
+      return;
+    }
+
+    setArea(null);
+    setBydel("");
+    setKommune("");
+    setSelectedStreet("");
+    setDetectedArea(null);
+    setRequiresAddressConfirmation(false);
+    resetStreetRouteState();
+    setLocationStatus("initial");
+    setLocationMessage("");
+  };
+
   const handleStreetChange = (text: string) => {
     setStreetQ(text);
     setStreetOpen(true);
-    setKommuneOpen(false);
-    setByenCatOpen(false);
     setRegCatOpen(false);
     setPhoneDropdownOpen(false);
-    setStreetSide("");
-    setStreetRouteNeedsSide(false);
-    setStreetRouteNeedsHouseNumber(false);
-    setStreetRouteMessage("");
-
-    const parsedStreet = parseStreetName(undefined, text) ?? text;
-    const exactStreet = STREET_SAMPLE.find(
-      (row) => norm(row.street) === norm(parsedStreet),
-    );
-
-    if (exactStreet) {
-      const parsed = parseHouseNumber(text);
-      if (parsed.number) setHouseNumberQ(String(parsed.number));
-      applyStreetRoute(
-        exactStreet.street,
-        "",
-        parsed.number,
-        postalCodeQ || undefined,
-      );
-    } else {
-      setSelectedStreet("");
-      setBydel("");
-    }
-  };
-
-  const handleKommuneChange = (text: string) => {
-    setKommuneQ(text);
-    setKommuneOpen(true);
-    setStreetOpen(false);
-    setByenCatOpen(false);
-    setRegCatOpen(false);
-    setPhoneDropdownOpen(false);
-
-    const exactKommune = ALL_KOMMUNER.find((k) => norm(k) === norm(text));
-
-    if (exactKommune) {
-      setDetectedArea(null);
-      setKommune(exactKommune);
-    } else {
-      setKommune("");
-    }
+    setManualHospitalCode("");
+    const match = matchManualLocation(text, STREET_SAMPLE, ALL_KOMMUNER);
+    applyManualLocationMatch(match, text);
+    if (match.area !== "unresolved") setStreetOpen(false);
   };
 
   const detectLocation = async () => {
@@ -1038,6 +1062,12 @@ export default function DestinationTool() {
 
     try {
       setDetectingLocation(true);
+      setArea(null);
+      setBydel("");
+      setKommune("");
+      setDetectedArea(null);
+      setManualHospitalCode("");
+      setRequiresAddressConfirmation(false);
       setLocationMessage("");
       setLocationStatus("permission");
 
@@ -1202,111 +1232,153 @@ export default function DestinationTool() {
         cachedAgeMs,
       } as const;
 
-      if (area === "byen") {
-        if (street) {
-          const routeResult = resolveStreetRoute(
-            STREET_SAMPLE,
-            street,
-            "",
-            parsedNumber.number,
-            postcode || undefined,
+      const strategy = deriveAutomaticRoutingStrategy(
+        {
+          street,
+          houseNumber: parsedNumber.number,
+          postcode,
+          city,
+          district,
+          subregion,
+          region,
+        },
+        STREET_SAMPLE,
+      );
+
+      if (strategy.area === "byen") {
+        const routeResult = strategy.route;
+        const confidence = classifyLocationConfidence({
+          accuracy,
+          hasStreet: true,
+          hasCompleteRoutingAddress: routeResult.status === "single",
+        });
+        setArea("byen");
+        setKommune("");
+        setSelectedStreet(street);
+        setStreetQ(street);
+        setHouseNumberQ(
+          parsedNumber.number
+            ? String(parsedNumber.number) + (parsedNumber.suffix ?? "")
+            : "",
+        );
+        setPostalCodeQ(postcode);
+        setDetectedArea({ ...detectedAreaBase, confidence });
+        setManualHospitalCode("");
+
+        if (routeResult.status === "single") {
+          setBydel(routeResult.officialBydel);
+          setStreetRouteNeedsHouseNumber(false);
+          setStreetRouteNeedsPostalCode(false);
+          setRequiresAddressConfirmation(
+            getConfidenceUx(confidence) === "confirm",
           );
-          const confidence = classifyLocationConfidence({
-            accuracy,
-            hasStreet: true,
-            hasCompleteRoutingAddress: routeResult.status === "single",
-          });
-          setDetectedArea({ ...detectedAreaBase, confidence });
-
-          if (routeResult.status === "single") {
-            setSelectedStreet(street);
-            setStreetQ(street);
-            setStreetSide("");
-            setBydel(routeResult.officialBydel);
-            setStreetRouteNeedsSide(false);
-            setStreetRouteNeedsHouseNumber(false);
-            setStreetRouteNeedsPostalCode(false);
-            setStreetRouteMessage("");
-            setDiagnostics((current) => ({
-              ...current,
-              confidence,
-              matchStatus: routeResult.status,
-              matchType: routeResult.matchType,
-              matchedRule: routeResult.matchedRule,
-              destinationDistrict: routeResult.officialBydel,
-            }));
-            closeAllDropdowns();
-            setLocationStatus("matched");
-            setLocationMessage(
-              confidence === "medium"
-                ? "Adressen blev fundet, men GPS-præcisionen er middel. Kontrollér den viste adresse, eller ret den i gadesøgningen."
-                : "",
-            );
-            return;
-          }
-
-          if (
-            routeResult.status === "needs_side" ||
-            routeResult.status === "needs_house_number" ||
-            routeResult.status === "needs_postal_code" ||
-            routeResult.status === "still_ambiguous"
-          ) {
-            setSelectedStreet(street);
-            setStreetQ(street);
-            setStreetSide("");
-            setBydel("");
-            setStreetRouteNeedsSide(routeResult.status === "needs_side");
-            setStreetRouteNeedsHouseNumber(
-              routeResult.status === "needs_house_number",
-            );
-            setStreetRouteNeedsPostalCode(
-              routeResult.status === "needs_postal_code",
-            );
-            setStreetRouteMessage(routeResult.message);
-            setLocationStatus("not_found");
-            setSearchVisible(true);
-            setLocationMessage(
-              routeResult.status === "needs_house_number"
-                ? "Gaden er genkendt, men husnummeret mangler. Indtast det nedenfor, eller vælg hospital manuelt."
-                : routeResult.status === "needs_postal_code"
-                  ? "Gaden er genkendt, men postnummeret skal bekræftes. Indtast det nedenfor, eller vælg hospital manuelt."
-                  : "Gaden er genkendt, men PDF-reglen giver ikke ét sikkert resultat. Ret adressen, eller vælg hospital manuelt.",
-            );
-            closeAllDropdowns();
-            return;
-          }
-
-          setLocationStatus("not_found");
-          setSearchVisible(true);
+          setDiagnostics((current) => ({
+            ...current,
+            confidence,
+            routingArea: "byen",
+            matchStatus: routeResult.status,
+            matchType: routeResult.matchType,
+            matchedRule: routeResult.matchedRule,
+            destinationDistrict: routeResult.officialBydel,
+          }));
+          closeAllDropdowns();
+          setLocationStatus("matched");
           setLocationMessage(
-            "Vejen findes ikke i den officielle visitationstabel. Søg adressen manuelt, prøv GPS igen, eller vælg hospital manuelt.",
+            confidence === "medium"
+              ? "Kontrollér den fundne adresse, før destinationen bruges."
+              : "",
           );
           return;
         }
 
-        setDetectedArea({ ...detectedAreaBase, confidence: "poor" });
+        setBydel("");
+        setRequiresAddressConfirmation(false);
+        setStreetRouteNeedsHouseNumber(
+          routeResult.status === "needs_house_number" ||
+            routeResult.status === "needs_side",
+        );
+        setStreetRouteNeedsPostalCode(
+          routeResult.status === "needs_postal_code",
+        );
         setLocationStatus("not_found");
         setSearchVisible(true);
         setLocationMessage(
-          "Adresseopslaget returnerede ingen vej. Prøv GPS igen, indtast adressen manuelt, eller vælg hospital manuelt.",
+          routeResult.status === "needs_house_number" ||
+            routeResult.status === "needs_side"
+            ? "Gaden er fundet. Indtast husnummeret for at finde den sikre destination."
+            : routeResult.status === "needs_postal_code"
+              ? "Gaden er fundet. Bekræft postnummeret for at finde den sikre destination."
+              : "Adressen kan ikke afgøres sikkert. Ret adressen, eller vælg hospital manuelt.",
         );
-      } else {
-        setDetectedArea(detectedAreaBase);
-        const mappedKommune = mapRegionCityToKommune(
-          city || district || subregion || region,
-          subregion || region,
-        );
-
-        if (mappedKommune) {
-          setKommune(mappedKommune);
-          setKommuneQ(mappedKommune);
-          closeAllDropdowns();
-          setLocationStatus("matched");
-        } else {
-          setLocationStatus("not_found");
-          setLocationMessage(t("dest_kommune_notmapped_body"));
-        }
+        setDiagnostics((current) => ({
+          ...current,
+          confidence,
+          routingArea: "byen",
+          matchStatus: routeResult.status,
+          matchFailure: routeResult.message,
+        }));
+        closeAllDropdowns();
+        return;
       }
+
+      if (strategy.area === "region") {
+        const confidence = classifyLocationConfidence({
+          accuracy,
+          hasStreet: !!street,
+          hasCompleteRoutingAddress: true,
+        });
+        const confidenceUx = getConfidenceUx(confidence);
+        setArea(confidenceUx === "recovery" ? null : "region");
+        setBydel("");
+        setKommune(
+          confidenceUx === "recovery" ? "" : strategy.kommune,
+        );
+        setSelectedStreet(street);
+        setStreetQ(street || strategy.kommune);
+        setHouseNumberQ(
+          parsedNumber.number
+            ? String(parsedNumber.number) + (parsedNumber.suffix ?? "")
+            : "",
+        );
+        setPostalCodeQ(postcode);
+        resetStreetRouteState();
+        setDetectedArea({ ...detectedAreaBase, confidence });
+        setManualHospitalCode("");
+        setRequiresAddressConfirmation(
+          confidenceUx === "confirm",
+        );
+        setDiagnostics((current) => ({
+          ...current,
+          confidence,
+          routingArea: "region",
+          destinationMunicipality: strategy.kommune,
+        }));
+        closeAllDropdowns();
+        setLocationStatus(confidence === "poor" ? "poor_accuracy" : "matched");
+        setLocationMessage(
+          confidence === "medium"
+            ? "Kontrollér den fundne adresse, før destinationen bruges."
+            : confidence === "poor"
+              ? "Placeringen kan ikke bruges sikkert. Prøv GPS igen, eller indtast adressen manuelt."
+              : "",
+        );
+        return;
+      }
+
+      setArea(null);
+      setBydel("");
+      setKommune("");
+      setRequiresAddressConfirmation(false);
+      setDetectedArea({ ...detectedAreaBase, confidence: "poor" });
+      setLocationStatus("not_found");
+      setSearchVisible(true);
+      setLocationMessage(
+        strategy.reason === "unknown_city_street"
+          ? "Vejen findes ikke i den officielle visitationstabel. Ret adressen, prøv GPS igen, eller vælg hospital manuelt."
+          : strategy.reason === "missing_street"
+            ? "Adresseopslaget returnerede ingen vej. Indtast adressen manuelt, eller prøv GPS igen."
+            : t("dest_kommune_notmapped_body"),
+      );
     } catch (error: any) {
       if (!locationMountedRef.current || requestId !== locationRequestRef.current) return;
       const message = String(error?.message ?? "");
@@ -1393,299 +1465,334 @@ export default function DestinationTool() {
   return (
     <Background>
       <Screen>
-        <View
-          style={{
-            gap: 6,
-            marginTop: 12,
-            alignItems: "center",
-          }}
-        >
+        <View style={{ gap: 6, marginTop: 12, alignItems: "center" }}>
           <Title style={{ textAlign: "center" }}>{t("dest_title")}</Title>
-          <Subtle style={{ textAlign: "center" }}>{t("dest_sub")}</Subtle>
+          <Subtle style={{ textAlign: "center" }}>
+            {lang === "da"
+              ? "Vælg kategori, og find patientens placering med GPS eller adresse."
+              : "Choose a category, then locate the patient by GPS or address."}
+          </Subtle>
         </View>
 
-        <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
-          <Card>
-            <View style={{ alignItems: "center" }}>
-              <Title style={{ textAlign: "center" }}>
-                {t("dest_function_title")}
-              </Title>
-            </View>
-
-            <View
-              style={{
-                flexDirection: "row",
-                gap: 10,
-                marginTop: 10,
-                justifyContent: "center",
-                flexWrap: "wrap",
+        <ScrollView contentContainerStyle={{ gap: 18, paddingBottom: 24 }}>
+          <View style={{ gap: 14, paddingTop: 4 }}>
+            <SimpleDropdown<RegionCategory>
+              label={t("dest_category")}
+              value={regCat}
+              open={regCatOpen}
+              onToggle={toggleRegCatDropdown}
+              options={regionCategoryOptions}
+              sections={regionCategorySections}
+              onSelect={(value) => {
+                setRegCat(value);
+                setRegCatOpen(false);
               }}
-            >
-              <Pressable
-                onPress={() => switchArea("byen")}
-                style={chip(area === "byen")}
-              >
-                <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
-                  {t("dest_byen")}
-                </Text>
-              </Pressable>
+              renderValue={(value) =>
+                getRegionCategoryLabel(t as TranslateFn, value)
+              }
+              placeholder={t("dest_category")}
+              maxHeight={280}
+            />
 
-              <Pressable
-                onPress={() => switchArea("region")}
-                style={chip(area === "region")}
-              >
-                <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
-                  {t("dest_region")}
-                </Text>
-              </Pressable>
+            {showNeurokirNote && (
+              <Text style={{ color: theme.colors.mutedText }}>
+                {neurokirNote === "dest_region_neurokir_note"
+                  ? t("dest_region_neurokir_note_fallback")
+                  : neurokirNote}
+              </Text>
+            )}
 
-              <Pressable
-                onPress={toggleSearchVisible}
-                style={chip(searchVisible)}
-              >
-                <Text style={{ color: theme.colors.text, fontWeight: "900" }}>
-                  {area === "byen" ? "🔍 Søg vej eller adresse" : "🔍"}
-                </Text>
-              </Pressable>
+            <View testID="destination-primary-gps">
+              <DestinationPrimaryButton
+                label={
+                  detectingLocation
+                    ? lang === "da"
+                      ? "Finder placering…"
+                      : "Finding location…"
+                    : lang === "da"
+                      ? "Find destination med GPS"
+                      : "Find destination with GPS"
+                }
+                onPress={detectLocation}
+                disabled={detectingLocation}
+              />
             </View>
 
-            <View style={{ marginTop: 14 }}>
-              {area === "byen" ? (
-                <SimpleDropdown<ByenCategory>
-                  label={t("dest_category")}
-                  value={byenCat}
-                  open={byenCatOpen}
-                  onToggle={toggleByenCatDropdown}
-                  options={BYEN_CATEGORIES.map((c) => c.key) as ByenCategory[]}
-                  onSelect={(value) => {
-                    setByenCat(value);
-                    setByenCatOpen(false);
-                  }}
-                  renderValue={(value) => {
-                    const item = BYEN_CATEGORIES.find((c) => c.key === value);
-                    return item ? t(item.labelKey as any) : value;
-                  }}
-                  placeholder={t("dest_category")}
-                  maxHeight={220}
-                />
-              ) : (
-                <>
-                  <SimpleDropdown<RegionCategory>
-                    label={t("dest_category")}
-                    value={regCat}
-                    open={regCatOpen}
-                    onToggle={toggleRegCatDropdown}
-                    options={regionCategoryOptions}
-                    sections={regionCategorySections}
-                    onSelect={(value) => {
-                      setRegCat(value);
-                      setRegCatOpen(false);
-                    }}
-                    renderValue={(value) =>
-                      getRegionCategoryLabel(t as TranslateFn, value)
-                    }
-                    placeholder={t("dest_category")}
-                    maxHeight={280}
-                  />
-
-                  {showNeurokirNote && (
-                    <Text
-                      style={{ color: theme.colors.mutedText, marginTop: 4 }}
-                    >
-                      {neurokirNote === "dest_region_neurokir_note"
-                        ? t("dest_region_neurokir_note_fallback")
-                        : neurokirNote}
-                    </Text>
-                  )}
-                </>
-              )}
-            </View>
-          </Card>
-
-          <Card>
-            <View style={{ gap: 8 }}>
-              {detectingLocation ? (
-                <View style={{ gap: 8, alignItems: "center" }}>
-                  <ActivityIndicator />
-                  <Text
-                    accessibilityLiveRegion="polite"
-                    style={{ color: theme.colors.mutedText }}
-                  >
-                    {locationStatus === "permission"
+            {detectingLocation && (
+              <View style={{ gap: 8, alignItems: "center" }}>
+                <ActivityIndicator />
+                <Text
+                  accessibilityLiveRegion="polite"
+                  style={{ color: theme.colors.mutedText }}
+                >
+                  {locationStatus === "permission"
+                    ? lang === "da"
                       ? "Anmoder om adgang til placering…"
-                      : locationStatus === "resolving"
-                        ? "Finder vej og visitationsområde…"
-                        : "Finder din placering…"}
-                  </Text>
-                </View>
-              ) : detectedArea ? (
+                      : "Requesting location access…"
+                    : locationStatus === "resolving"
+                      ? lang === "da"
+                        ? "Finder adresse og destination…"
+                        : "Resolving address and destination…"
+                      : lang === "da"
+                        ? "Finder din placering…"
+                        : "Finding your location…"}
+                </Text>
+              </View>
+            )}
+
+            {!detectingLocation &&
+              detectedArea &&
+              requiresAddressConfirmation && (
                 <View
                   style={{
-                    borderRadius: 12,
+                    borderRadius: 14,
                     borderWidth: 1,
-                    borderColor: theme.colors.cardBorder,
-                    padding: 12,
-                    backgroundColor: "rgba(0,0,0,0.10)",
-                    gap: 4,
+                    borderColor: theme.colors.warn,
+                    backgroundColor: "rgba(255,209,102,0.10)",
+                    padding: 14,
+                    gap: 12,
                   }}
                 >
-                  <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
-                    {t("dest_detected")}
+                  <Text style={{ color: theme.colors.text, fontWeight: "900" }}>
+                    {lang === "da"
+                      ? "Kontrollér den fundne adresse"
+                      : "Check the detected address"}
                   </Text>
-
-                  <Text style={{ color: theme.colors.mutedText }}>
+                  <Text style={{ color: theme.colors.text, lineHeight: 21 }}>
                     {detectedArea.label || t("dest_unknown_area")}
                   </Text>
-
-                  {detectedArea.accuracyMeters !== undefined && detectedArea.confidence !== "high" && (
-                    <Text style={{ color: theme.colors.mutedText }}>
-                      GPS-præcision: ±{Math.round(detectedArea.accuracyMeters)} m
-                      {detectedArea.confidence === "medium"
-                        ? " • middel sikkerhed – kontrollér adressen"
-                        : detectedArea.confidence === "poor"
-                          ? " • lav sikkerhed"
-                          : ""}
-                    </Text>
-                  )}
-
-                  {area === "byen" && !!bydel && (
-                    <Text style={{ color: theme.colors.mutedText }}>
-                      {t("dest_using_bydel")}{" "}
-                      <Text
-                        style={{
-                          color: theme.colors.text,
-                          fontWeight: "800",
-                        }}
-                      >
-                        {bydel}
-                      </Text>
-                    </Text>
-                  )}
-
-                  {area === "region" && !!kommune && (
-                    <Text style={{ color: theme.colors.mutedText }}>
-                      {t("dest_using_kommune")}{" "}
-                      <Text
-                        style={{
-                          color: theme.colors.text,
-                          fontWeight: "800",
-                        }}
-                      >
-                        {kommune}
-                      </Text>
-                    </Text>
-                  )}
-                </View>
-              ) : (
-                <Text style={{ color: theme.colors.mutedText }}>
-                  Brug din aktuelle placering til at finde visitationsområdet, eller vælg hospital manuelt.
-                </Text>
-              )}
-
-              {!!locationMessage && !detectingLocation && (
-                <Text
-                  accessibilityLiveRegion="assertive"
-                  style={{ color: theme.colors.warn, fontWeight: "700", lineHeight: 20 }}
-                >
-                  {locationMessage}
-                </Text>
-              )}
-
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Find visitation med GPS"
-                disabled={detectingLocation}
-                onPress={detectLocation}
-                style={chip(false)}
-              >
-                <Text style={{ color: theme.colors.text, fontWeight: "900", textAlign: "center" }}>
-                  {detectedArea ? "Prøv GPS igen" : "Find med GPS"}
-                </Text>
-              </Pressable>
-            </View>
-          </Card>
-
-          {searchVisible && area === "byen" && (
-            <Card>
-              <View style={{ gap: 14 }}>
-                <Title>Søg vej eller adresse</Title>
-                <View style={{ gap: 8 }}>
-                  <Label>{t("dest_street_placeholder")}</Label>
-                  <Input
-                    value={streetQ}
-                    onChangeText={handleStreetChange}
-                    placeholder={t("dest_street_placeholder")}
-                    keyboardType="default"
-                    autoCapitalize="words"
-                    autoCorrect={false}
-                  />
-                </View>
-
-                <SimpleDropdown<string>
-                  label={t("dest_find_street")}
-                  value={selectedStreet}
-                  open={streetOpen}
-                  onToggle={toggleStreetDropdown}
-                  options={streetOptions}
-                  onSelect={(value) => {
-                    setDetectedArea(null);
-                    setSelectedStreet(value);
-                    setStreetQ(value);
-                    setStreetOpen(false);
-                    setStreetSide("");
-                    applyStreetRoute(
-                      value,
-                      "",
-                      undefined,
-                      postalCodeQ || undefined,
-                    );
-                  }}
-                  placeholder={t("dest_street_placeholder")}
-                  emptyText={t("dest_no_street_match")}
-                  maxHeight={220}
-                />
-
-                {!!selectedStreet && (
                   <View style={{ gap: 8 }}>
-                    <Label>Husnummer</Label>
+                    <View testID="destination-confirm-address">
+                      <DestinationPrimaryButton
+                        label={
+                          lang === "da"
+                            ? "Brug denne adresse"
+                            : "Use this address"
+                        }
+                        onPress={() => {
+                          setRequiresAddressConfirmation(false);
+                          setLocationMessage("");
+                        }}
+                      />
+                    </View>
+                    <Pressable
+                      accessibilityRole="button"
+                      onPress={() => setSearchVisible(true)}
+                      style={({ pressed }) => ({
+                        minHeight: 48,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        opacity: pressed ? 0.65 : 1,
+                      })}
+                    >
+                      <Text
+                        style={{
+                          color: theme.colors.accentMuted,
+                          fontWeight: "900",
+                        }}
+                      >
+                        {lang === "da" ? "Ret adresse" : "Correct address"}
+                      </Text>
+                    </Pressable>
+                  </View>
+                </View>
+              )}
+
+            {!!locationMessage && !detectingLocation && (
+              <Text
+                accessibilityLiveRegion="assertive"
+                style={{
+                  color: theme.colors.warn,
+                  fontWeight: "700",
+                  lineHeight: 20,
+                }}
+              >
+                {locationMessage}
+              </Text>
+            )}
+
+            {!detectingLocation &&
+              [
+                "permission_denied",
+                "services_disabled",
+                "timeout",
+                "poor_accuracy",
+                "geocode_failed",
+                "not_found",
+                "error",
+              ].includes(locationStatus) && (
+                <View style={{ gap: 6 }}>
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={detectLocation}
+                    style={({ pressed }) => ({
+                      minHeight: 48,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      opacity: pressed ? 0.65 : 1,
+                    })}
+                  >
+                    <Text
+                      style={{
+                        color: theme.colors.accentMuted,
+                        fontWeight: "900",
+                      }}
+                    >
+                      {lang === "da" ? "Prøv GPS igen" : "Retry GPS"}
+                    </Text>
+                  </Pressable>
+                </View>
+              )}
+
+            <Pressable
+              testID="destination-manual-address-toggle"
+              accessibilityRole="button"
+              onPress={toggleSearchVisible}
+              style={({ pressed }) => ({
+                minHeight: 48,
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: pressed ? 0.65 : 1,
+              })}
+            >
+              <Text
+                style={{ color: theme.colors.accentMuted, fontWeight: "900" }}
+              >
+                {searchVisible
+                  ? lang === "da"
+                    ? "Skjul manuel adresse"
+                    : "Hide manual address"
+                  : lang === "da"
+                    ? "Søg adresse manuelt"
+                    : "Enter address manually"}
+              </Text>
+            </Pressable>
+          </View>
+
+          {searchVisible && (
+            <View style={{ gap: 14, paddingVertical: 4 }}>
+              <View style={{ gap: 5 }}>
+                <Title style={{ fontSize: 20 }}>
+                  {lang === "da" ? "Patientens placering" : "Patient location"}
+                </Title>
+                <Subtle>
+                  {lang === "da"
+                    ? "Skriv en adresse i København eller en kommune i regionen."
+                    : "Enter a Copenhagen address or a municipality in the region."}
+                </Subtle>
+              </View>
+
+              <View style={{ gap: 8 }}>
+                <Label>
+                  {lang === "da" ? "Adresse eller kommune" : "Address or municipality"}
+                </Label>
+                <Input
+                  accessibilityLabel={
+                    lang === "da" ? "Adresse eller kommune" : "Address or municipality"
+                  }
+                  value={streetQ}
+                  onChangeText={handleStreetChange}
+                  placeholder={
+                    lang === "da"
+                      ? "Fx Frederiksberg Allé 13A eller Hillerød"
+                      : "E.g. Frederiksberg Allé 13A or Hillerød"
+                  }
+                  keyboardType="default"
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                />
+              </View>
+
+              <SimpleDropdown<ManualLocationOption>
+                value=""
+                open={streetOpen}
+                onToggle={toggleStreetDropdown}
+                options={[]}
+                sections={manualLocationSections}
+                onSelect={(option) => {
+                  const separator = option.indexOf(":");
+                  const kind = option.slice(0, separator);
+                  const value = option.slice(separator + 1);
+                  setStreetOpen(false);
+                  setStreetQ(value);
+                  if (kind === "street") {
+                    applyManualLocationMatch(
+                      matchManualLocation(value, STREET_SAMPLE, ALL_KOMMUNER),
+                      value,
+                    );
+                  } else {
+                    applyManualLocationMatch(
+                      { area: "region", kommune: value as Kommune },
+                      value,
+                    );
+                  }
+                }}
+                renderValue={(option) =>
+                  option.slice(option.indexOf(":") + 1)
+                }
+                renderOption={(option) => (
+                  <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
+                    {option.slice(option.indexOf(":") + 1)}
+                  </Text>
+                )}
+                placeholder={
+                  lang === "da" ? "Vælg et forslag" : "Choose a suggestion"
+                }
+                emptyText={
+                  lang === "da"
+                    ? "Ingen sikre forslag fundet."
+                    : "No safe suggestions found."
+                }
+                maxHeight={260}
+              />
+
+              {!!selectedStreet &&
+                (streetRouteNeedsHouseNumber || !!houseNumberQ) && (
+                  <View style={{ gap: 8 }}>
+                    <Label>{lang === "da" ? "Husnummer" : "House number"}</Label>
                     <Input
                       value={houseNumberQ}
                       onChangeText={(value) => {
-                        const displayed = value.replace(/[^0-9a-zæøå]/giu, "").slice(0, 6);
+                        const displayed = value
+                          .replace(/[^0-9a-zæøå]/giu, "")
+                          .slice(0, 6);
                         setHouseNumberQ(displayed);
-                        const number = parseHouseNumber(displayed).number;
                         applyStreetRoute(
                           selectedStreet,
                           "",
-                          number,
+                          parseHouseNumber(displayed).number,
                           postalCodeQ || undefined,
                         );
                       }}
-                      placeholder="Fx 15A"
+                      placeholder="Fx 13A"
                       keyboardType="default"
                       autoCapitalize="characters"
                     />
                     {streetRouteNeedsHouseNumber && (
-                      <Text style={{ color: theme.colors.warn, fontWeight: "700" }}>
-                        Denne gade er opdelt efter husnummer.
+                      <Text
+                        style={{ color: theme.colors.warn, fontWeight: "700" }}
+                      >
+                        {lang === "da"
+                          ? "Husnummeret er nødvendigt for denne gade."
+                          : "A house number is required for this street."}
                       </Text>
                     )}
                   </View>
                 )}
 
-                {!!selectedStreet && (
+              {!!selectedStreet &&
+                (streetRouteNeedsPostalCode || !!postalCodeQ) && (
                   <View style={{ gap: 8 }}>
-                    <Label>Postnummer (valgfrit)</Label>
+                    <Label>{lang === "da" ? "Postnummer" : "Postal code"}</Label>
                     <Input
                       value={postalCodeQ}
                       onChangeText={(value) => {
                         const digits = value.replace(/\D/g, "").slice(0, 4);
                         setPostalCodeQ(digits);
-                        const number = parseHouseNumber(houseNumberQ).number;
                         applyStreetRoute(
                           selectedStreet,
-                          streetSide,
-                          number,
+                          "",
+                          parseHouseNumber(houseNumberQ).number,
                           digits || undefined,
                         );
                       }}
@@ -1693,341 +1800,249 @@ export default function DestinationTool() {
                       keyboardType="number-pad"
                     />
                     {streetRouteNeedsPostalCode && (
-                      <Text style={{ color: theme.colors.warn, fontWeight: "700" }}>
-                        Denne gade er opdelt efter postnummer.
+                      <Text
+                        style={{ color: theme.colors.warn, fontWeight: "700" }}
+                      >
+                        {lang === "da"
+                          ? "Postnummeret er nødvendigt for denne gade."
+                          : "A postal code is required for this street."}
                       </Text>
                     )}
                   </View>
                 )}
-
-                {!!streetRouteMessage && !streetRouteNeedsSide && (
-                  <Text style={{ color: theme.colors.warn, fontWeight: "700" }}>
-                    {streetRouteMessage}
-                  </Text>
-                )}
-
-                {streetRouteNeedsSide && (
-                  <View
-                    style={{
-                      borderRadius: 14,
-                      borderWidth: 1,
-                      borderColor: theme.colors.cardBorder,
-                      padding: 12,
-                      backgroundColor: "rgba(255,209,102,0.10)",
-                      gap: 10,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: theme.colors.text,
-                        fontWeight: "900",
-                        lineHeight: 20,
-                      }}
-                    >
-                      Flere muligheder for samme gade
-                    </Text>
-
-                    <Text
-                      style={{
-                        color: theme.colors.mutedText,
-                        lineHeight: 19,
-                      }}
-                    >
-                      {streetRouteMessage ||
-                        "Vælg om adressen ligger på lige eller ulige side."}
-                    </Text>
-
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        gap: 10,
-                        flexWrap: "wrap",
-                      }}
-                    >
-                      <Pressable
-                        onPress={() => selectStreetSide("even")}
-                        style={chip(streetSide === "even")}
-                      >
-                        <Text
-                          style={{
-                            color: theme.colors.text,
-                            fontWeight: "900",
-                          }}
-                        >
-                          Lige
-                        </Text>
-                      </Pressable>
-
-                      <Pressable
-                        onPress={() => selectStreetSide("odd")}
-                        style={chip(streetSide === "odd")}
-                      >
-                        <Text
-                          style={{
-                            color: theme.colors.text,
-                            fontWeight: "900",
-                          }}
-                        >
-                          Ulige
-                        </Text>
-                      </Pressable>
-                    </View>
-                  </View>
-                )}
-              </View>
-            </Card>
+            </View>
           )}
 
-          {searchVisible && area === "region" && (
-            <Card>
-              <View style={{ gap: 14 }}>
-                <View style={{ gap: 8 }}>
-                  <Label>{t("dest_kommune")}</Label>
-                  <Input
-                    value={kommuneQ}
-                    onChangeText={handleKommuneChange}
-                    placeholder={t("dest_kommune")}
-                    keyboardType="default"
-                    autoCapitalize="words"
-                    autoCorrect={false}
-                  />
-                </View>
 
-                <SimpleDropdown<Kommune>
-                  label={t("dest_kommune")}
-                  value={kommune}
-                  open={kommuneOpen}
-                  onToggle={toggleKommuneDropdown}
-                  options={kommuneOptions as Kommune[]}
-                  onSelect={(value) => {
-                    setDetectedArea(null);
-                    setKommune(value);
-                    setKommuneQ(value);
-                    setKommuneOpen(false);
-                  }}
-                  placeholder={t("dest_kommune")}
-                  emptyText={t("dest_no_kommune_match")}
-                  maxHeight={220}
-                />
-              </View>
-            </Card>
-          )}
+          {resolvedHospital && (
+            <View testID="destination-result">
+              <Card
+                style={{
+                  backgroundColor: theme.colors.cardElevated,
+                  borderColor: theme.colors.accent,
+                  gap: 14,
+                }}
+              >
+              <Subtle>
+                {manualHospitalCode
+                  ? lang === "da"
+                    ? "Manuelt valgt destination"
+                    : "Manually selected destination"
+                  : lang === "da"
+                    ? "Anbefalet destination"
+                    : "Recommended destination"}
+              </Subtle>
 
-          <Card style={resolvedHospital ? { backgroundColor: theme.colors.cardElevated, borderColor: theme.colors.accent } : undefined}>
-            <Title>{t("dest_result")}</Title>
+              <Title style={{ fontSize: 26, lineHeight: 32 }}>
+                {resolvedHospital.label}
+              </Title>
 
-            {!resolvedHospital ? (
-              <Text style={{ color: theme.colors.mutedText, marginTop: 10 }}>
-                {streetRouteNeedsSide || streetRouteNeedsHouseNumber
-                  ? "Angiv husnummer eller side for at få destination."
-                  : t("dest_pick_more")}
+              <Text
+                style={{
+                  color: theme.colors.text,
+                  fontWeight: "800",
+                  fontSize: 16,
+                  lineHeight: 22,
+                }}
+              >
+                {selectedCategoryLabel}
               </Text>
-            ) : (
-              <View style={{ marginTop: 12, gap: 14 }}>
-                <Row style={{ alignItems: "flex-start" }}>
-                  <Text style={{ color: theme.colors.mutedText, width: 130 }}>
-                    Hospital
-                  </Text>
+
+              {!!resolvedHospital.extra && (
+                <Text style={{ color: theme.colors.mutedText, lineHeight: 20 }}>
+                  {resolvedHospital.extra}
+                </Text>
+              )}
+
+              {loadingHospitalPhones ? (
+                <Text style={{ color: theme.colors.mutedText }}>
+                  {lang === "da"
+                    ? "Henter telefonnummer…"
+                    : "Loading phone number…"}
+                </Text>
+              ) : selectedHospitalPhone ? (
+                <View style={{ gap: 10 }}>
                   <Text
                     style={{
                       color: theme.colors.text,
                       fontWeight: "900",
-                      fontSize: 18,
-                      flex: 1,
+                      fontSize: 22,
                     }}
                   >
-                    {resolvedHospital.label}
+                    {selectedHospitalPhone.phone}
                   </Text>
-                </Row>
-
-                {!!resolvedHospital.extra && (
-                  <Row style={{ alignItems: "flex-start" }}>
-                    <Text style={{ color: theme.colors.mutedText, width: 130 }}>
-                      Grundlag
-                    </Text>
-                    <Text style={{ color: theme.colors.text, fontWeight: "700", flex: 1 }}>
-                      {resolvedHospital.extra}
-                    </Text>
-                  </Row>
-                )}
-
-                <Row style={{ alignItems: "flex-start" }}>
-                  <Text style={{ color: theme.colors.mutedText, width: 130 }}>
-                    {t("dest_category")}
-                  </Text>
-                  <Text style={{ color: theme.colors.text, fontWeight: "700", flex: 1 }}>
-                    {selectedCategoryLabel}
-                  </Text>
-                </Row>
-
-                <Row style={{ alignItems: "flex-start" }}>
-                  <Text style={{ color: theme.colors.mutedText, width: 130 }}>
-                    Telefonnummer
-                  </Text>
-
-                  <View style={{ flex: 1 }}>
-                    {loadingHospitalPhones ? (
-                      <Text style={{ color: theme.colors.mutedText }}>
-                        Henter telefonnumre...
-                      </Text>
-                    ) : selectedHospitalPhone ? (
-                      <Text
-                        style={{
-                          color: theme.colors.text,
-                          fontWeight: "900",
-                          fontSize: 18,
-                        }}
-                      >
-                        {selectedHospitalPhone.phone}
-                      </Text>
-                    ) : (
-                      <Text style={{ color: theme.colors.mutedText }}>
-                        Intet telefonnummer fundet endnu.
-                      </Text>
-                    )}
-                  </View>
-                </Row>
-
-                <Row style={{ alignItems: "flex-start" }}>
-                  <Text style={{ color: theme.colors.mutedText, width: 130 }}>
-                    Ændre
-                  </Text>
-
-                  <View style={{ flex: 1 }}>
-                    {!loadingHospitalPhones && hospitalPhones.length > 0 ? (
-                      <SimpleDropdown<PhoneOptionValue>
-                        value={selectedPhoneId}
-                        open={phoneDropdownOpen}
-                        onToggle={togglePhoneDropdown}
-                        options={phoneOptions}
-                        onSelect={(value) => {
-                          setSelectedPhoneId(value);
-                          setPhoneDropdownOpen(false);
-                        }}
-                        renderValue={renderPhoneSelectedValue}
-                        renderOption={renderPhoneOptionRow}
-                        placeholder={
-                          lang === "da"
-                            ? "Vælg hospitalsnummer"
-                            : "Choose hospital number"
-                        }
-                        emptyText={
-                          lang === "da"
-                            ? "Ingen telefonnumre fundet."
-                            : "No phone numbers found."
-                        }
-                        maxHeight={240}
-                      />
-                    ) : (
-                      <Text style={{ color: theme.colors.mutedText }}>-</Text>
-                    )}
-                  </View>
-                </Row>
-
-                {!loadingHospitalPhones &&
-                  hospitalPhones.some((item) => item.source === "bundled") && (
-                    <Text style={{ color: theme.colors.warn, lineHeight: 19 }}>
-                      Firestore-kontakten kunne ikke hentes. Viser den lokale,
-                      operationelle offline-liste.
-                    </Text>
-                  )}
-
-                {selectedHospitalPhone && (
-                  <Pressable
+                  <DestinationPrimaryButton
+                    label={lang === "da" ? "Ring op" : "Call"}
                     onPress={() =>
                       callHospitalNumber(selectedHospitalPhone.phone)
                     }
-                    style={chip(false)}
+                  />
+                </View>
+              ) : (
+                <Text style={{ color: theme.colors.mutedText }}>
+                  {lang === "da"
+                    ? "Intet telefonnummer fundet endnu."
+                    : "No phone number found yet."}
+                </Text>
+              )}
+
+              {!loadingHospitalPhones && hospitalPhones.length > 1 && (
+                <SimpleDropdown<PhoneOptionValue>
+                  label={
+                    lang === "da"
+                      ? "Andet hospitalsnummer"
+                      : "Another hospital number"
+                  }
+                  value={selectedPhoneId}
+                  open={phoneDropdownOpen}
+                  onToggle={togglePhoneDropdown}
+                  options={phoneOptions}
+                  onSelect={(value) => {
+                    setSelectedPhoneId(value);
+                    setPhoneDropdownOpen(false);
+                  }}
+                  renderValue={renderPhoneSelectedValue}
+                  renderOption={renderPhoneOptionRow}
+                  placeholder={
+                    lang === "da"
+                      ? "Vælg hospitalsnummer"
+                      : "Choose hospital number"
+                  }
+                  emptyText={
+                    lang === "da"
+                      ? "Ingen telefonnumre fundet."
+                      : "No phone numbers found."
+                  }
+                  maxHeight={240}
+                />
+              )}
+
+              {!loadingHospitalPhones &&
+                hospitalPhones.some((item) => item.source === "bundled") && (
+                  <Text style={{ color: theme.colors.warn, lineHeight: 19 }}>
+                    {lang === "da"
+                      ? "Firestore-kontakten kunne ikke hentes. Viser den lokale, operationelle offline-liste."
+                      : "The Firestore contact could not be loaded. Showing the bundled operational offline list."}
+                  </Text>
+                )}
+
+              {resolvedHospital.code === "UNKNOWN" && (
+                <Text style={{ color: theme.colors.warn, fontWeight: "800" }}>
+                  {t("dest_unknown")}
+                </Text>
+              )}
+
+              {!manualHospitalCode && (
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => setSearchVisible(true)}
+                  style={({ pressed }) => ({
+                    minHeight: 48,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    opacity: pressed ? 0.65 : 1,
+                  })}
+                >
+                  <Text
+                    style={{
+                      color: theme.colors.accentMuted,
+                      fontWeight: "900",
+                    }}
+                  >
+                    {lang === "da" ? "Ret adresse" : "Correct address"}
+                  </Text>
+                </Pressable>
+              )}
+              </Card>
+            </View>
+          )}
+
+          <View style={{ gap: 8, paddingVertical: 4 }}>
+            <Subtle style={{ textAlign: "center" }}>
+              {lang === "da"
+                ? "Kan destinationen ikke findes?"
+                : "Could the destination not be found?"}
+            </Subtle>
+            <Pressable
+              testID="destination-manual-hospital-toggle"
+              accessibilityRole="button"
+              onPress={() =>
+                setManualHospitalSectionVisible((current) => !current)
+              }
+              style={({ pressed }) => ({
+                minHeight: 48,
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: pressed ? 0.65 : 1,
+              })}
+            >
+              <Text
+                style={{ color: theme.colors.accentMuted, fontWeight: "900" }}
+              >
+                {lang === "da"
+                  ? "Vælg hospital manuelt"
+                  : "Choose hospital manually"}
+              </Text>
+            </Pressable>
+
+            {manualHospitalSectionVisible && (
+              <View style={{ gap: 10 }}>
+                <SimpleDropdown<HospitalCode>
+                  label="Hospital"
+                  value={manualHospitalCode}
+                  open={manualHospitalOpen}
+                  onToggle={() => {
+                    const nextOpen = !manualHospitalOpen;
+                    closeAllDropdowns();
+                    setManualHospitalOpen(nextOpen);
+                  }}
+                  options={MANUAL_HOSPITAL_CODES}
+                  onSelect={(value) => {
+                    setManualHospitalCode(value);
+                    setManualHospitalOpen(false);
+                  }}
+                  renderValue={(value) =>
+                    hospitalLabel(t as TranslateFn, value)
+                  }
+                  renderOption={(value) => (
+                    <Text
+                      style={{ color: theme.colors.text, fontWeight: "800" }}
+                    >
+                      {hospitalLabel(t as TranslateFn, value)}
+                    </Text>
+                  )}
+                  placeholder={
+                    lang === "da" ? "Vælg hospital" : "Choose hospital"
+                  }
+                  maxHeight={260}
+                />
+                {!!manualHospitalCode && (
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => setManualHospitalCode("")}
+                    style={({ pressed }) => ({
+                      minHeight: 48,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      opacity: pressed ? 0.65 : 1,
+                    })}
                   >
                     <Text
                       style={{
-                        color: theme.colors.text,
+                        color: theme.colors.accentMuted,
                         fontWeight: "800",
                         textAlign: "center",
                       }}
                     >
-                      Ring op
+                      {lang === "da"
+                        ? "Brug automatisk resultat igen"
+                        : "Use automatic result again"}
                     </Text>
                   </Pressable>
                 )}
-
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => {
-                    setManualHospitalCode("");
-                    setSearchVisible(true);
-                  }}
-                  style={({ pressed }) => ({ minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}
-                >
-                  <Text style={{ color: theme.colors.accentMuted, fontWeight: "900" }}>
-                    {area === "byen" ? "Ret adresse" : "Ret område"}
-                  </Text>
-                </Pressable>
-
-                {!loadingHospitalPhones &&
-                  resolvedHospital.code !== "UNKNOWN" &&
-                  hospitalPhones.length === 0 && (
-                    <Text
-                      style={{
-                        color: theme.colors.mutedText,
-                      }}
-                    >
-                      Ingen telefonnumre fundet for dette hospital endnu.
-                    </Text>
-                  )}
-
-                {resolvedHospital.code === "UNKNOWN" && (
-                  <Text
-                    style={{
-                      color: theme.colors.warn,
-                      fontWeight: "800",
-                    }}
-                  >
-                    {t("dest_unknown")}
-                  </Text>
-                )}
               </View>
             )}
-          </Card>
-
-          <CollapsibleCard
-            title={lang === "da" ? "Vælg hospital manuelt" : "Choose hospital manually"}
-            subtitle={lang === "da" ? "Brug kun hvis automatisk visitation ikke kan afklares." : "Use when automatic destination cannot be resolved."}
-            defaultOpen={!!manualHospitalCode}
-          >
-            <Text style={{ color: theme.colors.mutedText, marginBottom: 10 }}>
-              {lang === "da"
-                ? "Tilgængelig uanset GPS, tilladelser og adresseopslag."
-                : "Available regardless of GPS, permissions, and address lookup."}
-            </Text>
-            <SimpleDropdown<HospitalCode>
-              label="Hospital"
-              value={manualHospitalCode}
-              open={manualHospitalOpen}
-              onToggle={() => {
-                closeAllDropdowns();
-                setManualHospitalOpen((value) => !value);
-              }}
-              options={MANUAL_HOSPITAL_CODES}
-              onSelect={(value) => {
-                setManualHospitalCode(value);
-                setManualHospitalOpen(false);
-              }}
-              renderValue={(value) => hospitalLabel(t as TranslateFn, value)}
-              renderOption={(value) => (
-                <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
-                  {hospitalLabel(t as TranslateFn, value)}
-                </Text>
-              )}
-              placeholder={lang === "da" ? "Vælg hospital" : "Choose hospital"}
-              maxHeight={260}
-            />
-            {!!manualHospitalCode && (
-              <Pressable accessibilityRole="button" onPress={() => setManualHospitalCode("")} style={[chip(false), { marginTop: 10 }]}>
-                <Text style={{ color: theme.colors.text, fontWeight: "800", textAlign: "center" }}>Brug automatisk resultat igen</Text>
-              </Pressable>
-            )}
-          </CollapsibleCard>
+          </View>
 
           {__DEV__ && Object.keys(diagnostics).length > 0 && (
             <CollapsibleCard

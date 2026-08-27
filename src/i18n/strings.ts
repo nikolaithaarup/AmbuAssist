@@ -46,7 +46,7 @@ export const en = {
   // HOME TOOL CARDS
   // =========================================================
   tool_dest_title: "Destination",
-  tool_dest_desc: "Pick Byen/Regionen + diagnosis → destination hospital",
+  tool_dest_desc: "Choose category, then use GPS or a manual address",
 
   tool_trombolysis_title: "Thrombolysis",
   tool_trombolysis_desc:
@@ -974,7 +974,7 @@ export const en = {
   // DESTINATION
   // =========================================================
   dest_title: "Destination helper",
-  dest_sub: "Choose area, then street/district/municipality and category.",
+  dest_sub: "Choose category, then use GPS or a manual address.",
   dest_function_title: "Choose function",
   dest_area: "Area",
   dest_byen: "Byen",
@@ -1527,7 +1527,7 @@ export const da: typeof en = {
   // HOME TOOL CARDS
   // =========================================================
   tool_dest_title: "Destination",
-  tool_dest_desc: "Vælg Byen/Regionen + diagnose → destinationshospital",
+  tool_dest_desc: "Vælg kategori, og brug GPS eller manuel adresse",
 
   tool_trombolysis_title: "Trombolyse",
   tool_trombolysis_desc:
@@ -2457,7 +2457,7 @@ export const da: typeof en = {
   // DESTINATION
   // =========================================================
   dest_title: "Destinationshjælper",
-  dest_sub: "Vælg område, derefter gade/bydel/kommune og kategori.",
+  dest_sub: "Vælg kategori, og brug GPS eller manuel adresse.",
   dest_function_title: "Vælg funktion",
   dest_area: "Område",
   dest_byen: "Byen",

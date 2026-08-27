@@ -7,27 +7,11 @@ import {
   type StreetRouteResult,
 } from "./routing";
 import type {
-  ByenCategory,
   Kommune,
   RawStreetRow,
   RegionCategory,
 } from "./types";
-
-export const REGION_TO_BYEN_CATEGORY: Partial<
-  Record<RegionCategory, ByenCategory>
-> = {
-  akutmodtagelse: "hospital",
-  medicinsk_modtagelse: "medicin",
-  reumatologi: "reumatologi",
-  kirurgi_mave_tarm: "gaskir",
-  apopleksi_ekskl_trombolyse: "neuro_apopleksi",
-  neurologi_ekskl_apopleksi: "neuro_almen",
-  kardiologi: "kardiologi",
-  ortopaedkirurgi: "ortkir",
-  paediatri: "paediatri",
-  gynaekologi: "gyn",
-  urologi: "uro",
-};
+import { getCategoryForArea } from "./categoryRouting";
 
 export type AutomaticRoutingStrategy =
   | { area: "byen"; street: string; route: StreetRouteResult }
@@ -183,7 +167,8 @@ export function matchManualLocation(
 }
 
 export function getByenCategory(category: RegionCategory) {
-  return REGION_TO_BYEN_CATEGORY[category] ?? null;
+  const mapped = getCategoryForArea(category, "byen");
+  return mapped.available ? mapped.category : null;
 }
 
 export function getConfidenceUx(confidence?: "high" | "medium" | "poor") {

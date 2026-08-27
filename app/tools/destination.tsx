@@ -64,13 +64,20 @@ import {
 } from "../../src/features/destination/helpers";
 import {
   deriveAutomaticRoutingStrategy,
-  getByenCategory,
   getCanonicalRoutingRows,
   getCanonicalStreetLabel,
   getConfidenceUx,
   matchManualLocation,
   type ManualLocationMatch,
 } from "../../src/domain/destination/automaticRouting";
+import {
+  getCategoryForArea,
+  type DestinationCategoryIntent,
+} from "../../src/domain/destination/categoryRouting";
+import {
+  getDestinationCategoryFavourites,
+  toggleDestinationCategoryFavourite,
+} from "../../src/domain/destination/categoryFavourites";
 
 import {
   getHospitalPhoneNumbersByCode,
@@ -148,14 +155,6 @@ const REGION_CATEGORY_LABEL_KEYS: Record<RegionCategory, string> = {
   socialmedicin: "dest_reg_social",
 };
 
-const MOST_USED_REGION_CATEGORIES: RegionCategory[] = [
-  "akutmodtagelse",
-  "apopleksi_ekskl_trombolyse",
-  "neurologi_ekskl_apopleksi",
-  "paediatri",
-  "traumecenter",
-];
-
 function fallbackLabelFromKey(key: string): string {
   return key.replaceAll("_", " ").replace(/\b\w/g, (m) => m.toUpperCase());
 }
@@ -196,6 +195,7 @@ type SimpleDropdownProps<T extends string> = {
   onSelect: (value: T) => void;
   renderValue?: (value: T) => ReactNode;
   renderOption?: (value: T, selected: boolean) => ReactNode;
+  renderOptionAction?: (value: T) => ReactNode;
   placeholder?: string;
   emptyText?: string;
   maxHeight?: number;
@@ -211,6 +211,7 @@ function SimpleDropdown<T extends string>({
   onSelect,
   renderValue,
   renderOption,
+  renderOptionAction,
   placeholder = "Choose...",
   emptyText = "No matches found.",
   maxHeight = 220,
@@ -227,32 +228,37 @@ function SimpleDropdown<T extends string>({
     const selected = value === option;
 
     return (
-      <Pressable
-        key={option}
-        accessibilityRole="button"
-        accessibilityState={{ selected }}
-        onPress={() => onSelect(option)}
-        style={{
-          minHeight: 48,
-          borderRadius: 10,
-          paddingHorizontal: 10,
-          paddingVertical: 12,
-          backgroundColor: selected ? "rgba(220,220,220,0.18)" : "transparent",
-        }}
-      >
-        {renderOption ? (
-          renderOption(option, selected)
-        ) : (
-          <Text
-            style={{
-              color: theme.colors.text,
-              fontWeight: selected ? "800" : "700",
-            }}
-          >
-            {renderValue ? renderValue(option) : option}
-          </Text>
-        )}
-      </Pressable>
+      <View key={option} style={{ flexDirection: "row", alignItems: "center" }}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ selected }}
+          onPress={() => onSelect(option)}
+          style={{
+            flex: 1,
+            minHeight: 48,
+            borderRadius: 10,
+            paddingHorizontal: 10,
+            paddingVertical: 12,
+            backgroundColor: selected
+              ? "rgba(220,220,220,0.18)"
+              : "transparent",
+          }}
+        >
+          {renderOption ? (
+            renderOption(option, selected)
+          ) : (
+            <Text
+              style={{
+                color: theme.colors.text,
+                fontWeight: selected ? "800" : "700",
+              }}
+            >
+              {renderValue ? renderValue(option) : option}
+            </Text>
+          )}
+        </Pressable>
+        {renderOptionAction?.(option)}
+      </View>
     );
   };
 
@@ -395,7 +401,7 @@ function DestinationPrimaryButton({
 
 export default function DestinationTool() {
   const { t } = useT();
-  const { settings } = useSettings();
+  const { settings, setSettings } = useSettings();
   const lang = settings.language === "da" ? "da" : "en";
 
   const [visitationData, setVisitationData] = useState<BackendVisitationData>(
@@ -430,7 +436,9 @@ export default function DestinationTool() {
   const [streetRouteNeedsHouseNumber, setStreetRouteNeedsHouseNumber] = useState(false);
   const [streetRouteNeedsPostalCode, setStreetRouteNeedsPostalCode] = useState(false);
 
-  const [regCat, setRegCat] = useState<RegionCategory>("akutmodtagelse");
+  const [regCat, setRegCat] = useState<DestinationCategoryIntent>(
+    "akutmodtagelse",
+  );
 
   const [streetQ, setStreetQ] = useState("");
   const [houseNumberQ, setHouseNumberQ] = useState("");
@@ -459,8 +467,13 @@ export default function DestinationTool() {
   const [selectedPhoneId, setSelectedPhoneId] = useState<string>("");
   const [loadingHospitalPhones, setLoadingHospitalPhones] = useState(false);
 
+  const selectedGeographicCategory = area
+    ? getCategoryForArea(regCat, area)
+    : null;
   const selectedSpecialtyKey =
-    area === "byen" ? getByenCategory(regCat) ?? regCat : regCat;
+    selectedGeographicCategory?.available
+      ? selectedGeographicCategory.category
+      : regCat;
   const selectedCategoryLabel = getRegionCategoryLabel(
     t as TranslateFn,
     regCat,
@@ -719,26 +732,47 @@ export default function DestinationTool() {
     );
   }, [t, visitationData.region.categories]);
 
-  const regionCategorySections = useMemo(() => {
-    const mostUsed = MOST_USED_REGION_CATEGORIES.filter((category) =>
-      regionCategoryOptions.includes(category),
-    );
+  const favouriteCategoryOptions = useMemo(
+    () =>
+      getDestinationCategoryFavourites(
+        settings.destinationCategoryFavourites,
+        regionCategoryOptions,
+      ),
+    [regionCategoryOptions, settings.destinationCategoryFavourites],
+  );
 
+  const regionCategorySections = useMemo(() => {
     const other = regionCategoryOptions.filter(
-      (category) => !MOST_USED_REGION_CATEGORIES.includes(category),
+      (category) => !favouriteCategoryOptions.includes(category),
     );
 
     return [
       {
-        title: lang === "da" ? "Mest brugt" : "Most used",
-        options: mostUsed,
+        title: lang === "da" ? "Favoritter" : "Favourites",
+        options: favouriteCategoryOptions,
       },
       {
-        title: lang === "da" ? "Øvrige" : "Other",
+        title: lang === "da" ? "Alle visitationer" : "All visitations",
         options: other,
       },
     ];
-  }, [lang, regionCategoryOptions]);
+  }, [favouriteCategoryOptions, lang, regionCategoryOptions]);
+
+  const toggleCategoryFavourite = (category: DestinationCategoryIntent) => {
+    setSettings((current) => {
+      const currentFavourites = getDestinationCategoryFavourites(
+        current.destinationCategoryFavourites,
+        regionCategoryOptions,
+      );
+      return {
+        ...current,
+        destinationCategoryFavourites: toggleDestinationCategoryFavourite(
+          currentFavourites,
+          category,
+        ),
+      };
+    });
+  };
 
   const applyStreetRoute = (
     street: string,
@@ -813,6 +847,41 @@ export default function DestinationTool() {
     return false;
   };
 
+  const automaticHospitalCode = useMemo<HospitalCode | null | undefined>(() => {
+    if (area === "byen") {
+      if (!bydel) return undefined;
+      const mapped = getCategoryForArea(regCat, "byen");
+      if (!mapped.available) return null;
+      const code = resolveHospitalCode({
+        area: "byen",
+        bydel: bydel as Bydel,
+        category: mapped.category,
+        map: BYEN_MAP,
+      });
+      return !code || code === "UNKNOWN" ? null : code;
+    }
+
+    if (area === "region") {
+      if (!kommune) return undefined;
+      const mapped = getCategoryForArea(regCat, "region");
+      if (!mapped.available) return null;
+      const code = resolveHospitalCode({
+        area: "region",
+        kommune: kommune as Kommune,
+        category: mapped.category,
+        map: REGION_ALL_MAP,
+      });
+      return !code || code === "UNKNOWN" ? null : code;
+    }
+
+    return undefined;
+  }, [area, bydel, kommune, regCat, BYEN_MAP, REGION_ALL_MAP]);
+
+  const categoryUnavailable =
+    !manualHospitalCode &&
+    !requiresAddressConfirmation &&
+    automaticHospitalCode === null;
+
   const resolvedHospital = useMemo<ResolvedHospital | null>(() => {
     if (manualHospitalCode) {
       return {
@@ -823,45 +892,28 @@ export default function DestinationTool() {
     }
     if (requiresAddressConfirmation) return null;
     if (area === "byen") {
-      if (!bydel) return null;
+      if (!bydel || !automaticHospitalCode) return null;
 
       const selectedBydel = bydel as Bydel;
-      const byenCategory = getByenCategory(regCat);
-      const code =
-        byenCategory
-          ? resolveHospitalCode({
-              area: "byen",
-              bydel: selectedBydel,
-              category: byenCategory,
-              map: BYEN_MAP,
-            }) ?? "UNKNOWN"
-          : "UNKNOWN";
 
       const streetExtra = selectedStreet
         ? `${selectedStreet}${houseNumberQ ? ` ${houseNumberQ}` : ""}${postalCodeQ ? `, ${postalCodeQ}` : ""} • ${selectedBydel}`
         : selectedBydel;
 
       return {
-        code,
-        label: hospitalLabel(t as TranslateFn, code),
+        code: automaticHospitalCode,
+        label: hospitalLabel(t as TranslateFn, automaticHospitalCode),
         extra: streetExtra,
       };
     }
 
-    if (area !== "region" || !kommune) return null;
+    if (area !== "region" || !kommune || !automaticHospitalCode) return null;
 
     const selectedKommune = kommune as Kommune;
-    const code =
-      resolveHospitalCode({
-        area: "region",
-        kommune: selectedKommune,
-        category: regCat,
-        map: REGION_ALL_MAP,
-      }) ?? "UNKNOWN";
 
     return {
-      code,
-      label: hospitalLabel(t as TranslateFn, code),
+      code: automaticHospitalCode,
+      label: hospitalLabel(t as TranslateFn, automaticHospitalCode),
       extra: selectedKommune,
     };
   }, [
@@ -871,10 +923,8 @@ export default function DestinationTool() {
     selectedStreet,
     houseNumberQ,
     postalCodeQ,
-    regCat,
+    automaticHospitalCode,
     t,
-    BYEN_MAP,
-    REGION_ALL_MAP,
     manualHospitalCode,
     requiresAddressConfirmation,
     lang,
@@ -1490,9 +1540,69 @@ export default function DestinationTool() {
               renderValue={(value) =>
                 getRegionCategoryLabel(t as TranslateFn, value)
               }
+              renderOptionAction={(value) => {
+                const favourite = favouriteCategoryOptions.includes(value);
+                const label = getRegionCategoryLabel(t as TranslateFn, value);
+                return (
+                  <Pressable
+                    testID={`destination-category-favourite-${value}`}
+                    accessibilityRole="button"
+                    accessibilityLabel={
+                      favourite
+                        ? `${lang === "da" ? "Fjern favorit" : "Remove favourite"}: ${label}`
+                        : `${lang === "da" ? "Tilføj favorit" : "Add favourite"}: ${label}`
+                    }
+                    accessibilityState={{ selected: favourite }}
+                    onPress={() => toggleCategoryFavourite(value)}
+                    style={{
+                      width: 48,
+                      minHeight: 48,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: favourite
+                          ? theme.colors.warn
+                          : theme.colors.mutedText,
+                        fontSize: 24,
+                        fontWeight: "900",
+                      }}
+                    >
+                      {favourite ? "★" : "☆"}
+                    </Text>
+                  </Pressable>
+                );
+              }}
               placeholder={t("dest_category")}
               maxHeight={280}
             />
+
+            {categoryUnavailable && (
+              <View
+                testID="destination-category-unavailable"
+                style={{
+                  gap: 4,
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: theme.colors.warn,
+                  padding: 12,
+                  backgroundColor: "rgba(255, 193, 7, 0.08)",
+                }}
+              >
+                <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
+                  {lang === "da"
+                    ? `${selectedCategoryLabel} findes ikke i routingtabellen for den fundne placering.`
+                    : `${selectedCategoryLabel} is not available in the routing table for the resolved location.`}
+                </Text>
+                <Text style={{ color: theme.colors.mutedText }}>
+                  {lang === "da"
+                    ? "Vælg en anden visitationstype, eller brug manuel hospitalsvalg."
+                    : "Choose another visitation type, or use manual hospital selection."}
+                </Text>
+              </View>
+            )}
 
             {showNeurokirNote && (
               <Text style={{ color: theme.colors.mutedText }}>

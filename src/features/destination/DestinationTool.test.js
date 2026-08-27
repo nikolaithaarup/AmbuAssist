@@ -8,6 +8,11 @@ const mockGetPermissions = jest.fn();
 const mockGetCurrentPosition = jest.fn();
 const mockGetLastKnownPosition = jest.fn();
 const mockReverseGeocode = jest.fn();
+const mockSetSettings = jest.fn();
+let mockSettings = {
+  language: "da",
+  destinationCategoryFavourites: null,
+};
 const mountedRenderers = [];
 
 jest.mock("expo-location", () => ({
@@ -27,7 +32,7 @@ jest.mock("../../i18n/useT", () => {
 });
 
 jest.mock("../../state/settings", () => ({
-  useSettings: () => ({ settings: { language: "da" } }),
+  useSettings: () => ({ settings: mockSettings, setSettings: mockSetSettings }),
 }));
 
 jest.mock("../../services/referenceService", () => ({
@@ -112,6 +117,10 @@ async function pressGps(root) {
 describe("DestinationTool simplified entry flow", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockSettings = {
+      language: "da",
+      destinationCategoryFavourites: null,
+    };
     mockHasServicesEnabled.mockResolvedValue(true);
     mockGetPermissions.mockResolvedValue({ granted: true });
     mockGetCurrentPosition.mockResolvedValue(location());
@@ -166,6 +175,120 @@ describe("DestinationTool simplified entry flow", () => {
     expect(renderer.root.findAllByProps({ testID: "destination-result" }).length).toBeGreaterThan(0);
     expect(renderedText(renderer.root)).toContain("HVH");
     expect(renderedText(renderer.root)).not.toContain("GPS-præcision");
+  });
+
+  test("category picker shows default favourites separately and persists a toggle", async () => {
+    const renderer = await renderTool();
+    const root = renderer.root;
+    act(() => {
+      root.findByProps({ accessibilityLabel: "Akutmodtagelse" }).props.onPress();
+    });
+
+    const text = renderedText(root);
+    expect(text).toContain("Favoritter");
+    expect(text).toContain("Alle visitationer");
+    expect(text).toContain("Apopleksi");
+    expect(text).toContain("Neurologi");
+    expect(text).toContain("Pædiatri");
+    expect(text).toContain("Traumecenter");
+
+    act(() => {
+      root
+        .findByProps({
+          testID: "destination-category-favourite-traumecenter",
+        })
+        .props.onPress();
+    });
+    const update = mockSetSettings.mock.calls.at(-1)[0];
+    expect(update(mockSettings).destinationCategoryFavourites).toEqual([
+      "akutmodtagelse",
+      "apopleksi_ekskl_trombolyse",
+      "neurologi_ekskl_apopleksi",
+      "paediatri",
+    ]);
+  });
+
+  test("an intentionally empty favourite list omits the favourites section", async () => {
+    mockSettings = {
+      language: "da",
+      destinationCategoryFavourites: [],
+    };
+    const renderer = await renderTool();
+    act(() => {
+      renderer.root
+        .findByProps({ accessibilityLabel: "Akutmodtagelse" })
+        .props.onPress();
+    });
+    expect(renderedText(renderer.root)).not.toContain("Favoritter");
+    expect(renderedText(renderer.root)).toContain("Alle visitationer");
+    expect(renderedText(renderer.root)).toContain("Kardiologi");
+  });
+
+  test("a regional-only category fails explicitly after Copenhagen routing", async () => {
+    mockReverseGeocode.mockResolvedValue([
+      {
+        street: "Frederiksberg Allé",
+        name: "13A",
+        postalCode: "1621",
+        city: "København V",
+        district: "Vesterbro",
+        subregion: "København",
+        formattedAddress: "Frederiksberg Allé 13A, 1621 København V",
+      },
+    ]);
+    const renderer = await renderTool();
+    const root = renderer.root;
+    act(() => {
+      root.findByProps({ accessibilityLabel: "Akutmodtagelse" }).props.onPress();
+    });
+    act(() => {
+      const traumaOption = root
+        .findAll(
+          (node) =>
+            typeof node.props.onPress === "function" &&
+            node.findAllByType(Text).some(
+              (textNode) => textNode.props.children === "Traumecenter",
+            ),
+        )
+        .find(
+          (node) =>
+            !String(node.props.accessibilityLabel ?? "").includes("favorit"),
+        );
+      traumaOption.props.onPress();
+    });
+    await pressGps(root);
+
+    expect(
+      root.findAllByProps({ testID: "destination-category-unavailable" }).length,
+    ).toBeGreaterThan(0);
+    expect(renderedText(root)).toContain(
+      "findes ikke i routingtabellen for den fundne placering",
+    );
+    expect(root.findAllByProps({ testID: "destination-result" })).toHaveLength(0);
+  });
+
+  test("favourite status does not alter automatic routing", async () => {
+    mockSettings = {
+      language: "da",
+      destinationCategoryFavourites: [],
+    };
+    mockReverseGeocode.mockResolvedValue([
+      {
+        street: "Frederiksberg Allé",
+        name: "13A",
+        postalCode: "1621",
+        city: "København V",
+        district: "Vesterbro",
+        subregion: "København",
+        formattedAddress: "Frederiksberg Allé 13A, 1621 København V",
+      },
+    ]);
+    const renderer = await renderTool();
+    await pressGps(renderer.root);
+    expect(renderedText(renderer.root)).toContain("HVH");
+    expect(
+      renderer.root.findAllByProps({ testID: "destination-result" }).length,
+    ).toBeGreaterThan(0);
   });
 
   test("GPS automatically routes an address outside Copenhagen", async () => {

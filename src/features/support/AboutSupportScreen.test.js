@@ -19,7 +19,7 @@ function textContent(root) {
 describe("AboutSupportScreen", () => {
   afterEach(() => jest.restoreAllMocks());
 
-  test("presents one progressive-disclosure surface with all four information areas", () => {
+  test("presents five compact information areas collapsed by default", () => {
     let renderer;
     act(() => {
       renderer = TestRenderer.create(<AboutSupportScreen />);
@@ -29,9 +29,25 @@ describe("AboutSupportScreen", () => {
     expect(root.findAllByProps({ testID: "about-support-section-about" }).length).toBeGreaterThan(0);
     expect(root.findAllByProps({ testID: "about-support-section-medical" }).length).toBeGreaterThan(0);
     expect(root.findAllByProps({ testID: "about-support-section-contact" }).length).toBeGreaterThan(0);
+    expect(root.findAllByProps({ testID: "about-support-section-limitations" }).length).toBeGreaterThan(0);
     expect(root.findAllByProps({ testID: "about-support-section-app" }).length).toBeGreaterThan(0);
-    expect(root.findByProps({ accessibilityLabel: "Hvad AmbuAssist er" }).props.accessibilityState).toEqual({ expanded: true });
+    expect(root.findByProps({ accessibilityLabel: "Hvad AmbuAssist er" }).props.accessibilityState).toEqual({ expanded: false });
     expect(textContent(root)).toContain("AmbuAssist");
+  });
+
+  test("keeps only one section expanded at a time", () => {
+    let renderer;
+    act(() => {
+      renderer = TestRenderer.create(<AboutSupportScreen />);
+    });
+
+    const about = renderer.root.findByProps({ accessibilityLabel: "Hvad AmbuAssist er" });
+    const medical = renderer.root.findByProps({ accessibilityLabel: "Medicinsk disclaimer" });
+    act(() => about.props.onPress());
+    expect(renderer.root.findByProps({ accessibilityLabel: "Hvad AmbuAssist er" }).props.accessibilityState).toEqual({ expanded: true });
+    act(() => medical.props.onPress());
+    expect(renderer.root.findByProps({ accessibilityLabel: "Hvad AmbuAssist er" }).props.accessibilityState).toEqual({ expanded: false });
+    expect(renderer.root.findByProps({ accessibilityLabel: "Medicinsk disclaimer" }).props.accessibilityState).toEqual({ expanded: true });
   });
 
   test("legacy section targeting opens the full medical and contact content", () => {
@@ -56,7 +72,17 @@ describe("AboutSupportScreen", () => {
       );
     });
     expect(contactRenderer.root.findAllByProps({ testID: "about-support-email" }).length).toBeGreaterThan(0);
+    expect(contactRenderer.root.findAllByProps({ testID: "about-support-report-error" }).length).toBeGreaterThan(0);
+    expect(contactRenderer.root.findAllByProps({ testID: "about-support-suggest-improvement" }).length).toBeGreaterThan(0);
     expect(textContent(contactRenderer.root)).toContain("nikolai_91@live.com");
+  });
+
+  test("keeps app version information available", () => {
+    let renderer;
+    act(() => {
+      renderer = TestRenderer.create(<AboutSupportScreen initialSection="app" />);
+    });
+    expect(textContent(renderer.root)).toContain("Version");
   });
 
   test("keeps the detailed mailto feedback action", async () => {

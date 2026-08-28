@@ -14,10 +14,16 @@ import {
 import { useSettings } from "../../../src/state/settings";
 import { Background } from "../../../src/ui/Background";
 import { ClinicalDisclosure } from "../../../src/ui/ClinicalDisclosure";
-import { Card, Screen, Subtle, Title } from "../../../src/ui/Ui";
+import { Screen, Subtle } from "../../../src/ui/Ui";
 import { theme } from "../../../src/ui/theme";
+import { ToolPageHeader, ToolSurface } from "../../../src/ui/ToolSurface";
 import type { AssessmentDefinition } from "../../../src/domain/assessment-flow/flow";
-import { useAssessmentFlow } from "../../../src/features/assessment-flow/AssessmentFlow";
+import {
+  AssessmentQuestionCard,
+  AssessmentResultCard,
+  getAssessmentUiLabels,
+  useAssessmentFlow,
+} from "../../../src/features/assessment-flow/AssessmentFlow";
 import { getSpinalTraumaTransition, isSpinalTraumaStep } from "../../../src/domain/assessments/spinalTrauma";
 
 type AnswerKey = "yes" | "no";
@@ -154,358 +160,87 @@ export default function SpinalTraumaFlow() {
     [selections],
   );
 
-  function answer(stepId: StepId, a: AnswerKey) {
-    flow.answer(stepId, a);
-  }
-
-  function back() {
-    flow.back();
-  }
-
-  function reset() {
-    flow.restart();
-    setShowInfo(false);
-  }
-
-  const selectionsPretty = useMemo(() => {
-    return selections
-      .map((s) => {
-        const step = steps.find((x) => x.id === s.stepId);
-        if (!step) return null;
-        const aKey = s.answer === "yes" ? "yes" : "no";
-        return {
-          stepTitle: t(step.titleKey),
-          answer: t(aKey),
-        };
-      })
-      .filter(Boolean) as { stepTitle: string; answer: string }[];
-  }, [selections, t]);
-
   const disclaimerText = reference?.disclaimer?.[lang] ?? "";
   const sourcesSubText = reference?.sourcesSub?.[lang] ?? "";
+  const labels = getAssessmentUiLabels(lang);
+  const outcomeTitle = outcome === "none"
+    ? t("spine_outcome_none_title")
+    : outcome === "spinal"
+      ? t("spine_outcome_spinal_title")
+      : t("spine_outcome_time_title");
+  const outcomeBody = outcome === "none"
+    ? t("spine_outcome_none_body")
+    : outcome === "spinal"
+      ? t("spine_outcome_spinal_body")
+      : t("spine_outcome_time_body");
+  const outcomePractical = outcome === "none"
+    ? t("spine_outcome_none_practical")
+    : outcome === "spinal"
+      ? t("spine_outcome_spinal_practical")
+      : t("spine_outcome_time_practical");
 
   return (
     <Background>
       <Screen>
-        <View style={{ gap: 6, marginTop: 12 }}>
-          <Title>{t("spine_title")}</Title>
-          <Subtle>{t("spine_sub")}</Subtle>
-        </View>
-
         <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
-          <Pressable
-            onPress={() => setShowInfo((p) => !p)}
-            style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1 })}
-          >
-            <Card>
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Text
-                  style={{
-                    color: theme.colors.text,
-                    fontWeight: "900",
-                    fontSize: 16,
-                  }}
-                >
-                  {t("spine_info_title")}
-                </Text>
-                <Text
-                  style={{ color: theme.colors.mutedText, fontWeight: "800" }}
-                >
-                  {showInfo ? "▾" : "▸"}
-                </Text>
+          <ToolPageHeader title={t("spine_title")} subtitle={t("spine_sub")} />
+
+          <ToolSurface style={{ paddingVertical: 4 }}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t("spine_info_title")}
+              accessibilityState={{ expanded: showInfo }}
+              onPress={() => setShowInfo((current) => !current)}
+              style={({ pressed }) => ({ minHeight: 52, flexDirection: "row", alignItems: "center", gap: 12, opacity: pressed ? 0.72 : 1 })}
+            >
+              <View style={{ flex: 1, gap: 3 }}>
+                <Text style={{ color: theme.colors.text, fontWeight: "900", fontSize: 15 }}>{t("spine_info_title")}</Text>
+                {!showInfo ? <Subtle>{t("spine_info_hint")}</Subtle> : null}
               </View>
-
-              {showInfo ? (
-                <View style={{ marginTop: 10, gap: 10 }}>
-                  <Text style={{ color: theme.colors.text, lineHeight: 18 }}>
-                    {t("spine_info_trauma")}
-                  </Text>
-
-                  <Text style={{ color: theme.colors.text, fontWeight: "900" }}>
-                    {t("spine_info_abc_title")}
-                  </Text>
-                  <Text style={{ color: theme.colors.text, lineHeight: 18 }}>
-                    {t("spine_info_abc")}
-                  </Text>
-
-                  <Text style={{ color: theme.colors.text, fontWeight: "900" }}>
-                    {t("spine_info_tender_title")}
-                  </Text>
-                  <Text style={{ color: theme.colors.text, lineHeight: 18 }}>
-                    {t("spine_info_tender")}
-                  </Text>
-
-                  <Text style={{ color: theme.colors.text, fontWeight: "900" }}>
-                    {t("spine_info_neuro_title")}
-                  </Text>
-                  <Text style={{ color: theme.colors.text, lineHeight: 18 }}>
-                    {t("spine_info_neuro")}
-                  </Text>
-                </View>
-              ) : (
-                <Subtle style={{ marginTop: 6 }}>{t("spine_info_hint")}</Subtle>
-              )}
-            </Card>
-          </Pressable>
-
-          {currentStep ? (
-            <Card>
-              <Text
-                style={{
-                  color: theme.colors.text,
-                  fontSize: 16,
-                  fontWeight: "900",
-                }}
-              >
-                {t(currentStep.titleKey)}
-              </Text>
-
-              <Text
-                style={{
-                  color: theme.colors.text,
-                  marginTop: 8,
-                  lineHeight: 18,
-                }}
-              >
-                {t(currentStep.questionKey)}
-              </Text>
-
-              {!!currentStep.noteKey && (
-                <Text
-                  style={{
-                    color: theme.colors.mutedText,
-                    marginTop: 8,
-                    lineHeight: 18,
-                    fontWeight: "700",
-                  }}
-                >
-                  {t(currentStep.noteKey)}
-                </Text>
-              )}
-
-              <View style={{ flexDirection: "row", gap: 10, marginTop: 12 }}>
-                <Pressable
-                  onPress={() => answer(currentStep.id, "yes")}
-                  style={({ pressed }) => ({
-                    opacity: pressed ? 0.75 : 1,
-                    flex: 1,
-                    paddingVertical: 12,
-                    borderRadius: 14,
-                    borderWidth: 1,
-                    borderColor: theme.colors.cardBorder,
-                    backgroundColor: "rgba(220,220,220,0.18)",
-                    alignItems: "center",
-                  })}
-                >
-                  <Text style={{ color: theme.colors.text, fontWeight: "900" }}>
-                    {t("yes")}
-                  </Text>
-                </Pressable>
-
-                <Pressable
-                  onPress={() => answer(currentStep.id, "no")}
-                  style={({ pressed }) => ({
-                    opacity: pressed ? 0.75 : 1,
-                    flex: 1,
-                    paddingVertical: 12,
-                    borderRadius: 14,
-                    borderWidth: 1,
-                    borderColor: theme.colors.cardBorder,
-                    backgroundColor: "rgba(0,0,0,0.12)",
-                    alignItems: "center",
-                  })}
-                >
-                  <Text style={{ color: theme.colors.text, fontWeight: "900" }}>
-                    {t("no")}
-                  </Text>
-                </Pressable>
+              <Text accessibilityElementsHidden style={{ color: theme.colors.accentMuted, fontSize: 20 }}>{showInfo ? "⌄" : "›"}</Text>
+            </Pressable>
+            {showInfo ? (
+              <View style={{ gap: 9, paddingBottom: 10 }}>
+                <Text style={{ color: theme.colors.text, lineHeight: 20 }}>{t("spine_info_trauma")}</Text>
+                <Text style={{ color: theme.colors.text, fontWeight: "900" }}>{t("spine_info_abc_title")}</Text>
+                <Subtle>{t("spine_info_abc")}</Subtle>
+                <Text style={{ color: theme.colors.text, fontWeight: "900" }}>{t("spine_info_tender_title")}</Text>
+                <Subtle>{t("spine_info_tender")}</Subtle>
+                <Text style={{ color: theme.colors.text, fontWeight: "900" }}>{t("spine_info_neuro_title")}</Text>
+                <Subtle>{t("spine_info_neuro")}</Subtle>
               </View>
+            ) : null}
+          </ToolSurface>
 
-              <View style={{ flexDirection: "row", gap: 10, marginTop: 12 }}>
-                <Pressable
-                  onPress={back}
-                  disabled={selections.length === 0}
-                  style={({ pressed }) => ({
-                    opacity:
-                      selections.length === 0 ? 0.35 : pressed ? 0.75 : 1,
-                    flex: 1,
-                    paddingVertical: 10,
-                    borderRadius: 14,
-                    borderWidth: 1,
-                    borderColor: theme.colors.cardBorder,
-                    backgroundColor: "rgba(0,0,0,0.10)",
-                    alignItems: "center",
-                  })}
-                >
-                  <Text style={{ color: theme.colors.text, fontWeight: "900" }}>
-                    {t("back")}
-                  </Text>
-                </Pressable>
-
-                <Pressable
-                  onPress={reset}
-                  style={({ pressed }) => ({
-                    opacity: pressed ? 0.75 : 1,
-                    flex: 1,
-                    paddingVertical: 10,
-                    borderRadius: 14,
-                    borderWidth: 1,
-                    borderColor: theme.colors.cardBorder,
-                    backgroundColor: "rgba(0,0,0,0.10)",
-                    alignItems: "center",
-                  })}
-                >
-                  <Text style={{ color: theme.colors.text, fontWeight: "900" }}>
-                    {t("reset")}
-                  </Text>
-                </Pressable>
-              </View>
-            </Card>
+          {flow.state.completed && outcome ? (
+            <AssessmentResultCard
+              title={t("spine_result")}
+              score={outcomeTitle}
+              interpretation={outcomeBody}
+              supportingText={`${outcomePractical}\n\n${t("spine_result_disclaimer")}`}
+              onReview={flow.back}
+              onRestart={() => {
+                flow.restart();
+                setShowInfo(false);
+              }}
+              labels={labels}
+            />
+          ) : currentStep ? (
+            <AssessmentQuestionCard
+              title={t(currentStep.questionKey)}
+              subtitle={`${t(currentStep.titleKey)}${currentStep.noteKey ? ` · ${t(currentStep.noteKey)}` : ""}`}
+              progress={flow.progress}
+              choices={[
+                { label: t("yes"), value: "yes" as const },
+                { label: t("no"), value: "no" as const },
+              ]}
+              selected={flow.state.answers[currentStep.id]}
+              onSelect={(answer) => flow.answer(currentStep.id, answer)}
+              onBack={flow.back}
+              canGoBack={flow.state.position > 0}
+              labels={labels}
+            />
           ) : null}
-
-          <Card>
-            <Title>{t("spine_selections")}</Title>
-
-            {selectionsPretty.length === 0 ? (
-              <Subtle>{t("spine_selections_empty")}</Subtle>
-            ) : (
-              <View style={{ gap: 8, marginTop: 8 }}>
-                {selectionsPretty.map((s, idx) => (
-                  <View
-                    key={`${s.stepTitle}-${idx}`}
-                    style={{
-                      borderRadius: 12,
-                      borderWidth: 1,
-                      borderColor: theme.colors.cardBorder,
-                      padding: 10,
-                      backgroundColor: "rgba(0,0,0,0.12)",
-                    }}
-                  >
-                    <Text
-                      style={{ color: theme.colors.text, fontWeight: "900" }}
-                    >
-                      {s.stepTitle}
-                    </Text>
-                    <Text
-                      style={{
-                        color: theme.colors.mutedText,
-                        fontWeight: "800",
-                      }}
-                    >
-                      {t("answer")}: {s.answer}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            )}
-
-            <View style={{ flexDirection: "row", gap: 10, marginTop: 12 }}>
-              <Pressable
-                onPress={back}
-                disabled={selections.length === 0}
-                style={({ pressed }) => ({
-                  opacity: selections.length === 0 ? 0.35 : pressed ? 0.75 : 1,
-                  flex: 1,
-                  paddingVertical: 10,
-                  borderRadius: 14,
-                  borderWidth: 1,
-                  borderColor: theme.colors.cardBorder,
-                  backgroundColor: "rgba(0,0,0,0.10)",
-                  alignItems: "center",
-                })}
-              >
-                <Text style={{ color: theme.colors.text, fontWeight: "900" }}>
-                  {t("back")}
-                </Text>
-              </Pressable>
-
-              <Pressable
-                onPress={reset}
-                style={({ pressed }) => ({
-                  opacity: pressed ? 0.75 : 1,
-                  flex: 1,
-                  paddingVertical: 10,
-                  borderRadius: 14,
-                  borderWidth: 1,
-                  borderColor: theme.colors.cardBorder,
-                  backgroundColor: "rgba(0,0,0,0.10)",
-                  alignItems: "center",
-                })}
-              >
-                <Text style={{ color: theme.colors.text, fontWeight: "900" }}>
-                  {t("reset")}
-                </Text>
-              </Pressable>
-            </View>
-          </Card>
-
-          <Card>
-            <Title>{t("spine_result")}</Title>
-
-            {!outcome ? (
-              <Subtle>{t("spine_result_pending")}</Subtle>
-            ) : (
-              <View style={{ gap: 10, marginTop: 8 }}>
-                <Text
-                  style={{
-                    color: theme.colors.text,
-                    fontSize: 20,
-                    fontWeight: "900",
-                  }}
-                >
-                  {outcome === "none"
-                    ? t("spine_outcome_none_title")
-                    : outcome === "spinal"
-                      ? t("spine_outcome_spinal_title")
-                      : t("spine_outcome_time_title")}
-                </Text>
-
-                <View
-                  style={{
-                    borderRadius: 14,
-                    borderWidth: 1,
-                    borderColor: theme.colors.cardBorder,
-                    padding: 12,
-                    backgroundColor: "rgba(0,0,0,0.14)",
-                    gap: 8,
-                  }}
-                >
-                  <Text style={{ color: theme.colors.text, lineHeight: 18 }}>
-                    {outcome === "none"
-                      ? t("spine_outcome_none_body")
-                      : outcome === "spinal"
-                        ? t("spine_outcome_spinal_body")
-                        : t("spine_outcome_time_body")}
-                  </Text>
-
-                  <Text
-                    style={{ color: theme.colors.mutedText, lineHeight: 18 }}
-                  >
-                    {outcome === "none"
-                      ? t("spine_outcome_none_practical")
-                      : outcome === "spinal"
-                        ? t("spine_outcome_spinal_practical")
-                        : t("spine_outcome_time_practical")}
-                  </Text>
-
-                  <Text
-                    style={{
-                      color: theme.colors.mutedText,
-                      fontSize: 12,
-                      lineHeight: 17,
-                    }}
-                  >
-                    {t("spine_result_disclaimer")}
-                  </Text>
-                </View>
-              </View>
-            )}
-          </Card>
 
           <ClinicalDisclosure
             disclaimer={disclaimerText}

@@ -189,24 +189,29 @@ describe("DestinationTool simplified entry flow", () => {
     const text = renderedText(root);
     expect(text).toContain("Favoritter");
     expect(text).toContain("Alle visitationer");
-    expect(text).toContain("Apopleksi");
+    expect(text).toContain("Medicinsk modtagelse");
     expect(text).toContain("Neurologi");
     expect(text).toContain("Pædiatri");
-    expect(text).toContain("Traumecenter");
+    expect(text).toContain("Gynækologi");
+    expect(text).toContain("Obstetrik");
+    expect(text).toContain("Øre-næse-hals");
+    expect(text).not.toContain("Akutmodtagelse");
 
     act(() => {
       root
         .findByProps({
-          testID: "destination-category-favourite-traumecenter",
+          testID: "destination-category-favourite-gynaekologi",
         })
         .props.onPress();
     });
     const update = mockSetSettings.mock.calls.at(-1)[0];
     expect(update(mockSettings).destinationCategoryFavourites).toEqual([
-      "akutmodtagelse",
-      "apopleksi_ekskl_trombolyse",
+      "skadestue",
+      "medicinsk_modtagelse",
       "neurologi_ekskl_apopleksi",
       "paediatri",
+      "obstetrik",
+      "oere_naese_hals",
     ]);
   });
 

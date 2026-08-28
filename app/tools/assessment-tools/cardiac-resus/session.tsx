@@ -26,7 +26,8 @@ import { ActionOverlay } from "../../../../src/features/cardiac-resus/ActionOver
 import { createSerializedArrestSessionWriter, getActiveArrestSession, saveEndedArrestSession } from "../../../../src/services/cardiacResusStorage";
 import { Background } from "../../../../src/ui/Background";
 import { hapticSuccess, hapticToolOpen } from "../../../../src/ui/haptics";
-import { Card, Input, Screen, Subtle, Title } from "../../../../src/ui/Ui";
+import { Input, Screen, Subtle, Title } from "../../../../src/ui/Ui";
+import { ToolActionButton, ToolSectionLabel, ToolSurface } from "../../../../src/ui/ToolSurface";
 import { theme } from "../../../../src/ui/theme";
 
 const EVENT_BUTTON_COLORS: Record<EventButtonCategory, { background: string; border: string }> = {
@@ -218,7 +219,8 @@ export default function ActiveCardiacResusSession() {
       <Screen>
         <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 28 }}>
           <Pressable onPress={() => { setActionError(""); setDialog("cycleReset"); }} style={({ pressed }) => ({ opacity: pressed ? 0.78 : 1 })}>
-            <Card style={{ alignItems: "center", marginTop: 12, ...(cycleState.prechargeCueActive ? { backgroundColor: "rgba(255,123,114,0.15)", borderColor: "rgba(255,123,114,0.58)" } : {}) }}>
+            <ToolSurface tone={cycleState.prechargeCueActive ? "danger" : "accent"} style={{ alignItems: "center", marginTop: 10 }}>
+              <ToolSectionLabel>Aktuel HLR-cyklus</ToolSectionLabel>
               <Text style={{ color: theme.colors.text, fontWeight: "800", fontSize: 17 }}>HLR-cyklus {cycleState.cycleNumber}</Text>
               <Title style={{ fontSize: 46, fontVariant: ["tabular-nums"] }}>{formatElapsed(cycleState.elapsedInCycleSeconds)}</Title>
               <Text style={{ color: theme.colors.mutedText, fontSize: 14, fontWeight: "700", fontVariant: ["tabular-nums"] }}>
@@ -233,11 +235,11 @@ export default function ActiveCardiacResusSession() {
               </View>
               <Subtle>Tryk for at justere cyklustimer.</Subtle>
               <Subtle>Tidsmarkører og workflow-cues skal kontrolleres mod lokale retningslinjer og klinisk vurdering.</Subtle>
-            </Card>
+            </ToolSurface>
           </Pressable>
 
           <Pressable disabled={secondsSinceAdrenaline === null} onPress={() => { setActionError(""); setDialog("adrenalineReset"); }} style={({ pressed }) => ({ opacity: pressed ? 0.78 : 1 })}>
-            <Card style={adrenalineReminderDue ? { backgroundColor: "rgba(221,189,98,0.14)", borderColor: "rgba(221,189,98,0.48)" } : undefined}>
+            <ToolSurface tone={adrenalineReminderDue ? "warning" : "default"}>
               <Title style={{ fontSize: 18 }}>Adrenalin-timer</Title>
               {secondsSinceAdrenaline === null ? (
                 <Subtle>Ingen adrenalin registreret endnu. Timeren starter, når “Adrenalin givet” registreres.</Subtle>
@@ -259,10 +261,10 @@ export default function ActiveCardiacResusSession() {
                   <Subtle>Tryk for at nulstille timer.</Subtle>
                 </>
               )}
-            </Card>
+            </ToolSurface>
           </Pressable>
 
-          <Card>
+          <ToolSurface>
             <Title style={{ fontSize: 19 }}>Registrér hændelse</Title>
             <Subtle>Knapperne registrerer kun, hvad der allerede er sket.</Subtle>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
@@ -275,12 +277,17 @@ export default function ActiveCardiacResusSession() {
               );})}
             </View>
             {actionError ? <Text style={{ color: theme.colors.danger, fontWeight: "700" }}>{actionError}</Text> : null}
-          </Card>
+          </ToolSurface>
 
-          <Card>
+          <ToolSurface>
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
               <Title style={{ fontSize: 19 }}>Seneste hændelser</Title>
-              <Pressable onPress={() => setShowAllEvents((current) => !current)} hitSlop={8}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => setShowAllEvents((current) => !current)}
+                hitSlop={8}
+                style={{ minHeight: 44, justifyContent: "center", paddingHorizontal: 4 }}
+              >
                 <Text style={{ color: theme.colors.accentMuted, fontWeight: "800" }}>{showAllEvents ? "Skjul" : "Vis alle"}</Text>
               </Pressable>
             </View>
@@ -304,11 +311,9 @@ export default function ActiveCardiacResusSession() {
                 <Text style={{ color: theme.colors.accentMuted, fontWeight: "900" }}>Ret seneste registrering</Text>
               </Pressable>
             ) : null}
-          </Card>
+          </ToolSurface>
 
-          <Pressable disabled={ending} onPress={confirmEnd} style={({ pressed }) => ({ minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 14, borderWidth: 1, borderColor: "rgba(255,123,114,0.45)", backgroundColor: "rgba(255,123,114,0.10)", opacity: pressed || ending ? 0.55 : 1 })}>
-            <Text style={{ color: theme.colors.danger, fontWeight: "900", fontSize: 16 }}>{ending ? "Afslutter…" : "Afslut session"}</Text>
-          </Pressable>
+          <ToolActionButton disabled={ending} tone="danger" label={ending ? "Afslutter…" : "Afslut session"} onPress={confirmEnd} />
         </ScrollView>
         {dialog ? (
           <ActionOverlay>

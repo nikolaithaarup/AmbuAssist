@@ -15,26 +15,28 @@ const available: DestinationCategoryIntent[] = [
 describe("Destination category favourites", () => {
   test("a new user receives the intended ordered defaults", () => {
     expect(getDestinationCategoryFavourites(null, available)).toEqual([
-      "akutmodtagelse",
-      "apopleksi_ekskl_trombolyse",
+      "skadestue",
+      "medicinsk_modtagelse",
       "neurologi_ekskl_apopleksi",
       "paediatri",
-      "traumecenter",
+      "gynaekologi",
+      "obstetrik",
+      "oere_naese_hals",
     ]);
   });
 
   test("adds and removes favourites while preserving ordering", () => {
     const added = toggleDestinationCategoryFavourite(
-      ["akutmodtagelse", "paediatri"],
+      ["skadestue", "paediatri"],
       "kardiologi",
     );
-    expect(added).toEqual(["akutmodtagelse", "paediatri", "kardiologi"]);
+    expect(added).toEqual(["skadestue", "paediatri", "kardiologi"]);
     expect(toggleDestinationCategoryFavourite(added, "paediatri")).toEqual([
-      "akutmodtagelse",
+      "skadestue",
       "kardiologi",
     ]);
     expect(
-      toggleDestinationCategoryFavourite(["akutmodtagelse"], "akutmodtagelse"),
+      toggleDestinationCategoryFavourite(["skadestue"], "skadestue"),
     ).toEqual([]);
   });
 
@@ -51,9 +53,19 @@ describe("Destination category favourites", () => {
     ).toEqual(["kardiologi"]);
   });
 
+  test("migrates the legacy acute favourite without resetting custom order", () => {
+    expect(
+      normalizeDestinationCategoryFavouritePreference([
+        "kardiologi",
+        "akutmodtagelse",
+        "paediatri",
+      ]),
+    ).toEqual(["kardiologi", "skadestue", "paediatri"]);
+  });
+
   test("non-favourites remain available to the picker", () => {
     const favourites = getDestinationCategoryFavourites(
-      ["akutmodtagelse"],
+      ["skadestue"],
       available,
     );
     expect(available.filter((item) => !favourites.includes(item))).toContain(

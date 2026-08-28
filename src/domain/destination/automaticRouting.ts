@@ -9,9 +9,11 @@ import {
 import type {
   Kommune,
   RawStreetRow,
-  RegionCategory,
 } from "./types";
-import { getCategoryForArea } from "./categoryRouting";
+import {
+  getCategoryForArea,
+  type DestinationCategoryIntent,
+} from "./categoryRouting";
 
 export type AutomaticRoutingStrategy =
   | { area: "byen"; street: string; route: StreetRouteResult }
@@ -166,7 +168,7 @@ export function matchManualLocation(
   return kommune ? { area: "region", kommune } : { area: "unresolved" };
 }
 
-export function getByenCategory(category: RegionCategory) {
+export function getByenCategory(category: DestinationCategoryIntent) {
   const mapped = getCategoryForArea(category, "byen");
   return mapped.available ? mapped.category : null;
 }

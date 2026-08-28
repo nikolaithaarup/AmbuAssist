@@ -11,7 +11,8 @@ import {
 import { Background } from "../../../../src/ui/Background";
 import { ActionOverlay } from "../../../../src/features/cardiac-resus/ActionOverlay";
 import { hapticReset, hapticSuccess } from "../../../../src/ui/haptics";
-import { Card, PrimaryButton, Screen, Subtle, Title } from "../../../../src/ui/Ui";
+import { Screen, Subtle, Title } from "../../../../src/ui/Ui";
+import { ToolActionButton, ToolPageHeader, ToolSectionLabel, ToolSurface } from "../../../../src/ui/ToolSurface";
 import { theme } from "../../../../src/ui/theme";
 
 const SAFETY_TEXT = "Hjertestop er et tids- og hændelsesstøtteværktøj. Timere og påmindelser er baseret på dine registreringer og skal kontrolleres mod gældende lokale retningslinjer, klinisk vurdering og medicinsk ledelse.";
@@ -83,38 +84,24 @@ export default function CardiacResusLanding() {
     <Background>
       <Screen>
         <ScrollView contentContainerStyle={{ gap: 14, paddingBottom: 24 }}>
-          <View style={{ gap: 8, marginTop: 12 }}>
-            <View style={{ alignSelf: "flex-start", borderRadius: 999, borderWidth: 1, borderColor: "rgba(221,189,98,0.38)", backgroundColor: "rgba(221,189,98,0.10)", paddingHorizontal: 10, paddingVertical: 5 }}>
-              <Text style={{ color: theme.colors.warn, fontSize: 12, fontWeight: "800" }}>Under udvikling</Text>
-            </View>
-            <Title>Hjertestop</Title>
-            <Subtle style={{ fontSize: 15 }}>Tids- og hændelsesstøtte ved hjertestop.</Subtle>
-          </View>
-
-          <Card>
-            <Title style={{ fontSize: 19 }}>Teamlederens workflow</Title>
-            <Text style={{ color: theme.colors.text, fontSize: 15, lineHeight: 22 }}>
-              Start en lokal session for at se forløbet tid og registrere hændelser. Denne første version registrerer kun det, brugeren vælger.
-            </Text>
-          </Card>
-
-          <Card style={{ backgroundColor: "rgba(221,189,98,0.10)" }}>
-            <Title style={{ fontSize: 17 }}>Vigtigt</Title>
-            <Text style={{ color: theme.colors.text, fontSize: 14, lineHeight: 21 }}>{SAFETY_TEXT}</Text>
-          </Card>
+          <ToolPageHeader
+            badge="Under udvikling"
+            title="Hjertestop"
+            subtitle="Tids- og hændelsesstøtte ved hjertestop."
+          />
 
           {loading ? <ActivityIndicator color={theme.colors.accent} /> : (
             <View style={{ gap: 10 }}>
               {activeSessionCorrupted ? (
-                <Card style={{ backgroundColor: "rgba(255,123,114,0.10)", borderColor: "rgba(255,123,114,0.42)" }}>
+                <ToolSurface tone="danger">
                   <Title style={{ fontSize: 17 }}>Aktiv session kan ikke indlæses</Title>
                   <Subtle>Den lokalt gemte session er beskadiget eller ufuldstændig. Ryd den for at kunne starte igen.</Subtle>
-                </Card>
+                </ToolSurface>
               ) : (
-                <PrimaryButton label={activeSession ? "Fortsæt aktiv session" : "Start session"} onPress={startSession} />
+                <ToolActionButton label={activeSession ? "Fortsæt aktiv session" : "Start session"} onPress={startSession} />
               )}
               {hasLatestSession ? (
-                <PrimaryButton label="Se seneste hjertestop-session" onPress={() => router.push("/tools/assessment-tools/cardiac-resus/summary" as Href)} />
+                <ToolActionButton tone="secondary" label="Se seneste hjertestop-session" onPress={() => router.push("/tools/assessment-tools/cardiac-resus/summary" as Href)} />
               ) : null}
               {activeSession || activeSessionCorrupted ? (
                 <Pressable onPress={() => { setClearError(""); setShowClearConfirmation(true); }} style={({ pressed }) => ({ minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}>
@@ -123,6 +110,19 @@ export default function CardiacResusLanding() {
               ) : null}
             </View>
           )}
+
+          <ToolSurface tone="accent">
+            <ToolSectionLabel>Teamlederens workflow</ToolSectionLabel>
+            <Text style={{ color: theme.colors.text, fontSize: 15, lineHeight: 22 }}>
+              Start en lokal session for at se forløbet tid og registrere hændelser. Denne første version registrerer kun det, brugeren vælger.
+            </Text>
+          </ToolSurface>
+
+          <ToolSurface tone="warning">
+            <ToolSectionLabel>Vigtigt</ToolSectionLabel>
+            <Text style={{ color: theme.colors.text, fontSize: 14, lineHeight: 21 }}>{SAFETY_TEXT}</Text>
+          </ToolSurface>
+
         </ScrollView>
         {showClearConfirmation ? (
           <ActionOverlay>

@@ -121,7 +121,7 @@ describe("automatic Destination routing strategy", () => {
   });
 
   test("maps the explicit category correctly in both routing systems", () => {
-    const cityCategory = getByenCategory("akutmodtagelse");
+    const cityCategory = getByenCategory("skadestue");
     expect(cityCategory).toBe("hospital");
     expect(
       resolveHospitalCode({
@@ -142,7 +142,7 @@ describe("automatic Destination routing strategy", () => {
   });
 
   test("changing address and category recalculates the destination", () => {
-    const cityCategory = getByenCategory("akutmodtagelse")!;
+    const cityCategory = getByenCategory("skadestue")!;
     expect(
       resolveHospitalCode({
         area: "byen",

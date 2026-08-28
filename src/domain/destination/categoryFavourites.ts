@@ -1,16 +1,16 @@
 import type { DestinationCategoryIntent } from "./categoryRouting";
-import type { RegionCategory } from "./types";
-
 export const DEFAULT_DESTINATION_CATEGORY_FAVOURITES = [
-  "akutmodtagelse",
-  "apopleksi_ekskl_trombolyse",
+  "skadestue",
+  "medicinsk_modtagelse",
   "neurologi_ekskl_apopleksi",
   "paediatri",
-  "traumecenter",
+  "gynaekologi",
+  "obstetrik",
+  "oere_naese_hals",
 ] as const satisfies readonly DestinationCategoryIntent[];
 
-const VALID_CATEGORY_IDS = new Set<RegionCategory>([
-  "traumecenter", "akutmodtagelse", "medicinsk_modtagelse", "akutklinik",
+const VALID_CATEGORY_IDS = new Set<DestinationCategoryIntent>([
+  "traumecenter", "skadestue", "medicinsk_modtagelse", "akutklinik",
   "kirurgi_mave_tarm", "boernekirurgi", "ortopaedkirurgi",
   "ortopaedkirurgi_boern_u16", "karkirurgi", "thoraxkirurgi",
   "neurokirurgi", "urologi", "plastkirurgi", "mammakirurgi",
@@ -34,11 +34,13 @@ export function normalizeDestinationCategoryFavouritePreference(
   if (!Array.isArray(value)) return null;
   return Array.from(
     new Set(
-      value.filter(
-        (item): item is DestinationCategoryIntent =>
-          typeof item === "string" &&
-          VALID_CATEGORY_IDS.has(item as RegionCategory),
-      ),
+      value.flatMap((item): DestinationCategoryIntent[] => {
+        if (item === "akutmodtagelse") return ["skadestue"];
+        return typeof item === "string" &&
+          VALID_CATEGORY_IDS.has(item as DestinationCategoryIntent)
+          ? [item as DestinationCategoryIntent]
+          : [];
+      }),
     ),
   );
 }
@@ -63,4 +65,3 @@ export function toggleDestinationCategoryFavourite(
     ? current.filter((item) => item !== category)
     : [...current, category];
 }
-

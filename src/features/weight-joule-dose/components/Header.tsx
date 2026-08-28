@@ -1,6 +1,4 @@
-import { Pressable, Text, View } from "react-native";
-import { Subtle, Title } from "../../../ui/Ui";
-import { theme } from "../../../ui/theme";
+import { ToolPageHeader } from "../../../ui/ToolSurface";
 
 export function Header({
   title,
@@ -13,30 +11,5 @@ export function Header({
   rightLabel: string;
   onRightPress: () => void;
 }) {
-  return (
-    <View style={{ marginTop: 12, gap: 6 }}>
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <View style={{ flex: 1, gap: 6 }}>
-          <Title>{title}</Title>
-          <Subtle>{subtitle}</Subtle>
-        </View>
-        <Pressable
-          onPress={onRightPress}
-          style={({ pressed }) => ({
-            opacity: pressed ? 0.75 : 1,
-            paddingVertical: 10,
-            paddingHorizontal: 12,
-            borderRadius: 14,
-            borderWidth: 1,
-            borderColor: theme.colors.cardBorder,
-            backgroundColor: "rgba(220,220,220,0.18)",
-          })}
-        >
-          <Text style={{ color: theme.colors.text, fontWeight: "900" }}>
-            {rightLabel}
-          </Text>
-        </Pressable>
-      </View>
-    </View>
-  );
+  return <ToolPageHeader title={title} subtitle={subtitle} actionLabel={rightLabel} actionDisplayLabel="⚙" onAction={onRightPress} />;
 }

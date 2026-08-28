@@ -72,6 +72,7 @@ import {
 } from "../../src/domain/destination/automaticRouting";
 import {
   getCategoryForArea,
+  getIntentForRegionCategory,
   type DestinationCategoryIntent,
 } from "../../src/domain/destination/categoryRouting";
 import {
@@ -114,9 +115,9 @@ const VISITATION_BYEN_URL =
 const VISITATION_REGIONEN_URL =
   "https://drive.google.com/file/d/1HS25c5EPt1oP3WbzT6jA99TMiprOgvVh/view?usp=sharing";
 
-const REGION_CATEGORY_LABEL_KEYS: Record<RegionCategory, string> = {
+const REGION_CATEGORY_LABEL_KEYS: Record<DestinationCategoryIntent, string> = {
   traumecenter: "dest_reg_traumecenter",
-  akutmodtagelse: "dest_reg_akutmodtagelse",
+  skadestue: "dest_intent_skadestue",
   medicinsk_modtagelse: "dest_reg_med_modtagelse",
   akutklinik: "dest_reg_akutklinik",
   kirurgi_mave_tarm: "dest_reg_kir_mave_tarm",
@@ -160,7 +161,10 @@ function fallbackLabelFromKey(key: string): string {
   return key.replaceAll("_", " ").replace(/\b\w/g, (m) => m.toUpperCase());
 }
 
-function getRegionCategoryLabel(t: TranslateFn, category: RegionCategory) {
+function getRegionCategoryLabel(
+  t: TranslateFn,
+  category: DestinationCategoryIntent,
+) {
   const key = REGION_CATEGORY_LABEL_KEYS[category];
   const translated = t(key);
 
@@ -435,7 +439,7 @@ export default function DestinationTool() {
   const [streetRouteNeedsPostalCode, setStreetRouteNeedsPostalCode] = useState(false);
 
   const [regCat, setRegCat] = useState<DestinationCategoryIntent>(
-    "akutmodtagelse",
+    "skadestue",
   );
 
   const [streetQ, setStreetQ] = useState("");
@@ -714,13 +718,15 @@ export default function DestinationTool() {
 
   const regionCategoryOptions = useMemo(() => {
     const backendKeys = visitationData.region.categories
-      .map((item) => item.key as RegionCategory)
+      .map((item) => getIntentForRegionCategory(item.key as RegionCategory))
       .filter((key) => !!REGION_CATEGORY_LABEL_KEYS[key]);
 
     const keys =
       backendKeys.length > 0
         ? backendKeys
-        : (Object.keys(REGION_CATEGORY_LABEL_KEYS) as RegionCategory[]);
+        : (Object.keys(
+            REGION_CATEGORY_LABEL_KEYS,
+          ) as DestinationCategoryIntent[]);
 
     return [...keys].sort((a, b) =>
       getRegionCategoryLabel(t as TranslateFn, a).localeCompare(

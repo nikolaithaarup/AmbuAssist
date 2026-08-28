@@ -1,16 +1,21 @@
 import type { Area, ByenCategory, RegionCategory } from "./types";
 
-/**
- * Stable user-facing clinical intent IDs. Regional visitation already has the
- * more complete taxonomy, so its IDs are retained as the canonical IDs.
- */
-export type DestinationCategoryIntent = RegionCategory;
+/** Stable user-facing clinical intent IDs, independent of source terminology. */
+export type DestinationCategoryIntent =
+  | "skadestue"
+  | Exclude<RegionCategory, "akutmodtagelse">;
+
+export function getIntentForRegionCategory(
+  category: RegionCategory,
+): DestinationCategoryIntent {
+  return category === "akutmodtagelse" ? "skadestue" : category;
+}
 
 /** Only mappings with a deliberate source-level equivalent belong here. */
 export const BYEN_CATEGORY_BY_INTENT: Partial<
   Record<DestinationCategoryIntent, ByenCategory>
 > = {
-  akutmodtagelse: "hospital",
+  skadestue: "hospital",
   medicinsk_modtagelse: "medicin",
   reumatologi: "reumatologi",
   kirurgi_mave_tarm: "gaskir",
@@ -47,7 +52,11 @@ export function getCategoryForArea(
   area: Area,
 ): GeographicCategory {
   if (area === "region") {
-    return { available: true, area, category: intent };
+    return {
+      available: true,
+      area,
+      category: intent === "skadestue" ? "akutmodtagelse" : intent,
+    };
   }
 
   const category = BYEN_CATEGORY_BY_INTENT[intent];

@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Linking,
-  Pressable,
   ScrollView,
   Text,
   View,
@@ -21,7 +20,13 @@ import {
 import { useSettings } from "../../src/state/settings";
 import { Background } from "../../src/ui/Background";
 import { ClinicalDisclosure } from "../../src/ui/ClinicalDisclosure";
-import { Card, Screen, Subtle, Title } from "../../src/ui/Ui";
+import { Screen, Subtle } from "../../src/ui/Ui";
+import {
+  ToolActionButton,
+  ToolPageHeader,
+  ToolSectionLabel,
+  ToolSurface,
+} from "../../src/ui/ToolSurface";
 import { theme } from "../../src/ui/theme";
 
 function normalizePhone(phone: string) {
@@ -163,76 +168,31 @@ export default function SupportNumbersPage() {
   return (
     <Background>
       <Screen>
-        <View
-          style={{
-            gap: 6,
-            marginTop: 12,
-            alignItems: "center",
-          }}
-        >
-          <Title style={{ textAlign: "center" }}>Support numre</Title>
-          <Subtle style={{ textAlign: "center" }}>
-            Hurtig adgang til vigtige operative telefonnumre
-          </Subtle>
-        </View>
+        <ToolPageHeader
+          title={t("tool_supportNumbers_title")}
+          subtitle={t("tool_supportNumbers_desc")}
+        />
 
         <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
-          <Card>
+          <ToolSurface style={{ paddingHorizontal: 13 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+              <View style={{ flex: 1 }}>
+                <ToolSectionLabel>{lang === "da" ? "Kontakter" : "Contacts"}</ToolSectionLabel>
+              </View>
+              {refreshingFromBackend ? (
+                <Subtle>{lang === "da" ? "Opdaterer…" : "Updating…"}</Subtle>
+              ) : null}
+            </View>
             {loading ? (
               <Text style={{ color: theme.colors.mutedText }}>
-                Henter supportnumre...
+                {lang === "da" ? "Henter supportnumre…" : "Loading support numbers…"}
               </Text>
             ) : sortedNumbers.length === 0 ? (
               <Text style={{ color: theme.colors.mutedText }}>
-                Ingen supportnumre fundet endnu.
+                {lang === "da" ? "Ingen supportnumre fundet endnu." : "No support numbers found yet."}
               </Text>
             ) : (
-              <View style={{ gap: 12 }}>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    paddingBottom: 6,
-                    borderBottomWidth: 1,
-                    borderBottomColor: theme.colors.cardBorder,
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: theme.colors.mutedText,
-                      width: 190,
-                      fontWeight: "800",
-                    }}
-                  >
-                    Navn
-                  </Text>
-
-                  <View style={{ flex: 1, alignItems: "flex-end" }}>
-                    <Text
-                      style={{
-                        color: theme.colors.mutedText,
-                        fontWeight: "800",
-                        textAlign: "right",
-                      }}
-                    >
-                      Telefonnummer
-                    </Text>
-
-                    {refreshingFromBackend && (
-                      <Text
-                        style={{
-                          color: theme.colors.mutedText,
-                          fontSize: 11,
-                          marginTop: 2,
-                        }}
-                      >
-                        Opdaterer…
-                      </Text>
-                    )}
-                  </View>
-                </View>
-
+              <View>
                 {sortedNumbers.map((item) => {
                   const name = lang === "da" ? item.nameDa : item.nameEn;
 
@@ -241,47 +201,31 @@ export default function SupportNumbersPage() {
                       key={item.id}
                       style={{
                         flexDirection: "row",
-                        alignItems: "flex-start",
-                        paddingBottom: 10,
+                        alignItems: "center",
+                        gap: 10,
+                        paddingVertical: 10,
                         borderBottomWidth: 1,
-                        borderBottomColor: "rgba(255,255,255,0.06)",
+                        borderBottomColor: theme.colors.divider,
                       }}
                     >
-                      <Text
-                        style={{
-                          color: theme.colors.text,
-                          width: 190,
-                          fontWeight: "700",
-                          paddingRight: 12,
-                        }}
-                      >
+                      <Text style={{ flex: 1, minWidth: 0, color: theme.colors.text, fontSize: 15, lineHeight: 20, fontWeight: "800" }}>
                         {name}
                       </Text>
-
-                      <Pressable
-                        onPress={() => callNumber(item.phone)}
-                        style={({ pressed }) => ({
-                          flex: 1,
-                          opacity: pressed ? 0.7 : 1,
-                        })}
-                      >
-                        <Text
-                          style={{
-                            color: "#8ec5ff",
-                            textAlign: "right",
-                            textDecorationLine: "underline",
-                            fontWeight: "700",
-                          }}
-                        >
-                          {item.phone}
-                        </Text>
-                      </Pressable>
+                      <View style={{ width: 116 }}>
+                        <ToolActionButton
+                          tone="call"
+                          compact
+                          label={item.phone}
+                          accessibilityLabel={`${lang === "da" ? "Ring" : "Call"} ${name}: ${item.phone}`}
+                          onPress={() => callNumber(item.phone)}
+                        />
+                      </View>
                     </View>
                   );
                 })}
               </View>
             )}
-          </Card>
+          </ToolSurface>
 
           <ClinicalDisclosure
             disclaimer={reference?.disclaimer[lang] ??

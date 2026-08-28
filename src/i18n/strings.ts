@@ -439,6 +439,7 @@ export const en = {
   wjd_weight_override: "Weight",
   wjd_kg_optional: "kg (optional)",
   wjd_jkg_override: "J/kg",
+  wjd_input: "Patient inputs",
   wjd_calculated: "Calculated",
   wjd_estWeight: "Estimated weight",
   wjd_usingWeight: "Using weight",
@@ -1048,6 +1049,7 @@ export const en = {
 
   dest_reg_traumecenter: "Trauma center",
   dest_reg_akutmodtagelse: "Emergency department",
+  dest_intent_skadestue: "Emergency injury department",
   dest_reg_med_modtagelse: "Medical receiving",
   dest_reg_akutklinik: "Acute clinic",
   dest_reg_kir_mave_tarm: "Gastrointestinal surgery",
@@ -1340,6 +1342,8 @@ export const en = {
     "If you notice an issue, spot incorrect content, or have an idea for improving AmbuAssist, please send feedback.",
   contact_support_email_label: "Support email",
   contact_email_button: "Email support",
+  contact_report_error: "Report an error",
+  contact_suggest_improvement: "Suggest improvement",
 
   contact_include_title: "What to include",
   contact_include_1: "The tool or page where the issue happened.",
@@ -1395,10 +1399,12 @@ export const en = {
     "Support clinical thinking without replacing guidelines or judgement.",
 
   about_limit_title: "Important limitation",
+  about_limit_sub: "What the app cannot replace and when local guidance takes priority.",
   about_limit_body:
     "AmbuAssist is a support tool only. It does not replace clinical judgement, local instructions, approved references, physician input, or operational guidance.",
 
   about_info_title: "App information",
+  about_info_sub: "Version and intended use.",
   about_info_name: "App name",
   about_info_version: "Version",
   about_info_use: "Intended use",
@@ -1928,6 +1934,7 @@ export const da: typeof en = {
   wjd_weight_override: "Vægt",
   wjd_kg_optional: "kg (valgfrit)",
   wjd_jkg_override: "J/kg",
+  wjd_input: "Patientdata",
   wjd_calculated: "Beregnet",
   wjd_estWeight: "Est. vægt",
   wjd_usingWeight: "Brugt vægt",
@@ -2537,6 +2544,7 @@ export const da: typeof en = {
 
   dest_reg_traumecenter: "Traumecenter",
   dest_reg_akutmodtagelse: "Akutmodtagelse",
+  dest_intent_skadestue: "Skadestue",
   dest_reg_med_modtagelse: "Medicinsk modtagelse",
   dest_reg_akutklinik: "Akutklinik",
   dest_reg_kir_mave_tarm: "Gastrokirurgi",
@@ -2825,6 +2833,8 @@ export const da: typeof en = {
     "Hvis du opdager en fejl, ser forkert indhold, eller har en idé til at forbedre AmbuAssist, er du meget velkommen til at sende feedback.",
   contact_support_email_label: "Support-email",
   contact_email_button: "Send email",
+  contact_report_error: "Rapportér fejl",
+  contact_suggest_improvement: "Foreslå forbedring",
 
   contact_include_title: "Hvad du gerne må sende med",
   contact_include_1: "Hvilket værktøj eller hvilken side problemet skete på.",
@@ -2880,10 +2890,12 @@ export const da: typeof en = {
     "At understøtte klinisk tænkning uden at erstatte retningslinjer eller klinisk skøn.",
 
   about_limit_title: "Vigtig begrænsning",
+  about_limit_sub: "Hvad appen ikke erstatter, og hvornår lokal vejledning har forrang.",
   about_limit_body:
     "AmbuAssist er kun et støtteværktøj. Det erstatter ikke klinisk skøn, lokale instrukser, godkendte referencer, lægefaglig vurdering eller operativ ledelse.",
 
   about_info_title: "App-information",
+  about_info_sub: "Version og tilsigtet brug.",
   about_info_name: "App-navn",
   about_info_version: "Version",
   about_info_use: "Tilsigtet brug",

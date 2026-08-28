@@ -1,4 +1,5 @@
-import { Card, Input, Label, Row } from "../../../ui/Ui";
+import { Input, Label, Row } from "../../../ui/Ui";
+import { ToolSectionLabel, ToolSurface } from "../../../ui/ToolSurface";
 import type { Translate } from "../types";
 
 export function WeightCalculatorCard({
@@ -21,7 +22,8 @@ export function WeightCalculatorCard({
   placeholderDefaultJ: string;
 }) {
   return (
-    <Card>
+    <ToolSurface>
+      <ToolSectionLabel>{t("wjd_input")}</ToolSectionLabel>
       <Row>
         <Label>{t("wjd_age")}</Label>
         <Input value={ageYears} onChangeText={setAgeYears} placeholder={t("wjd_years")} keyboardType="number-pad" />
@@ -34,6 +36,6 @@ export function WeightCalculatorCard({
         <Label>{t("wjd_jkg_override")}</Label>
         <Input value={jPerKgOverride} onChangeText={setJPerKgOverride} placeholder={placeholderDefaultJ} keyboardType="decimal-pad" />
       </Row>
-    </Card>
+    </ToolSurface>
   );
 }

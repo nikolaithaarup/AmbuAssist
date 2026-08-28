@@ -6,7 +6,8 @@ import { formatArrestEventLabel, formatElapsed } from "../../../../src/features/
 import { getLatestArrestSession, saveActiveArrestSession } from "../../../../src/services/cardiacResusStorage";
 import { Background } from "../../../../src/ui/Background";
 import { CollapsibleCard } from "../../../../src/ui/CollapsibleCard";
-import { Card, Screen, Subtle, Title } from "../../../../src/ui/Ui";
+import { Screen, Subtle, Title } from "../../../../src/ui/Ui";
+import { ToolActionButton, ToolPageHeader, ToolSectionLabel, ToolSurface } from "../../../../src/ui/ToolSurface";
 import { theme } from "../../../../src/ui/theme";
 
 function formatDate(value: string): string {
@@ -28,7 +29,7 @@ export default function CardiacResusSummary() {
   if (loading) return <Background><Screen style={{ justifyContent: "center" }}><ActivityIndicator color={theme.colors.accent} /></Screen></Background>;
 
   if (!session) return (
-    <Background><Screen style={{ justifyContent: "center" }}><Card><Title style={{ fontSize: 20 }}>Ingen afsluttet session</Title><Subtle>Der er endnu ingen lokal hjertestopoversigt.</Subtle><Pressable onPress={() => router.replace("/tools/assessment-tools/cardiac-resus" as Href)}><Text style={{ color: theme.colors.accentMuted, fontWeight: "800" }}>Tilbage til Hjertestop</Text></Pressable></Card></Screen></Background>
+    <Background><Screen style={{ justifyContent: "center" }}><ToolSurface><Title style={{ fontSize: 20 }}>Ingen afsluttet session</Title><Subtle>Der er endnu ingen lokal hjertestopoversigt.</Subtle><Pressable onPress={() => router.replace("/tools/assessment-tools/cardiac-resus" as Href)}><Text style={{ color: theme.colors.accentMuted, fontWeight: "800" }}>Tilbage til Hjertestop</Text></Pressable></ToolSurface></Screen></Background>
   );
 
   const summary = summarizeArrestSession(session);
@@ -61,9 +62,9 @@ export default function CardiacResusSummary() {
     <Background>
       <Screen>
         <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 28 }}>
-          <View style={{ gap: 6, marginTop: 12 }}><Title>Hjertestopoversigt</Title><Subtle>Lokalt gemt på denne enhed. Kan ikke eksporteres fra denne version.</Subtle></View>
-          <Card>
-            <Title style={{ fontSize: 19 }}>Resume</Title>
+          <ToolPageHeader title="Hjertestopoversigt" subtitle="Lokalt gemt på denne enhed. Kan ikke eksporteres fra denne version." />
+          <ToolSurface tone="accent">
+            <ToolSectionLabel>Resume</ToolSectionLabel>
             <Text style={{ color: theme.colors.text }}><Text style={{ fontWeight: "900" }}>Start: </Text>{formatDate(session.startedAt)}</Text>
             <Text style={{ color: theme.colors.text }}><Text style={{ fontWeight: "900" }}>Slut: </Text>{formatDate(session.endedAt ?? session.startedAt)}</Text>
             <View style={{ marginTop: 4 }}>
@@ -74,7 +75,7 @@ export default function CardiacResusSummary() {
                 </View>
               ))}
             </View>
-          </Card>
+          </ToolSurface>
           <CollapsibleCard title="Hændelseslog" subtitle={`${session.events.length} tidsstemplede registreringer`}>
             {session.events.map((event) => {
               const corrected = correctedEventIds.has(event.id);
@@ -85,13 +86,7 @@ export default function CardiacResusSummary() {
               </View>
             );})}
           </CollapsibleCard>
-          <Pressable
-            disabled={resuming}
-            onPress={() => void resumeSession()}
-            style={({ pressed }) => ({ minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 14, borderWidth: 1, borderColor: theme.colors.cardBorder, backgroundColor: theme.colors.accentSurface, opacity: pressed || resuming ? 0.6 : 1 })}
-          >
-            <Text style={{ color: theme.colors.text, fontWeight: "900", fontSize: 16 }}>{resuming ? "Genoptager…" : "Genoptag hjertestop"}</Text>
-          </Pressable>
+          <ToolActionButton disabled={resuming} label={resuming ? "Genoptager…" : "Genoptag hjertestop"} onPress={() => void resumeSession()} />
         </ScrollView>
       </Screen>
     </Background>

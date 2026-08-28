@@ -1,6 +1,7 @@
 import { Text, View } from "react-native";
 import type { DoseUnit } from "../../../state/settings";
-import { Card, Row, Subtle, Title } from "../../../ui/Ui";
+import { Row, Subtle } from "../../../ui/Ui";
+import { ToolSectionLabel, ToolSurface } from "../../../ui/ToolSurface";
 import { theme } from "../../../ui/theme";
 import type { CalculatedMedicationRow, Translate } from "../types";
 import { fmtSmartDose, fmtSmartMl, unitLabel } from "../utils/formatting";
@@ -11,8 +12,8 @@ export function DoseCalculatorCard({ t, lang, rows }: {
   rows: CalculatedMedicationRow[];
 }) {
   return (
-    <Card>
-      <Title>{t("wjd_doses")}</Title>
+    <ToolSurface>
+      <ToolSectionLabel>{t("wjd_doses")}</ToolSectionLabel>
       <Subtle>{t("wjd_doses_sub")}</Subtle>
       {rows.length === 0 ? (
         <Text style={{ color: theme.colors.mutedText }}>{t("wjd_noMeds")}</Text>
@@ -24,7 +25,7 @@ export function DoseCalculatorCard({ t, lang, rows }: {
             lang,
           );
           return (
-            <View key={med.id} style={{ borderTopWidth: 1, borderTopColor: theme.colors.cardBorder, paddingTop: 10, marginTop: 10, gap: 6 }}>
+            <View key={med.id} style={{ borderTopWidth: 1, borderTopColor: theme.colors.divider, paddingTop: 10, marginTop: 4, gap: 6 }}>
               <Text style={{ color: theme.colors.text, fontSize: 16, fontWeight: "900" }}>{med.name}</Text>
               <Row>
                 <Text style={{ color: theme.colors.mutedText, width: 130 }}>{t("wjd_dose")}</Text>
@@ -55,6 +56,6 @@ export function DoseCalculatorCard({ t, lang, rows }: {
           );
         })
       )}
-    </Card>
+    </ToolSurface>
   );
 }

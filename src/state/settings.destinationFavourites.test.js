@@ -51,6 +51,31 @@ describe("Destination favourites in persisted app settings", () => {
     await act(async () => renderer.unmount());
   });
 
+  test("legacy acute favourite migrates in place without resetting custom choices", async () => {
+    AsyncStorage.getItem.mockResolvedValueOnce(
+      JSON.stringify(
+        storedSettings(["kardiologi", "akutmodtagelse", "paediatri"]),
+      ),
+    );
+    let renderer;
+    await act(async () => {
+      renderer = TestRenderer.create(
+        <SettingsProvider>
+          <Probe />
+        </SettingsProvider>,
+      );
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(currentContext.settings.destinationCategoryFavourites).toEqual([
+      "kardiologi",
+      "skadestue",
+      "paediatri",
+    ]);
+    await act(async () => renderer.unmount());
+  });
+
   test("a customized list is written through the existing settings storage", async () => {
     AsyncStorage.getItem.mockResolvedValueOnce(
       JSON.stringify(storedSettings(null)),

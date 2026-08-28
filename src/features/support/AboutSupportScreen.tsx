@@ -3,10 +3,11 @@ import { useState, type ReactNode } from "react";
 import { Linking, Pressable, ScrollView, Text, View } from "react-native";
 import { useT } from "../../i18n/useT";
 import { Background } from "../../ui/Background";
-import { Screen, Subtle, Title } from "../../ui/Ui";
+import { ToolPageHeader, ToolSurface } from "../../ui/ToolSurface";
+import { Screen, Subtle } from "../../ui/Ui";
 import { theme } from "../../ui/theme";
 
-export type AboutSupportSection = "about" | "medical" | "contact" | "app";
+export type AboutSupportSection = "about" | "medical" | "contact" | "limitations" | "app";
 
 const SUPPORT_EMAIL = "nikolai_91@live.com";
 
@@ -100,16 +101,17 @@ function SupportSection({
   id,
   title,
   subtitle,
-  initiallyOpen,
+  open,
+  onToggle,
   children,
 }: {
   id: AboutSupportSection;
   title: string;
   subtitle: string;
-  initiallyOpen: boolean;
+  open: boolean;
+  onToggle: () => void;
   children: ReactNode;
 }) {
-  const [open, setOpen] = useState(initiallyOpen);
   return (
     <View
       testID={`about-support-section-${id}`}
@@ -122,7 +124,7 @@ function SupportSection({
         accessibilityRole="button"
         accessibilityLabel={title}
         accessibilityState={{ expanded: open }}
-        onPress={() => setOpen((current) => !current)}
+        onPress={onToggle}
         style={({ pressed }) => ({
           minHeight: 60,
           flexDirection: "row",
@@ -163,12 +165,15 @@ function SupportSection({
 }
 
 export function AboutSupportScreen({
-  initialSection = "about",
+  initialSection,
 }: {
   initialSection?: AboutSupportSection;
 }) {
   const { t } = useT();
   const appVersion = Constants.expoConfig?.version ?? "unknown";
+  const [openSection, setOpenSection] = useState<AboutSupportSection | null>(
+    initialSection ?? null,
+  );
 
   const openEmail = async () => {
     const subject = encodeURIComponent(t("contact_email_subject"));
@@ -203,37 +208,25 @@ export function AboutSupportScreen({
   return (
     <Background>
       <Screen>
-        <View style={{ gap: 6, marginTop: 12 }}>
-          <Title>{t("about_support_title")}</Title>
-          <Subtle>{t("about_support_sub")}</Subtle>
-        </View>
-
         <ScrollView
-          contentContainerStyle={{ paddingBottom: 28 }}
+          contentContainerStyle={{ gap: 12, paddingBottom: 28 }}
           keyboardShouldPersistTaps="handled"
         >
-          <View
-            style={{
-              borderRadius: 17,
-              borderWidth: 1,
-              borderColor: "rgba(190,202,165,0.16)",
-              backgroundColor: "rgba(38,43,34,0.66)",
-              paddingHorizontal: 14,
-            }}
-          >
+          <ToolPageHeader title={t("about_support_title")} subtitle={t("about_support_sub")} />
+
+          <ToolSurface style={{ paddingVertical: 0, paddingHorizontal: 14, gap: 0 }}>
             <SupportSection
               id="about"
               title={t("about_what_title")}
               subtitle={t("about_sub")}
-              initiallyOpen={initialSection === "about"}
+              open={openSection === "about"}
+              onToggle={() => setOpenSection((current) => current === "about" ? null : "about")}
             >
               <Body>{t("about_what_body")}</Body>
               <SectionHeading>{t("about_purpose_title")}</SectionHeading>
               <Bullet>{t("about_purpose_1")}</Bullet>
               <Bullet>{t("about_purpose_2")}</Bullet>
               <Bullet>{t("about_purpose_3")}</Bullet>
-              <SectionHeading>{t("about_limit_title")}</SectionHeading>
-              <Warning>{t("about_limit_body")}</Warning>
               <SectionHeading>{t("about_design_title")}</SectionHeading>
               <Bullet>{t("about_design_1")}</Bullet>
               <Bullet>{t("about_design_2")}</Bullet>
@@ -247,7 +240,8 @@ export function AboutSupportScreen({
               id="medical"
               title={t("meddisc_title")}
               subtitle={t("meddisc_sub")}
-              initiallyOpen={initialSection === "medical"}
+              open={openSection === "medical"}
+              onToggle={() => setOpenSection((current) => current === "medical" ? null : "medical")}
             >
               <SectionHeading>{t("meddisc_section_use_title")}</SectionHeading>
               <Bullet>{t("meddisc_use_1")}</Bullet>
@@ -290,7 +284,8 @@ export function AboutSupportScreen({
               id="contact"
               title={t("contact_title")}
               subtitle={t("contact_sub")}
-              initiallyOpen={initialSection === "contact"}
+              open={openSection === "contact"}
+              onToggle={() => setOpenSection((current) => current === "contact" ? null : "contact")}
             >
               <SectionHeading>{t("contact_getintouch_title")}</SectionHeading>
               <Body>{t("contact_getintouch_body")}</Body>
@@ -319,6 +314,26 @@ export function AboutSupportScreen({
                   {t("contact_email_button")}
                 </Text>
               </Pressable>
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+                <Pressable
+                  testID="about-support-report-error"
+                  accessibilityRole="link"
+                  accessibilityLabel={t("contact_report_error")}
+                  onPress={() => void openEmail()}
+                  style={({ pressed }) => ({ minHeight: 48, flexGrow: 1, flexBasis: "46%", borderRadius: 14, borderWidth: 1, borderColor: theme.colors.cardBorder, alignItems: "center", justifyContent: "center", paddingHorizontal: 10, opacity: pressed ? 0.72 : 1 })}
+                >
+                  <Text style={{ color: theme.colors.accentMuted, fontWeight: "900", textAlign: "center" }}>{t("contact_report_error")}</Text>
+                </Pressable>
+                <Pressable
+                  testID="about-support-suggest-improvement"
+                  accessibilityRole="link"
+                  accessibilityLabel={t("contact_suggest_improvement")}
+                  onPress={() => void openEmail()}
+                  style={({ pressed }) => ({ minHeight: 48, flexGrow: 1, flexBasis: "46%", borderRadius: 14, borderWidth: 1, borderColor: theme.colors.cardBorder, alignItems: "center", justifyContent: "center", paddingHorizontal: 10, opacity: pressed ? 0.72 : 1 })}
+                >
+                  <Text style={{ color: theme.colors.accentMuted, fontWeight: "900", textAlign: "center" }}>{t("contact_suggest_improvement")}</Text>
+                </Pressable>
+              </View>
               <SectionHeading>{t("contact_include_title")}</SectionHeading>
               <Bullet>{t("contact_include_1")}</Bullet>
               <Bullet>{t("contact_include_2")}</Bullet>
@@ -336,10 +351,22 @@ export function AboutSupportScreen({
             </SupportSection>
 
             <SupportSection
+              id="limitations"
+              title={t("about_limit_title")}
+              subtitle={t("about_limit_sub")}
+              open={openSection === "limitations"}
+              onToggle={() => setOpenSection((current) => current === "limitations" ? null : "limitations")}
+            >
+              <Warning>{t("about_limit_body")}</Warning>
+              <Body>{t("meddisc_emergency_body")}</Body>
+            </SupportSection>
+
+            <SupportSection
               id="app"
               title={t("about_info_title")}
-              subtitle="AmbuAssist"
-              initiallyOpen={initialSection === "app"}
+              subtitle={t("about_info_sub")}
+              open={openSection === "app"}
+              onToggle={() => setOpenSection((current) => current === "app" ? null : "app")}
             >
               <InfoRow label={t("about_info_name")} value="AmbuAssist" />
               <InfoRow label={t("about_info_version")} value={appVersion} />
@@ -352,10 +379,9 @@ export function AboutSupportScreen({
                 value={t("about_info_focus_value")}
               />
             </SupportSection>
-          </View>
+          </ToolSurface>
         </ScrollView>
       </Screen>
     </Background>
   );
 }
-

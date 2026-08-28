@@ -9,11 +9,13 @@ import {
   REGION_NORD_MAP,
 } from "../../features/destination/data/regionNord";
 import { REGION_SYD_CATEGORIES } from "../../features/destination/data/regionSyd";
+import { REGION_SYD_MAP } from "../../features/destination/data/regionSyd";
 import { resolveHospitalCode } from "./resolution";
 import { deriveAutomaticRoutingStrategy } from "./automaticRouting";
 import {
   BYEN_CATEGORY_BY_INTENT,
   getCategoryForArea,
+  getIntentForRegionCategory,
 } from "./categoryRouting";
 
 describe("Destination category taxonomy and crosswalk", () => {
@@ -85,7 +87,7 @@ describe("Destination category taxonomy and crosswalk", () => {
   });
 
   test.each([
-    ["akutmodtagelse", "hospital"],
+    ["skadestue", "hospital"],
     ["medicinsk_modtagelse", "medicin"],
     ["kirurgi_mave_tarm", "gaskir"],
     ["apopleksi_ekskl_trombolyse", "neuro_apopleksi"],
@@ -95,6 +97,81 @@ describe("Destination category taxonomy and crosswalk", () => {
       available: true,
       category: expected,
     });
+  });
+
+  test("exposes Skadestue as the canonical intent without duplicate Akutmodtagelse", () => {
+    const intents = REGION_BYEN_CATEGORIES.map((item) =>
+      getIntentForRegionCategory(item.key),
+    );
+    expect(intents).toContain("skadestue");
+    expect(intents).not.toContain("akutmodtagelse");
+    expect(new Set(intents).size).toBe(intents.length);
+  });
+
+  test("Studiestræde keeps injury and medical reception clinically distinct", () => {
+    const location = deriveAutomaticRoutingStrategy(
+      {
+        street: "Studiestræde",
+        houseNumber: 10,
+        postcode: "1455",
+        city: "København K",
+      },
+      STREET_SAMPLE,
+    );
+    expect(location).toMatchObject({
+      area: "byen",
+      route: { status: "single", officialBydel: "Indre by" },
+    });
+    if (location.area !== "byen" || location.route.status !== "single") {
+      throw new Error("Studiestræde did not resolve to a single Byen area");
+    }
+
+    const injury = getCategoryForArea("skadestue", "byen");
+    const medical = getCategoryForArea("medicinsk_modtagelse", "byen");
+    if (!injury.available || !medical.available) {
+      throw new Error("Byen acute mappings are missing");
+    }
+    expect(injury.category).toBe("hospital");
+    expect(medical.category).toBe("medicin");
+    expect(
+      resolveHospitalCode({
+        area: "byen",
+        bydel: location.route.officialBydel,
+        category: injury.category,
+        map: BYEN_MAP,
+      }),
+    ).toBe("RH");
+    expect(
+      resolveHospitalCode({
+        area: "byen",
+        bydel: location.route.officialBydel,
+        category: medical.category,
+        map: BYEN_MAP,
+      }),
+    ).toBe("BBH");
+  });
+
+  test("regional acute intents stay separate even when Hvidovre resolves both to HVH", () => {
+    const injury = getCategoryForArea("skadestue", "region");
+    const medical = getCategoryForArea("medicinsk_modtagelse", "region");
+    expect(injury.category).toBe("akutmodtagelse");
+    expect(medical.category).toBe("medicinsk_modtagelse");
+    expect(
+      resolveHospitalCode({
+        area: "region",
+        kommune: "Hvidovre",
+        category: injury.category,
+        map: REGION_SYD_MAP,
+      }),
+    ).toBe("HVH");
+    expect(
+      resolveHospitalCode({
+        area: "region",
+        kommune: "Hvidovre",
+        category: medical.category,
+        map: REGION_SYD_MAP,
+      }),
+    ).toBe("HVH");
   });
 
   test("regional-only terminology fails explicitly in Byen", () => {

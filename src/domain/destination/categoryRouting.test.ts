@@ -63,6 +63,7 @@ describe("Destination category taxonomy and crosswalk", () => {
     if (!city.available || !region.available) throw new Error("mapping missing");
     if (
       cityLocation.area !== "byen" ||
+      cityLocation.source !== "street" ||
       cityLocation.route.status !== "single" ||
       regionalLocation.area !== "region"
     ) {
@@ -122,7 +123,11 @@ describe("Destination category taxonomy and crosswalk", () => {
       area: "byen",
       route: { status: "single", officialBydel: "Indre by" },
     });
-    if (location.area !== "byen" || location.route.status !== "single") {
+    if (
+      location.area !== "byen" ||
+      location.source !== "street" ||
+      location.route.status !== "single"
+    ) {
       throw new Error("Studiestræde did not resolve to a single Byen area");
     }
 

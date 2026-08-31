@@ -11,6 +11,7 @@ import {
 import type { Kommune } from "./types";
 
 const municipalities = Object.keys(REGION_NORD_MAP) as Kommune[];
+const AMAGER_BYDEL = "Amager (2300, 2770 og 2791)";
 
 describe("automatic Destination routing strategy", () => {
   test("GPS selects Copenhagen street routing without a mode choice", () => {
@@ -36,6 +37,112 @@ describe("automatic Destination routing strategy", () => {
         STREET_SAMPLE,
       ),
     ).toEqual({ area: "region", kommune: "Hillerød" });
+  });
+
+  test.each([
+    [
+      "2300 København S",
+      {
+        street: "Amagerbrogade",
+        postcode: "2300",
+        city: "København S",
+      },
+    ],
+    [
+      "Sundby",
+      {
+        street: "Amagerbrogade",
+        postcode: "2300",
+        city: "København S",
+        district: "Sundby",
+      },
+    ],
+    [
+      "Sundbyøster",
+      {
+        street: "Amagerbrogade",
+        postcode: "2300",
+        city: "København S",
+        district: "Sundbyøster",
+      },
+    ],
+    [
+      "Amagerbro",
+      {
+        street: "Amagerbrogade",
+        postcode: "2300",
+        city: "København S",
+        district: "Amagerbro",
+      },
+    ],
+    [
+      "Ørestad",
+      {
+        street: "Ørestads Boulevard",
+        postcode: "2300",
+        city: "København S",
+        district: "Ørestad",
+      },
+    ],
+    [
+      "Orestad",
+      {
+        street: "Orestads Boulevard",
+        postcode: "2300",
+        city: "Kobenhavn S",
+        district: "Orestad",
+      },
+    ],
+    [
+      "2770 Kastrup",
+      {
+        street: "Kastruplundgade",
+        postcode: "2770",
+        city: "Kastrup",
+      },
+    ],
+    [
+      "2770 Tårnby",
+      {
+        street: "Tårnbyvej",
+        postcode: "2770",
+        city: "Kastrup",
+        district: "Tårnby",
+      },
+    ],
+    [
+      "2770 Tarnby",
+      {
+        street: "Tarnbyvej",
+        postcode: "2770",
+        city: "Kastrup",
+        district: "Tarnby",
+      },
+    ],
+    [
+      "2791 Dragør",
+      {
+        street: "Kirkevej",
+        postcode: "2791",
+        city: "Dragør",
+      },
+    ],
+    [
+      "2791 Dragor",
+      {
+        street: "Kirkevej",
+        postcode: "2791",
+        city: "Dragor",
+      },
+    ],
+  ] as const)("uses the explicit Amager postal fallback for %s", (_label, address) => {
+    expect(deriveAutomaticRoutingStrategy(address, STREET_SAMPLE)).toEqual({
+      area: "byen",
+      source: "postal_district_fallback",
+      street: address.street,
+      postcode: address.postcode,
+      officialBydel: AMAGER_BYDEL,
+    });
   });
 
   test("manual input selects Copenhagen routing and preserves 13A", () => {
@@ -118,6 +225,125 @@ describe("automatic Destination routing strategy", () => {
     expect(
       matchManualLocation("Ukendtvej 12", STREET_SAMPLE, municipalities),
     ).toEqual({ area: "unresolved" });
+  });
+
+  test("does not apply the Amager fallback to 2450 København SV", () => {
+    expect(
+      deriveAutomaticRoutingStrategy(
+        {
+          street: "Sluseholmen",
+          postcode: "2450",
+          city: "København SV",
+          district: "Sydhavnen",
+        },
+        STREET_SAMPLE,
+      ),
+    ).toEqual({ area: "unresolved", reason: "unknown_city_street" });
+  });
+
+  test("known street routing takes precedence over the Amager postal fallback", () => {
+    expect(
+      deriveAutomaticRoutingStrategy(
+        {
+          street: "Known Amager Street",
+          houseNumber: 10,
+          postcode: "2300",
+          city: "København S",
+        },
+        [{ street: "Known Amager Street", bydel: "Christianshavn" }],
+      ),
+    ).toMatchObject({
+      area: "byen",
+      source: "street",
+      route: { status: "single", officialBydel: "Christianshavn" },
+    });
+  });
+
+  test("Amager fallback does not override parity ambiguity", () => {
+    const rows = [
+      { street: "Splitvej", bydel: "Valby", side: "odd" as const },
+      { street: "Splitvej", bydel: "Vanløse", side: "even" as const },
+    ];
+    expect(
+      deriveAutomaticRoutingStrategy(
+        {
+          street: "Splitvej",
+          postcode: "2300",
+          city: "København S",
+        },
+        rows,
+      ),
+    ).toMatchObject({
+      area: "byen",
+      source: "street",
+      route: { status: "needs_side" },
+    });
+  });
+
+  test("Amager fallback does not override unresolved street-table ambiguity", () => {
+    const rows = [
+      { street: "Ambiguousvej", bydel: "Valby" },
+      { street: "Ambiguousvej", bydel: "Vanløse" },
+    ];
+    expect(
+      deriveAutomaticRoutingStrategy(
+        {
+          street: "Ambiguousvej",
+          postcode: "2300",
+          city: "København S",
+        },
+        rows,
+      ),
+    ).toMatchObject({
+      area: "byen",
+      source: "street",
+      route: { status: "still_ambiguous" },
+    });
+  });
+
+  test("Amager fallback does not override a required house number", () => {
+    const rows = [
+      { street: "Rangevej", bydel: "Valby", from: 1, to: 49 },
+      { street: "Rangevej", bydel: "Vanløse", from: 50 },
+    ];
+    expect(
+      deriveAutomaticRoutingStrategy(
+        {
+          street: "Rangevej",
+          postcode: "2300",
+          city: "København S",
+        },
+        rows,
+      ),
+    ).toMatchObject({
+      area: "byen",
+      source: "street",
+      route: { status: "needs_house_number" },
+    });
+  });
+
+  test("postal ambiguity still requires a postal code", () => {
+    const rows = [
+      { street: "Postalvej", bydel: "Bispebjerg", postalCodes: ["2400"] },
+      {
+        street: "Postalvej",
+        bydel: "Brønshøj/Husum",
+        postalCodes: ["2700"],
+      },
+    ];
+    expect(
+      deriveAutomaticRoutingStrategy(
+        {
+          street: "Postalvej",
+          city: "København S",
+        },
+        rows,
+      ),
+    ).toMatchObject({
+      area: "byen",
+      source: "street",
+      route: { status: "needs_postal_code" },
+    });
   });
 
   test("maps the explicit category correctly in both routing systems", () => {

@@ -7,6 +7,7 @@ import {
   type StreetRouteResult,
 } from "./routing";
 import type {
+  Bydel,
   Kommune,
   RawStreetRow,
 } from "./types";
@@ -16,7 +17,19 @@ import {
 } from "./categoryRouting";
 
 export type AutomaticRoutingStrategy =
-  | { area: "byen"; street: string; route: StreetRouteResult }
+  | {
+      area: "byen";
+      source: "street";
+      street: string;
+      route: StreetRouteResult;
+    }
+  | {
+      area: "byen";
+      source: "postal_district_fallback";
+      street: string;
+      postcode: AmagerFallbackPostcode;
+      officialBydel: Bydel;
+    }
   | { area: "region"; kommune: Kommune }
   | {
       area: "unresolved";
@@ -25,6 +38,19 @@ export type AutomaticRoutingStrategy =
         | "unknown_city_street"
         | "missing_area_evidence";
     };
+
+const AMAGER_FALLBACK_POSTCODES = ["2300", "2770", "2791"] as const;
+type AmagerFallbackPostcode = (typeof AMAGER_FALLBACK_POSTCODES)[number];
+
+// Follow-up: 2450 København SV is intentionally excluded until its desired
+// postal fallback policy has been confirmed independently.
+function isAmagerFallbackPostcode(
+  postcode?: string,
+): postcode is AmagerFallbackPostcode {
+  return AMAGER_FALLBACK_POSTCODES.includes(
+    String(postcode ?? "").trim() as AmagerFallbackPostcode,
+  );
+}
 
 export type AddressRoutingEvidence = {
   street?: string;
@@ -67,9 +93,24 @@ export function deriveAutomaticRoutingStrategy(
       address.postcode,
     );
     if (route.status === "not_found") {
+      if (isAmagerFallbackPostcode(address.postcode)) {
+        const postcode = String(
+          address.postcode,
+        ).trim() as AmagerFallbackPostcode;
+        const officialBydel = mapByenGeocodeToOfficialBydel({ postcode });
+        if (officialBydel === "Amager (2300, 2770 og 2791)") {
+          return {
+            area: "byen",
+            source: "postal_district_fallback",
+            street,
+            postcode,
+            officialBydel,
+          };
+        }
+      }
       return { area: "unresolved", reason: "unknown_city_street" };
     }
-    return { area: "byen", street, route };
+    return { area: "byen", source: "street", street, route };
   }
 
   const candidates = [

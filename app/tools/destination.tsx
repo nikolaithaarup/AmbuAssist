@@ -1283,6 +1283,48 @@ export default function DestinationTool() {
       );
 
       if (strategy.area === "byen") {
+        if (strategy.source === "postal_district_fallback") {
+          const confidence = classifyLocationConfidence({
+            accuracy,
+            hasStreet: true,
+            hasCompleteRoutingAddress: true,
+          });
+          setArea("byen");
+          setKommune("");
+          setBydel(strategy.officialBydel);
+          setSelectedStreet(street);
+          setStreetQ(street);
+          setHouseNumberQ(
+            parsedNumber.number
+              ? String(parsedNumber.number) + (parsedNumber.suffix ?? "")
+              : "",
+          );
+          setPostalCodeQ(strategy.postcode);
+          resetStreetRouteState();
+          setDetectedArea({ ...detectedAreaBase, confidence });
+          setManualHospitalCode("");
+          setRequiresAddressConfirmation(
+            getConfidenceUx(confidence) === "confirm",
+          );
+          setDiagnostics((current) => ({
+            ...current,
+            confidence,
+            routingArea: "byen",
+            matchStatus: "postal_district_fallback",
+            matchSource: "postal_district_fallback",
+            fallbackPostcode: strategy.postcode,
+            destinationDistrict: strategy.officialBydel,
+          }));
+          closeAllDropdowns();
+          setLocationStatus("matched");
+          setLocationMessage(
+            confidence === "medium"
+              ? "Kontrollér den fundne adresse, før destinationen bruges."
+              : "",
+          );
+          return;
+        }
+
         const routeResult = strategy.route;
         const confidence = classifyLocationConfidence({
           accuracy,

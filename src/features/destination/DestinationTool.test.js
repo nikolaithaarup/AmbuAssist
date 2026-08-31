@@ -177,6 +177,63 @@ describe("DestinationTool simplified entry flow", () => {
     expect(renderedText(renderer.root)).not.toContain("GPS-præcision");
   });
 
+  test.each([
+    [
+      "2300 København S",
+      {
+        street: "Amagerbrogade",
+        name: "100",
+        postalCode: "2300",
+        city: "København S",
+        district: "Sundbyøster",
+        subregion: "København",
+        region: "Region Hovedstaden",
+        formattedAddress: "Amagerbrogade 100, 2300 København S",
+      },
+    ],
+    [
+      "2770 Kastrup",
+      {
+        street: "Kastruplundgade",
+        name: "15",
+        postalCode: "2770",
+        city: "Kastrup",
+        district: "Tårnby",
+        subregion: "Tårnby",
+        region: "Region Hovedstaden",
+        formattedAddress: "Kastruplundgade 15, 2770 Kastrup",
+      },
+    ],
+    [
+      "2791 Dragør",
+      {
+        street: "Kirkevej",
+        name: "2",
+        postalCode: "2791",
+        city: "Dragør",
+        district: "Dragør",
+        subregion: "Dragør",
+        region: "Region Hovedstaden",
+        formattedAddress: "Kirkevej 2, 2791 Dragør",
+      },
+    ],
+  ])(
+    "GPS routes an unmatched Amager street in %s through the postal district matrix",
+    async (_label, reverseGeocodeAddress) => {
+      mockReverseGeocode.mockResolvedValue([reverseGeocodeAddress]);
+      const renderer = await renderTool();
+      await pressGps(renderer.root);
+
+      expect(
+        renderer.root.findAllByProps({ testID: "destination-result" }).length,
+      ).toBeGreaterThan(0);
+      expect(renderedText(renderer.root)).toContain("AMH");
+      expect(renderedText(renderer.root)).toContain(
+        "Amager (2300, 2770 og 2791)",
+      );
+    },
+  );
+
   test("category picker shows default favourites separately and persists a toggle", async () => {
     const renderer = await renderTool();
     const root = renderer.root;

@@ -31,9 +31,8 @@ export function parseHouseNumber(
   ...values: Array<string | null | undefined>
 ): { number?: number; suffix?: string } {
   for (const value of values) {
-    const match = String(value ?? "").match(
-      /(?:^|\s)(\d{1,4})\s*([a-zæøå])?(?=\s|,|$)/iu,
-    );
+    const addressSegment = String(value ?? "").split(",")[0]?.trim();
+    const match = addressSegment.match(/(?:^|\s)(\d{1,4})\s*([a-zæøå])?$/iu);
     if (match) {
       return {
         number: Number(match[1]),
@@ -42,6 +41,40 @@ export function parseHouseNumber(
     }
   }
   return {};
+}
+
+export type ReverseGeocodedHouseNumberInput = {
+  streetNumber?: string | null;
+  street?: string | null;
+  name?: string | null;
+  formattedAddress?: string | null;
+};
+
+/**
+ * Parses structured reverse-geocoder evidence without treating a placemark/POI
+ * name or a postcode segment as a house number.
+ */
+export function parseReverseGeocodedHouseNumber({
+  streetNumber,
+  street,
+  formattedAddress,
+}: ReverseGeocodedHouseNumberInput): { number?: number; suffix?: string } {
+  const dedicated = parseHouseNumber(streetNumber);
+  if (dedicated.number !== undefined) return dedicated;
+
+  const addressSegment = String(formattedAddress ?? "").split(",")[0]?.trim();
+  if (!addressSegment || !/\p{L}/u.test(addressSegment)) return {};
+
+  const parsedStreet = parseStreetName(undefined, addressSegment);
+  const dedicatedStreet = String(street ?? "").trim();
+  if (
+    !parsedStreet ||
+    (dedicatedStreet && normalizeStreetName(parsedStreet) !== normalizeStreetName(dedicatedStreet))
+  ) {
+    return {};
+  }
+
+  return parseHouseNumber(addressSegment);
 }
 
 /** Extracts a street from either a dedicated field or a formatted address. */
@@ -59,4 +92,3 @@ export function parseStreetName(
     .trim();
   return withoutNumber || undefined;
 }
-

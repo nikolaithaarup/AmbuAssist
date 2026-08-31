@@ -160,13 +160,14 @@ describe("DestinationTool simplified entry flow", () => {
     mockReverseGeocode.mockResolvedValue([
       {
         street: "Frederiksberg Allé",
-        name: "13A",
+        streetNumber: "13A",
+        name: "Frederiksberg Allé",
         postalCode: "1621",
         city: "København V",
         district: "Vesterbro",
         subregion: "København",
         region: "Region Hovedstaden",
-        formattedAddress: "Frederiksberg Allé 13A, 1621 København V",
+        formattedAddress: null,
       },
     ]);
     const renderer = await renderTool();
@@ -175,6 +176,27 @@ describe("DestinationTool simplified entry flow", () => {
     expect(renderer.root.findAllByProps({ testID: "destination-result" }).length).toBeGreaterThan(0);
     expect(renderedText(renderer.root)).toContain("HVH");
     expect(renderedText(renderer.root)).not.toContain("GPS-præcision");
+  });
+
+  test("GPS does not infer a house number from an iOS placemark name when streetNumber is null", async () => {
+    mockReverseGeocode.mockResolvedValue([
+      {
+        street: "Frederiksberg Allé",
+        streetNumber: null,
+        name: "Frederiksberg Allé 13A",
+        postalCode: "1621",
+        city: "København V",
+        district: "Vesterbro",
+        subregion: "København",
+        region: "Region Hovedstaden",
+        formattedAddress: null,
+      },
+    ]);
+    const renderer = await renderTool();
+    await pressGps(renderer.root);
+
+    expect(renderer.root.findAllByProps({ testID: "destination-result" })).toHaveLength(0);
+    expect(renderedText(renderer.root)).toContain("Indtast husnummeret");
   });
 
   test.each([

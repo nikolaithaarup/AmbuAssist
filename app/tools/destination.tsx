@@ -15,6 +15,7 @@ import { useT } from "../../src/i18n/useT";
 import { resolveHospitalCode } from "../../src/domain/destination/resolution";
 import {
   parseHouseNumber,
+  parseReverseGeocodedHouseNumber,
   parseStreetName,
 } from "../../src/domain/destination/address";
 import {
@@ -1240,7 +1241,12 @@ export default function DestinationTool() {
       const subregion = String(first.subregion ?? "").trim();
       const formattedAddress = String(first.formattedAddress ?? "").trim();
       const street = parseStreetName(first.street, formattedAddress) ?? "";
-      const parsedNumber = parseHouseNumber(first.name, formattedAddress);
+      const parsedNumber = parseReverseGeocodedHouseNumber({
+        streetNumber: first.streetNumber,
+        street: first.street,
+        name: first.name,
+        formattedAddress,
+      });
       const region = String(first.region ?? "").trim();
       const name = String(first.name ?? "").trim();
 

@@ -1,4 +1,5 @@
 import type { HospitalCode, KommuneNord, RegionCategory } from "../types";
+import { GENERATED_REGION_MAPS } from "./generated/visitationData";
 
 export const REGION_NORD_CATEGORIES: {
   key: RegionCategory;
@@ -87,7 +88,8 @@ export const REGION_NORD_DEFAULT: Record<RegionCategory, HospitalCode> = {
   socialmedicin: "FRH",
 };
 
-export const REGION_NORD_MAP: Record<
+/** @deprecated Audit reference only. Production data is generated from the reviewed ledger. */
+export const LEGACY_REGION_NORD_MAP: Record<
   KommuneNord,
   Record<RegionCategory, HospitalCode>
 > = {
@@ -100,3 +102,8 @@ export const REGION_NORD_MAP: Record<
   Hillerød: REGION_NORD_DEFAULT,
   Hørsholm: REGION_NORD_DEFAULT,
 };
+
+export const REGION_NORD_MAP = GENERATED_REGION_MAPS.nord as Record<
+  KommuneNord,
+  Record<RegionCategory, HospitalCode>
+>;

@@ -4,6 +4,7 @@ import {
   mapRegionCityToKommune,
   norm,
   resolveStreetRoute,
+  type StreetAliasMap,
   type StreetRouteResult,
 } from "./routing";
 import type {
@@ -79,6 +80,7 @@ function hasCopenhagenEvidence(address: AddressRoutingEvidence) {
 export function deriveAutomaticRoutingStrategy(
   address: AddressRoutingEvidence,
   streetRows: RawStreetRow[],
+  streetAliases: StreetAliasMap = {},
 ): AutomaticRoutingStrategy {
   const street = String(address.street ?? "").trim();
   const isCopenhagenAddress = hasCopenhagenEvidence(address);
@@ -91,6 +93,7 @@ export function deriveAutomaticRoutingStrategy(
       "",
       address.houseNumber,
       address.postcode,
+      streetAliases,
     );
     if (route.status === "not_found") {
       if (isAmagerFallbackPostcode(address.postcode)) {
@@ -161,6 +164,7 @@ export function matchManualLocation(
   input: string,
   streetRows: RawStreetRow[],
   municipalities: readonly Kommune[],
+  streetAliases: StreetAliasMap = {},
 ): ManualLocationMatch {
   const parsedStreet = parseStreetName(undefined, input) ?? input;
   const postcode = input.match(/\b\d{4}\b/)?.[0];
@@ -178,10 +182,13 @@ export function matchManualLocation(
     return { area: "region", kommune };
   }
 
+  const parsedStreetKey = norm(parsedStreet);
+  const canonicalStreetKey =
+    streetAliases[normalizedInput] ??
+    streetAliases[parsedStreetKey] ??
+    parsedStreetKey;
   const streetRow = streetRows.find(
-    (row) =>
-      norm(row.street) === normalizedInput ||
-      norm(row.street) === norm(parsedStreet),
+    (row) => norm(row.street) === canonicalStreetKey,
   );
   if (streetRow) {
     const street = getCanonicalStreetLabel(streetRow.street);
@@ -202,6 +209,7 @@ export function matchManualLocation(
         "",
         parsedHouse.number,
         postcode,
+        streetAliases,
       ),
     };
   }

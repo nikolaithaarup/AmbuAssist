@@ -1,4 +1,5 @@
 import type { HospitalCode, KommuneMidt, RegionCategory } from "../types";
+import { GENERATED_REGION_MAPS } from "./generated/visitationData";
 
 export const REGION_MIDT_CATEGORIES: {
   key: RegionCategory;
@@ -97,7 +98,8 @@ export const REGION_MIDT_DEFAULT: Record<RegionCategory, HospitalCode> = {
   socialmedicin: "FRH",
 };
 
-export const REGION_MIDT_MAP: Record<
+/** @deprecated Audit reference only. Production data is generated from the reviewed ledger. */
+export const LEGACY_REGION_MIDT_MAP: Record<
   KommuneMidt,
   Record<RegionCategory, HospitalCode>
 > = {
@@ -184,3 +186,8 @@ export const REGION_MIDT_MAP: Record<
     ...REGION_MIDT_DEFAULT,
   },
 };
+
+export const REGION_MIDT_MAP = GENERATED_REGION_MAPS.midt as Record<
+  KommuneMidt,
+  Record<RegionCategory, HospitalCode>
+>;

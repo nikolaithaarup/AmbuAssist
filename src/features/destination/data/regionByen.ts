@@ -1,4 +1,5 @@
 import type { HospitalCode, KommuneByen, RegionCategory } from "../types";
+import { GENERATED_REGION_MAPS } from "./generated/visitationData";
 
 export const REGION_BYEN_CATEGORIES: {
   key: RegionCategory;
@@ -97,7 +98,8 @@ export const REGION_BYEN_DEFAULT: Record<RegionCategory, HospitalCode> = {
   socialmedicin: "FRH",
 };
 
-export const REGION_BYEN_MAP: Partial<Record<
+/** @deprecated Audit reference only. Includes the non-official duplicate Vesterbro row. */
+export const LEGACY_REGION_BYEN_MAP: Partial<Record<
   KommuneByen,
   Record<RegionCategory, HospitalCode>
 >> = {
@@ -287,3 +289,7 @@ export const REGION_BYEN_MAP: Partial<Record<
     socialmedicin: "FRH",
   },
 };
+
+export const REGION_BYEN_MAP = GENERATED_REGION_MAPS.byen as Partial<
+  Record<KommuneByen, Record<RegionCategory, HospitalCode>>
+>;

@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "sourceLedger": "docs/visitation-review/byen-ledger.json",
+  "reviewDecisions": "docs/visitation-review/review-decisions.json",
+  "priorApprovedRules": 1722,
+  "approvedDecisions": 122,
+  "newRules": 88,
+  "alreadyRepresented": 34,
+  "currentPhysicalRecords": 1793,
+  "ledgerSha256": "6c41862a1f2d211e6589e534a466cfcad1f3f5a10ded84360c27939e4de2ce00",
+  "reviewDecisionsSha256": "8b60f4ccfdfdaf54c2db3c01cae2e56dfc035d6c49a78a44c7fe59a240683f2f",
+  "historicalSemanticCollisionGroups": [],
+  "reviewedSpellingCollisionAliases": [],
+  "preAliasCleanupRecords": 1810,
+  "removedHistoricalDuplicateRules": 17,
+  "officialCanonicalRules": 1793,
+  "compatibilityAliases": 19,
+  "aliasLedger": "docs/visitation-review/byen-aliases.json",
+  "aliasLedgerSha256": "4426661023b04d8615011162e556a00e2951fa919f50c1bb00ea287f1372324e"
+}

@@ -30,6 +30,7 @@ import {
   type ReferenceDoc,
 } from "../../src/services/referenceService";
 import {
+  BYEN_STREET_ALIASES,
   loadVisitationData,
   LOCAL_VISITATION_DATA,
   type BackendVisitationData,
@@ -774,6 +775,7 @@ export default function DestinationTool() {
       side,
       houseNumber,
       postalCode,
+      BYEN_STREET_ALIASES,
     );
 
     setArea("byen");
@@ -1088,7 +1090,12 @@ export default function DestinationTool() {
     setRegCatOpen(false);
     setPhoneDropdownOpen(false);
     setManualHospitalCode("");
-    const match = matchManualLocation(text, STREET_SAMPLE, ALL_KOMMUNER);
+    const match = matchManualLocation(
+      text,
+      STREET_SAMPLE,
+      ALL_KOMMUNER,
+      BYEN_STREET_ALIASES,
+    );
     applyManualLocationMatch(match, text);
     if (match.area !== "unresolved") setStreetOpen(false);
   };
@@ -1286,6 +1293,7 @@ export default function DestinationTool() {
           region,
         },
         STREET_SAMPLE,
+        BYEN_STREET_ALIASES,
       );
 
       if (strategy.area === "byen") {
@@ -1824,7 +1832,12 @@ export default function DestinationTool() {
                   setStreetQ(value);
                   if (kind === "street") {
                     applyManualLocationMatch(
-                      matchManualLocation(value, STREET_SAMPLE, ALL_KOMMUNER),
+                      matchManualLocation(
+                        value,
+                        STREET_SAMPLE,
+                        ALL_KOMMUNER,
+                        BYEN_STREET_ALIASES,
+                      ),
                       value,
                     );
                   } else {

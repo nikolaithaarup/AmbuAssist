@@ -1,8 +1,14 @@
-"""Build a reviewable Visitation Byen audit from cell OCR plus official street names.
+"""LEGACY/UNSAFE FOR PRODUCTION GENERATION.
+
+Build a reviewable Visitation Byen audit from cell OCR plus official street names.
 
 OCR is never promoted blindly: only high-confidence, single-district rows without
 number/postal/exception text enter the generated simple-row module. Every other
 physical PDF row remains visible in the audit as a rule or an uncertainty.
+
+This historical tool is retained for OCR assistance only. It must not regenerate
+production visitation data: confidence thresholds can omit rows, fuzzy matching
+can rewrite printed names, and slash districts can be misclassified.
 """
 
 from __future__ import annotations

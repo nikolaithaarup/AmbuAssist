@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>AmbuAssist visitation review</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div><p class="eyebrow">AmbuAssist · local clinical-data review</p><h1>Visitation Byen OCR review</h1></div>
+    <div class="header-actions">
+      <span class="save-state" id="saveState">Decisions persist locally</span>
+      <button class="button secondary" id="summaryButton" type="button">Summary</button>
+      <a class="button ghost" href="/api/export">Export decisions</a>
+    </div>
+  </header>
+  <main class="shell">
+    <section class="overview" aria-label="Review progress">
+      <div class="metric"><strong id="totalCount">123</strong><span>Total</span></div>
+      <div class="metric approved"><strong id="approvedCount">0</strong><span>Approved</span></div>
+      <div class="metric unclear"><strong id="unclearCount">0</strong><span>Unclear</span></div>
+      <div class="metric"><strong id="remainingCount">123</strong><span>Remaining</span></div>
+      <div class="progress-block">
+        <div class="progress-label"><span>Decision progress</span><span id="progressText">0 / 123</span></div>
+        <div class="progress-track"><span id="progressBar"></span></div>
+      </div>
+    </section>
+    <nav class="review-nav" aria-label="Review navigation">
+      <div class="nav-group">
+        <button class="button secondary" id="previousButton" type="button">← Previous</button>
+        <button class="button ghost" id="skipButton" type="button">Skip</button>
+        <button class="button secondary" id="nextButton" type="button">Next →</button>
+      </div>
+      <label class="filter-label">Filter
+        <select id="filterSelect">
+          <option value="pending">Pending</option><option value="approved">Approved</option>
+          <option value="unclear">Unclear</option><option value="all">All</option>
+        </select>
+      </label>
+    </nav>
+    <section id="emptyState" class="empty-state" hidden><h2>No items in this filter</h2><p>Choose another filter or open the summary.</p></section>
+    <article id="reviewCard" class="review-card">
+      <header class="item-header">
+        <div><p class="eyebrow" id="itemPosition">Review item 1 / 123</p><h2 id="itemTitle">Loading review item…</h2></div>
+        <span class="status-badge pending" id="statusBadge">Pending</span>
+      </header>
+      <section class="source-strip">
+        <div><span>Official source</span><strong id="sourceFile"></strong></div>
+        <div><span>PDF page</span><strong id="sourcePage"></strong></div>
+        <a id="openPdfLink" target="_blank" rel="noreferrer">Open full PDF page ↗</a>
+      </section>
+      <section class="visual-review" aria-labelledby="visualHeading">
+        <div class="section-heading">
+          <div><p class="eyebrow">Primary evidence</p><h3 id="visualHeading">Exact printed row</h3></div>
+          <p>Read the image first. OCR and fuzzy matches are suggestions only.</p>
+        </div>
+        <a id="rowCropLink" class="crop-card exact-crop" target="_blank" rel="noreferrer">
+          <img id="rowCrop" alt="Enlarged crop of the exact visitation PDF row"><span>Open crop at full size ↗</span>
+        </a>
+        <details class="context-panel" open>
+          <summary>Neighbouring rows and highlighted context</summary>
+          <a id="contextCropLink" class="crop-card" target="_blank" rel="noreferrer">
+            <img id="contextCrop" alt="PDF context crop with the current row highlighted"><span>Open context at full size ↗</span>
+          </a>
+        </details>
+      </section>
+      <section class="evidence-grid">
+        <div class="evidence-card"><span>OCR text</span><code id="ocrText"></code></div>
+        <div class="evidence-card"><span>Confidence</span><strong id="confidence"></strong></div>
+        <div class="evidence-card wide"><span>Why it was flagged</span><p id="flagReason"></p></div>
+        <div class="evidence-card wide"><span>Current bundled representation</span><p id="bundledRepresentation"></p></div>
+      </section>
+      <section class="suggestion-panel">
+        <div class="section-heading">
+          <div><p class="eyebrow">Unverified OCR aids</p><h3>Transcription assistance</h3></div>
+          <p>Fuzzy matches are not official transcriptions. The PDF row always controls.</p>
+        </div>
+        <div class="suggestion-summary">
+          <div><span>Safe street suggestion</span><strong id="suggestedStreet"></strong></div>
+          <div><span>District</span><strong id="suggestedDistrict"></strong></div>
+          <div><span>Conditions</span><strong id="suggestedConditions"></strong></div>
+        </div>
+        <span class="field-label">Fuzzy candidates</span><div class="candidate-list" id="candidateList"></div>
+      </section>
+      <section class="decision-panel">
+        <div class="decision-actions">
+          <button class="button approve" id="approveButton" type="button">✓ Approve suggestion</button>
+          <button class="button manual" id="manualButton" type="button">✎ Correct manually</button>
+          <button class="button unclear" id="unclearButton" type="button">? Still unclear</button>
+        </div>
+        <form id="manualForm" class="manual-form" hidden>
+          <div class="form-heading">
+            <div><p class="eyebrow">Human transcription</p><h3>Correct this row manually</h3></div>
+            <p>Enter exactly what is printed. Leave conditions blank when none are present.</p>
+          </div>
+          <div class="form-grid">
+            <label class="span-2">Official street name<input id="streetInput" autocomplete="off"></label>
+            <label>District<input id="districtInput" list="districtOptions" autocomplete="off"></label>
+            <label>Postcode(s)<input id="postcodeInput" placeholder="e.g. 2200, 2400" inputmode="numeric"></label>
+            <label>Number from<input id="numberFromInput" type="number" min="1"></label>
+            <label>Number to<input id="numberToInput" type="number" min="1"></label>
+            <label>Parity<select id="parityInput"><option value="">None / not printed</option><option value="odd">Odd / ulige</option><option value="even">Even / lige</option></select></label>
+            <label class="span-2">Review notes<textarea id="notesInput" rows="3" placeholder="What did you verify or why is it still unclear?"></textarea></label>
+          </div>
+          <datalist id="districtOptions">
+            <option value="Amager"><option value="Bispebjerg"><option value="Brønshøj/Husum">
+            <option value="Christianshavn"><option value="Frederiksberg"><option value="Indre By">
+            <option value="Indre Nørrebro"><option value="Ydre Nørrebro"><option value="Ryvang Øst">
+            <option value="Valby"><option value="Vanløse"><option value="Vesterbro">
+            <option value="Indre Østerbro"><option value="Ydre Østerbro">
+          </datalist>
+          <div class="form-actions">
+            <button class="button approve" type="submit">Save manual approval</button>
+            <button class="button ghost" id="cancelManualButton" type="button">Cancel</button>
+          </div>
+        </form>
+        <div class="existing-decision" id="existingDecision" hidden>
+          <div><span>Saved decision</span><strong id="decisionSummary"></strong></div>
+          <button class="button danger-text" id="clearDecisionButton" type="button">Clear decision</button>
+        </div>
+      </section>
+    </article>
+  </main>
+  <dialog id="summaryDialog">
+    <div class="dialog-header">
+      <div><p class="eyebrow">Review status</p><h2>Summary</h2></div>
+      <button class="icon-button" id="closeSummaryButton" aria-label="Close summary">×</button>
+    </div>
+    <div class="summary-metrics" id="summaryMetrics"></div>
+    <div class="summary-columns">
+      <section><h3>Approved</h3><div id="approvedItems" class="summary-list"></div></section>
+      <section><h3>Still unclear</h3><div id="unclearItems" class="summary-list"></div></section>
+      <section><h3>Remaining</h3><div id="pendingItems" class="summary-list"></div></section>
+    </div>
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="/app.js" defer></script>
+</body>
+</html>

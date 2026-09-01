@@ -1,4 +1,5 @@
 import type { HospitalCode, KommuneSyd, RegionCategory } from "../types";
+import { GENERATED_REGION_MAPS } from "./generated/visitationData";
 
 export const REGION_SYD_CATEGORIES: {
   key: RegionCategory;
@@ -92,7 +93,8 @@ export const REGION_SYD_DEFAULT: Record<RegionCategory, HospitalCode> = {
   socialmedicin: "FRH",
 };
 
-export const REGION_SYD_MAP: Record<
+/** @deprecated Audit reference only. Production data is generated from the reviewed ledger. */
+export const LEGACY_REGION_SYD_MAP: Record<
   KommuneSyd,
   Record<RegionCategory, HospitalCode>
 > = {
@@ -207,3 +209,8 @@ export const REGION_SYD_MAP: Record<
     dermato_venerologi: "BBH",
   },
 };
+
+export const REGION_SYD_MAP = GENERATED_REGION_MAPS.syd as Record<
+  KommuneSyd,
+  Record<RegionCategory, HospitalCode>
+>;

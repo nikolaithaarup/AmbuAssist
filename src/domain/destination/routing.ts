@@ -15,6 +15,8 @@ export function norm(s?: string | null) {
   return normalizeStreetName(s);
 }
 
+export type StreetAliasMap = Readonly<Record<string, string>>;
+
 export type StreetRouteResult =
   | {
       status: "single";
@@ -31,8 +33,11 @@ export function resolveStreetRoute(
   side: StreetSide | "" = "",
   houseNumber?: number,
   postalCode?: string,
+  aliases: StreetAliasMap = {},
 ): StreetRouteResult {
-  const matches = rows.filter((row) => norm(row.street) === norm(street));
+  const requestedKey = norm(street);
+  const canonicalKey = aliases[requestedKey] ?? requestedKey;
+  const matches = rows.filter((row) => norm(row.street) === canonicalKey);
   if (matches.length === 0) {
     return { status: "not_found", message: "Street was not found in the routing table." };
   }

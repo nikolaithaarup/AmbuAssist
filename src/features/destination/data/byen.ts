@@ -1,4 +1,8 @@
 import type { Bydel, ByenCategory, HospitalCode, RawStreetRow, StreetRow } from "../types";
+import {
+  GENERATED_BYEN_STREET_ALIASES,
+  GENERATED_BYEN_STREET_ROWS,
+} from "./generated/visitationData";
 import { PDF_SIMPLE_STREET_ROWS } from "./byenPdfSimpleRows";
 import {
   PDF_SPLIT_STREET_ROWS,
@@ -1678,7 +1682,8 @@ const combinedStreetRows: RawStreetRow[] = [
 ];
 
 const seenStreetRuleSignatures = new Set<string>();
-export const STREET_SAMPLE_RAW: RawStreetRow[] = combinedStreetRows.filter(
+/** @deprecated Audit reference only. Production data is generated from the reviewed ledger. */
+export const LEGACY_STREET_SAMPLE_RAW: RawStreetRow[] = combinedStreetRows.filter(
   (row) => {
     const signature = JSON.stringify([
       normalizeText(row.street).replaceAll("’", "'"),
@@ -1694,6 +1699,12 @@ export const STREET_SAMPLE_RAW: RawStreetRow[] = combinedStreetRows.filter(
     return true;
   },
 );
+
+export const STREET_SAMPLE_RAW: RawStreetRow[] =
+  GENERATED_BYEN_STREET_ROWS.map((row) => ({ ...row }));
+
+export const BYEN_STREET_ALIASES: Readonly<Record<string, string>> =
+  GENERATED_BYEN_STREET_ALIASES;
 
 /**
  * Normalized street list safe for app lookups.

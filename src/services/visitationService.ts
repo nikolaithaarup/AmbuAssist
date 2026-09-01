@@ -6,8 +6,11 @@ import { db } from "../lib/firebase";
 import {
   BYEN_CATEGORIES,
   BYEN_MAP,
+  BYEN_STREET_ALIASES,
   STREET_SAMPLE,
 } from "../features/destination/data/byen";
+
+export { BYEN_STREET_ALIASES };
 
 import { REGION_BYEN_MAP } from "../features/destination/data/regionByen";
 import { REGION_MIDT_MAP } from "../features/destination/data/regionMidt";

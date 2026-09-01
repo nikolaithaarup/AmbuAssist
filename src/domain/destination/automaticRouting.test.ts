@@ -1,4 +1,8 @@
-import { BYEN_MAP, STREET_SAMPLE } from "../../features/destination/data/byen";
+import {
+  BYEN_MAP,
+  BYEN_STREET_ALIASES,
+  STREET_SAMPLE,
+} from "../../features/destination/data/byen";
 import { REGION_NORD_MAP } from "../../features/destination/data/regionNord";
 import { resolveHospitalCode } from "./resolution";
 import {
@@ -27,6 +31,55 @@ describe("automatic Destination routing strategy", () => {
     expect(strategy).toMatchObject({
       area: "byen",
       route: { status: "single", officialBydel: "Vesterbro" },
+    });
+  });
+
+  test("GPS alias and exact official spelling resolve through the same rule", () => {
+    const official = deriveAutomaticRoutingStrategy(
+      { street: "Gammel Torv", city: "København K" },
+      STREET_SAMPLE,
+      BYEN_STREET_ALIASES,
+    );
+    const legacyAlias = deriveAutomaticRoutingStrategy(
+      { street: "Gammeltorv", city: "København K" },
+      STREET_SAMPLE,
+      BYEN_STREET_ALIASES,
+    );
+
+    expect(official).toMatchObject({
+      area: "byen",
+      source: "street",
+      route: {
+        status: "single",
+        officialBydel: "Indre by",
+        matchedRule: { street: "Gammel Torv" },
+      },
+    });
+    expect(legacyAlias).toMatchObject({
+      area: "byen",
+      source: "street",
+      route: official.area === "byen" && official.source === "street"
+        ? official.route
+        : {},
+    });
+  });
+
+  test("manual alias lookup returns the exact canonical PDF label", () => {
+    expect(
+      matchManualLocation(
+        "Gammeltorv",
+        STREET_SAMPLE,
+        municipalities,
+        BYEN_STREET_ALIASES,
+      ),
+    ).toMatchObject({
+      area: "byen",
+      street: "Gammel Torv",
+      route: {
+        status: "single",
+        officialBydel: "Indre by",
+        matchedRule: { street: "Gammel Torv" },
+      },
     });
   });
 

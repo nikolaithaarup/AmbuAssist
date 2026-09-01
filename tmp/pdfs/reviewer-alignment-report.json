@@ -1,0 +1,3949 @@
+{
+  "items": 123,
+  "queueSha256": "e9b1d0f8eef2f6a10c85922811ff48e4a64f27a0dbc562c44ee2df33ba53e24e",
+  "errors": [],
+  "warnings": [
+    "item 91: queue OCR poorly matches independent OCR at page-41-right-10-row (0.533)"
+  ],
+  "allExactCropsMatchSourcePixels": true,
+  "allContextCropsMatchSourcePixels": true,
+  "minimumIndependentOcrSimilarity": 0.533,
+  "details": [
+    {
+      "itemNumber": 1,
+      "id": "byen-p03-right-13",
+      "pdfPage": 3,
+      "ocrSourcePage": 4,
+      "ocrSourceRowId": "page-04-right-13",
+      "side": "right",
+      "rowIndex": 13,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1543,
+        "bottom": 1569,
+        "contextTop": 1517,
+        "contextBottom": 1595
+      },
+      "queueOcr": "lellmanns Plads I Rwanq Øst",
+      "independentCoordinateOcr": ">llmanns Plads I Rwanq Øst",
+      "ocrSimilarity": 0.955,
+      "fuzzyCandidates": [
+        "Langelands Plads",
+        "Bellmans Plads",
+        "Bellmansgade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.69,
+        0.889,
+        0.692
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 2,
+      "id": "byen-p03-right-14",
+      "pdfPage": 3,
+      "ocrSourcePage": 4,
+      "ocrSourceRowId": "page-04-right-14",
+      "side": "right",
+      "rowIndex": 14,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1569,
+        "bottom": 1595,
+        "contextTop": 1543,
+        "contextBottom": 1622
+      },
+      "queueOcr": "lellmansaade I Rwana Øst",
+      "independentCoordinateOcr": ">llmansqade I Rwanq Øst",
+      "ocrSimilarity": 0.85,
+      "fuzzyCandidates": [
+        "Eliasgade",
+        "Bellmansgade",
+        "Bellmans Plads"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.7,
+        0.87,
+        0.75
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 3,
+      "id": "byen-p03-right-16",
+      "pdfPage": 3,
+      "ocrSourcePage": 4,
+      "ocrSourceRowId": "page-04-right-16",
+      "side": "right",
+      "rowIndex": 16,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1622,
+        "bottom": 1648,
+        "contextTop": 1595,
+        "contextBottom": 1678
+      },
+      "queueOcr": "leraensaade I Indre Østerbro",
+      "independentCoordinateOcr": ">raensaade I Indre Østerbro",
+      "ocrSimilarity": 0.958,
+      "fuzzyCandidates": [
+        "Letlandsgade",
+        "Bergensgade",
+        "Carstensgade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.696,
+        0.727,
+        0.609
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 4,
+      "id": "byen-p04-right-11",
+      "pdfPage": 4,
+      "ocrSourcePage": 5,
+      "ocrSourceRowId": "page-05-right-11",
+      "side": "right",
+      "rowIndex": 11,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1516,
+        "bottom": 1542,
+        "contextTop": 1489,
+        "contextBottom": 1568
+      },
+      "queueOcr": "Mågårdsgade I Indre Nørrebro",
+      "independentCoordinateOcr": "åaårdsaade I Indre Nørrebro",
+      "ocrSimilarity": 0.898,
+      "fuzzyCandidates": [
+        "Laplandsgade",
+        "Midgårdsgade",
+        "Rådmandsgade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.696,
+        0.609,
+        0.522
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 5,
+      "id": "byen-p04-right-16",
+      "pdfPage": 4,
+      "ocrSourcePage": 5,
+      "ocrSourceRowId": "page-05-right-16",
+      "side": "right",
+      "rowIndex": 16,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1647,
+        "bottom": 1674,
+        "contextTop": 1621,
+        "contextBottom": 1700
+      },
+      "queueOcr": "lodilsgade I Vesterbro",
+      "independentCoordinateOcr": ")dilsgade I Vesterbro",
+      "ocrSimilarity": 0.947,
+      "fuzzyCandidates": [
+        "Lodsgården",
+        "Odinsgade",
+        "Heilsgade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.8,
+        0.842,
+        0.737
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 6,
+      "id": "byen-p04-right-17",
+      "pdfPage": 4,
+      "ocrSourcePage": 5,
+      "ocrSourceRowId": "page-05-right-17",
+      "side": "right",
+      "rowIndex": 17,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1674,
+        "bottom": 1700,
+        "contextTop": 1647,
+        "contextBottom": 1727
+      },
+      "queueOcr": "Boeslundevei I Brønshøi/Husum",
+      "independentCoordinateOcr": "»eslundevei I Brønshøi/Husum",
+      "ocrSimilarity": 0.96,
+      "fuzzyCandidates": [
+        "Boeslundevej",
+        "Bomsluttervej",
+        "Elmelundevej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.917,
+        0.64,
+        0.667
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 7,
+      "id": "byen-p04-right-18",
+      "pdfPage": 4,
+      "ocrSourcePage": 5,
+      "ocrSourceRowId": "page-05-right-18",
+      "side": "right",
+      "rowIndex": 18,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1700,
+        "bottom": 1727,
+        "contextTop": 1674,
+        "contextBottom": 1753
+      },
+      "queueOcr": "Boaenseqade I Indre Østerbro",
+      "independentCoordinateOcr": "»gensegade I Indre Østerbro",
+      "ocrSimilarity": 0.875,
+      "fuzzyCandidates": [
+        "Bogensegade",
+        "Odensegade",
+        "Boyesgade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.818,
+        0.762,
+        0.7
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 8,
+      "id": "byen-p04-right-19",
+      "pdfPage": 4,
+      "ocrSourcePage": 5,
+      "ocrSourceRowId": "page-05-right-19",
+      "side": "right",
+      "rowIndex": 19,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1727,
+        "bottom": 1753,
+        "contextTop": 1700,
+        "contextBottom": 1753
+      },
+      "queueOcr": "loaenæsvei I Brønshøi/Husum",
+      "independentCoordinateOcr": "»aenæsvei I Brønshøi/Husum",
+      "ocrSimilarity": 0.957,
+      "fuzzyCandidates": [
+        "Lollandsvej",
+        "Basnæsvej",
+        "Arnesvej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.667,
+        0.632,
+        0.556
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 9,
+      "id": "byen-p05-right-01",
+      "pdfPage": 5,
+      "ocrSourcePage": 6,
+      "ocrSourceRowId": "page-06-right-01",
+      "side": "right",
+      "rowIndex": 1,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1150,
+        "bottom": 1176,
+        "contextTop": 1150,
+        "contextBottom": 1253
+      },
+      "queueOcr": "Borthiasaade I Ydre Østerbro",
+      "independentCoordinateOcr": ")rthiqsqade I Ydre Østerbro",
+      "ocrSimilarity": 0.875,
+      "fuzzyCandidates": [
+        "Borthigsgade",
+        "Porthusgade",
+        "Bartholinsgade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.833,
+        0.696,
+        0.692
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 10,
+      "id": "byen-p05-right-07",
+      "pdfPage": 5,
+      "ocrSourcePage": 6,
+      "ocrSourceRowId": "page-06-right-07",
+      "side": "right",
+      "rowIndex": 7,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1460,
+        "bottom": 1486,
+        "contextTop": 1434,
+        "contextBottom": 1514
+      },
+      "queueOcr": "loserupvei I Brønshøi/Husum",
+      "independentCoordinateOcr": ")serupvei I Brønshøi/Husum",
+      "ocrSimilarity": 0.957,
+      "fuzzyCandidates": [
+        "Otterupvej",
+        "Ågerupvej",
+        "Astrupvej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.737,
+        0.667,
+        0.667
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 11,
+      "id": "byen-p05-right-12",
+      "pdfPage": 5,
+      "ocrSourcePage": 6,
+      "ocrSourceRowId": "page-06-right-12",
+      "side": "right",
+      "rowIndex": 12,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1668,
+        "bottom": 1695,
+        "contextTop": 1642,
+        "contextBottom": 1722
+      },
+      "queueOcr": "*ragesgade I Ydre Nørrebro",
+      "independentCoordinateOcr": "agesgade I Ydre Nørrebro",
+      "ocrSimilarity": 0.977,
+      "fuzzyCandidates": [
+        "Rigensgade",
+        "Ryesgade",
+        "Ragnagade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.842,
+        0.824,
+        0.778
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 12,
+      "id": "byen-p05-right-13",
+      "pdfPage": 5,
+      "ocrSourcePage": 6,
+      "ocrSourceRowId": "page-06-right-13",
+      "side": "right",
+      "rowIndex": 13,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1695,
+        "bottom": 1722,
+        "contextTop": 1668,
+        "contextBottom": 1748
+      },
+      "queueOcr": "Bramminaeaade I Indre Østerbro",
+      "independentCoordinateOcr": "ammingegade I Indre Østerbro",
+      "ocrSimilarity": 0.885,
+      "fuzzyCandidates": [
+        "Brammingegade",
+        "Kertemindegade",
+        "Admiralgade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.846,
+        0.593,
+        0.583
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 13,
+      "id": "byen-p05-right-15",
+      "pdfPage": 5,
+      "ocrSourcePage": 6,
+      "ocrSourceRowId": "page-06-right-15",
+      "side": "right",
+      "rowIndex": 15,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1748,
+        "bottom": 1774,
+        "contextTop": 1722,
+        "contextBottom": 1774
+      },
+      "queueOcr": "Bratskovei I Vanløse",
+      "independentCoordinateOcr": "atskovei I Vanløse",
+      "ocrSimilarity": 0.941,
+      "fuzzyCandidates": [
+        "Bratskovvej",
+        "Gribskovvej",
+        "Bakkevej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.857,
+        0.571,
+        0.556
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 14,
+      "id": "byen-p06-left-17",
+      "pdfPage": 6,
+      "ocrSourcePage": 7,
+      "ocrSourceRowId": "page-07-left-17",
+      "side": "left",
+      "rowIndex": 17,
+      "coordinates": {
+        "x1": 291,
+        "x2": 795,
+        "top": 1572,
+        "bottom": 1598,
+        "contextTop": 1546,
+        "contextBottom": 1625
+      },
+      "queueOcr": "Brvaaerhesten I Vesterbro",
+      "independentCoordinateOcr": "I Brvqqerhesten I Vesterbro",
+      "ocrSimilarity": 0.894,
+      "fuzzyCandidates": [
+        "Bryggerhesten",
+        "Ringertoften",
+        "Svanestien"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.769,
+        0.48,
+        0.609
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 15,
+      "id": "byen-p06-right-05",
+      "pdfPage": 6,
+      "ocrSourcePage": 7,
+      "ocrSourceRowId": "page-07-right-05",
+      "side": "right",
+      "rowIndex": 5,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1255,
+        "bottom": 1282,
+        "contextTop": 1229,
+        "contextBottom": 1309
+      },
+      "queueOcr": "Brønshøj Kirkevej I Brønshøj/Husum",
+      "independentCoordinateOcr": "ønshøi Kirkevej I Brønshøi/Husum",
+      "ocrSimilarity": 0.897,
+      "fuzzyCandidates": [
+        "Brønshøj Kirkevej",
+        "Brønshøjvej",
+        "Hans Kirks Vej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        1.0,
+        0.815,
+        0.643
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 16,
+      "id": "byen-p06-right-06",
+      "pdfPage": 6,
+      "ocrSourcePage": 7,
+      "ocrSourceRowId": "page-07-right-06",
+      "side": "right",
+      "rowIndex": 6,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1282,
+        "bottom": 1309,
+        "contextTop": 1255,
+        "contextBottom": 1335
+      },
+      "queueOcr": "Brønshøj Torv I Brønshøj/Husum",
+      "independentCoordinateOcr": "ønshøi Torv I Brønshøi/Husum",
+      "ocrSimilarity": 0.88,
+      "fuzzyCandidates": [
+        "Brønshøj Torv",
+        "Brønshøjvej",
+        "Hf. Brønshøjholm"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        1.0,
+        0.783,
+        0.692
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 17,
+      "id": "byen-p06-right-08",
+      "pdfPage": 6,
+      "ocrSourcePage": 7,
+      "ocrSourceRowId": "page-07-right-08",
+      "side": "right",
+      "rowIndex": 8,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1335,
+        "bottom": 1361,
+        "contextTop": 1309,
+        "contextBottom": 1438
+      },
+      "queueOcr": "Brønshøiholms Allé I Brønshøi/Husum",
+      "independentCoordinateOcr": "ønshøiholms Allé I Brønshøi/Husum",
+      "ocrSimilarity": 0.967,
+      "fuzzyCandidates": [
+        "Brønshøjholms Allé",
+        "Hf. Brønshøjholm",
+        "Hjortholms Allé"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.941,
+        0.71,
+        0.645
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 18,
+      "id": "byen-p06-right-12",
+      "pdfPage": 6,
+      "ocrSourcePage": 7,
+      "ocrSourceRowId": "page-07-right-12",
+      "side": "right",
+      "rowIndex": 12,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1542,
+        "bottom": 1568,
+        "contextTop": 1516,
+        "contextBottom": 1594
+      },
+      "queueOcr": "luntmaaervei I Bispebierq",
+      "independentCoordinateOcr": "Intmaaervei I Bispebierq",
+      "ocrSimilarity": 0.933,
+      "fuzzyCandidates": [
+        "Buntmagervej",
+        "Fuglagerv ej",
+        "Vestagervej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.833,
+        0.522,
+        0.522
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 19,
+      "id": "byen-p07-left-04",
+      "pdfPage": 7,
+      "ocrSourcePage": 8,
+      "ocrSourceRowId": "page-08-left-04",
+      "side": "left",
+      "rowIndex": 4,
+      "coordinates": {
+        "x1": 291,
+        "x2": 795,
+        "top": 1229,
+        "bottom": 1255,
+        "contextTop": 1203,
+        "contextBottom": 1282
+      },
+      "queueOcr": "Bytinaet I Brønshøi/Husum",
+      "independentCoordinateOcr": "I Bvtinaet I Brønshøi/Husum",
+      "ocrSimilarity": 0.933,
+      "fuzzyCandidates": [
+        "Bytinget",
+        "Baltikavej",
+        "Banevingen"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.75,
+        0.556,
+        0.556
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 20,
+      "id": "byen-p07-left-08",
+      "pdfPage": 7,
+      "ocrSourcePage": 8,
+      "ocrSourceRowId": "page-08-left-08",
+      "side": "left",
+      "rowIndex": 8,
+      "coordinates": {
+        "x1": 291,
+        "x2": 795,
+        "top": 1461,
+        "bottom": 1488,
+        "contextTop": 1384,
+        "contextBottom": 1515
+      },
+      "queueOcr": "Bødkervej I Bispebjerg",
+      "independentCoordinateOcr": "Bødkervej Bispebiera",
+      "ocrSimilarity": 0.872,
+      "fuzzyCandidates": [
+        "Brøndkærvej",
+        "Bakkevej",
+        "Rødkløvervej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.8,
+        0.706,
+        0.762
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 21,
+      "id": "byen-p08-right-05",
+      "pdfPage": 8,
+      "ocrSourcePage": 9,
+      "ocrSourceRowId": "page-09-right-05",
+      "side": "right",
+      "rowIndex": 5,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1255,
+        "bottom": 1282,
+        "contextTop": 1229,
+        "contextBottom": 1309
+      },
+      "queueOcr": "'p. J. Frandsens Vej I Bispebjerg",
+      "independentCoordinateOcr": "J. Frandsens Vej I Bispebiera",
+      "ocrSimilarity": 0.898,
+      "fuzzyCandidates": [
+        "P. Andersens Vej",
+        "Johan Svendsens Vej",
+        "A. L. Drewesens Vej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.815,
+        0.71,
+        0.643
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 22,
+      "id": "byen-p08-right-12",
+      "pdfPage": 8,
+      "ocrSourcePage": 9,
+      "ocrSourceRowId": "page-09-right-12",
+      "side": "right",
+      "rowIndex": 12,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1440,
+        "bottom": 1467,
+        "contextTop": 1414,
+        "contextBottom": 1494
+      },
+      "queueOcr": ":orkgade I Indre Østerbro",
+      "independentCoordinateOcr": ")rkgade I Indre Østerbro",
+      "ocrSimilarity": 0.976,
+      "fuzzyCandidates": [
+        "Ourøgade",
+        "Sorøgade",
+        "Korsgade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.8,
+        0.8,
+        0.8
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 23,
+      "id": "byen-p08-right-13",
+      "pdfPage": 8,
+      "ocrSourcePage": 9,
+      "ocrSourceRowId": "page-09-right-13",
+      "side": "right",
+      "rowIndex": 13,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1467,
+        "bottom": 1494,
+        "contextTop": 1440,
+        "contextBottom": 1494
+      },
+      "queueOcr": "',ort Adelers Gade I Indre Bv",
+      "independentCoordinateOcr": "irt Adelers Gade I Indre By",
+      "ocrSimilarity": 0.909,
+      "fuzzyCandidates": [
+        "Odesagade",
+        "Allersgade",
+        "Randersgade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.696,
+        0.75,
+        0.8
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 24,
+      "id": "byen-p09-right-02",
+      "pdfPage": 9,
+      "ocrSourcePage": 10,
+      "ocrSourceRowId": "page-10-right-02",
+      "side": "right",
+      "rowIndex": 2,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1176,
+        "bottom": 1203,
+        "contextTop": 1150,
+        "contextBottom": 1254
+      },
+      "queueOcr": ")reiervei I Bispebiera",
+      "independentCoordinateOcr": "eiervei Bispebiera",
+      "ocrSimilarity": 0.944,
+      "fuzzyCandidates": [
+        "Remisevej",
+        "Rebildvej",
+        "Aggervej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.706,
+        0.588,
+        0.5
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 25,
+      "id": "byen-p09-right-05",
+      "pdfPage": 9,
+      "ocrSourcePage": 10,
+      "ocrSourceRowId": "page-10-right-05",
+      "side": "right",
+      "rowIndex": 5,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1332,
+        "bottom": 1358,
+        "contextTop": 1254,
+        "contextBottom": 1384
+      },
+      "queueOcr": ")ronningens Tværgade I Indre By",
+      "independentCoordinateOcr": "onninaens Tværaade I Indre Bv",
+      "ocrSimilarity": 0.863,
+      "fuzzyCandidates": [
+        "Rumæniensgade",
+        "Odins Tværgade",
+        "Ringstedgade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.645,
+        0.774,
+        0.667
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 26,
+      "id": "byen-p09-right-07",
+      "pdfPage": 9,
+      "ocrSourcePage": 10,
+      "ocrSourceRowId": "page-10-right-07",
+      "side": "right",
+      "rowIndex": 7,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1384,
+        "bottom": 1411,
+        "contextTop": 1358,
+        "contextBottom": 1437
+      },
+      "queueOcr": ")ronninalundvei I Vanløse",
+      "independentCoordinateOcr": "onninglundvei I Vanløse",
+      "ocrSimilarity": 0.93,
+      "fuzzyCandidates": [
+        "Rosenlundsvej",
+        "Rønningsvej",
+        "Skibelundvej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.667,
+        0.56,
+        0.538
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 27,
+      "id": "byen-p09-right-09",
+      "pdfPage": 9,
+      "ocrSourcePage": 10,
+      "ocrSourceRowId": "page-10-right-09",
+      "side": "right",
+      "rowIndex": 9,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1437,
+        "bottom": 1463,
+        "contextTop": 1411,
+        "contextBottom": 1490
+      },
+      "queueOcr": ")unkeraueqade I Indre Østerbro",
+      "independentCoordinateOcr": "Inkeraueaade I Indre Østerbro",
+      "ocrSimilarity": 0.923,
+      "fuzzyCandidates": [
+        "Ukrainegade",
+        "Ullerupgade",
+        "Anker Heegaards Gade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.696,
+        0.609,
+        0.6
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 28,
+      "id": "byen-p10-left-12",
+      "pdfPage": 10,
+      "ocrSourcePage": 11,
+      "ocrSourceRowId": "page-11-left-12",
+      "side": "left",
+      "rowIndex": 12,
+      "coordinates": {
+        "x1": 291,
+        "x2": 795,
+        "top": 1454,
+        "bottom": 1480,
+        "contextTop": 1427,
+        "contextBottom": 1506
+      },
+      "queueOcr": "Eaeaade I Indre Nørrebro",
+      "independentCoordinateOcr": "I Eaeaade I Indre Nørrebro",
+      "ocrSimilarity": 0.977,
+      "fuzzyCandidates": [
+        "Egegade",
+        "Elmegade",
+        "Ryegade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.714,
+        0.667,
+        0.571
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 29,
+      "id": "byen-p10-right-14",
+      "pdfPage": 10,
+      "ocrSourcePage": 11,
+      "ocrSourceRowId": "page-11-right-14",
+      "side": "right",
+      "rowIndex": 14,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1494,
+        "bottom": 1520,
+        "contextTop": 1467,
+        "contextBottom": 1546
+      },
+      "queueOcr": ".:mdrup Vænae I Ydre Østerbro",
+      "independentCoordinateOcr": "ndrup Vænge I Ydre Østerbro",
+      "ocrSimilarity": 0.913,
+      "fuzzyCandidates": [
+        "Møldrupvej",
+        "Emdrup Vænge",
+        "Hf. Emdrupvænge"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.7,
+        0.857,
+        0.783
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 30,
+      "id": "byen-p11-right-03",
+      "pdfPage": 11,
+      "ocrSourcePage": 12,
+      "ocrSourceRowId": "page-12-right-03",
+      "side": "right",
+      "rowIndex": 3,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1253,
+        "bottom": 1280,
+        "contextTop": 1227,
+        "contextBottom": 1280
+      },
+      "queueOcr": "iwaldsgade I Indre Nørrebro",
+      "independentCoordinateOcr": "valdsgade I Indre Nørrebro",
+      "ocrSimilarity": 0.936,
+      "fuzzyCandidates": [
+        "Isafjordsgade",
+        "Alsgade",
+        "Staldgade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.696,
+        0.824,
+        0.737
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 31,
+      "id": "byen-p12-right-10",
+      "pdfPage": 12,
+      "ocrSourcePage": 13,
+      "ocrSourceRowId": "page-13-right-10",
+      "side": "right",
+      "rowIndex": 10,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1420,
+        "bottom": 1450,
+        "contextTop": 1390,
+        "contextBottom": 1480
+      },
+      "queueOcr": ":ladstjernevej I Bispebjerg",
+      "independentCoordinateOcr": "adstjernevej Bispebjerg",
+      "ocrSimilarity": 0.957,
+      "fuzzyCandidates": [
+        "Lanternestien",
+        "Fladstjernevej",
+        "Pragstjernevej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.643,
+        0.897,
+        0.759
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 32,
+      "id": "byen-p12-right-18",
+      "pdfPage": 12,
+      "ocrSourcePage": 13,
+      "ocrSourceRowId": "page-13-right-18",
+      "side": "right",
+      "rowIndex": 18,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1660,
+        "bottom": 1690,
+        "contextTop": 1631,
+        "contextBottom": 1721
+      },
+      "queueOcr": ":lorsgade I Indre Nørrebro",
+      "independentCoordinateOcr": "orsgade I Indre Nørrebro",
+      "ocrSimilarity": 0.977,
+      "fuzzyCandidates": [
+        "Lerfosgade",
+        "Florsgade",
+        "Korsgade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.778,
+        0.941,
+        0.875
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 33,
+      "id": "byen-p13-right-18",
+      "pdfPage": 13,
+      "ocrSourcePage": 14,
+      "ocrSourceRowId": "page-14-right-18",
+      "side": "right",
+      "rowIndex": 18,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1726,
+        "bottom": 1756,
+        "contextTop": 1695,
+        "contextBottom": 1756
+      },
+      "queueOcr": ":rejasgade I Ydre Nørrebro",
+      "independentCoordinateOcr": "ejasgade I Ydre Nørrebro",
+      "ocrSimilarity": 0.977,
+      "fuzzyCandidates": [
+        "Rejsbygade",
+        "Frejasgade",
+        "Grenågade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.762,
+        0.857,
+        0.7
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 34,
+      "id": "byen-p15-right-01",
+      "pdfPage": 15,
+      "ocrSourcePage": 16,
+      "ocrSourceRowId": "page-16-right-01",
+      "side": "right",
+      "rowIndex": 1,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1150,
+        "bottom": 1176,
+        "contextTop": 1150,
+        "contextBottom": 1203
+      },
+      "queueOcr": "3danskaade I Indre Østerbro",
+      "independentCoordinateOcr": "ianskqade I Indre Østerbro",
+      "ocrSimilarity": 0.894,
+      "fuzzyCandidates": [
+        "Gdanskgade",
+        "Tornskadestien",
+        "Askgade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.696,
+        0.593,
+        0.6
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 35,
+      "id": "byen-p15-right-09",
+      "pdfPage": 15,
+      "ocrSourcePage": 16,
+      "ocrSourceRowId": "page-16-right-09",
+      "side": "right",
+      "rowIndex": 9,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1361,
+        "bottom": 1387,
+        "contextTop": 1335,
+        "contextBottom": 1414
+      },
+      "queueOcr": ")ilbierggade I Ydre Nørrebro",
+      "independentCoordinateOcr": "Ibierqqade I Ydre Nørrebro",
+      "ocrSimilarity": 0.894,
+      "fuzzyCandidates": [
+        "Gilbjerggade",
+        "Sandbjerggade",
+        "Viborggade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.815,
+        0.643,
+        0.64
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 36,
+      "id": "byen-p15-right-14",
+      "pdfPage": 15,
+      "ocrSourcePage": 16,
+      "ocrSourceRowId": "page-16-right-14",
+      "side": "right",
+      "rowIndex": 14,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1494,
+        "bottom": 1520,
+        "contextTop": 1467,
+        "contextBottom": 1546
+      },
+      "queueOcr": "31entevei Bispebiera",
+      "independentCoordinateOcr": "entevei Bispebiera",
+      "ocrSimilarity": 0.944,
+      "fuzzyCandidates": [
+        "Glentevej",
+        "Grevingevej",
+        "Hagestedvej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.667,
+        0.5,
+        0.5
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 37,
+      "id": "byen-p15-right-15",
+      "pdfPage": 15,
+      "ocrSourcePage": 16,
+      "ocrSourceRowId": "page-16-right-15",
+      "side": "right",
+      "rowIndex": 15,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1520,
+        "bottom": 1546,
+        "contextTop": 1494,
+        "contextBottom": 1572
+      },
+      "queueOcr": ")lumsøvej I Brønshøj/Husum",
+      "independentCoordinateOcr": "umsøvei Brønshøi/Husum",
+      "ocrSimilarity": 0.905,
+      "fuzzyCandidates": [
+        "Glumsøvej",
+        "Plumsvej",
+        "Gaunøvej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.667,
+        0.588,
+        0.471
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 38,
+      "id": "byen-p16-right-02",
+      "pdfPage": 16,
+      "ocrSourcePage": 17,
+      "ocrSourceRowId": "page-17-right-02",
+      "side": "right",
+      "rowIndex": 2,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1176,
+        "bottom": 1203,
+        "contextTop": 1150,
+        "contextBottom": 1229
+      },
+      "queueOcr": ";udenåvej I Vanløse",
+      "independentCoordinateOcr": "Jdenåvei I Vanløse",
+      "ocrSimilarity": 0.875,
+      "fuzzyCandidates": [
+        "Beatevej",
+        "Arsenalvej",
+        "Beldingvej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.706,
+        0.632,
+        0.632
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 39,
+      "id": "byen-p16-right-18",
+      "pdfPage": 16,
+      "ocrSourcePage": 17,
+      "ocrSourceRowId": "page-17-right-18",
+      "side": "right",
+      "rowIndex": 18,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1650,
+        "bottom": 1676,
+        "contextTop": 1598,
+        "contextBottom": 1702
+      },
+      "queueOcr": "3årdtoftevei I Brønshøi/Husum",
+      "independentCoordinateOcr": "årdtoftevej Brønshøi/Husum",
+      "ocrSimilarity": 0.92,
+      "fuzzyCandidates": [
+        "Gårdtoftevej",
+        "Sparteloftevej",
+        "Takkeltoftevej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.833,
+        0.692,
+        0.615
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 40,
+      "id": "byen-p16-right-19",
+      "pdfPage": 16,
+      "ocrSourcePage": 17,
+      "ocrSourceRowId": "page-17-right-19",
+      "side": "right",
+      "rowIndex": 19,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1676,
+        "bottom": 1702,
+        "contextTop": 1650,
+        "contextBottom": 1729
+      },
+      "queueOcr": "3åseaade I Indre By",
+      "independentCoordinateOcr": "åseaade I Indre Bv",
+      "ocrSimilarity": 0.903,
+      "fuzzyCandidates": [
+        "Gåsegade",
+        "Laks egade",
+        "Faksegade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.75,
+        0.706,
+        0.706
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 41,
+      "id": "byen-p16-right-20",
+      "pdfPage": 16,
+      "ocrSourcePage": 17,
+      "ocrSourceRowId": "page-17-right-20",
+      "side": "right",
+      "rowIndex": 20,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1702,
+        "bottom": 1729,
+        "contextTop": 1676,
+        "contextBottom": 1755
+      },
+      "queueOcr": "3åsestien I Brønshøi/Husum",
+      "independentCoordinateOcr": "åsestien Brønshøi/Husum",
+      "ocrSimilarity": 0.955,
+      "fuzzyCandidates": [
+        "Gåsestien",
+        "Svanestien",
+        "Andestien"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.889,
+        0.737,
+        0.778
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 42,
+      "id": "byen-p16-right-21",
+      "pdfPage": 16,
+      "ocrSourcePage": 17,
+      "ocrSourceRowId": "page-17-right-21",
+      "side": "right",
+      "rowIndex": 21,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1729,
+        "bottom": 1755,
+        "contextTop": 1702,
+        "contextBottom": 1755
+      },
+      "queueOcr": "3åseurtvei I Brønshøi/Husum",
+      "independentCoordinateOcr": "åseurtvei I Brønshøi/Husum",
+      "ocrSimilarity": 0.979,
+      "fuzzyCandidates": [
+        "Gåseurtvej",
+        "Pasteursvej",
+        "Mastekursvej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.8,
+        0.667,
+        0.636
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 43,
+      "id": "byen-p17-right-01",
+      "pdfPage": 17,
+      "ocrSourcePage": 18,
+      "ocrSourceRowId": "page-18-right-01",
+      "side": "right",
+      "rowIndex": 1,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1150,
+        "bottom": 1176,
+        "contextTop": 1150,
+        "contextBottom": 1203
+      },
+      "queueOcr": "larald Jensens Gade I Kqs. Enqhave",
+      "independentCoordinateOcr": "trald Jensens Gade Kos. Enqhave",
+      "ocrSimilarity": 0.889,
+      "fuzzyCandidates": [
+        "Lauritz-Jensens Plads",
+        "J. E. Ohlensens Gade",
+        "Hiort Lorenzens Gade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.667,
+        0.688,
+        0.629
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 44,
+      "id": "byen-p17-right-02",
+      "pdfPage": 17,
+      "ocrSourcePage": 18,
+      "ocrSourceRowId": "page-18-right-02",
+      "side": "right",
+      "rowIndex": 2,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1176,
+        "bottom": 1203,
+        "contextTop": 1150,
+        "contextBottom": 1229
+      },
+      "queueOcr": "laraldsgade I Ydre Østerbro",
+      "independentCoordinateOcr": "traldsgade I Ydre Østerbro",
+      "ocrSimilarity": 0.936,
+      "fuzzyCandidates": [
+        "Lærdalsgade",
+        "Kaalundsgade",
+        "Marstalsgade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.818,
+        0.783,
+        0.783
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 45,
+      "id": "byen-p17-right-05",
+      "pdfPage": 17,
+      "ocrSourcePage": 18,
+      "ocrSourceRowId": "page-18-right-05",
+      "side": "right",
+      "rowIndex": 5,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1255,
+        "bottom": 1282,
+        "contextTop": 1229,
+        "contextBottom": 1309
+      },
+      "queueOcr": "lardangergade I Indre Østerbro",
+      "independentCoordinateOcr": "nrdangergade I Indre Østerbro",
+      "ocrSimilarity": 0.943,
+      "fuzzyCandidates": [
+        "Lagergade",
+        "Amagergade",
+        "Gartnergade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.818,
+        0.783,
+        0.75
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 46,
+      "id": "byen-p17-right-08",
+      "pdfPage": 17,
+      "ocrSourcePage": 18,
+      "ocrSourceRowId": "page-18-right-08",
+      "side": "right",
+      "rowIndex": 8,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1335,
+        "bottom": 1361,
+        "contextTop": 1309,
+        "contextBottom": 1387
+      },
+      "queueOcr": "lareskowei 2700 I Brønshøi/Husum",
+      "independentCoordinateOcr": "treskowei 2700 Brønshøi/Husum",
+      "ocrSimilarity": 0.926,
+      "fuzzyCandidates": [
+        "Langeskovvej",
+        "Hareskovvej",
+        "Børskovvej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.741,
+        0.769,
+        0.64
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 47,
+      "id": "byen-p17-right-16",
+      "pdfPage": 17,
+      "ocrSourcePage": 18,
+      "ocrSourceRowId": "page-18-right-16",
+      "side": "right",
+      "rowIndex": 16,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1647,
+        "bottom": 1674,
+        "contextTop": 1570,
+        "contextBottom": 1700
+      },
+      "queueOcr": "lavekrogen I Vanløse",
+      "independentCoordinateOcr": "tvekrogen I Vanløse",
+      "ocrSimilarity": 0.914,
+      "fuzzyCandidates": [
+        "Lagunebroen",
+        "Solkrogen",
+        "Sundkrogen"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.667,
+        0.737,
+        0.6
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 48,
+      "id": "byen-p18-left-13",
+      "pdfPage": 18,
+      "ocrSourcePage": 19,
+      "ocrSourceRowId": "page-19-left-13",
+      "side": "left",
+      "rowIndex": 13,
+      "coordinates": {
+        "x1": 291,
+        "x2": 795,
+        "top": 1467,
+        "bottom": 1494,
+        "contextTop": 1440,
+        "contextBottom": 1520
+      },
+      "queueOcr": "Heirevei Bispebierq",
+      "independentCoordinateOcr": "I Heirevei Bispebiera",
+      "ocrSimilarity": 0.919,
+      "fuzzyCandidates": [
+        "Hejrevej",
+        "Hejsvej",
+        "Jernvej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.75,
+        0.533,
+        0.533
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 49,
+      "id": "byen-p18-right-10",
+      "pdfPage": 18,
+      "ocrSourcePage": 19,
+      "ocrSourceRowId": "page-19-right-10",
+      "side": "right",
+      "rowIndex": 10,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1387,
+        "bottom": 1414,
+        "contextTop": 1361,
+        "contextBottom": 1440
+      },
+      "queueOcr": "leman Triers Plads I Indre Nørrebro",
+      "independentCoordinateOcr": "erman Triers Plads I Indre Nørrebro",
+      "ocrSimilarity": 0.967,
+      "fuzzyCandidates": [
+        "Lanternepladsen",
+        "Dantes Plads",
+        "Jarmers Plads"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.71,
+        0.741,
+        0.714
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 50,
+      "id": "byen-p18-right-16",
+      "pdfPage": 18,
+      "ocrSourcePage": 19,
+      "ocrSourceRowId": "page-19-right-16",
+      "side": "right",
+      "rowIndex": 16,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1647,
+        "bottom": 1674,
+        "contextTop": 1570,
+        "contextBottom": 1700
+      },
+      "queueOcr": "lestemøllestræde I Indre By",
+      "independentCoordinateOcr": "stemøllestræde I Indre By",
+      "ocrSimilarity": 0.957,
+      "fuzzyCandidates": [
+        "Lavendelstræde",
+        "Svanemøllestranden",
+        "Pistolstræde"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.667,
+        0.706,
+        0.643
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 51,
+      "id": "byen-p18-right-17",
+      "pdfPage": 18,
+      "ocrSourcePage": 19,
+      "ocrSourceRowId": "page-19-right-17",
+      "side": "right",
+      "rowIndex": 17,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1674,
+        "bottom": 1700,
+        "contextTop": 1647,
+        "contextBottom": 1777
+      },
+      "queueOcr": "lildursaade I Ydre Nørrebro",
+      "independentCoordinateOcr": "Idursqade I Ydre Nørrebro",
+      "ocrSimilarity": 0.913,
+      "fuzzyCandidates": [
+        "Liflandsgade",
+        "Wildersgade",
+        "Baldersgade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.609,
+        0.727,
+        0.636
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 52,
+      "id": "byen-p19-right-01",
+      "pdfPage": 19,
+      "ocrSourcePage": 20,
+      "ocrSourceRowId": "page-20-right-01",
+      "side": "right",
+      "rowIndex": 1,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1150,
+        "bottom": 1176,
+        "contextTop": 1150,
+        "contextBottom": 1203
+      },
+      "queueOcr": "lolcks Plads I Brønshøi/Husum",
+      "independentCoordinateOcr": ")lcks Plads I Brønshøi/Husum",
+      "ocrSimilarity": 0.958,
+      "fuzzyCandidates": [
+        "Lossepladsvej",
+        "Balders Plads",
+        "Islands Plads"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.667,
+        0.609,
+        0.609
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 53,
+      "id": "byen-p19-right-08",
+      "pdfPage": 19,
+      "ocrSourcePage": 20,
+      "ocrSourceRowId": "page-20-right-08",
+      "side": "right",
+      "rowIndex": 8,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1335,
+        "bottom": 1361,
+        "contextTop": 1309,
+        "contextBottom": 1387
+      },
+      "queueOcr": "lolteqade I Ydre Nørrebro",
+      "independentCoordinateOcr": ")lteaade I Ydre Nørrebro",
+      "ocrSimilarity": 0.905,
+      "fuzzyCandidates": [
+        "Lillegade",
+        "Elmegade",
+        "Laks egade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.667,
+        0.471,
+        0.556
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 54,
+      "id": "byen-p19-right-09",
+      "pdfPage": 19,
+      "ocrSourcePage": 20,
+      "ocrSourceRowId": "page-20-right-09",
+      "side": "right",
+      "rowIndex": 9,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1361,
+        "bottom": 1387,
+        "contextTop": 1335,
+        "contextBottom": 1414
+      },
+      "queueOcr": "lombækgade I Ydre Nørrebro",
+      "independentCoordinateOcr": ")rnbækqade I Ydre Nørrebro",
+      "ocrSimilarity": 0.844,
+      "fuzzyCandidates": [
+        "Lybækgade",
+        "Holbækgade",
+        "Vedbækgade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.842,
+        0.8,
+        0.7
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 55,
+      "id": "byen-p20-left-13",
+      "pdfPage": 20,
+      "ocrSourcePage": 21,
+      "ocrSourceRowId": "page-21-left-13",
+      "side": "left",
+      "rowIndex": 13,
+      "coordinates": {
+        "x1": 291,
+        "x2": 795,
+        "top": 1568,
+        "bottom": 1594,
+        "contextTop": 1542,
+        "contextBottom": 1621
+      },
+      "queueOcr": "Hvidbieravei I Vanløse",
+      "independentCoordinateOcr": "I Hvidbierqvei I Vanløse",
+      "ocrSimilarity": 0.927,
+      "fuzzyCandidates": [
+        "Hvidbjergvej",
+        "Hvidkildevej",
+        "Hvidkløvervej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.75,
+        0.667,
+        0.48
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 56,
+      "id": "byen-p20-right-04",
+      "pdfPage": 20,
+      "ocrSourcePage": 21,
+      "ocrSourceRowId": "page-21-right-04",
+      "side": "right",
+      "rowIndex": 4,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1229,
+        "bottom": 1255,
+        "contextTop": 1203,
+        "contextBottom": 1282
+      },
+      "queueOcr": "lyskenstræde I Indre By",
+      "independentCoordinateOcr": "tskenstræde I Indre Bv",
+      "ocrSimilarity": 0.872,
+      "fuzzyCandidates": [
+        "Lybækstræde",
+        "Læderstræde",
+        "Løngangstræde"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.783,
+        0.696,
+        0.64
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 57,
+      "id": "byen-p20-right-14",
+      "pdfPage": 20,
+      "ocrSourcePage": 21,
+      "ocrSourceRowId": "page-21-right-14",
+      "side": "right",
+      "rowIndex": 14,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1645,
+        "bottom": 1671,
+        "contextTop": 1593,
+        "contextBottom": 1698
+      },
+      "queueOcr": "løkerbodeme I Vesterbro",
+      "independentCoordinateOcr": "'kerbodeme I Vesterbro",
+      "ocrSimilarity": 0.95,
+      "fuzzyCandidates": [
+        "Løkkerenden",
+        "Slagterboderne",
+        "Kødboderne"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.696,
+        0.769,
+        0.727
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 58,
+      "id": "byen-p22-left-01",
+      "pdfPage": 22,
+      "ocrSourcePage": 23,
+      "ocrSourceRowId": "page-23-left-01",
+      "side": "left",
+      "rowIndex": 1,
+      "coordinates": {
+        "x1": 291,
+        "x2": 795,
+        "top": 1150,
+        "bottom": 1190,
+        "contextTop": 1150,
+        "contextBottom": 1216
+      },
+      "queueOcr": "Haveforeninger",
+      "independentCoordinateOcr": "Haveforeninger",
+      "ocrSimilarity": 1.0,
+      "fuzzyCandidates": [
+        "Herninggade",
+        "Hf. Vestereng",
+        "Åvendingen"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.667,
+        0.583,
+        0.696
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 59,
+      "id": "byen-p22-right-04",
+      "pdfPage": 22,
+      "ocrSourcePage": 23,
+      "ocrSourceRowId": "page-23-right-04",
+      "side": "right",
+      "rowIndex": 4,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1229,
+        "bottom": 1255,
+        "contextTop": 1203,
+        "contextBottom": 1282
+      },
+      "queueOcr": "{f. Formosa I Amager",
+      "independentCoordinateOcr": ". Formosa I Amager",
+      "ocrSimilarity": 0.966,
+      "fuzzyCandidates": [
+        "Formosavej",
+        "Hf. Formosa",
+        "F. F. Ulriks Gade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.778,
+        0.941,
+        0.5
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 60,
+      "id": "byen-p25-right-03",
+      "pdfPage": 25,
+      "ocrSourcePage": 26,
+      "ocrSourceRowId": "page-26-right-03",
+      "side": "right",
+      "rowIndex": 3,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1253,
+        "bottom": 1280,
+        "contextTop": 1227,
+        "contextBottom": 1307
+      },
+      "queueOcr": "Jernvej I Indre Østerbro",
+      "independentCoordinateOcr": "nvej I Indre Østerbro",
+      "ocrSimilarity": 0.923,
+      "fuzzyCandidates": [
+        "Lejrevej",
+        "Jernvej",
+        "Ehlersvej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.8,
+        0.857,
+        0.75
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 61,
+      "id": "byen-p26-left-04",
+      "pdfPage": 26,
+      "ocrSourcePage": 27,
+      "ocrSourceRowId": "page-27-left-04",
+      "side": "left",
+      "rowIndex": 4,
+      "coordinates": {
+        "x1": 291,
+        "x2": 795,
+        "top": 1306,
+        "bottom": 1332,
+        "contextTop": 1278,
+        "contextBottom": 1358
+      },
+      "queueOcr": "Jæaersboraaade I Ydre Nørrebro",
+      "independentCoordinateOcr": "I Jæaersboraaade I Ydre Nørrebro",
+      "ocrSimilarity": 0.982,
+      "fuzzyCandidates": [
+        "Jægersborggade",
+        "Aggersborggade",
+        "Flensborggade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.786,
+        0.714,
+        0.593
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 62,
+      "id": "byen-p27-right-01",
+      "pdfPage": 27,
+      "ocrSourcePage": 28,
+      "ocrSourceRowId": "page-28-right-01",
+      "side": "right",
+      "rowIndex": 1,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1150,
+        "bottom": 1176,
+        "contextTop": 1150,
+        "contextBottom": 1228
+      },
+      "queueOcr": "(ammas Have I Vesterbro",
+      "independentCoordinateOcr": "tmmas Have I Vesterbro",
+      "ocrSimilarity": 0.947,
+      "fuzzyCandidates": [
+        "Åhaven",
+        "Kammasvej",
+        "Dagmarsgade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.667,
+        0.778,
+        0.6
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 63,
+      "id": "byen-p27-right-05",
+      "pdfPage": 27,
+      "ocrSourcePage": 28,
+      "ocrSourceRowId": "page-28-right-05",
+      "side": "right",
+      "rowIndex": 5,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1332,
+        "bottom": 1358,
+        "contextTop": 1306,
+        "contextBottom": 1384
+      },
+      "queueOcr": "(anonbådsvei I Christianshavn",
+      "independentCoordinateOcr": "tnonbådsvei I Christianshavn",
+      "ocrSimilarity": 0.962,
+      "fuzzyCandidates": [
+        "Annasvej",
+        "Sandbygårdsvej",
+        "Stengårdsvej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.737,
+        0.64,
+        0.522
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 64,
+      "id": "byen-p27-right-13",
+      "pdfPage": 27,
+      "ocrSourcePage": 28,
+      "ocrSourceRowId": "page-28-right-13",
+      "side": "right",
+      "rowIndex": 13,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1543,
+        "bottom": 1569,
+        "contextTop": 1517,
+        "contextBottom": 1595
+      },
+      "queueOcr": "(arlstads Allé I Brønshøi/Husum",
+      "independentCoordinateOcr": "trlstads Allé I Brønshøi/Husum",
+      "ocrSimilarity": 0.962,
+      "fuzzyCandidates": [
+        "Ahrenkildes Allé",
+        "Præstegårds Allé",
+        "Floras Allé"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.667,
+        0.741,
+        0.636
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 65,
+      "id": "byen-p27-right-14",
+      "pdfPage": 27,
+      "ocrSourcePage": 28,
+      "ocrSourceRowId": "page-28-right-14",
+      "side": "right",
+      "rowIndex": 14,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1569,
+        "bottom": 1595,
+        "contextTop": 1543,
+        "contextBottom": 1622
+      },
+      "queueOcr": "(astanie Allé I Vanløse",
+      "independentCoordinateOcr": "tstanie Allé I Vanløse",
+      "ocrSimilarity": 0.947,
+      "fuzzyCandidates": [
+        "Arnhem Alle",
+        "Langelinie Allé",
+        "Antonigade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.667,
+        0.64,
+        0.476
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 66,
+      "id": "byen-p27-right-15",
+      "pdfPage": 27,
+      "ocrSourcePage": 28,
+      "ocrSourceRowId": "page-28-right-15",
+      "side": "right",
+      "rowIndex": 15,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1595,
+        "bottom": 1622,
+        "contextTop": 1569,
+        "contextBottom": 1648
+      },
+      "queueOcr": "(astellet I Indre By",
+      "independentCoordinateOcr": "tstellet I Indre By",
+      "ocrSimilarity": 0.938,
+      "fuzzyCandidates": [
+        "Askeskellet",
+        "Skellet",
+        "Marskellet"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.737,
+        0.8,
+        0.778
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 67,
+      "id": "byen-p27-right-17",
+      "pdfPage": 27,
+      "ocrSourcePage": 28,
+      "ocrSourceRowId": "page-28-right-17",
+      "side": "right",
+      "rowIndex": 17,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1648,
+        "bottom": 1675,
+        "contextTop": 1622,
+        "contextBottom": 1702
+      },
+      "queueOcr": "(atholmvei I Vanløse",
+      "independentCoordinateOcr": "Itholmvei I Vanløse",
+      "ocrSimilarity": 0.941,
+      "fuzzyCandidates": [
+        "Ålholmvej",
+        "Egholmvej",
+        "Hanstholmvej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.778,
+        0.667,
+        0.762
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 68,
+      "id": "byen-p27-right-18",
+      "pdfPage": 27,
+      "ocrSourcePage": 28,
+      "ocrSourceRowId": "page-28-right-18",
+      "side": "right",
+      "rowIndex": 18,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1675,
+        "bottom": 1702,
+        "contextTop": 1648,
+        "contextBottom": 1728
+      },
+      "queueOcr": "(atrinedalsvei I Vanløse",
+      "independentCoordinateOcr": "ltrinedalsvei I Vanløse",
+      "ocrSimilarity": 0.952,
+      "fuzzyCandidates": [
+        "Astridsvej",
+        "Værnedamsvej",
+        "Arnesvej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.696,
+        0.64,
+        0.667
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 69,
+      "id": "byen-p28-left-01",
+      "pdfPage": 28,
+      "ocrSourcePage": 29,
+      "ocrSourceRowId": "page-29-left-01",
+      "side": "left",
+      "rowIndex": 1,
+      "coordinates": {
+        "x1": 291,
+        "x2": 795,
+        "top": 1150,
+        "bottom": 1176,
+        "contextTop": 1150,
+        "contextBottom": 1203
+      },
+      "queueOcr": "Kattinaevei I Brønshøj/Husum",
+      "independentCoordinateOcr": "I Kattinqevei I Brønshøi/Husum",
+      "ocrSimilarity": 0.902,
+      "fuzzyCandidates": [
+        "Kattingevej",
+        "Baltikavej",
+        "Faksingevej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.818,
+        0.571,
+        0.545
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 70,
+      "id": "byen-p28-right-07",
+      "pdfPage": 28,
+      "ocrSourcePage": 29,
+      "ocrSourceRowId": "page-29-right-07",
+      "side": "right",
+      "rowIndex": 7,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1309,
+        "bottom": 1335,
+        "contextTop": 1282,
+        "contextBottom": 1361
+      },
+      "queueOcr": "(lintevei I Brønshøi/Husum",
+      "independentCoordinateOcr": "intevei I Brønshøi/Husum",
+      "ocrSimilarity": 0.977,
+      "fuzzyCandidates": [
+        "Lindevej",
+        "Flinterupvej",
+        "Ålekistevej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.75,
+        0.7,
+        0.632
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 71,
+      "id": "byen-p28-right-09",
+      "pdfPage": 28,
+      "ocrSourcePage": 29,
+      "ocrSourceRowId": "page-29-right-09",
+      "side": "right",
+      "rowIndex": 9,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1361,
+        "bottom": 1387,
+        "contextTop": 1335,
+        "contextBottom": 1414
+      },
+      "queueOcr": "(litmøllervei I Vanløse",
+      "independentCoordinateOcr": "itmøllervei I Vanløse",
+      "ocrSimilarity": 0.974,
+      "fuzzyCandidates": [
+        "Lille Tværvej",
+        "Oliemøllegade",
+        "Hf. Mellemvej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.667,
+        0.64,
+        0.522
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 72,
+      "id": "byen-p28-right-14",
+      "pdfPage": 28,
+      "ocrSourcePage": 29,
+      "ocrSourceRowId": "page-29-right-14",
+      "side": "right",
+      "rowIndex": 14,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1494,
+        "bottom": 1520,
+        "contextTop": 1467,
+        "contextBottom": 1546
+      },
+      "queueOcr": "(losterstræde I Indre By",
+      "independentCoordinateOcr": "osterstræde I Indre By",
+      "ocrSimilarity": 0.974,
+      "fuzzyCandidates": [
+        "Lodsstræde",
+        "Læderstræde",
+        "Bagerstræde"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.818,
+        0.783,
+        0.696
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 73,
+      "id": "byen-p28-right-22",
+      "pdfPage": 28,
+      "ocrSourcePage": 29,
+      "ocrSourceRowId": "page-29-right-22",
+      "side": "right",
+      "rowIndex": 22,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1704,
+        "bottom": 1731,
+        "contextTop": 1678,
+        "contextBottom": 1757
+      },
+      "queueOcr": "(nud Lavards Gade I Vesterbro",
+      "independentCoordinateOcr": "lud Lavards Gade I Vesterbro",
+      "ocrSimilarity": 0.958,
+      "fuzzyCandidates": [
+        "Nordlandsgade",
+        "Puggaardsgade",
+        "Studsgaardsgade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.741,
+        0.741,
+        0.759
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 74,
+      "id": "byen-p29-left-07",
+      "pdfPage": 29,
+      "ocrSourcePage": 30,
+      "ocrSourceRowId": "page-30-left-07",
+      "side": "left",
+      "rowIndex": 7,
+      "coordinates": {
+        "x1": 291,
+        "x2": 795,
+        "top": 1309,
+        "bottom": 1335,
+        "contextTop": 1282,
+        "contextBottom": 1361
+      },
+      "queueOcr": "Kas. Nytorv I Indre Bv",
+      "independentCoordinateOcr": "I Kas. Nytorv I Indre By",
+      "ocrSimilarity": 0.914,
+      "fuzzyCandidates": [
+        "Kongens Nytorv",
+        "Nytorv",
+        "Axeltorv"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.727,
+        0.8,
+        0.588
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 75,
+      "id": "byen-p29-left-11",
+      "pdfPage": 29,
+      "ocrSourcePage": 30,
+      "ocrSourceRowId": "page-30-left-11",
+      "side": "left",
+      "rowIndex": 11,
+      "coordinates": {
+        "x1": 291,
+        "x2": 795,
+        "top": 1414,
+        "bottom": 1440,
+        "contextTop": 1387,
+        "contextBottom": 1467
+      },
+      "queueOcr": "Kornerupvei I Brønshøj/Husum",
+      "independentCoordinateOcr": "I Komerupvei I Brønshøi/Husum",
+      "ocrSimilarity": 0.88,
+      "fuzzyCandidates": [
+        "Kornerupvej",
+        "Sonnerupvej",
+        "Flinterupvej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.909,
+        0.727,
+        0.609
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 76,
+      "id": "byen-p29-left-19",
+      "pdfPage": 29,
+      "ocrSourcePage": 30,
+      "ocrSourceRowId": "page-30-left-19",
+      "side": "left",
+      "rowIndex": 19,
+      "coordinates": {
+        "x1": 291,
+        "x2": 795,
+        "top": 1625,
+        "bottom": 1652,
+        "contextTop": 1598,
+        "contextBottom": 1678
+      },
+      "queueOcr": "Krauseparken I Indre Østerbro",
+      "independentCoordinateOcr": "I Krauseparken I Indre Østerbro",
+      "ocrSimilarity": 0.981,
+      "fuzzyCandidates": [
+        "Kantorparken",
+        "Amorparken",
+        "Ryparken"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.667,
+        0.636,
+        0.7
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 77,
+      "id": "byen-p29-right-13",
+      "pdfPage": 29,
+      "ocrSourcePage": 30,
+      "ocrSourceRowId": "page-30-right-13",
+      "side": "right",
+      "rowIndex": 13,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1467,
+        "bottom": 1494,
+        "contextTop": 1440,
+        "contextBottom": 1520
+      },
+      "queueOcr": "(rusåaade I Vesterbro",
+      "independentCoordinateOcr": "usågade I Vesterbro",
+      "ocrSimilarity": 0.914,
+      "fuzzyCandidates": [
+        "Røsågade",
+        "Rysegade",
+        "Upsalagade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.75,
+        0.625,
+        0.778
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 78,
+      "id": "byen-p31-right-02",
+      "pdfPage": 31,
+      "ocrSourcePage": 32,
+      "ocrSourceRowId": "page-32-right-02",
+      "side": "right",
+      "rowIndex": 2,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1176,
+        "bottom": 1203,
+        "contextTop": 1150,
+        "contextBottom": 1229
+      },
+      "queueOcr": ".arsleisstræde I Indre By",
+      "independentCoordinateOcr": "lrsleisstræde I Indre By",
+      "ocrSimilarity": 0.952,
+      "fuzzyCandidates": [
+        "Annexstræde",
+        "Larsbjørnsstræde",
+        "Pilestræde"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.667,
+        0.69,
+        0.696
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 79,
+      "id": "byen-p32-right-11",
+      "pdfPage": 32,
+      "ocrSourcePage": 33,
+      "ocrSourceRowId": "page-33-right-11",
+      "side": "right",
+      "rowIndex": 11,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1414,
+        "bottom": 1440,
+        "contextTop": 1387,
+        "contextBottom": 1467
+      },
+      "queueOcr": ".vdersvei I Indre Østerbro",
+      "independentCoordinateOcr": "'dersvei I Indre Østerbro",
+      "ocrSimilarity": 0.977,
+      "fuzzyCandidates": [
+        "Verdisvej",
+        "Lydersvej",
+        "Astersvej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.706,
+        0.706,
+        0.588
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 80,
+      "id": "byen-p34-right-07",
+      "pdfPage": 34,
+      "ocrSourcePage": 35,
+      "ocrSourceRowId": "page-35-right-07",
+      "side": "right",
+      "rowIndex": 7,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1309,
+        "bottom": 1335,
+        "contextTop": 1282,
+        "contextBottom": 1361
+      },
+      "queueOcr": "nerløsevei I Brønshøi/Husum",
+      "independentCoordinateOcr": "erløsevei I Brønshøi/Husum",
+      "ocrSimilarity": 0.979,
+      "fuzzyCandidates": [
+        "Herslevvej",
+        "Merløsevej",
+        "Tersløsevej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.7,
+        0.8,
+        0.762
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 81,
+      "id": "byen-p34-right-12",
+      "pdfPage": 34,
+      "ocrSourcePage": 35,
+      "ocrSourceRowId": "page-35-right-12",
+      "side": "right",
+      "rowIndex": 12,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1491,
+        "bottom": 1518,
+        "contextTop": 1465,
+        "contextBottom": 1544
+      },
+      "queueOcr": "hidaårdsaade I Ydre Nørrebro",
+      "independentCoordinateOcr": "dgårdsgade I Ydre Nørrebro",
+      "ocrSimilarity": 0.875,
+      "fuzzyCandidates": [
+        "Hovgaardsgade",
+        "Midgårdsgade",
+        "Abildgaardsgade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.72,
+        0.75,
+        0.741
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 82,
+      "id": "byen-p35-right-03",
+      "pdfPage": 35,
+      "ocrSourcePage": 36,
+      "ocrSourceRowId": "page-36-right-03",
+      "side": "right",
+      "rowIndex": 3,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1203,
+        "bottom": 1229,
+        "contextTop": 1176,
+        "contextBottom": 1255
+      },
+      "queueOcr": "nønteraade I Indre Bv",
+      "independentCoordinateOcr": "ønteraade I Indre By",
+      "ocrSimilarity": 0.914,
+      "fuzzyCandidates": [
+        "Ny Østergade",
+        "Tøndergade",
+        "Østergade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.762,
+        0.7,
+        0.737
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 83,
+      "id": "byen-p36-right-15",
+      "pdfPage": 36,
+      "ocrSourcePage": 37,
+      "ocrSourceRowId": "page-37-right-15",
+      "side": "right",
+      "rowIndex": 15,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1621,
+        "bottom": 1647,
+        "contextTop": 1594,
+        "contextBottom": 1674
+      },
+      "queueOcr": "ly Kongensgade I Indre By",
+      "independentCoordinateOcr": "I Konaensaade I Indre By",
+      "ocrSimilarity": 0.829,
+      "fuzzyCandidates": [
+        "Lille Kongensgade",
+        "Bergensgade",
+        "Fyensgade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.828,
+        0.667,
+        0.727
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 84,
+      "id": "byen-p37-right-03",
+      "pdfPage": 37,
+      "ocrSourcePage": 38,
+      "ocrSourceRowId": "page-38-right-03",
+      "side": "right",
+      "rowIndex": 3,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1305,
+        "bottom": 1331,
+        "contextTop": 1252,
+        "contextBottom": 1357
+      },
+      "queueOcr": "lørre Farimaasaade I Indre By",
+      "independentCoordinateOcr": "'rre Farimaasaade I Indre By",
+      "ocrSimilarity": 0.958,
+      "fuzzyCandidates": [
+        "Lille Farimagsgade",
+        "Øster Farimagsgade",
+        "Vester Farimagsgade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.706,
+        0.706,
+        0.629
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 85,
+      "id": "byen-p37-right-04",
+      "pdfPage": 37,
+      "ocrSourcePage": 38,
+      "ocrSourceRowId": "page-38-right-04",
+      "side": "right",
+      "rowIndex": 4,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1331,
+        "bottom": 1357,
+        "contextTop": 1305,
+        "contextBottom": 1383
+      },
+      "queueOcr": "lørre Sideallé I Indre Nørrebro",
+      "independentCoordinateOcr": "Tre Sideallé I Indre Nørrebro",
+      "ocrSimilarity": 0.923,
+      "fuzzyCandidates": [
+        "Leiden Alle",
+        "Nørre Allé",
+        "Langelinie Allé"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.783,
+        0.727,
+        0.593
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 86,
+      "id": "byen-p38-right-02",
+      "pdfPage": 38,
+      "ocrSourcePage": 39,
+      "ocrSourceRowId": "page-39-right-02",
+      "side": "right",
+      "rowIndex": 2,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1176,
+        "bottom": 1203,
+        "contextTop": 1150,
+        "contextBottom": 1229
+      },
+      "queueOcr": ")slo Plads I Indre Østerbro",
+      "independentCoordinateOcr": "Plads I Indre Østerbro",
+      "ocrSimilarity": 0.927,
+      "fuzzyCandidates": [
+        "Sylows Plads",
+        "Sifs Plads",
+        "Bangsbo Plads"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.842,
+        0.706,
+        0.7
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 87,
+      "id": "byen-p38-right-08",
+      "pdfPage": 38,
+      "ocrSourcePage": 39,
+      "ocrSourceRowId": "page-39-right-08",
+      "side": "right",
+      "rowIndex": 8,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1335,
+        "bottom": 1361,
+        "contextTop": 1309,
+        "contextBottom": 1387
+      },
+      "queueOcr": ")tto Mønsteds Plads I Indre By",
+      "independentCoordinateOcr": "to Mønsteds Plads I Indre Bv",
+      "ocrSimilarity": 0.936,
+      "fuzzyCandidates": [
+        "Toftegårds Plads",
+        "Dantes Plads",
+        "Rungsted Plads"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.71,
+        0.667,
+        0.69
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 88,
+      "id": "byen-p39-right-02",
+      "pdfPage": 39,
+      "ocrSourcePage": 40,
+      "ocrSourceRowId": "page-40-right-02",
+      "side": "right",
+      "rowIndex": 2,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1176,
+        "bottom": 1203,
+        "contextTop": 1150,
+        "contextBottom": 1229
+      },
+      "queueOcr": "'eter Ibsens Allé Bispebiera",
+      "independentCoordinateOcr": ">ter Ibsens Allé Bispebiera",
+      "ocrSimilarity": 0.979,
+      "fuzzyCandidates": [
+        "Ejler Billes Allé",
+        "Peter Ibsens Allé",
+        "Jernbane Allé"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.645,
+        0.903,
+        0.5
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 89,
+      "id": "byen-p41-left-05",
+      "pdfPage": 41,
+      "ocrSourcePage": 42,
+      "ocrSourceRowId": "page-42-left-05",
+      "side": "left",
+      "rowIndex": 5,
+      "coordinates": {
+        "x1": 291,
+        "x2": 795,
+        "top": 1269,
+        "bottom": 1321,
+        "contextTop": 1242,
+        "contextBottom": 1372
+      },
+      "queueOcr": "Rahbeks Allé Uliae nr. Vesterbro",
+      "independentCoordinateOcr": "Rahbeks Allé Uliae nr. VesterbrO",
+      "ocrSimilarity": 1.0,
+      "fuzzyCandidates": [
+        "Rahbeks Allé",
+        "Absalonsgade",
+        "A. H. Vedels Plads"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.759,
+        0.4,
+        0.387
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 90,
+      "id": "byen-p41-right-08",
+      "pdfPage": 41,
+      "ocrSourcePage": 42,
+      "ocrSourceRowId": "page-42-right-08",
+      "side": "right",
+      "rowIndex": 8,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1411,
+        "bottom": 1437,
+        "contextTop": 1384,
+        "contextBottom": 1463
+      },
+      "queueOcr": "Qefshaleøen I Christianshavn",
+      "independentCoordinateOcr": "I Christianshavn",
+      "ocrSimilarity": 0.732,
+      "fuzzyCandidates": [
+        "Refshalevej",
+        "Roshagevej",
+        "Svenskelejren"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.818,
+        0.571,
+        0.25
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 91,
+      "id": "byen-p41-right-10",
+      "pdfPage": 41,
+      "ocrSourcePage": 42,
+      "ocrSourceRowId": "page-42-right-10",
+      "side": "right",
+      "rowIndex": 10,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1463,
+        "bottom": 1490,
+        "contextTop": 1437,
+        "contextBottom": 1517
+      },
+      "queueOcr": "Qeanbuepladsen I Indre Bv",
+      "independentCoordinateOcr": "I Indre Bv",
+      "ocrSimilarity": 0.533,
+      "fuzzyCandidates": [
+        "Regnbuepladsen",
+        "Rådhuspladsen",
+        "Bryghuspladsen"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.857,
+        0.667,
+        0.643
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 92,
+      "id": "byen-p41-right-14",
+      "pdfPage": 41,
+      "ocrSourcePage": 42,
+      "ocrSourceRowId": "page-42-right-14",
+      "side": "right",
+      "rowIndex": 14,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1569,
+        "bottom": 1595,
+        "contextTop": 1543,
+        "contextBottom": 1622
+      },
+      "queueOcr": "Qeventlowsaade I Vesterbro",
+      "independentCoordinateOcr": "Nentlowsqade I Vesterbro",
+      "ocrSimilarity": 0.87,
+      "fuzzyCandidates": [
+        "Reventlowsgade",
+        "Stenosgade",
+        "Svendsgade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.857,
+        0.583,
+        0.583
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 93,
+      "id": "byen-p43-right-03",
+      "pdfPage": 43,
+      "ocrSourcePage": 44,
+      "ocrSourceRowId": "page-44-right-03",
+      "side": "right",
+      "rowIndex": 3,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1203,
+        "bottom": 1229,
+        "contextTop": 1176,
+        "contextBottom": 1255
+      },
+      "queueOcr": "tønnebærvei I Vanløse",
+      "independentCoordinateOcr": "'nnebærvei I Vanløse",
+      "ocrSimilarity": 0.944,
+      "fuzzyCandidates": [
+        "Tønnesvej",
+        "Rønnebærvej",
+        "Enebærvej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.7,
+        0.818,
+        0.7
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 94,
+      "id": "byen-p43-right-08",
+      "pdfPage": 43,
+      "ocrSourcePage": 44,
+      "ocrSourceRowId": "page-44-right-08",
+      "side": "right",
+      "rowIndex": 8,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1335,
+        "bottom": 1361,
+        "contextTop": 1309,
+        "contextBottom": 1387
+      },
+      "queueOcr": "Qørsanaervei I Bispebiera",
+      "independentCoordinateOcr": "rsanaervei I Bispebierq",
+      "ocrSimilarity": 0.909,
+      "fuzzyCandidates": [
+        "Rørsangervej",
+        "Rørsangervænget",
+        "Kærsangervej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.833,
+        0.741,
+        0.667
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 95,
+      "id": "byen-p43-right-12",
+      "pdfPage": 43,
+      "ocrSourcePage": 44,
+      "ocrSourceRowId": "page-44-right-12",
+      "side": "right",
+      "rowIndex": 12,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1440,
+        "bottom": 1467,
+        "contextTop": 1414,
+        "contextBottom": 1494
+      },
+      "queueOcr": "Udmandsgade I Ydre Nørrebro",
+      "independentCoordinateOcr": "idmandsgade I Ydre Nørrebro",
+      "ocrSimilarity": 0.958,
+      "fuzzyCandidates": [
+        "Uplandsgade",
+        "Rådmandsgade",
+        "Urbansgade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.818,
+        0.87,
+        0.762
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 96,
+      "id": "byen-p44-right-17",
+      "pdfPage": 44,
+      "ocrSourcePage": 45,
+      "ocrSourceRowId": "page-45-right-17",
+      "side": "right",
+      "rowIndex": 17,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1572,
+        "bottom": 1598,
+        "contextTop": 1546,
+        "contextBottom": 1625
+      },
+      "queueOcr": "*kaaerrakvei I Indre Østerbro",
+      "independentCoordinateOcr": "caqerrakvei I Indre Østerbro",
+      "ocrSimilarity": 0.92,
+      "fuzzyCandidates": [
+        "Kålagervej",
+        "Skagerrakvej",
+        "Nattergalevej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.667,
+        0.783,
+        0.5
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 97,
+      "id": "byen-p44-right-20",
+      "pdfPage": 44,
+      "ocrSourcePage": 45,
+      "ocrSourceRowId": "page-45-right-20",
+      "side": "right",
+      "rowIndex": 20,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1652,
+        "bottom": 1678,
+        "contextTop": 1625,
+        "contextBottom": 1704
+      },
+      "queueOcr": "*kansebiera I Brønshøi/Husum",
+      "independentCoordinateOcr": "(ansebiera I Brønshøi/Husum",
+      "ocrSimilarity": 0.979,
+      "fuzzyCandidates": [
+        "Kansager",
+        "Skansebjerg",
+        "Hanebred"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.667,
+        0.762,
+        0.556
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 98,
+      "id": "byen-p45-right-18",
+      "pdfPage": 45,
+      "ocrSourcePage": 46,
+      "ocrSourceRowId": "page-46-right-18",
+      "side": "right",
+      "rowIndex": 18,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1675,
+        "bottom": 1702,
+        "contextTop": 1648,
+        "contextBottom": 1728
+      },
+      "queueOcr": "*kytteaade I Indre Nørrebro",
+      "independentCoordinateOcr": "(Yttegade I Indre Nørrebro",
+      "ocrSimilarity": 0.933,
+      "fuzzyCandidates": [
+        "Krystalgade",
+        "Rysegade",
+        "Ryegade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.7,
+        0.588,
+        0.625
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 99,
+      "id": "byen-p46-right-01",
+      "pdfPage": 46,
+      "ocrSourcePage": 47,
+      "ocrSourceRowId": "page-47-right-01",
+      "side": "right",
+      "rowIndex": 1,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1150,
+        "bottom": 1176,
+        "contextTop": 1150,
+        "contextBottom": 1203
+      },
+      "queueOcr": "*oldalen I Rwana Øst",
+      "independentCoordinateOcr": "»Idalen I Rvvanq Øst",
+      "ocrSimilarity": 0.75,
+      "fuzzyCandidates": [
+        "Oldensti",
+        "Soldalen",
+        "Voldfløjen"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.667,
+        0.933,
+        0.706
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 100,
+      "id": "byen-p46-right-04",
+      "pdfPage": 46,
+      "ocrSourcePage": 47,
+      "ocrSourceRowId": "page-47-right-04",
+      "side": "right",
+      "rowIndex": 4,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1229,
+        "bottom": 1255,
+        "contextTop": 1203,
+        "contextBottom": 1282
+      },
+      "queueOcr": "iolkroaen I Brønshøi/Husum",
+      "independentCoordinateOcr": ")lkroaen I Brønshøi/Husum",
+      "ocrSimilarity": 0.955,
+      "fuzzyCandidates": [
+        "Ilbro Alle",
+        "Solkrogen",
+        "Sydkrogen"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.667,
+        0.778,
+        0.556
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 101,
+      "id": "byen-p46-right-05",
+      "pdfPage": 46,
+      "ocrSourcePage": 47,
+      "ocrSourceRowId": "page-47-right-05",
+      "side": "right",
+      "rowIndex": 5,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1255,
+        "bottom": 1282,
+        "contextTop": 1229,
+        "contextBottom": 1309
+      },
+      "queueOcr": "iolrødvej I Brønshøj/Husum",
+      "independentCoordinateOcr": ")lrødvej I Brønshøj/Husum",
+      "ocrSimilarity": 0.955,
+      "fuzzyCandidates": [
+        "Ilfordvej",
+        "Solrødvej",
+        "Bolandsvej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.778,
+        0.889,
+        0.632
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 102,
+      "id": "byen-p46-right-19",
+      "pdfPage": 46,
+      "ocrSourcePage": 47,
+      "ocrSourceRowId": "page-47-right-19",
+      "side": "right",
+      "rowIndex": 19,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1651,
+        "bottom": 1677,
+        "contextTop": 1624,
+        "contextBottom": 1754
+      },
+      "queueOcr": "*parresholmvei I Brønshøi/Husum",
+      "independentCoordinateOcr": ")arresholmvei I Brønshøi/Husum",
+      "ocrSimilarity": 0.981,
+      "fuzzyCandidates": [
+        "Prisholmvej",
+        "Sparresholmvej",
+        "Thureholmvej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.75,
+        0.889,
+        0.64
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 103,
+      "id": "byen-p47-right-08",
+      "pdfPage": 47,
+      "ocrSourcePage": 48,
+      "ocrSourceRowId": "page-48-right-08",
+      "side": "right",
+      "rowIndex": 8,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1335,
+        "bottom": 1361,
+        "contextTop": 1309,
+        "contextBottom": 1387
+      },
+      "queueOcr": "*tore Konaensaade I Indre By",
+      "independentCoordinateOcr": "ore Konaensaade I Indre Bv",
+      "ocrSimilarity": 0.933,
+      "fuzzyCandidates": [
+        "Trekronergade",
+        "Turesensgade",
+        "Hiort Lorenzens Gade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.714,
+        0.667,
+        0.667
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 104,
+      "id": "byen-p47-right-12",
+      "pdfPage": 47,
+      "ocrSourcePage": 48,
+      "ocrSourceRowId": "page-48-right-12",
+      "side": "right",
+      "rowIndex": 12,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1440,
+        "bottom": 1467,
+        "contextTop": 1414,
+        "contextBottom": 1494
+      },
+      "queueOcr": "itoregårdsvej I Brønshøj/Husum",
+      "independentCoordinateOcr": "oregårdsvej I Brønshøj/Husum",
+      "ocrSimilarity": 0.962,
+      "fuzzyCandidates": [
+        "Irlandsvej",
+        "Toftegårdsvej",
+        "Tomsgårdsvej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.696,
+        0.846,
+        0.8
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 105,
+      "id": "byen-p47-right-13",
+      "pdfPage": 47,
+      "ocrSourcePage": 48,
+      "ocrSourceRowId": "page-48-right-13",
+      "side": "right",
+      "rowIndex": 13,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1467,
+        "bottom": 1494,
+        "contextTop": 1440,
+        "contextBottom": 1520
+      },
+      "queueOcr": "itorkebakken I Brønshøi/Husum",
+      "independentCoordinateOcr": "orkebakken I Brønshøi/Husum",
+      "ocrSimilarity": 0.96,
+      "fuzzyCandidates": [
+        "Storkebakken",
+        "Lærkebakken",
+        "Horsebakken"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        1.0,
+        0.783,
+        0.783
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 106,
+      "id": "byen-p47-right-18",
+      "pdfPage": 47,
+      "ocrSourcePage": 48,
+      "ocrSourceRowId": "page-48-right-18",
+      "side": "right",
+      "rowIndex": 18,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1650,
+        "bottom": 1676,
+        "contextTop": 1623,
+        "contextBottom": 1702
+      },
+      "queueOcr": "*trandaade I Christianshavn",
+      "independentCoordinateOcr": "randaade I Christianshavn",
+      "ocrSimilarity": 0.979,
+      "fuzzyCandidates": [
+        "Travemündegade",
+        "Urbansgade",
+        "Arendalsgade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.696,
+        0.632,
+        0.667
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 107,
+      "id": "byen-p48-left-06",
+      "pdfPage": 48,
+      "ocrSourcePage": 49,
+      "ocrSourceRowId": "page-49-left-06",
+      "side": "left",
+      "rowIndex": 6,
+      "coordinates": {
+        "x1": 291,
+        "x2": 795,
+        "top": 1358,
+        "bottom": 1384,
+        "contextTop": 1332,
+        "contextBottom": 1411
+      },
+      "queueOcr": "Strvnøqade I Ydre Østerbro",
+      "independentCoordinateOcr": "I Strvnøqade I Ydre Østerbro",
+      "ocrSimilarity": 0.979,
+      "fuzzyCandidates": [
+        "Strynøgade",
+        "Stevnsgade",
+        "Sorøgade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.8,
+        0.7,
+        0.667
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 108,
+      "id": "byen-p48-right-18",
+      "pdfPage": 48,
+      "ocrSourcePage": 49,
+      "ocrSourceRowId": "page-49-right-18",
+      "side": "right",
+      "rowIndex": 18,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1751,
+        "bottom": 1777,
+        "contextTop": 1725,
+        "contextBottom": 1777
+      },
+      "queueOcr": "*venskeleiren I Brønshøi/Husum",
+      "independentCoordinateOcr": "renskeleiren I Brønshøi/Husum",
+      "ocrSimilarity": 0.962,
+      "fuzzyCandidates": [
+        "Vinkelstien",
+        "Svenskelejren",
+        "Skolesiden"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.696,
+        0.88,
+        0.636
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 109,
+      "id": "byen-p49-right-05",
+      "pdfPage": 49,
+      "ocrSourcePage": 50,
+      "ocrSourceRowId": "page-50-right-05",
+      "side": "right",
+      "rowIndex": 5,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1332,
+        "bottom": 1358,
+        "contextTop": 1280,
+        "contextBottom": 1384
+      },
+      "queueOcr": "iørupvei I Brønshøi/Husum",
+      "independentCoordinateOcr": "rupvej I Brønshøi/Husum",
+      "ocrSimilarity": 0.905,
+      "fuzzyCandidates": [
+        "Ørnstrupvej",
+        "Rugvej",
+        "Ørnevej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.778,
+        0.769,
+        0.714
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 110,
+      "id": "byen-p50-right-01",
+      "pdfPage": 50,
+      "ocrSourcePage": 51,
+      "ocrSourceRowId": "page-51-right-01",
+      "side": "right",
+      "rowIndex": 1,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1150,
+        "bottom": 1176,
+        "contextTop": 1150,
+        "contextBottom": 1203
+      },
+      "queueOcr": "rhoravei I Bispebiera",
+      "independentCoordinateOcr": ")oravei I Bispebierq",
+      "ocrSimilarity": 0.889,
+      "fuzzyCandidates": [
+        "Haven",
+        "Thoravej",
+        "Dortheavej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.667,
+        0.8,
+        0.588
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 111,
+      "id": "byen-p50-right-02",
+      "pdfPage": 50,
+      "ocrSourcePage": 51,
+      "ocrSourceRowId": "page-51-right-02",
+      "side": "right",
+      "rowIndex": 2,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1176,
+        "bottom": 1203,
+        "contextTop": 1150,
+        "contextBottom": 1229
+      },
+      "queueOcr": "horsgade I Ydre Nørrebro",
+      "independentCoordinateOcr": "jorsgade I Ydre Nørrebro",
+      "ocrSimilarity": 0.952,
+      "fuzzyCandidates": [
+        "Horsensgade",
+        "Thorsgade",
+        "Korsgade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.842,
+        0.941,
+        0.875
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 112,
+      "id": "byen-p50-right-04",
+      "pdfPage": 50,
+      "ocrSourcePage": 51,
+      "ocrSourceRowId": "page-51-right-04",
+      "side": "right",
+      "rowIndex": 4,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1229,
+        "bottom": 1255,
+        "contextTop": 1203,
+        "contextBottom": 1282
+      },
+      "queueOcr": "horsmindevei I Vanløse",
+      "independentCoordinateOcr": ")orsmindevei I Vanløse",
+      "ocrSimilarity": 0.974,
+      "fuzzyCandidates": [
+        "Horsekildevej",
+        "Thorsmindevej",
+        "Edelsmindevej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.72,
+        0.88,
+        0.64
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 113,
+      "id": "byen-p50-right-09",
+      "pdfPage": 50,
+      "ocrSourcePage": 51,
+      "ocrSourceRowId": "page-51-right-09",
+      "side": "right",
+      "rowIndex": 9,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1386,
+        "bottom": 1413,
+        "contextTop": 1360,
+        "contextBottom": 1439
+      },
+      "queueOcr": "hvrasaade I Ydre Nørrebro",
+      "independentCoordinateOcr": ")yrasgade I Ydre Nørrebro",
+      "ocrSimilarity": 0.884,
+      "fuzzyCandidates": [
+        "Haraldsgade",
+        "Thyrasgade",
+        "Ahornsgade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.7,
+        0.737,
+        0.526
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 114,
+      "id": "byen-p50-right-10",
+      "pdfPage": 50,
+      "ocrSourcePage": 51,
+      "ocrSourceRowId": "page-51-right-10",
+      "side": "right",
+      "rowIndex": 10,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1413,
+        "bottom": 1439,
+        "contextTop": 1386,
+        "contextBottom": 1466
+      },
+      "queueOcr": "hyvei I Vanløse",
+      "independentCoordinateOcr": "wei I Vanløse",
+      "ocrSimilarity": 0.833,
+      "fuzzyCandidates": [
+        "Havvej",
+        "Thyvej",
+        "Hejsvej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.727,
+        0.545,
+        0.5
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 115,
+      "id": "byen-p52-left-02",
+      "pdfPage": 52,
+      "ocrSourcePage": 53,
+      "ocrSourceRowId": "page-53-left-02",
+      "side": "left",
+      "rowIndex": 2,
+      "coordinates": {
+        "x1": 291,
+        "x2": 795,
+        "top": 1202,
+        "bottom": 1228,
+        "contextTop": 1150,
+        "contextBottom": 1254
+      },
+      "queueOcr": "Trøiboraaade I Vesterbro",
+      "independentCoordinateOcr": "I Trøiboraaade I Vesterbro",
+      "ocrSimilarity": 0.978,
+      "fuzzyCandidates": [
+        "Trøjborggade",
+        "Tibirkgade",
+        "Viborggade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.75,
+        0.636,
+        0.636
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 116,
+      "id": "byen-p52-left-14",
+      "pdfPage": 52,
+      "ocrSourcePage": 53,
+      "ocrSourceRowId": "page-53-left-14",
+      "side": "left",
+      "rowIndex": 14,
+      "coordinates": {
+        "x1": 291,
+        "x2": 795,
+        "top": 1620,
+        "bottom": 1646,
+        "contextTop": 1593,
+        "contextBottom": 1673
+      },
+      "queueOcr": "Tværaade I Indre Østerbro",
+      "independentCoordinateOcr": "I Tværaade I Indre Østerbro",
+      "ocrSimilarity": 0.978,
+      "fuzzyCandidates": [
+        "Tovværkgade",
+        "Tjæregade",
+        "Sværtegade"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.737,
+        0.706,
+        0.667
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 117,
+      "id": "byen-p52-left-16",
+      "pdfPage": 52,
+      "ocrSourcePage": 53,
+      "ocrSourceRowId": "page-53-left-16",
+      "side": "left",
+      "rowIndex": 16,
+      "coordinates": {
+        "x1": 291,
+        "x2": 795,
+        "top": 1673,
+        "bottom": 1699,
+        "contextTop": 1646,
+        "contextBottom": 1726
+      },
+      "queueOcr": "Tybierqvei I Vanløse",
+      "independentCoordinateOcr": "I Tvbierqvei I Vanløse",
+      "ocrSimilarity": 0.919,
+      "fuzzyCandidates": [
+        "Tybjergvej",
+        "Lydersvej",
+        "Væbnervej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.7,
+        0.526,
+        0.526
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 118,
+      "id": "byen-p54-right-15",
+      "pdfPage": 54,
+      "ocrSourcePage": 55,
+      "ocrSourceRowId": "page-55-right-15",
+      "side": "right",
+      "rowIndex": 15,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1545,
+        "bottom": 1571,
+        "contextTop": 1519,
+        "contextBottom": 1598
+      },
+      "queueOcr": "led Sporsløifen I Ydre Østerbro",
+      "independentCoordinateOcr": "Sporsløifen I Ydre Østerbro",
+      "ocrSimilarity": 0.941,
+      "fuzzyCandidates": [
+        "Lersøstien",
+        "Ved Sporsløjfen",
+        "Mesterstien"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.667,
+        0.857,
+        0.56
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 119,
+      "id": "byen-p54-right-21",
+      "pdfPage": 54,
+      "ocrSourcePage": 55,
+      "ocrSourceRowId": "page-55-right-21",
+      "side": "right",
+      "rowIndex": 21,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1704,
+        "bottom": 1730,
+        "contextTop": 1677,
+        "contextBottom": 1756
+      },
+      "queueOcr": "led Vænget I Indre Østerbro",
+      "independentCoordinateOcr": "Vænget I Indre Østerbro",
+      "ocrSimilarity": 0.93,
+      "fuzzyCandidates": [
+        "Lodsvænget",
+        "Ved Vænget",
+        "Solvænget"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.842,
+        0.889,
+        0.778
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 120,
+      "id": "byen-p55-right-07",
+      "pdfPage": 55,
+      "ocrSourcePage": 56,
+      "ocrSourceRowId": "page-56-right-07",
+      "side": "right",
+      "rowIndex": 7,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1460,
+        "bottom": 1486,
+        "contextTop": 1434,
+        "contextBottom": 1514
+      },
+      "queueOcr": "lesteraårdsporten I Bispebierq",
+      "independentCoordinateOcr": "sterqårdsporten I Bispebierq",
+      "ocrSimilarity": 0.926,
+      "fuzzyCandidates": [
+        "Lille Strandstien",
+        "Vestergårdsporten",
+        "Vestergårdsvej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.667,
+        0.882,
+        0.645
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 121,
+      "id": "byen-p55-right-08",
+      "pdfPage": 55,
+      "ocrSourcePage": 56,
+      "ocrSourceRowId": "page-56-right-08",
+      "side": "right",
+      "rowIndex": 8,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1486,
+        "bottom": 1514,
+        "contextTop": 1460,
+        "contextBottom": 1540
+      },
+      "queueOcr": "lesterqårdsvei I Bispebiera",
+      "independentCoordinateOcr": ">stergårdsvei Bispebiera",
+      "ocrSimilarity": 0.894,
+      "fuzzyCandidates": [
+        "Løjtegårdsvej",
+        "Vestergårdsvej",
+        "Rostgaardsvej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.667,
+        0.786,
+        0.667
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 122,
+      "id": "byen-p55-right-09",
+      "pdfPage": 55,
+      "ocrSourcePage": 56,
+      "ocrSourceRowId": "page-56-right-09",
+      "side": "right",
+      "rowIndex": 9,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1514,
+        "bottom": 1540,
+        "contextTop": 1486,
+        "contextBottom": 1566
+      },
+      "queueOcr": "lesterhavsvei I Indre Østerbro",
+      "independentCoordinateOcr": "sterhavsvei I Indre Østerbro",
+      "ocrSimilarity": 0.962,
+      "fuzzyCandidates": [
+        "Lergravsvej",
+        "Vesterhavsvej",
+        "Vestergårdsvej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.667,
+        0.846,
+        0.667
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    },
+    {
+      "itemNumber": 123,
+      "id": "byen-p56-right-09",
+      "pdfPage": 56,
+      "ocrSourcePage": 57,
+      "ocrSourceRowId": "page-57-right-09",
+      "side": "right",
+      "rowIndex": 9,
+      "coordinates": {
+        "x1": 888,
+        "x2": 1392,
+        "top": 1361,
+        "bottom": 1387,
+        "contextTop": 1335,
+        "contextBottom": 1414
+      },
+      "queueOcr": "læbnervej I Bispebiera",
+      "independentCoordinateOcr": "ebnervei I Bispebierq",
+      "ocrSimilarity": 0.821,
+      "fuzzyCandidates": [
+        "Liberiavej",
+        "Væbnervej",
+        "Kæmnervej"
+      ],
+      "candidateScoresAgainstStreetOcr": [
+        0.737,
+        0.889,
+        0.778
+      ],
+      "exactCropMatchesSourcePixels": true,
+      "contextCropMatchesSourcePixels": true
+    }
+  ]
+}

@@ -1,0 +1,154 @@
+[
+  {
+    "alias": "A.F. Beyers Vej",
+    "canonicalStreetKey": "a. f. beyers vej",
+    "reason": "punctuation-spacing variant",
+    "provenance": "reviewed-historical-ledger-compatibility",
+    "reviewStatus": "approved",
+    "reviewNotes": "Visually verified against VisitationByen.pdf during the 17-group historical collision review."
+  },
+  {
+    "alias": "A.H. Vedels Plads",
+    "canonicalStreetKey": "a. h. vedels plads",
+    "reason": "punctuation-spacing variant",
+    "provenance": "reviewed-historical-ledger-compatibility",
+    "reviewStatus": "approved",
+    "reviewNotes": "Visually verified against VisitationByen.pdf during the 17-group historical collision review."
+  },
+  {
+    "alias": "A. L. Drewesens Vej",
+    "canonicalStreetKey": "a. l. drewsens vej",
+    "reason": "historical OCR transcription",
+    "provenance": "reviewed-historical-ledger-compatibility",
+    "reviewStatus": "approved",
+    "reviewNotes": "Visually verified against VisitationByen.pdf during the 17-group historical collision review."
+  },
+  {
+    "alias": "A.L. Drewsens Vej",
+    "canonicalStreetKey": "a. l. drewsens vej",
+    "reason": "punctuation-spacing variant",
+    "provenance": "reviewed-historical-ledger-compatibility",
+    "reviewStatus": "approved",
+    "reviewNotes": "Visually verified against VisitationByen.pdf during the 17-group historical collision review."
+  },
+  {
+    "alias": "Danneskiold-Samsøes Allé",
+    "canonicalStreetKey": "danneskiold samsøes allé",
+    "reason": "punctuation-spacing variant",
+    "provenance": "reviewed-historical-ledger-compatibility",
+    "reviewStatus": "approved",
+    "reviewNotes": "Visually verified against VisitationByen.pdf during the 17-group historical collision review."
+  },
+  {
+    "alias": "Freunds Gade",
+    "canonicalStreetKey": "freundsgade",
+    "reason": "historical OCR transcription",
+    "provenance": "reviewed-historical-ledger-compatibility",
+    "reviewStatus": "approved",
+    "reviewNotes": "Visually verified against VisitationByen.pdf during the 17-group historical collision review."
+  },
+  {
+    "alias": "Fuglagerv ej",
+    "canonicalStreetKey": "fuglagervej",
+    "reason": "historical OCR transcription",
+    "provenance": "reviewed-historical-ledger-compatibility",
+    "reviewStatus": "approved",
+    "reviewNotes": "Visually verified against VisitationByen.pdf during the 17-group historical collision review."
+  },
+  {
+    "alias": "Gammel Kalkbrænderi Vej",
+    "canonicalStreetKey": "gammel kalkbrænderivej",
+    "reason": "punctuation-spacing variant",
+    "provenance": "reviewed-historical-ledger-compatibility",
+    "reviewStatus": "approved",
+    "reviewNotes": "Visually verified against VisitationByen.pdf during the 17-group historical collision review."
+  },
+  {
+    "alias": "Gammeltorv",
+    "canonicalStreetKey": "gammel torv",
+    "reason": "legacy spelling compatibility",
+    "provenance": "reviewed-historical-ledger-compatibility",
+    "reviewStatus": "approved",
+    "reviewNotes": "Visually verified against VisitationByen.pdf during the 17-group historical collision review."
+  },
+  {
+    "alias": "H.C. Andersens Boulevard",
+    "canonicalStreetKey": "h. c. andersens boulevard",
+    "reason": "punctuation-spacing variant",
+    "provenance": "reviewed-historical-ledger-compatibility",
+    "reviewStatus": "approved",
+    "reviewNotes": "Visually verified against VisitationByen.pdf during the 17-group historical collision review."
+  },
+  {
+    "alias": "H.C. Lumbyes Gade",
+    "canonicalStreetKey": "h. c. lumbyes gade",
+    "reason": "punctuation-spacing variant",
+    "provenance": "reviewed-historical-ledger-compatibility",
+    "reviewStatus": "approved",
+    "reviewNotes": "Visually verified against VisitationByen.pdf during the 17-group historical collision review."
+  },
+  {
+    "alias": "H.C. Sneedorffs Allé",
+    "canonicalStreetKey": "h. c. sneedorffs allé",
+    "reason": "punctuation-spacing variant",
+    "provenance": "reviewed-historical-ledger-compatibility",
+    "reviewStatus": "approved",
+    "reviewNotes": "Visually verified against VisitationByen.pdf during the 17-group historical collision review."
+  },
+  {
+    "alias": "J.A. Schwartz Gade",
+    "canonicalStreetKey": "j. a. schwartz gade",
+    "reason": "punctuation-spacing variant",
+    "provenance": "reviewed-historical-ledger-compatibility",
+    "reviewStatus": "approved",
+    "reviewNotes": "Visually verified against VisitationByen.pdf during the 17-group historical collision review."
+  },
+  {
+    "alias": "Linnésgade",
+    "canonicalStreetKey": "linnesgade",
+    "reason": "Danish-character transcription",
+    "provenance": "reviewed-historical-ledger-compatibility",
+    "reviewStatus": "approved",
+    "reviewNotes": "Visually verified against VisitationByen.pdf during the 17-group historical collision review."
+  },
+  {
+    "alias": "P.D. Løvs Allé",
+    "canonicalStreetKey": "p. d. løvs allé",
+    "reason": "punctuation-spacing variant",
+    "provenance": "reviewed-historical-ledger-compatibility",
+    "reviewStatus": "approved",
+    "reviewNotes": "Visually verified against VisitationByen.pdf during the 17-group historical collision review."
+  },
+  {
+    "alias": "Stenklovervej",
+    "canonicalStreetKey": "stenkløvervej",
+    "reason": "Danish-character transcription",
+    "provenance": "reviewed-historical-ledger-compatibility",
+    "reviewStatus": "approved",
+    "reviewNotes": "Visually verified against VisitationByen.pdf during the 17-group historical collision review."
+  },
+  {
+    "alias": "Vanløse Torv",
+    "canonicalStreetKey": "vanløsetorv",
+    "reason": "legacy spelling compatibility",
+    "provenance": "reviewed-historical-ledger-compatibility",
+    "reviewStatus": "approved",
+    "reviewNotes": "Visually verified against VisitationByen.pdf during the 17-group historical collision review."
+  },
+  {
+    "alias": "William Wains Gade",
+    "canonicalStreetKey": "wiliam wainsgade",
+    "reason": "legacy spelling compatibility",
+    "provenance": "reviewed-historical-ledger-compatibility",
+    "reviewStatus": "approved",
+    "reviewNotes": "Visually verified against VisitationByen.pdf during the 17-group historical collision review."
+  },
+  {
+    "alias": "William Wainsgade",
+    "canonicalStreetKey": "wiliam wainsgade",
+    "reason": "legacy spelling compatibility",
+    "provenance": "reviewed-historical-ledger-compatibility",
+    "reviewStatus": "approved",
+    "reviewNotes": "Visually verified against VisitationByen.pdf during the 17-group historical collision review."
+  }
+]

@@ -2,9 +2,10 @@
 
 ## Build and hosting contract
 
-Expo Router uses static web output with production origin
-`https://ambuassist.synapsestudio.dk`. Run `npm run web:export`; publish `dist/`
-and configure the host to serve generated route files/directories for deep URLs.
+Expo Router uses static web output. Its canonical origin is configured with
+`EXPO_PUBLIC_APP_ORIGIN` and defaults to
+`https://ambuassist.synapsestudio.dk`. Run `npm run web:export`; publish
+`dist/` and configure the host to serve generated route files/directories for deep URLs.
 The deployment should use HTTPS, immutable caching for fingerprinted assets, and
 no-cache/revalidation for HTML. No deployment or DNS change is included here.
 
@@ -24,6 +25,7 @@ Optional Expo public variables:
 - `EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
 - `EXPO_PUBLIC_FIREBASE_APP_ID`
 - `EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID`
+- `EXPO_PUBLIC_APP_ORIGIN`
 - `EXPO_PUBLIC_PORTAL_SESSION_URL`
 - `EXPO_PUBLIC_PORTAL_LOGIN_URL`
 - `EXPO_PUBLIC_DESTINATION_GEOCODER_URL`
@@ -32,6 +34,9 @@ The checked-in Firebase client defaults are public project identifiers, not
 credentials. Never put service accounts, Firebase Admin credentials, private
 geocoder keys, session secrets, or access tokens in `EXPO_PUBLIC_*`; Expo embeds
 those values in the browser bundle.
+
+`EXPO_PUBLIC_APP_ORIGIN` must be an HTTPS origin without a path, query,
+credentials, or fragment. HTTP is accepted only for loopback local development.
 
 ## Location and storage
 
@@ -55,11 +60,11 @@ management, logout purge, migration, and incident requirements.
 
 ## Browser bundle controls still required before production
 
-- Review and deploy least-privilege Firestore Security Rules; rules are not in
-  this repository and cannot be verified here.
+- Replace the checked-in deny-all Firestore Security Rules with an approved,
+  least-privilege production model. Initial staging intentionally relies on the
+  bundled visitation, reference, and phone-number fallbacks.
 - Decide whether Firebase App Check is required and configure its web provider.
-- Add production CSP, Permissions-Policy (especially geolocation),
-  Referrer-Policy, HSTS, frame-ancestors, and MIME-sniffing protections.
+- Review and harden the checked-in CSP and security headers for production.
 - Ensure source maps and error telemetry cannot disclose clinical inputs,
   identity data, coordinates, or configuration beyond public identifiers.
 - Perform dependency/SBOM and license scanning in CI.

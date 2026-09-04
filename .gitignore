@@ -7,10 +7,12 @@ node_modules/
 .expo/
 dist/
 web-build/
+.vercel/
 expo-env.d.ts
 secrets/
 .env
 .env.*
+!.env.example
 
 # Native
 .kotlin/

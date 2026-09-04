@@ -7,6 +7,7 @@ import {
 const DEFAULT_SESSION_URL =
   "https://portal.synapsestudio.dk/api/auth/product-session";
 const DEFAULT_LOGIN_URL = "https://portal.synapsestudio.dk/login";
+const DEFAULT_APP_ORIGIN = "https://ambuassist.synapsestudio.dk";
 
 export async function loadAmbuAssistSession(): Promise<SessionLookupResult> {
   try {
@@ -58,7 +59,8 @@ export function getPortalLoginUrl(returnTo?: string): string {
   );
   url.searchParams.set(
     "returnTo",
-    returnTo ?? "https://ambuassist.synapsestudio.dk/",
+    returnTo ??
+      `${process.env.EXPO_PUBLIC_APP_ORIGIN || DEFAULT_APP_ORIGIN}/`,
   );
   return url.toString();
 }

@@ -1,4 +1,7 @@
-import { loadAmbuAssistSession } from "./portalSession.web";
+import {
+  getPortalLoginUrl,
+  loadAmbuAssistSession,
+} from "./portalSession.web";
 
 const validResponse = {
   user: {
@@ -12,10 +15,28 @@ const validResponse = {
 
 describe("AmbuAssist Portal client", () => {
   const originalFetch = global.fetch;
+  const originalAppOrigin = process.env.EXPO_PUBLIC_APP_ORIGIN;
 
   afterEach(() => {
     global.fetch = originalFetch;
+    if (originalAppOrigin === undefined) {
+      delete process.env.EXPO_PUBLIC_APP_ORIGIN;
+    } else {
+      process.env.EXPO_PUBLIC_APP_ORIGIN = originalAppOrigin;
+    }
     jest.restoreAllMocks();
+  });
+
+  test("uses the configured app origin for the default login return URL", () => {
+    process.env.EXPO_PUBLIC_APP_ORIGIN =
+      "https://ambuassist-staging.synapsestudio.dk";
+
+    const loginUrl = new URL(getPortalLoginUrl());
+
+    expect(loginUrl.origin).toBe("https://portal.synapsestudio.dk");
+    expect(loginUrl.searchParams.get("returnTo")).toBe(
+      "https://ambuassist-staging.synapsestudio.dk/",
+    );
   });
 
   test("sends only a credentialed session lookup and authorizes explicit access", async () => {

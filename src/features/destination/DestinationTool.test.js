@@ -22,8 +22,11 @@ jest.mock("expo-location", () => ({
   requestForegroundPermissionsAsync: (...args) => mockGetPermissions(...args),
   getCurrentPositionAsync: (...args) => mockGetCurrentPosition(...args),
   getLastKnownPositionAsync: (...args) => mockGetLastKnownPosition(...args),
-  reverseGeocodeAsync: (...args) => mockReverseGeocode(...args),
   enableNetworkProviderAsync: jest.fn(),
+}));
+
+jest.mock("../../services/destinationGeocoder", () => ({
+  reverseGeocodeDestination: (...args) => mockReverseGeocode(...args),
 }));
 
 jest.mock("../../i18n/useT", () => {

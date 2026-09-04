@@ -19,8 +19,25 @@ export function Screen({
 }: PropsWithChildren<{ style?: StyleProp<ViewStyle> }>) {
   return (
     <SafeAreaView style={styles.safe} edges={["left", "right", "bottom"]}>
-      <View style={[styles.inner, style]}>{children}</View>
+      <ResponsiveToolContainer style={[styles.inner, style]}>
+        {children}
+      </ResponsiveToolContainer>
     </SafeAreaView>
+  );
+}
+
+export function ResponsiveToolContainer({
+  children,
+  style,
+  maxWidth = 960,
+}: PropsWithChildren<{
+  style?: StyleProp<ViewStyle>;
+  maxWidth?: number;
+}>) {
+  return (
+    <View style={[styles.responsiveContainer, { maxWidth }, style]}>
+      {children}
+    </View>
   );
 }
 
@@ -100,6 +117,7 @@ export function Input({
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "transparent" },
+  responsiveContainer: { flex: 1, width: "100%", alignSelf: "center" },
   inner: { flex: 1, padding: 18, gap: 14 },
 
   title: {

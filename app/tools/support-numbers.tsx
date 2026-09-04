@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  Alert,
-  Linking,
   ScrollView,
   Text,
   View,
@@ -9,6 +7,7 @@ import {
 
 import { SUPPORT_NUMBERS_FALLBACK } from "../../src/data/supportNumbersFallback";
 import { useT } from "../../src/i18n/useT";
+import { openPhoneNumber } from "../../src/services/phoneAction";
 import {
   getReference,
   type ReferenceDoc,
@@ -110,19 +109,7 @@ export default function SupportNumbersPage() {
   }, [numbers, lang]);
 
   const callNumber = async (phone: string) => {
-    try {
-      const url = `tel:${phone}`;
-      const supported = await Linking.canOpenURL(url);
-
-      if (!supported) {
-        Alert.alert("Kunne ikke åbne opkald", phone);
-        return;
-      }
-
-      await Linking.openURL(url);
-    } catch {
-      Alert.alert("Fejl", "Kunne ikke starte opkald.");
-    }
+    await openPhoneNumber(phone).catch(() => false);
   };
 
   const fallbackSources = [

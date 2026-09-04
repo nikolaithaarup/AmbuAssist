@@ -2,8 +2,6 @@ import * as Location from "expo-location";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   ActivityIndicator,
-  Alert,
-  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -35,6 +33,10 @@ import {
   LOCAL_VISITATION_DATA,
   type BackendVisitationData,
 } from "../../src/services/visitationService";
+import {
+  reverseGeocodeDestination,
+  type DestinationGeocodedAddress,
+} from "../../src/services/destinationGeocoder";
 import { useSettings } from "../../src/state/settings";
 import { Background } from "../../src/ui/Background";
 import { ClinicalDisclosure } from "../../src/ui/ClinicalDisclosure";
@@ -48,6 +50,7 @@ import {
   Title,
 } from "../../src/ui/Ui";
 import { theme } from "../../src/ui/theme";
+import { openPhoneNumber } from "../../src/services/phoneAction";
 
 import type {
   Area,
@@ -487,13 +490,11 @@ export default function DestinationTool() {
   const lastGeocodeCoordsRef = useRef<{ lat: number; lon: number } | null>(
     null,
   );
-  const lastGeocodeResultRef = useRef<
-    Location.LocationGeocodedAddress[] | null
-  >(null);
+  const lastGeocodeResultRef = useRef<DestinationGeocodedAddress[] | null>(null);
   const geocodeBlockedUntilRef = useRef(0);
-  const geocodeInFlightRef = useRef<Promise<
-    Location.LocationGeocodedAddress[]
-  > | null>(null);
+  const geocodeInFlightRef = useRef<Promise<DestinationGeocodedAddress[]> | null>(
+    null,
+  );
 
   const GEOCODE_COOLDOWN_MS = 20_000;
   const GEOCODE_BLOCK_MS = 90_000;
@@ -604,19 +605,7 @@ export default function DestinationTool() {
   };
 
   const callHospitalNumber = async (phone: string) => {
-    try {
-      const url = `tel:${phone}`;
-      const supported = await Linking.canOpenURL(url);
-
-      if (!supported) {
-        Alert.alert("Kunne ikke åbne opkald", phone);
-        return;
-      }
-
-      await Linking.openURL(url);
-    } catch {
-      Alert.alert("Fejl", "Kunne ikke starte opkald.");
-    }
+    await openPhoneNumber(phone).catch(() => false);
   };
 
   const getReverseGeocodeSafely = async (lat: number, lon: number) => {
@@ -650,7 +639,7 @@ export default function DestinationTool() {
 
     lastGeocodeAtRef.current = now;
 
-    const promise = Location.reverseGeocodeAsync({
+    const promise = reverseGeocodeDestination({
       latitude: lat,
       longitude: lon,
     })
@@ -1490,6 +1479,23 @@ export default function DestinationTool() {
       } else if (lower.includes("cooldown") || lower.includes("på cooldown")) {
         setLocationStatus("geocode_failed");
         setLocationMessage(message);
+      } else if (error?.code === "offline") {
+        setLocationStatus("geocode_failed");
+        setLocationMessage(
+          lang === "da"
+            ? "Ingen internetforbindelse til adresseopslag. Søg adressen eller vælg hospital manuelt."
+            : "No internet connection for address lookup. Search the address or choose a hospital manually.",
+        );
+      } else if (
+        error?.code === "provider_error" ||
+        error?.code === "invalid_response"
+      ) {
+        setLocationStatus("geocode_failed");
+        setLocationMessage(
+          lang === "da"
+            ? "Adresseopslaget er midlertidigt utilgængeligt. Prøv igen, søg adressen eller vælg hospital manuelt."
+            : "Address lookup is temporarily unavailable. Retry, search the address, or choose a hospital manually.",
+        );
       } else {
         setLocationStatus("error");
         setLocationMessage(message || t("dest_loc_error_body"));
@@ -1983,6 +1989,7 @@ export default function DestinationTool() {
               ) : selectedHospitalPhone ? (
                 <View style={{ gap: 10 }}>
                   <Text
+                    selectable
                     style={{
                       color: theme.colors.text,
                       fontWeight: "900",

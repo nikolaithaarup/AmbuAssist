@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
-  Linking,
   ScrollView,
   Text,
   View,
@@ -13,6 +11,7 @@ import {
   type HospitalPhoneNumber,
 } from "../../src/dev/hospitalNumbers";
 import { useT } from "../../src/i18n/useT";
+import { openPhoneNumber } from "../../src/services/phoneAction";
 import {
   getReference,
   type ReferenceDoc,
@@ -162,22 +161,7 @@ export default function TrombolysisPage() {
   }, []);
 
   const callHospitalNumber = async (phone: string) => {
-    try {
-      const url = `tel:${phone}`;
-      const supported = await Linking.canOpenURL(url);
-
-      if (!supported) {
-        Alert.alert(t("trombolysis_call_error_title"), phone);
-        return;
-      }
-
-      await Linking.openURL(url);
-    } catch {
-      Alert.alert(
-        t("trombolysis_call_error_title"),
-        t("trombolysis_call_error_body"),
-      );
-    }
+    await openPhoneNumber(phone).catch(() => false);
   };
 
   const disclaimerText =

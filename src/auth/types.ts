@@ -45,6 +45,7 @@ export function hasActiveAmbuAssistEntitlement(
   now = Date.now(),
 ): boolean {
   if (
+    !session.identity.emailVerified ||
     Number.isNaN(Date.parse(session.expiresAt)) ||
     Date.parse(session.expiresAt) <= now
   ) {

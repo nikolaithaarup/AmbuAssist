@@ -43,3 +43,5 @@ export async function saveLegacyBamProfile(bamId: string): Promise<void> {
 export function getPortalLoginUrl(): string {
   return "https://portal.synapsestudio.dk/login";
 }
+export function captureRequestedUrl(): void {}
+export function restoreRequestedUrl(): void {}

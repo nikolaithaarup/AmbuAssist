@@ -75,3 +75,19 @@ Static output and responsive layout prepare the app for a later PWA phase. No
 service worker, install manifest, background sync, or clinical-data cache is
 implemented here. Phase 4 must define update behavior and prevent stale clinical
 guidance before adding offline caching or installability.
+
+## Self-service sign-in
+
+Use the environment-specific AmbuAssist origin as the normal entry point.
+EXPO_PUBLIC_PORTAL_LOGIN_URL should point to Portal's /auth/ambuassist route.
+Portal redirects that route to the existing manual /login flow while
+AMBUASSIST_SELF_SERVICE_ENABLED is false.
+
+entry.js captures the initial URL before Expo Router initializes. The web auth gate
+does not mount a protected navigator until Portal authorizes access. The captured
+path, query and fragment are sent as returnTo; a small history restoration handles
+Expo 54 serializing a fragment before its query. No authentication or return state
+is stored in localStorage. Foreground and expiry checks repeat the server lookup.
+
+See the Portal repository's docs/AMBUASSIST_SELF_SERVICE.md for the migration,
+Firebase console prerequisites, complete staging enablement and rollback procedure.

@@ -1,7 +1,7 @@
 {
   "name": "ambuassist",
   "version": "1.1.2",
-  "main": "expo-router/entry",
+  "main": "entry.js",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",

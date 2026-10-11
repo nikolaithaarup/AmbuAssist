@@ -1,0 +1,19 @@
+{
+  "name": "AmbuAssist",
+  "short_name": "AmbuAssist",
+  "description": "Clinical reference and assessment support for ambulance personnel.",
+  "start_url": "/home",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#25311f",
+  "theme_color": "#25311f",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/pwa-icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

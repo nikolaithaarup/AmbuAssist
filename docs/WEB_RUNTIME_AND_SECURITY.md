@@ -28,6 +28,7 @@ Optional Expo public variables:
 - `EXPO_PUBLIC_APP_ORIGIN`
 - `EXPO_PUBLIC_PORTAL_SESSION_URL`
 - `EXPO_PUBLIC_PORTAL_LOGIN_URL`
+- `EXPO_PUBLIC_PORTAL_USAGE_URL`
 - `EXPO_PUBLIC_DESTINATION_GEOCODER_URL`
 
 The checked-in Firebase client defaults are public project identifiers, not
@@ -71,10 +72,30 @@ management, logout purge, migration, and incident requirements.
 
 ## PWA and offline status
 
-Static output and responsive layout prepare the app for a later PWA phase. No
-service worker, install manifest, background sync, or clinical-data cache is
-implemented here. Phase 4 must define update behavior and prevent stale clinical
-guidance before adding offline caching or installability.
+The static web build now includes an install manifest and a minimal service
+worker. The worker activates updates immediately and caches only fingerprinted
+`/_expo/static/` and `/assets/` files. It deliberately does not cache HTML,
+Portal/API responses, navigation requests, clinical inputs, GPS results, or
+destination searches. New clinical/reference content therefore requires a
+network-loaded current page; the PWA does not claim a stale offline clinical
+experience.
+
+The current in-memory page can continue using already loaded fingerprinted
+assets during a transient connection loss. Full offline navigation remains out
+of scope until clinical content ownership, freshness and rollback rules are
+approved.
+
+## Usage statistics boundary
+
+The browser sends only one aggregate `open` marker per authorized page document
+and an allow-listed tool identifier when a clinical tool route is opened. The
+payload cannot contain extra fields. It never includes account identity,
+clinical values/results, medication data, free text, addresses, searches or GPS
+coordinates. Failure is silent and never blocks a clinical workflow.
+
+Portal authenticates and rechecks the active AmbuAssist entitlement before
+accepting a marker. See Portal's `docs/AMBUASSIST_USAGE_STATISTICS.md` for the
+aggregate storage, administrator access and retention contract.
 
 ## Self-service sign-in
 

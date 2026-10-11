@@ -17,6 +17,8 @@ import {
   saveLegacyBamProfile,
 } from "./portalSession";
 import type { AuthState } from "./types";
+import { recordAppOpen } from "../analytics/usage";
+import { getSessionRefreshDelay } from "./sessionRefresh";
 
 type AuthContextValue = {
   state: AuthState;
@@ -29,6 +31,9 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: PropsWithChildren) {
   const [state, setState] = useState<AuthState>({ status: "checking" });
+  const shouldRecordOpen =
+    state.status === "authorized" &&
+    state.session.assurance === "portal-session";
 
   const wasAuthorized = useRef(false);
   const lookupVersion = useRef(0);
@@ -78,7 +83,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     );
     const timer = setTimeout(
       () => void refresh(),
-      Math.max(0, expiry - Date.now()),
+      getSessionRefreshDelay(expiry),
     );
     return () => clearTimeout(timer);
   }, [state, refresh]);
@@ -88,6 +93,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
     const timer = setTimeout(restoreRequestedUrl, 0);
     return () => clearTimeout(timer);
   }, [state.status]);
+
+  useEffect(() => {
+    if (shouldRecordOpen) void recordAppOpen();
+  }, [shouldRecordOpen]);
 
   const value = useMemo(
     () => ({

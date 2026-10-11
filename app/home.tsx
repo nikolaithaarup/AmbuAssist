@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { Image, Pressable, ScrollView, View } from "react-native";
+import { Image, Pressable, ScrollView, useWindowDimensions, View } from "react-native";
 import { ABOUT_SUPPORT_TOOL, FAVOURITABLE_TOOLS, HOME_TOOLS, type ToolDefinition } from "../src/features/tools/catalog";
 import { useT } from "../src/i18n/useT";
 import { useFavourites } from "../src/state/favourites";
@@ -11,6 +11,8 @@ import { theme } from "../src/ui/theme";
 import { Screen, Subtle, Title } from "../src/ui/Ui";
 
 export default function Home() {
+  const { width } = useWindowDimensions();
+  const compact = width < 600;
   const router = useRouter();
   const { setLanguage, settings } = useSettings();
   const { t } = useT();
@@ -40,21 +42,45 @@ export default function Home() {
 
   return (
     <Background variant="home">
-      <Screen style={{ paddingTop: 8 }}>
-        <View style={{ gap: 0, alignItems: "center", paddingBottom: 12 }}>
-          <Image
-            source={require("../assets/her-icon.png")}
-            style={{ width: 88, height: 88, marginTop: 10, marginBottom: 0, opacity: 0.95 }}
-            resizeMode="contain"
-          />
-          <Image
-            source={require("../assets/ambuassist-logo.png")}
-            style={{ width: "100%", maxWidth: 440, height: 76, marginTop: -14, marginBottom: -8 }}
-            resizeMode="contain"
-          />
-          <Subtle style={{ textAlign: "center", marginTop: 0, fontSize: 14 }}>{t("homeTagline")}</Subtle>
+      <Screen style={{ paddingTop: compact ? 2 : 8, paddingHorizontal: compact ? 10 : 18, gap: compact ? 4 : 14 }}>
+        <View style={{ gap: 0, alignItems: "center", paddingBottom: compact ? 4 : 12 }}>
+          <View
+            style={{
+              width: "100%",
+              flexDirection: compact ? "row" : "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: compact ? 4 : 0,
+            }}
+          >
+            <Image
+              source={require("../assets/her-icon.png")}
+              style={
+                compact
+                  ? { width: 48, height: 48, opacity: 0.95 }
+                  : { width: 88, height: 88, marginTop: 10, marginBottom: 0, opacity: 0.95 }
+              }
+              resizeMode="contain"
+            />
+            <Image
+              source={require("../assets/ambuassist-logo.png")}
+              style={
+                compact
+                  ? { flex: 1, maxWidth: 220, height: 44 }
+                  : { width: "100%", maxWidth: 440, height: 76, marginTop: -14, marginBottom: -8 }
+              }
+              resizeMode="contain"
+            />
 
-          <View style={{ flexDirection: "row", gap: 10, marginTop: 14, marginBottom: 0, alignItems: "center", justifyContent: "center" }}>
+            <View
+              style={{
+                flexDirection: "row",
+                gap: compact ? 4 : 10,
+                marginTop: compact ? 0 : 14,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
             {(["en", "da"] as const).map((language) => (
               <Pressable
                 key={language}
@@ -62,8 +88,10 @@ export default function Home() {
                 style={({ pressed }) => ({
                   opacity: pressed ? 0.82 : 1,
                   transform: [{ scale: pressed ? 0.96 : 1 }],
-                  padding: 7,
-                  borderRadius: 14,
+                  minWidth: compact ? 44 : undefined,
+                  minHeight: compact ? 44 : undefined,
+                  padding: compact ? 9 : 7,
+                  borderRadius: compact ? 12 : 14,
                   borderWidth: 1,
                   borderColor: theme.colors.cardBorder,
                   backgroundColor: settings.language === language ? theme.colors.accentSurface : "transparent",
@@ -74,16 +102,24 @@ export default function Home() {
               >
                 <Image
                   source={language === "en" ? require("../assets/flags/gb.png") : require("../assets/flags/dk.png")}
-                  style={{ width: 32, height: 32, borderRadius: 8 }}
+                  style={
+                    compact
+                      ? { width: 24, height: 24, borderRadius: 6 }
+                      : { width: 32, height: 32, borderRadius: 8 }
+                  }
                   resizeMode="cover"
                 />
               </Pressable>
             ))}
+            </View>
           </View>
+          <Subtle style={{ textAlign: "center", marginTop: compact ? 1 : 0, fontSize: compact ? 12 : 14 }}>
+            {t("homeTagline")}
+          </Subtle>
         </View>
 
-        <ScrollView contentContainerStyle={{ paddingBottom: 24, paddingTop: 8, paddingHorizontal: 8, alignItems: "center" }}>
-          <View style={{ width: "100%", maxWidth: 560, gap: 12 }}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 24, paddingTop: compact ? 2 : 8, paddingHorizontal: compact ? 0 : 8, alignItems: "center" }}>
+          <View style={{ width: "100%", maxWidth: 560, gap: compact ? 10 : 12 }}>
             {favouriteTools.length > 0 ? (
               <>
                 <Title style={{ fontSize: 19, marginBottom: 2 }}>

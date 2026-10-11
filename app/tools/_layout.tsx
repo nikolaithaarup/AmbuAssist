@@ -1,6 +1,6 @@
 import { Stack, usePathname, useRouter } from "expo-router";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Platform, Pressable, StatusBar, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useT } from "../../src/i18n/useT";
@@ -9,6 +9,7 @@ import { useFavourites } from "../../src/state/favourites";
 import { Background } from "../../src/ui/Background";
 import { hapticFavourite } from "../../src/ui/haptics";
 import { theme } from "../../src/ui/theme";
+import { recordToolOpen, usageToolForPath } from "../../src/analytics/usage";
 
 const HEADER_BAR_HEIGHT = 58;
 const TITLE_KEYS: Record<string, any> = {
@@ -61,6 +62,14 @@ export default function ToolsLayout() {
   const canFavourite = FAVOURITABLE_TOOLS.some(
     (tool) => tool.path === pathname,
   );
+  const trackedTool = useRef<string | null>(null);
+
+  useEffect(() => {
+    const tool = usageToolForPath(pathname);
+    if (!tool || trackedTool.current === tool) return;
+    trackedTool.current = tool;
+    void recordToolOpen(tool);
+  }, [pathname]);
 
   return (
     <Background>

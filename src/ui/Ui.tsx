@@ -10,15 +10,22 @@ import {
   type StyleProp,
   ViewStyle,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  type Edge,
+} from "react-native-safe-area-context";
 import { theme } from "./theme";
 
 export function Screen({
   children,
   style,
-}: PropsWithChildren<{ style?: StyleProp<ViewStyle> }>) {
+  edges = ["left", "right", "bottom"],
+}: PropsWithChildren<{
+  style?: StyleProp<ViewStyle>;
+  edges?: readonly Edge[];
+}>) {
   return (
-    <SafeAreaView style={styles.safe} edges={["left", "right", "bottom"]}>
+    <SafeAreaView style={styles.safe} edges={edges}>
       <ResponsiveToolContainer style={[styles.inner, style]}>
         {children}
       </ResponsiveToolContainer>

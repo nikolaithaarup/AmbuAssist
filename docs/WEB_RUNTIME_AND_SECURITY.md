@@ -29,7 +29,6 @@ Optional Expo public variables:
 - `EXPO_PUBLIC_PORTAL_SESSION_URL`
 - `EXPO_PUBLIC_PORTAL_LOGIN_URL`
 - `EXPO_PUBLIC_PORTAL_USAGE_URL`
-- `EXPO_PUBLIC_DESTINATION_GEOCODER_URL`
 
 The checked-in Firebase client defaults are public project identifiers, not
 credentials. Never put service accounts, Firebase Admin credentials, private
@@ -41,11 +40,30 @@ credentials, or fragment. HTTP is accepted only for loopback local development.
 
 ## Location and storage
 
-Native reverse geocoding remains in `destinationGeocoder.native.ts`. Web uses
-the public Danish DAWA reverse endpoint by default and normalizes its mini result
-to the same shared address shape. A replacement endpoint may use the override
-variable but must accept `x=<longitude>`, `y=<latitude>`, and `struktur=mini`, and
-return DAWA mini-compatible JSON without a browser secret.
+Native reverse geocoding remains in `destinationGeocoder.native.ts`. Web posts
+coordinates to the same-origin `/api/destination-geocode` function. That
+server-side function exchanges Datafordeler OAuth client credentials for a
+short-lived bearer token and queries the official DAR GraphQL service. The
+credentials and bearer token are never embedded in browser JavaScript or put in
+request URLs.
+
+Production requires these server-only Vercel variables:
+
+- `DATAFORDELER_CLIENT_ID`
+- `DATAFORDELER_CLIENT_SECRET`
+
+Create a Datafordeler Administration user, create an IT system, and select its
+OAuth Shared Secret authentication method. Store that IT system's Client ID and
+Client Secret in the AmbuAssist Vercel project's Production environment. Do not
+prefix either name with `EXPO_PUBLIC_`.
+
+The lookup uses a DAR `Adressepunkt` spatial `within` filter in EPSG:4326, while
+DAR returns address-point WKT in EPSG:25832. The server converts the requested
+coordinate to EPSG:25832 before measuring distance. It resolves the selected
+point through `DAR_Husnummer.adgangspunkt` and consumes
+`adgangsadressebetegnelse` and `husnummertekst`. Results over 100 metres away,
+multiple addresses for one point, or distinct near-equal candidates are rejected
+instead of being passed to clinical routing.
 
 Coordinates are held in component memory for the active lookup and are not
 written to AsyncStorage/localStorage. Browser geolocation still requires HTTPS

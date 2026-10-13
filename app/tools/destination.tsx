@@ -1245,11 +1245,18 @@ export default function DestinationTool() {
       });
       const region = String(first.region ?? "").trim();
       const name = String(first.name ?? "").trim();
+      const geocoderDistance =
+        typeof first.distanceMeters === "number" &&
+        Number.isFinite(first.distanceMeters)
+          ? Math.max(0, first.distanceMeters)
+          : 0;
+      const confidenceAccuracy = Math.max(accuracy ?? 0, geocoderDistance);
 
       setDiagnostics((current) => ({
         ...current,
         reverseGeocodeDurationMs: Date.now() - reverseGeocodeStartedAt,
         rawReverseGeocode: first,
+        geocoderDistanceMeters: geocoderDistance,
         parsedStreet: street,
         parsedHouseNumber: parsedNumber.number,
         parsedPostalCode: postcode,
@@ -1266,7 +1273,7 @@ export default function DestinationTool() {
         city: city || subregion || region,
         district,
         subregion: subregion || region,
-        accuracyMeters: accuracy ?? undefined,
+        accuracyMeters: confidenceAccuracy || undefined,
         locationSource,
         cachedAgeMs,
       } as const;
@@ -1288,7 +1295,7 @@ export default function DestinationTool() {
       if (strategy.area === "byen") {
         if (strategy.source === "postal_district_fallback") {
           const confidence = classifyLocationConfidence({
-            accuracy,
+            accuracy: confidenceAccuracy,
             hasStreet: true,
             hasCompleteRoutingAddress: true,
           });
@@ -1330,7 +1337,7 @@ export default function DestinationTool() {
 
         const routeResult = strategy.route;
         const confidence = classifyLocationConfidence({
-          accuracy,
+          accuracy: confidenceAccuracy,
           hasStreet: true,
           hasCompleteRoutingAddress: routeResult.status === "single",
         });
@@ -1405,7 +1412,7 @@ export default function DestinationTool() {
 
       if (strategy.area === "region") {
         const confidence = classifyLocationConfidence({
-          accuracy,
+          accuracy: confidenceAccuracy,
           hasStreet: !!street,
           hasCompleteRoutingAddress: true,
         });

@@ -28,6 +28,18 @@ export type { DoseUnit, WeightFormula };
 
 export type Language = "en" | "da";
 
+type LanguageDocument = { documentElement: { lang: string } };
+
+export function applyDocumentLanguage(
+  language: Language,
+  target: LanguageDocument | undefined =
+    typeof document === "undefined" ? undefined : document,
+) {
+  if (target) {
+    target.documentElement.lang = language;
+  }
+}
+
 export type MedConfig = {
   id: string;
   name: string;
@@ -390,6 +402,10 @@ export function SettingsProvider({ children }: PropsWithChildren) {
     if (!isReady) return;
     AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(settings)).catch(() => {});
   }, [settings, isReady]);
+
+  useEffect(() => {
+    applyDocumentLanguage(settings.language);
+  }, [settings.language]);
 
   const value = useMemo(
     () => ({

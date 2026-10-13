@@ -489,6 +489,62 @@ describe("DestinationTool simplified entry flow", () => {
     ).toBeGreaterThan(0);
   });
 
+  test("a distant reverse-geocoder match requires confirmation despite accurate GPS", async () => {
+    mockReverseGeocode.mockResolvedValue([
+      {
+        street: "Frederiksberg Allé",
+        name: "13A",
+        postalCode: "1621",
+        city: "København V",
+        district: "Vesterbro",
+        subregion: "København",
+        formattedAddress: "Frederiksberg Allé 13A, 1621 København V",
+        distanceMeters: 60,
+      },
+    ]);
+    const renderer = await renderTool();
+    await pressGps(renderer.root);
+
+    expect(renderedText(renderer.root)).toContain("Kontrollér den fundne adresse");
+    expect(renderer.root.findAllByProps({ testID: "destination-result" })).toHaveLength(0);
+  });
+
+  test("permission denial preserves both manual recovery paths", async () => {
+    mockGetPermissions.mockResolvedValue({ granted: false });
+    const renderer = await renderTool();
+    await pressGps(renderer.root);
+
+    expect(renderedText(renderer.root)).toContain("Søg adresse manuelt");
+    expect(renderedText(renderer.root)).toContain("Vælg hospital manuelt");
+    expect(renderer.root.findAllByProps({ testID: "destination-result" })).toHaveLength(0);
+  });
+
+  test("GPS timeout preserves both manual recovery paths", async () => {
+    mockGetCurrentPosition.mockRejectedValue(new Error("LOCATION_TIMEOUT"));
+    const renderer = await renderTool();
+    await pressGps(renderer.root);
+
+    expect(renderedText(renderer.root)).toContain("GPS svarede ikke");
+    expect(renderedText(renderer.root)).toContain("Søg adresse manuelt");
+    expect(renderedText(renderer.root)).toContain("Vælg hospital manuelt");
+    expect(renderer.root.findAllByProps({ testID: "destination-result" })).toHaveLength(0);
+  });
+
+  test("reverse-geocoder network failure never produces a destination", async () => {
+    mockReverseGeocode.mockRejectedValue(
+      Object.assign(new Error("network down"), { code: "provider_error" }),
+    );
+    const renderer = await renderTool();
+    await pressGps(renderer.root);
+
+    expect(renderedText(renderer.root)).toContain(
+      "Adresseopslaget er midlertidigt utilgængeligt",
+    );
+    expect(renderedText(renderer.root)).toContain("Søg adresse manuelt");
+    expect(renderedText(renderer.root)).toContain("Vælg hospital manuelt");
+    expect(renderer.root.findAllByProps({ testID: "destination-result" })).toHaveLength(0);
+  });
+
   test("poor confidence offers recovery and no automatic result", async () => {
     mockGetCurrentPosition.mockResolvedValue(location(101));
     const renderer = await renderTool();

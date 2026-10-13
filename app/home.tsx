@@ -1,5 +1,11 @@
 import { useRouter } from "expo-router";
-import { Image, Pressable, ScrollView, useWindowDimensions, View } from "react-native";
+import {
+  Image,
+  Pressable,
+  ScrollView,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { ABOUT_SUPPORT_TOOL, FAVOURITABLE_TOOLS, HOME_TOOLS, type ToolDefinition } from "../src/features/tools/catalog";
 import { useT } from "../src/i18n/useT";
 import { useFavourites } from "../src/state/favourites";
@@ -33,7 +39,9 @@ export default function Home() {
     <NavigationCard
       key={`${titleOnly ? "favourite" : "tool"}-${tool.path}`}
       title={t(tool.titleKey)}
-      description={!titleOnly && tool.descKey ? t(tool.descKey) : undefined}
+      description={
+        !compact && !titleOnly && tool.descKey ? t(tool.descKey) : undefined
+      }
       favourite={isFavourite(tool.path)}
       onPress={() => openTool(tool)}
       onToggleFavourite={() => toggleTool(tool)}
@@ -42,7 +50,14 @@ export default function Home() {
 
   return (
     <Background variant="home">
-      <Screen style={{ paddingTop: compact ? 2 : 8, paddingHorizontal: compact ? 10 : 18, gap: compact ? 4 : 14 }}>
+      <Screen
+        edges={["top", "left", "right", "bottom"]}
+        style={{
+          paddingTop: compact ? 2 : 8,
+          paddingHorizontal: compact ? 10 : 18,
+          gap: compact ? 4 : 14,
+        }}
+      >
         <View style={{ gap: 0, alignItems: "center", paddingBottom: compact ? 4 : 12 }}>
           <View
             style={{
@@ -81,41 +96,57 @@ export default function Home() {
                 justifyContent: "center",
               }}
             >
-            {(["en", "da"] as const).map((language) => (
-              <Pressable
-                key={language}
-                onPress={() => setLanguage(language)}
-                style={({ pressed }) => ({
-                  opacity: pressed ? 0.82 : 1,
-                  transform: [{ scale: pressed ? 0.96 : 1 }],
-                  minWidth: compact ? 44 : undefined,
-                  minHeight: compact ? 44 : undefined,
-                  padding: compact ? 9 : 7,
-                  borderRadius: compact ? 12 : 14,
-                  borderWidth: 1,
-                  borderColor: theme.colors.cardBorder,
-                  backgroundColor: settings.language === language ? theme.colors.accentSurface : "transparent",
-                  alignSelf: "center",
-                })}
-                accessibilityRole="button"
-                accessibilityLabel={language === "en" ? "English" : "Dansk"}
-              >
-                <Image
-                  source={language === "en" ? require("../assets/flags/gb.png") : require("../assets/flags/dk.png")}
-                  style={
-                    compact
-                      ? { width: 24, height: 24, borderRadius: 6 }
-                      : { width: 32, height: 32, borderRadius: 8 }
+              {(["en", "da"] as const).map((language) => (
+                <Pressable
+                  key={language}
+                  onPress={() => setLanguage(language)}
+                  style={({ pressed }) => ({
+                    opacity: pressed ? 0.82 : 1,
+                    transform: [{ scale: pressed ? 0.96 : 1 }],
+                    minWidth: 44,
+                    minHeight: 44,
+                    padding: compact ? 9 : 7,
+                    borderRadius: compact ? 12 : 14,
+                    borderWidth: 1,
+                    borderColor: theme.colors.cardBorder,
+                    backgroundColor:
+                      settings.language === language
+                        ? theme.colors.accentSurface
+                        : "transparent",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    alignSelf: "center",
+                  })}
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    language === "en" ? "English" : "Dansk"
                   }
-                  resizeMode="cover"
-                />
-              </Pressable>
-            ))}
+                  accessibilityState={{
+                    selected: settings.language === language,
+                  }}
+                >
+                  <Image
+                    source={
+                      language === "en"
+                        ? require("../assets/flags/gb.png")
+                        : require("../assets/flags/dk.png")
+                    }
+                    style={
+                      compact
+                        ? { width: 24, height: 24, borderRadius: 6 }
+                        : { width: 32, height: 32, borderRadius: 8 }
+                    }
+                    resizeMode="cover"
+                  />
+                </Pressable>
+              ))}
             </View>
           </View>
-          <Subtle style={{ textAlign: "center", marginTop: compact ? 1 : 0, fontSize: compact ? 12 : 14 }}>
-            {t("homeTagline")}
-          </Subtle>
+          {!compact ? (
+            <Subtle style={{ textAlign: "center", marginTop: 0, fontSize: 14 }}>
+              {t("homeTagline")}
+            </Subtle>
+          ) : null}
         </View>
 
         <ScrollView contentContainerStyle={{ paddingBottom: 24, paddingTop: compact ? 2 : 8, paddingHorizontal: compact ? 0 : 8, alignItems: "center" }}>
@@ -142,7 +173,7 @@ export default function Home() {
             <NavigationCard
               testID="home-about-support"
               title={t(ABOUT_SUPPORT_TOOL.titleKey)}
-              description={t(ABOUT_SUPPORT_TOOL.descKey)}
+              description={compact ? undefined : t(ABOUT_SUPPORT_TOOL.descKey)}
               secondary
               onPress={() => openTool(ABOUT_SUPPORT_TOOL)}
             />

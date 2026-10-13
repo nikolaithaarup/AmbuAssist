@@ -7,6 +7,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import type { DestinationCategoryIntent } from "../../domain/destination/categoryRouting";
 import { Input, Label, Subtle, Title } from "../../ui/Ui";
 import { theme } from "../../ui/theme";
@@ -208,8 +209,9 @@ export function DestinationCategoryPicker({
               backgroundColor: "rgba(0,0,0,0.6)",
             }}
           />
-          <View
+          <SafeAreaView
             accessibilityViewIsModal
+            edges={["bottom"]}
             style={{
               maxHeight: "88%",
               borderTopLeftRadius: 24,
@@ -363,7 +365,7 @@ export function DestinationCategoryPicker({
                 </Subtle>
               )}
             </ScrollView>
-          </View>
+          </SafeAreaView>
         </View>
       </Modal>
     </View>

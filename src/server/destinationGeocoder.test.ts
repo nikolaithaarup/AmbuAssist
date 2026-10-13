@@ -1,3 +1,5 @@
+import { Buffer } from "node:buffer";
+
 import {
   DestinationProviderAuthError,
   DestinationProviderError,
@@ -75,10 +77,18 @@ describe("Datafordeler DAR destination geocoder", () => {
     });
 
     const [authUrl, authOptions] = fetcher.mock.calls[0];
+    expect(authUrl).toBe(
+      "https://auth.datafordeler.dk/realms/distribution/protocol/openid-connect/token",
+    );
     expect(authUrl).not.toContain(credentials.clientId);
     expect(authUrl).not.toContain(credentials.clientSecret);
-    expect(String(authOptions.body)).toContain("client_id=test-client");
-    expect(String(authOptions.body)).toContain("client_secret=test-secret");
+    expect(authOptions.headers.Authorization).toBe(
+      `Basic ${Buffer.from("test-client:test-secret", "utf8").toString("base64")}`,
+    );
+    const authBody = new URLSearchParams(String(authOptions.body));
+    expect(authBody.get("grant_type")).toBe("client_credentials");
+    expect(authBody.has("client_id")).toBe(false);
+    expect(authBody.has("client_secret")).toBe(false);
 
     const [queryUrl, queryOptions] = fetcher.mock.calls[1];
     expect(queryUrl).not.toContain(credentials.clientId);

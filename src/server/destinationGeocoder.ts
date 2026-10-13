@@ -1,3 +1,5 @@
+import { Buffer } from "node:buffer";
+
 import proj4 from "proj4";
 
 import type {
@@ -194,14 +196,17 @@ async function getAccessToken(
 
   accessTokenRequest = (async () => {
     const body = new URLSearchParams({
-      client_id: credentials.clientId,
-      client_secret: credentials.clientSecret,
       grant_type: "client_credentials",
     });
+    const basicCredentials = Buffer.from(
+      `${credentials.clientId}:${credentials.clientSecret}`,
+      "utf8",
+    ).toString("base64");
     const response = await fetcher(DATAFORDELER_AUTH_ENDPOINT, {
       method: "POST",
       headers: {
         Accept: "application/json",
+        Authorization: `Basic ${basicCredentials}`,
         "Content-Type": "application/x-www-form-urlencoded",
       },
       body: body.toString(),

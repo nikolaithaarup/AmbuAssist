@@ -1,7 +1,7 @@
-import handler from "./destination-geocode";
-import { reverseGeocodeWithDar } from "../src/server/destinationGeocoder";
+import handler from "../../api/destination-geocode";
+import { reverseGeocodeWithDar } from "./destinationGeocoder";
 
-jest.mock("../src/server/destinationGeocoder", () => ({
+jest.mock("./destinationGeocoder", () => ({
   reverseGeocodeWithDar: jest.fn(),
 }));
 

@@ -1,52 +1,87 @@
 import { reverseGeocodeWithDar } from "../src/server/destinationGeocoder";
 
-function json(body: unknown, status: number): Response {
-  return Response.json(body, {
-    status,
-    headers: {
-      "Cache-Control": "no-store",
-      "Content-Security-Policy": "default-src 'none'",
-      "X-Content-Type-Options": "nosniff",
-    },
-  });
+type HeaderValue = string | string[] | undefined;
+
+type VercelRequestLike = {
+  body?: unknown;
+  headers: Record<string, HeaderValue>;
+  method?: string;
+};
+
+type VercelResponseLike = {
+  json(body: unknown): void;
+  setHeader(name: string, value: string): void;
+  status(code: number): VercelResponseLike;
+};
+
+function header(request: VercelRequestLike, name: string): string | undefined {
+  const value = request.headers[name.toLowerCase()];
+  return Array.isArray(value) ? value[0] : value;
 }
 
-function isSameOrigin(request: Request): boolean {
-  const origin = request.headers.get("origin");
-  if (!origin) return false;
-  try {
-    const sameOrigin = origin === new URL(request.url).origin;
-    const fetchSite = request.headers.get("sec-fetch-site");
-    return sameOrigin && (!fetchSite || fetchSite === "same-origin");
-  } catch {
-    return false;
+function json(
+  response: VercelResponseLike,
+  body: unknown,
+  status: number,
+): void {
+  response.setHeader("Cache-Control", "no-store");
+  response.setHeader("Content-Security-Policy", "default-src 'none'");
+  response.setHeader("X-Content-Type-Options", "nosniff");
+  response.status(status).json(body);
+}
+
+function isSameOrigin(request: VercelRequestLike): boolean {
+  const origin = header(request, "origin");
+  const host = header(request, "x-forwarded-host") ?? header(request, "host");
+  const protocol = header(request, "x-forwarded-proto") ?? "https";
+  if (!origin || !host || origin !== `${protocol}://${host}`) return false;
+
+  const fetchSite = header(request, "sec-fetch-site");
+  return !fetchSite || fetchSite === "same-origin";
+}
+
+function requestBody(request: VercelRequestLike): unknown {
+  if (typeof request.body === "string") return JSON.parse(request.body);
+  return request.body;
+}
+
+export default async function handler(
+  request: VercelRequestLike,
+  response: VercelResponseLike,
+): Promise<void> {
+  if (request.method !== "POST") {
+    json(response, { error: "method_not_allowed" }, 405);
+    return;
   }
-}
-
-export default async function handler(request: Request): Promise<Response> {
-  if (request.method !== "POST") return json({ error: "method_not_allowed" }, 405);
-  if (!isSameOrigin(request)) return json({ error: "forbidden_origin" }, 403);
-  if (!request.headers.get("content-type")?.startsWith("application/json")) {
-    return json({ error: "invalid_content_type" }, 415);
+  if (!isSameOrigin(request)) {
+    json(response, { error: "forbidden_origin" }, 403);
+    return;
+  }
+  if (!header(request, "content-type")?.startsWith("application/json")) {
+    json(response, { error: "invalid_content_type" }, 415);
+    return;
   }
 
   let body: unknown;
   try {
-    body = await request.json();
+    body = requestBody(request);
   } catch {
-    return json({ error: "invalid_request" }, 400);
+    json(response, { error: "invalid_request" }, 400);
+    return;
   }
 
   const latitude = Number((body as Record<string, unknown>)?.latitude);
   const longitude = Number((body as Record<string, unknown>)?.longitude);
   if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
-    return json({ error: "invalid_coordinates" }, 400);
+    json(response, { error: "invalid_coordinates" }, 400);
+    return;
   }
 
   const clientId = process.env.DATAFORDELER_CLIENT_ID ?? "";
   const clientSecret = process.env.DATAFORDELER_CLIENT_SECRET ?? "";
   if (!clientId || !clientSecret) {
-    return json({ error: "provider_not_configured" }, 503);
+    json(response, { error: "provider_not_configured" }, 503);
+    return;
   }
 
   try {
@@ -54,8 +89,8 @@ export default async function handler(request: Request): Promise<Response> {
       { latitude, longitude },
       { clientId, clientSecret },
     );
-    return json({ address }, 200);
+    json(response, { address }, 200);
   } catch {
-    return json({ error: "provider_unavailable" }, 502);
+    json(response, { error: "provider_unavailable" }, 502);
   }
 }

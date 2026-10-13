@@ -12,12 +12,45 @@ const originalClientSecret = process.env.DATAFORDELER_CLIENT_SECRET;
 function request(
   headers: Record<string, string>,
   body: unknown = { latitude: 55.6761, longitude: 12.5683 },
-): Request {
-  return new Request("https://ambuassist.synapsestudio.dk/api/destination-geocode", {
+) {
+  return {
     method: "POST",
-    headers,
-    body: JSON.stringify(body),
-  });
+    headers: {
+      host: "ambuassist.synapsestudio.dk",
+      "x-forwarded-proto": "https",
+      ...Object.fromEntries(
+        Object.entries(headers).map(([name, value]) => [name.toLowerCase(), value]),
+      ),
+    },
+    body,
+  };
+}
+
+function response() {
+  const result = {
+    body: undefined as unknown,
+    headers: {} as Record<string, string>,
+    statusCode: 200,
+  };
+  const adapter = {
+    json(body: unknown) {
+      result.body = body;
+    },
+    setHeader(name: string, value: string) {
+      result.headers[name] = value;
+    },
+    status(code: number) {
+      result.statusCode = code;
+      return adapter;
+    },
+  };
+  return { adapter, result };
+}
+
+async function invoke(headers: Record<string, string>, body?: unknown) {
+  const { adapter, result } = response();
+  await handler(request(headers, body), adapter);
+  return result;
 }
 
 describe("destination geocoder API boundary", () => {
@@ -33,26 +66,22 @@ describe("destination geocoder API boundary", () => {
   });
 
   test("rejects requests without a matching browser origin", async () => {
-    const response = await handler(
-      request({ "Content-Type": "application/json" }),
-    );
-    expect(response.status).toBe(403);
+    const result = await invoke({ "Content-Type": "application/json" });
+    expect(result.statusCode).toBe(403);
     expect(mockedReverseGeocode).not.toHaveBeenCalled();
   });
 
   test("rejects cross-site fetch metadata even when Origin is spoofed", async () => {
-    const response = await handler(
-      request({
-        "Content-Type": "application/json",
-        Origin: "https://ambuassist.synapsestudio.dk",
-        "Sec-Fetch-Site": "cross-site",
-      }),
-    );
-    expect(response.status).toBe(403);
+    const result = await invoke({
+      "Content-Type": "application/json",
+      Origin: "https://ambuassist.synapsestudio.dk",
+      "Sec-Fetch-Site": "cross-site",
+    });
+    expect(result.statusCode).toBe(403);
     expect(mockedReverseGeocode).not.toHaveBeenCalled();
   });
 
-  test("returns only the normalized lookup result to a same-origin request", async () => {
+  test("accepts a same-origin Node.js serverless request", async () => {
     mockedReverseGeocode.mockResolvedValue({
       street: "Testvej",
       streetNumber: "1",
@@ -60,15 +89,13 @@ describe("destination geocoder API boundary", () => {
       city: "København Ø",
       formattedAddress: "Testvej 1, 2100 København Ø",
     });
-    const response = await handler(
-      request({
-        "Content-Type": "application/json",
-        Origin: "https://ambuassist.synapsestudio.dk",
-        "Sec-Fetch-Site": "same-origin",
-      }),
-    );
-    expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toMatchObject({
+    const result = await invoke({
+      "Content-Type": "application/json",
+      Origin: "https://ambuassist.synapsestudio.dk",
+      "Sec-Fetch-Site": "same-origin",
+    });
+    expect(result.statusCode).toBe(200);
+    expect(result.body).toMatchObject({
       address: { formattedAddress: "Testvej 1, 2100 København Ø" },
     });
     expect(mockedReverseGeocode).toHaveBeenCalledWith(
@@ -79,15 +106,11 @@ describe("destination geocoder API boundary", () => {
 
   test("does not leak provider authentication failures", async () => {
     mockedReverseGeocode.mockRejectedValue(new Error("credential detail"));
-    const response = await handler(
-      request({
-        "Content-Type": "application/json",
-        Origin: "https://ambuassist.synapsestudio.dk",
-      }),
-    );
-    expect(response.status).toBe(502);
-    await expect(response.json()).resolves.toEqual({
-      error: "provider_unavailable",
+    const result = await invoke({
+      "Content-Type": "application/json",
+      Origin: "https://ambuassist.synapsestudio.dk",
     });
+    expect(result.statusCode).toBe(502);
+    expect(result.body).toEqual({ error: "provider_unavailable" });
   });
 });

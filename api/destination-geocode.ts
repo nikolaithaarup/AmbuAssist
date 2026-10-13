@@ -45,6 +45,23 @@ function requestBody(request: VercelRequestLike): unknown {
   return request.body;
 }
 
+function logProviderFailure(error: unknown): void {
+  const name = error instanceof Error ? error.name : "UnknownError";
+  const category =
+    name === "DestinationProviderAuthError"
+      ? "authentication"
+      : name === "DestinationProviderError"
+        ? "provider"
+        : name === "TimeoutError" || name === "AbortError"
+          ? "timeout"
+          : "network";
+  const status =
+    error instanceof Error
+      ? error.message.match(/HTTP (\d{3})/u)?.[1] ?? "unavailable"
+      : "unavailable";
+  console.error("Destination geocoder request failed.", { category, status });
+}
+
 export default async function handler(
   request: VercelRequestLike,
   response: VercelResponseLike,
@@ -90,7 +107,8 @@ export default async function handler(
       { clientId, clientSecret },
     );
     json(response, { address }, 200);
-  } catch {
+  } catch (error) {
+    logProviderFailure(error);
     json(response, { error: "provider_unavailable" }, 502);
   }
 }

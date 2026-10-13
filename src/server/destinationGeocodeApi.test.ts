@@ -105,6 +105,7 @@ describe("destination geocoder API boundary", () => {
   });
 
   test("does not leak provider authentication failures", async () => {
+    const log = jest.spyOn(console, "error").mockImplementation(() => undefined);
     mockedReverseGeocode.mockRejectedValue(new Error("credential detail"));
     const result = await invoke({
       "Content-Type": "application/json",
@@ -112,5 +113,11 @@ describe("destination geocoder API boundary", () => {
     });
     expect(result.statusCode).toBe(502);
     expect(result.body).toEqual({ error: "provider_unavailable" });
+    expect(log).toHaveBeenCalledWith("Destination geocoder request failed.", {
+      category: "network",
+      status: "unavailable",
+    });
+    expect(JSON.stringify(log.mock.calls)).not.toContain("credential detail");
+    log.mockRestore();
   });
 });

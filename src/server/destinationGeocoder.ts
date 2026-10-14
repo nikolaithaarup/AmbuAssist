@@ -7,7 +7,7 @@ import type {
   ReverseGeocodeCoordinates,
 } from "../services/destinationGeocoder.types";
 
-const DATAFORDELER_ENDPOINT = "https://graphql.datafordeler.dk/DAR/v1";
+const DATAFORDELER_ENDPOINT = "https://graphql.datafordeler.dk/DAR/v3";
 const DATAFORDELER_AUTH_ENDPOINT =
   "https://auth.datafordeler.dk/realms/distribution/protocol/openid-connect/token";
 const SEARCH_RADIUS_METERS = 120;
@@ -25,7 +25,7 @@ const ADDRESS_POINT_QUERY = `
       first: ${MAXIMUM_CANDIDATES}
       registreringstid: $time
       virkningstid: $time
-      where: { position: { within: { wkt: $area, crs: 4326 } } }
+      where: { position: { within: { wkt: $area, crs: 25832 } } }
     ) {
       nodes {
         id_lokalId
@@ -114,14 +114,11 @@ function searchPolygon({
   latitude,
   longitude,
 }: ReverseGeocodeCoordinates): string {
-  const latitudeDelta = SEARCH_RADIUS_METERS / 111_320;
-  const longitudeDelta =
-    SEARCH_RADIUS_METERS /
-    (111_320 * Math.max(0.2, Math.cos((latitude * Math.PI) / 180)));
-  const west = longitude - longitudeDelta;
-  const east = longitude + longitudeDelta;
-  const south = latitude - latitudeDelta;
-  const north = latitude + latitudeDelta;
+  const [easting, northing] = projectToEtrs89Utm32({ latitude, longitude });
+  const west = easting - SEARCH_RADIUS_METERS;
+  const east = easting + SEARCH_RADIUS_METERS;
+  const south = northing - SEARCH_RADIUS_METERS;
+  const north = northing + SEARCH_RADIUS_METERS;
   return `POLYGON((${west} ${south},${east} ${south},${east} ${north},${west} ${north},${west} ${south}))`;
 }
 

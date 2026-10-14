@@ -46,7 +46,7 @@ function houseNumber(address: string, number: string) {
 describe("Datafordeler DAR destination geocoder", () => {
   beforeEach(() => resetDestinationGeocoderTokenCacheForTests());
 
-  test("uses OAuth headers, an EPSG:4326 spatial filter, and EPSG:25832 distances", async () => {
+  test("uses DAR v3 with OAuth and an EPSG:25832 search and distance boundary", async () => {
     const fetcher = jest
       .fn()
       .mockResolvedValueOnce(
@@ -91,14 +91,32 @@ describe("Datafordeler DAR destination geocoder", () => {
     expect(authBody.has("client_secret")).toBe(false);
 
     const [queryUrl, queryOptions] = fetcher.mock.calls[1];
+    expect(queryUrl).toBe("https://graphql.datafordeler.dk/DAR/v3");
     expect(queryUrl).not.toContain(credentials.clientId);
     expect(queryUrl).not.toContain(credentials.clientSecret);
     expect(queryOptions.headers.Authorization).toBe("Bearer short-lived-token");
     const queryBody = JSON.parse(String(queryOptions.body));
     expect(queryBody.query).toContain("position: { within:");
-    expect(queryBody.query).toContain("crs: 4326");
+    expect(queryBody.query).toContain("crs: 25832");
     expect(queryBody.variables.area).toMatch(/^POLYGON\(\(/u);
     expect(queryBody.variables.area).not.toContain(credentials.clientSecret);
+    const polygonNumbers = queryBody.variables.area
+      .match(/-?\d+(?:\.\d+)?/gu)
+      ?.map(Number);
+    expect(polygonNumbers).toHaveLength(10);
+    const [easting, northing] = projectToEtrs89Utm32(coordinates);
+    expect(polygonNumbers).toEqual([
+      easting - 120,
+      northing - 120,
+      easting + 120,
+      northing - 120,
+      easting + 120,
+      northing + 120,
+      easting - 120,
+      northing + 120,
+      easting - 120,
+      northing - 120,
+    ]);
   });
 
   test("rejects invalid OAuth credentials", async () => {

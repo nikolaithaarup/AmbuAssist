@@ -29,6 +29,23 @@ export function Screen({
   edges?: readonly Edge[];
 }>) {
   const { width } = useWindowDimensions();
+  const safeAreaEdges =
+    Platform.OS === "web"
+      ? {
+          top: edges.includes("top")
+            ? ("additive" as const)
+            : ("off" as const),
+          right: edges.includes("right")
+            ? ("additive" as const)
+            : ("off" as const),
+          bottom: edges.includes("bottom")
+            ? ("additive" as const)
+            : ("off" as const),
+          left: edges.includes("left")
+            ? ("additive" as const)
+            : ("off" as const),
+        }
+      : edges;
   const webLayout =
     Platform.OS === "web"
       ? {
@@ -36,14 +53,14 @@ export function Screen({
             width < 600
               ? theme.layout.mobileGutter
               : theme.layout.desktopGutter,
-          paddingTop: width < 600 ? 10 : 18,
+          paddingTop: 18,
           paddingBottom: width < 600 ? 14 : 18,
           gap: theme.layout.contentGap,
         }
       : undefined;
 
   return (
-    <SafeAreaView style={styles.safe} edges={edges}>
+    <SafeAreaView style={styles.safe} edges={safeAreaEdges}>
       <ResponsiveToolContainer style={[styles.inner, webLayout, style]}>
         {children}
       </ResponsiveToolContainer>

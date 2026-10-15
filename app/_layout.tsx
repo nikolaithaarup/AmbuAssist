@@ -6,9 +6,11 @@ import { StatusBar } from "expo-status-bar";
 import { SettingsProvider } from "../src/state/settings";
 import { FavouritesProvider } from "../src/state/favourites";
 import { AuthProvider, useAuth } from "../src/auth/AuthProvider";
+import { useReducedMotionPreference } from "../src/ui/motion";
 
 function AppStack() {
   const { state } = useAuth();
+  const reducedMotion = useReducedMotionPreference(Platform.OS === "web");
   const authorized = state.status === "authorized";
   // Keep the browser URL intact while checking access, before Expo can redirect a protected route.
   if (Platform.OS === "web" && !authorized) return <AuthLanding />;
@@ -18,6 +20,12 @@ function AppStack() {
       screenOptions={{
         headerShown: false,
         contentStyle: { backgroundColor: "transparent" },
+        animation:
+          Platform.OS === "web"
+            ? reducedMotion
+              ? "none"
+              : "fade"
+            : undefined,
       }}
     >
       <Stack.Screen name="index" />

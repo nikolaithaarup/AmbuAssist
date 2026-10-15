@@ -2,6 +2,7 @@ import * as Location from "expo-location";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   ActivityIndicator,
+  Animated,
   Platform,
   Pressable,
   ScrollView,
@@ -51,6 +52,7 @@ import {
 } from "../../src/ui/Ui";
 import { theme } from "../../src/ui/theme";
 import { openPhoneNumber } from "../../src/services/phoneAction";
+import { usePressFeedback } from "../../src/ui/motion";
 
 import type {
   Area,
@@ -109,6 +111,13 @@ type LocationStatus =
   | "geocode_failed"
   | "not_found"
   | "error";
+
+type GeocodeResolutionContext = {
+  accuracy: number | null;
+  cachedAgeMs: number;
+  locationSource: "fresh" | "cached";
+  reverseGeocodeDurationMs: number;
+};
 
 const MANUAL_HOSPITAL_CODES: HospitalCode[] = [
   "AMH", "BBH", "FRH", "GEH", "GLO", "HEH", "HVH", "NOH", "RH",
@@ -374,35 +383,42 @@ function DestinationPrimaryButton({
   onPress: () => void;
   disabled?: boolean;
 }) {
+  const pwa = Platform.OS === "web";
+  const pressFeedback = usePressFeedback(0.985);
+
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      accessibilityState={{ disabled }}
-      disabled={disabled}
-      onPress={onPress}
-      style={({ pressed }) => ({
-        minHeight: 52,
-        borderRadius: 14,
-        paddingHorizontal: 16,
-        paddingVertical: 14,
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: theme.colors.primary,
-        opacity: disabled ? 0.55 : pressed ? 0.82 : 1,
-      })}
-    >
-      <Text
-        style={{
-          color: theme.colors.text,
-          fontSize: 16,
-          fontWeight: "900",
-          textAlign: "center",
-        }}
+    <Animated.View style={pwa ? pressFeedback.animatedStyle : undefined}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        accessibilityState={{ disabled }}
+        disabled={disabled}
+        onPress={onPress}
+        onPressIn={pwa ? pressFeedback.onPressIn : undefined}
+        onPressOut={pwa ? pressFeedback.onPressOut : undefined}
+        style={({ pressed }) => ({
+          minHeight: pwa ? 54 : 52,
+          borderRadius: pwa ? theme.radii.control : 14,
+          paddingHorizontal: 16,
+          paddingVertical: 14,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: theme.colors.primary,
+          opacity: disabled ? 0.55 : pressed ? 0.82 : 1,
+        })}
       >
-        {label}
-      </Text>
-    </Pressable>
+        <Text
+          style={{
+            color: theme.colors.text,
+            fontSize: 16,
+            fontWeight: "900",
+            textAlign: "center",
+          }}
+        >
+          {label}
+        </Text>
+      </Pressable>
+    </Animated.View>
   );
 }
 
@@ -436,6 +452,13 @@ export default function DestinationTool() {
   const [searchVisible, setSearchVisible] = useState(false);
   const [requiresAddressConfirmation, setRequiresAddressConfirmation] =
     useState(false);
+  const [pendingAddressCandidates, setPendingAddressCandidates] = useState<
+    DestinationGeocodedAddress[]
+  >([]);
+  const [selectedAddressCandidate, setSelectedAddressCandidate] = useState<
+    number | null
+  >(null);
+  const pendingGeocodeContextRef = useRef<GeocodeResolutionContext | null>(null);
 
   const [bydel, setBydel] = useState<Bydel | "">("");
   const [kommune, setKommune] = useState<Kommune | "">("");
@@ -487,10 +510,6 @@ export default function DestinationTool() {
   );
 
   const lastGeocodeAtRef = useRef(0);
-  const lastGeocodeCoordsRef = useRef<{ lat: number; lon: number } | null>(
-    null,
-  );
-  const lastGeocodeResultRef = useRef<DestinationGeocodedAddress[] | null>(null);
   const geocodeBlockedUntilRef = useRef(0);
   const geocodeInFlightRef = useRef<Promise<DestinationGeocodedAddress[]> | null>(
     null,
@@ -498,7 +517,6 @@ export default function DestinationTool() {
 
   const GEOCODE_COOLDOWN_MS = 20_000;
   const GEOCODE_BLOCK_MS = 90_000;
-  const GEOCODE_CACHE_DISTANCE = 0.0005;
 
   useEffect(() => {
     locationMountedRef.current = true;
@@ -594,26 +612,12 @@ export default function DestinationTool() {
     });
   };
 
-  const isNearCachedLocation = (lat: number, lon: number) => {
-    const cached = lastGeocodeCoordsRef.current;
-    if (!cached) return false;
-
-    return (
-      Math.abs(cached.lat - lat) <= GEOCODE_CACHE_DISTANCE &&
-      Math.abs(cached.lon - lon) <= GEOCODE_CACHE_DISTANCE
-    );
-  };
-
   const callHospitalNumber = async (phone: string) => {
     await openPhoneNumber(phone).catch(() => false);
   };
 
   const getReverseGeocodeSafely = async (lat: number, lon: number) => {
     const now = Date.now();
-
-    if (lastGeocodeResultRef.current && isNearCachedLocation(lat, lon)) {
-      return lastGeocodeResultRef.current;
-    }
 
     if (now < geocodeBlockedUntilRef.current) {
       const secondsLeft = Math.ceil(
@@ -643,11 +647,6 @@ export default function DestinationTool() {
       latitude: lat,
       longitude: lon,
     })
-      .then((result) => {
-        lastGeocodeCoordsRef.current = { lat, lon };
-        lastGeocodeResultRef.current = result;
-        return result;
-      })
       .catch((error: any) => {
         const message = String(error?.message ?? "").toLowerCase();
 
@@ -1074,6 +1073,10 @@ export default function DestinationTool() {
   };
 
   const handleStreetChange = (text: string) => {
+    setPendingAddressCandidates([]);
+    setSelectedAddressCandidate(null);
+    pendingGeocodeContextRef.current = null;
+    setRequiresAddressConfirmation(false);
     setStreetQ(text);
     setStreetOpen(true);
     setRegCatOpen(false);
@@ -1089,6 +1092,251 @@ export default function DestinationTool() {
     if (match.area !== "unresolved") setStreetOpen(false);
   };
 
+  const applyGeocodedAddress = (
+    first: DestinationGeocodedAddress,
+    context: GeocodeResolutionContext,
+    addressConfirmed = false,
+  ) => {
+    const postcode = String(first.postalCode ?? "").trim();
+    const city = String(first.city ?? "").trim();
+    const district = String(first.district ?? "").trim();
+    const subregion = String(first.subregion ?? "").trim();
+    const formattedAddress = String(first.formattedAddress ?? "").trim();
+    const street = parseStreetName(first.street, formattedAddress) ?? "";
+    const parsedNumber = parseReverseGeocodedHouseNumber({
+      streetNumber: first.streetNumber,
+      street: first.street,
+      name: first.name,
+      formattedAddress,
+    });
+    const region = String(first.region ?? "").trim();
+    const name = String(first.name ?? "").trim();
+    const geocoderDistance =
+      typeof first.distanceMeters === "number" &&
+      Number.isFinite(first.distanceMeters)
+        ? Math.max(0, first.distanceMeters)
+        : 0;
+    const confidenceAccuracy = Math.max(
+      context.accuracy ?? 0,
+      geocoderDistance,
+    );
+    const requiresConfidenceConfirmation = (confidence: ReturnType<
+      typeof classifyLocationConfidence
+    >) =>
+      Platform.OS === "web"
+        ? !addressConfirmed
+        : getConfidenceUx(confidence) === "confirm";
+
+    setDiagnostics((current) => ({
+      ...current,
+      reverseGeocodeDurationMs: context.reverseGeocodeDurationMs,
+      geocoderDistanceMeters: geocoderDistance,
+      parsedStreet: street,
+      parsedHouseNumber: parsedNumber.number,
+      parsedPostalCode: postcode,
+      normalizedStreetKey: norm(street),
+    }));
+
+    const detectedAreaBase = {
+      label: [street || name, district, city || subregion || region, postcode]
+        .filter(Boolean)
+        .join(", "),
+      street,
+      houseNumber: parsedNumber.number,
+      postcode,
+      city: city || subregion || region,
+      district,
+      subregion: subregion || region,
+      accuracyMeters: confidenceAccuracy || undefined,
+      locationSource: context.locationSource,
+      cachedAgeMs: context.cachedAgeMs,
+    } as const;
+
+    const strategy = deriveAutomaticRoutingStrategy(
+      {
+        street,
+        houseNumber: parsedNumber.number,
+        postcode,
+        city,
+        district,
+        subregion,
+        region,
+      },
+      STREET_SAMPLE,
+      BYEN_STREET_ALIASES,
+    );
+
+    if (strategy.area === "byen") {
+      if (strategy.source === "postal_district_fallback") {
+        const confidence = classifyLocationConfidence({
+          accuracy: confidenceAccuracy,
+          hasStreet: true,
+          hasCompleteRoutingAddress: true,
+        });
+        const needsConfirmation = requiresConfidenceConfirmation(confidence);
+        setArea("byen");
+        setKommune("");
+        setBydel(strategy.officialBydel);
+        setSelectedStreet(street);
+        setStreetQ(street);
+        setHouseNumberQ(
+          parsedNumber.number
+            ? String(parsedNumber.number) + (parsedNumber.suffix ?? "")
+            : "",
+        );
+        setPostalCodeQ(strategy.postcode);
+        resetStreetRouteState();
+        setDetectedArea({ ...detectedAreaBase, confidence });
+        setManualHospitalCode("");
+        setRequiresAddressConfirmation(needsConfirmation);
+        setDiagnostics((current) => ({
+          ...current,
+          confidence,
+          routingArea: "byen",
+          matchStatus: "postal_district_fallback",
+          matchSource: "postal_district_fallback",
+          fallbackPostcode: strategy.postcode,
+          destinationDistrict: strategy.officialBydel,
+        }));
+        closeAllDropdowns();
+        setLocationStatus("matched");
+        setLocationMessage(
+          needsConfirmation
+            ? "Kontrollér den fundne adresse, før destinationen bruges."
+            : "",
+        );
+        return;
+      }
+
+      const routeResult = strategy.route;
+      const confidence = classifyLocationConfidence({
+        accuracy: confidenceAccuracy,
+        hasStreet: true,
+        hasCompleteRoutingAddress: routeResult.status === "single",
+      });
+      setArea("byen");
+      setKommune("");
+      setSelectedStreet(street);
+      setStreetQ(street);
+      setHouseNumberQ(
+        parsedNumber.number
+          ? String(parsedNumber.number) + (parsedNumber.suffix ?? "")
+          : "",
+      );
+      setPostalCodeQ(postcode);
+      setDetectedArea({ ...detectedAreaBase, confidence });
+      setManualHospitalCode("");
+
+      if (routeResult.status === "single") {
+        const needsConfirmation = requiresConfidenceConfirmation(confidence);
+        setBydel(routeResult.officialBydel);
+        setStreetRouteNeedsHouseNumber(false);
+        setStreetRouteNeedsPostalCode(false);
+        setRequiresAddressConfirmation(needsConfirmation);
+        setDiagnostics((current) => ({
+          ...current,
+          confidence,
+          routingArea: "byen",
+          matchStatus: routeResult.status,
+          matchType: routeResult.matchType,
+          matchedRule: routeResult.matchedRule,
+          destinationDistrict: routeResult.officialBydel,
+        }));
+        closeAllDropdowns();
+        setLocationStatus("matched");
+        setLocationMessage(
+          needsConfirmation
+            ? "Kontrollér den fundne adresse, før destinationen bruges."
+            : "",
+        );
+        return;
+      }
+
+      setBydel("");
+      setRequiresAddressConfirmation(false);
+      setStreetRouteNeedsHouseNumber(
+        routeResult.status === "needs_house_number" ||
+          routeResult.status === "needs_side",
+      );
+      setStreetRouteNeedsPostalCode(routeResult.status === "needs_postal_code");
+      setLocationStatus("not_found");
+      setSearchVisible(true);
+      setLocationMessage(
+        routeResult.status === "needs_house_number" ||
+          routeResult.status === "needs_side"
+          ? "Gaden er fundet. Indtast husnummeret for at finde den sikre destination."
+          : routeResult.status === "needs_postal_code"
+            ? "Gaden er fundet. Bekræft postnummeret for at finde den sikre destination."
+            : "Adressen kan ikke afgøres sikkert. Ret adressen, eller vælg hospital manuelt.",
+      );
+      setDiagnostics((current) => ({
+        ...current,
+        confidence,
+        routingArea: "byen",
+        matchStatus: routeResult.status,
+        matchFailure: routeResult.message,
+      }));
+      closeAllDropdowns();
+      return;
+    }
+
+    if (strategy.area === "region") {
+      const confidence = classifyLocationConfidence({
+        accuracy: confidenceAccuracy,
+        hasStreet: !!street,
+        hasCompleteRoutingAddress: true,
+      });
+      const confidenceUx = getConfidenceUx(confidence);
+      const needsConfirmation = requiresConfidenceConfirmation(confidence);
+      setArea(confidenceUx === "recovery" ? null : "region");
+      setBydel("");
+      setKommune(confidenceUx === "recovery" ? "" : strategy.kommune);
+      setSelectedStreet(street);
+      setStreetQ(street || strategy.kommune);
+      setHouseNumberQ(
+        parsedNumber.number
+          ? String(parsedNumber.number) + (parsedNumber.suffix ?? "")
+          : "",
+      );
+      setPostalCodeQ(postcode);
+      resetStreetRouteState();
+      setDetectedArea({ ...detectedAreaBase, confidence });
+      setManualHospitalCode("");
+      setRequiresAddressConfirmation(needsConfirmation);
+      setDiagnostics((current) => ({
+        ...current,
+        confidence,
+        routingArea: "region",
+        destinationMunicipality: strategy.kommune,
+      }));
+      closeAllDropdowns();
+      setLocationStatus(confidence === "poor" ? "poor_accuracy" : "matched");
+      setLocationMessage(
+        confidence === "poor"
+          ? "Placeringen kan ikke bruges sikkert. Prøv GPS igen, eller indtast adressen manuelt."
+          : needsConfirmation
+            ? "Kontrollér den fundne adresse, før destinationen bruges."
+            : "",
+      );
+      return;
+    }
+
+    setArea(null);
+    setBydel("");
+    setKommune("");
+    setRequiresAddressConfirmation(false);
+    setDetectedArea({ ...detectedAreaBase, confidence: "poor" });
+    setLocationStatus("not_found");
+    setSearchVisible(true);
+    setLocationMessage(
+      strategy.reason === "unknown_city_street"
+        ? "Vejen findes ikke i den officielle visitationstabel. Ret adressen, prøv GPS igen, eller vælg hospital manuelt."
+        : strategy.reason === "missing_street"
+          ? "Adresseopslaget returnerede ingen vej. Indtast adressen manuelt, eller prøv GPS igen."
+          : t("dest_kommune_notmapped_body"),
+    );
+  };
+
   const detectLocation = async () => {
     if (locationInFlightRef.current) return;
     locationInFlightRef.current = true;
@@ -1102,6 +1350,9 @@ export default function DestinationTool() {
       setDetectedArea(null);
       setManualHospitalCode("");
       setRequiresAddressConfirmation(false);
+      setPendingAddressCandidates([]);
+      setSelectedAddressCandidate(null);
+      pendingGeocodeContextRef.current = null;
       setLocationMessage("");
       setLocationStatus("permission");
 
@@ -1227,7 +1478,35 @@ export default function DestinationTool() {
 
       if (!first) {
         setLocationStatus("geocode_failed");
-        setLocationMessage(t("dest_loc_notfound_body"));
+        setLocationMessage(
+          lang === "da"
+            ? "Der blev ikke fundet en sikker adresse inden for 100 meter. Prøv GPS igen, eller søg adressen manuelt."
+            : "No reliable address was found within 100 metres. Retry GPS or enter the address manually.",
+        );
+        return;
+      }
+
+      if (Platform.OS === "web") {
+        const candidates = geocoded.slice(0, 5);
+        setPendingAddressCandidates(candidates);
+        setSelectedAddressCandidate(candidates.length === 1 ? 0 : null);
+        pendingGeocodeContextRef.current = {
+          accuracy,
+          cachedAgeMs,
+          locationSource,
+          reverseGeocodeDurationMs: Date.now() - reverseGeocodeStartedAt,
+        };
+        setRequiresAddressConfirmation(true);
+        setLocationStatus("matched");
+        setLocationMessage(
+          candidates.length > 1
+            ? lang === "da"
+              ? "Vælg den korrekte adresse og bekræft den, før destinationen beregnes."
+              : "Choose and confirm the correct address before the destination is calculated."
+            : lang === "da"
+              ? "Bekræft den fundne adresse, før destinationen beregnes."
+              : "Confirm the detected address before the destination is calculated.",
+        );
         return;
       }
 
@@ -1517,6 +1796,11 @@ export default function DestinationTool() {
     }
   };
 
+  const retryLocation = () => {
+    lastGeocodeAtRef.current = 0;
+    void detectLocation();
+  };
+
   const showNeurokirNote = area === "region" && regCat === "neurokirurgi";
   const neurokirNote = t("dest_region_neurokir_note" as any);
 
@@ -1571,7 +1855,7 @@ export default function DestinationTool() {
   return (
     <Background>
       <Screen>
-        <View style={{ gap: 6, marginTop: 12, alignItems: "center" }}>
+        <View style={{ gap: 5, marginTop: Platform.OS === "web" ? 0 : 12, alignItems: "center" }}>
           <Title style={{ textAlign: "center" }}>{t("dest_title")}</Title>
           <Subtle style={{ textAlign: "center" }}>
             {lang === "da"
@@ -1580,8 +1864,8 @@ export default function DestinationTool() {
           </Subtle>
         </View>
 
-        <ScrollView contentContainerStyle={{ gap: 18, paddingBottom: 24 }}>
-          <View style={{ gap: 14, paddingTop: 4 }}>
+        <ScrollView contentContainerStyle={{ gap: Platform.OS === "web" ? 14 : 18, paddingBottom: 28 }}>
+          <View style={{ gap: 14, paddingTop: Platform.OS === "web" ? 0 : 4 }}>
             <DestinationCategoryPicker
               lang={lang}
               selected={regCat}
@@ -1669,7 +1953,7 @@ export default function DestinationTool() {
             )}
 
             {!detectingLocation &&
-              detectedArea &&
+              (detectedArea || pendingAddressCandidates.length > 0) &&
               requiresAddressConfirmation && (
                 <View
                   style={{
@@ -1682,13 +1966,66 @@ export default function DestinationTool() {
                   }}
                 >
                   <Text style={{ color: theme.colors.text, fontWeight: "900" }}>
-                    {lang === "da"
-                      ? "Kontrollér den fundne adresse"
-                      : "Check the detected address"}
+                    {pendingAddressCandidates.length > 1
+                      ? lang === "da"
+                        ? "Vælg patientens adresse"
+                        : "Choose the patient's address"
+                      : lang === "da"
+                        ? "Kontrollér den fundne adresse"
+                        : "Check the detected address"}
                   </Text>
-                  <Text style={{ color: theme.colors.text, lineHeight: 21 }}>
-                    {detectedArea.label || t("dest_unknown_area")}
-                  </Text>
+                  {pendingAddressCandidates.length > 1 ? (
+                    <Text style={{ color: theme.colors.mutedText, lineHeight: 20 }}>
+                      {lang === "da"
+                        ? "Forslagene er adresser i nærheden og er ikke bekræftede patientplaceringer."
+                        : "These are nearby address suggestions, not verified patient locations."}
+                    </Text>
+                  ) : null}
+                  {pendingAddressCandidates.length > 0 ? (
+                    <View style={{ gap: 8 }}>
+                      {pendingAddressCandidates.map((candidate, index) => {
+                        const selected = selectedAddressCandidate === index;
+                        return (
+                          <Pressable
+                            key={`${candidate.formattedAddress}-${index}`}
+                            testID={`destination-address-candidate-${index}`}
+                            accessibilityRole="radio"
+                            accessibilityState={{ selected }}
+                            onPress={() => setSelectedAddressCandidate(index)}
+                            style={({ pressed }) => ({
+                              minHeight: 52,
+                              justifyContent: "center",
+                              borderRadius: 12,
+                              borderWidth: 1,
+                              borderColor: selected
+                                ? theme.colors.accentMuted
+                                : theme.colors.border,
+                              backgroundColor: selected
+                                ? "rgba(183,205,139,0.12)"
+                                : theme.colors.card,
+                              paddingHorizontal: 12,
+                              paddingVertical: 10,
+                              opacity: pressed ? 0.72 : 1,
+                            })}
+                          >
+                            <Text
+                              style={{
+                                color: theme.colors.text,
+                                fontWeight: selected ? "900" : "700",
+                                lineHeight: 21,
+                              }}
+                            >
+                              {candidate.formattedAddress || t("dest_unknown_area")}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  ) : (
+                    <Text style={{ color: theme.colors.text, lineHeight: 21 }}>
+                      {detectedArea?.label || t("dest_unknown_area")}
+                    </Text>
+                  )}
                   <View style={{ gap: 8 }}>
                     <View testID="destination-confirm-address">
                       <DestinationPrimaryButton
@@ -1697,15 +2034,43 @@ export default function DestinationTool() {
                             ? "Brug denne adresse"
                             : "Use this address"
                         }
+                        disabled={
+                          pendingAddressCandidates.length > 0 &&
+                          selectedAddressCandidate === null
+                        }
                         onPress={() => {
-                          setRequiresAddressConfirmation(false);
-                          setLocationMessage("");
+                          if (pendingAddressCandidates.length > 0) {
+                            const candidate =
+                              selectedAddressCandidate === null
+                                ? null
+                                : pendingAddressCandidates[selectedAddressCandidate];
+                            const context = pendingGeocodeContextRef.current;
+                            if (!candidate || !context) return;
+                            setPendingAddressCandidates([]);
+                            setSelectedAddressCandidate(null);
+                            pendingGeocodeContextRef.current = null;
+                            applyGeocodedAddress(candidate, context, true);
+                          } else {
+                            setRequiresAddressConfirmation(false);
+                            setLocationMessage("");
+                          }
                         }}
                       />
                     </View>
                     <Pressable
                       accessibilityRole="button"
-                      onPress={() => setSearchVisible(true)}
+                      onPress={() => {
+                        setPendingAddressCandidates([]);
+                        setSelectedAddressCandidate(null);
+                        pendingGeocodeContextRef.current = null;
+                        setRequiresAddressConfirmation(false);
+                        setArea(null);
+                        setBydel("");
+                        setKommune("");
+                        setDetectedArea(null);
+                        setLocationMessage("");
+                        setSearchVisible(true);
+                      }}
                       style={({ pressed }) => ({
                         minHeight: 48,
                         alignItems: "center",
@@ -1722,6 +2087,28 @@ export default function DestinationTool() {
                         {lang === "da" ? "Ret adresse" : "Correct address"}
                       </Text>
                     </Pressable>
+                    {pendingAddressCandidates.length > 0 ? (
+                      <Pressable
+                        testID="destination-retry-gps"
+                        accessibilityRole="button"
+                        onPress={retryLocation}
+                        style={({ pressed }) => ({
+                          minHeight: 48,
+                          alignItems: "center",
+                          justifyContent: "center",
+                          opacity: pressed ? 0.65 : 1,
+                        })}
+                      >
+                        <Text
+                          style={{
+                            color: theme.colors.accentMuted,
+                            fontWeight: "900",
+                          }}
+                        >
+                          {lang === "da" ? "Prøv GPS igen" : "Retry GPS"}
+                        </Text>
+                      </Pressable>
+                    ) : null}
                   </View>
                 </View>
               )}
@@ -1752,7 +2139,7 @@ export default function DestinationTool() {
                 <View style={{ gap: 6 }}>
                   <Pressable
                     accessibilityRole="button"
-                    onPress={detectLocation}
+                    onPress={retryLocation}
                     style={({ pressed }) => ({
                       minHeight: 48,
                       alignItems: "center",

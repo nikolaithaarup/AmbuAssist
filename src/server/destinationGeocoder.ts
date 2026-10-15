@@ -12,8 +12,9 @@ const DATAFORDELER_AUTH_ENDPOINT =
   "https://auth.datafordeler.dk/realms/distribution/protocol/openid-connect/token";
 const SEARCH_RADIUS_METERS = 120;
 const MAXIMUM_ADDRESS_DISTANCE_METERS = 100;
-const AMBIGUITY_MARGIN_METERS = 8;
 const MAXIMUM_CANDIDATES = 100;
+const MAXIMUM_RETURNED_ADDRESSES = 5;
+const MAXIMUM_RESOLVED_POINTS = 10;
 
 const WGS84 = "EPSG:4326";
 const ETRS89_UTM32 =
@@ -286,6 +287,19 @@ export async function reverseGeocodeWithDar(
   credentials: DatafordelerCredentials,
   fetcher: typeof fetch = fetch,
 ): Promise<DestinationGeocodedAddress | null> {
+  const candidates = await reverseGeocodeCandidatesWithDar(
+    coordinates,
+    credentials,
+    fetcher,
+  );
+  return candidates.length === 1 ? candidates[0] : null;
+}
+
+export async function reverseGeocodeCandidatesWithDar(
+  coordinates: ReverseGeocodeCoordinates,
+  credentials: DatafordelerCredentials,
+  fetcher: typeof fetch = fetch,
+): Promise<DestinationGeocodedAddress[]> {
   assertDanishCoordinates(coordinates);
   if (!credentials.clientId.trim() || !credentials.clientSecret.trim()) {
     throw new DestinationProviderAuthError(
@@ -311,8 +325,10 @@ export async function reverseGeocodeWithDar(
     .filter((candidate): candidate is { id: string; distance: number } => !!candidate)
     .sort((a, b) => a.distance - b.distance);
 
-  const nearest = candidates[0];
-  if (!nearest || nearest.distance > MAXIMUM_ADDRESS_DISTANCE_METERS) return null;
+  const nearbyCandidates = candidates
+    .filter((candidate) => candidate.distance <= MAXIMUM_ADDRESS_DISTANCE_METERS)
+    .slice(0, MAXIMUM_RESOLVED_POINTS);
+  if (!nearbyCandidates.length) return [];
 
   const addressForCandidate = async (candidate: {
     id: string;
@@ -340,29 +356,29 @@ export async function reverseGeocodeWithDar(
     const uniqueAddresses = new Map(
       addresses.map((address) => [address.formattedAddress, address]),
     );
-    return uniqueAddresses.size === 1
-      ? (uniqueAddresses.values().next().value ?? null)
-      : null;
+    return [...uniqueAddresses.values()];
   };
 
-  const nearestAddress = await addressForCandidate(nearest);
-  if (!nearestAddress) return null;
-
-  const competingCandidates = candidates.slice(1).filter(
-    (candidate) =>
-      candidate.distance <= MAXIMUM_ADDRESS_DISTANCE_METERS &&
-      candidate.distance - nearest.distance <= AMBIGUITY_MARGIN_METERS,
+  const uniqueAddresses = new Map<string, DestinationGeocodedAddress>();
+  const resolvedCandidates = await Promise.all(
+    nearbyCandidates.map((candidate) => addressForCandidate(candidate)),
   );
-  if (competingCandidates.length > 4) return null;
-  for (const candidate of competingCandidates) {
-    const candidateAddress = await addressForCandidate(candidate);
-    if (
-      candidateAddress &&
-      candidateAddress.formattedAddress !== nearestAddress.formattedAddress
-    ) {
-      return null;
+  for (const addresses of resolvedCandidates) {
+    for (const address of addresses) {
+      const key = address.formattedAddress
+        ?.normalize("NFKC")
+        .toLocaleLowerCase("da-DK")
+        .replace(/\s+/gu, " ")
+        .trim();
+      if (!key || uniqueAddresses.has(key)) continue;
+      uniqueAddresses.set(key, address);
+      if (uniqueAddresses.size >= MAXIMUM_RETURNED_ADDRESSES) {
+        return [...uniqueAddresses.values()];
+      }
     }
   }
 
-  return nearestAddress;
+  return [...uniqueAddresses.values()].sort(
+    (a, b) => (a.distanceMeters ?? Infinity) - (b.distanceMeters ?? Infinity),
+  );
 }

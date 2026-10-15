@@ -56,9 +56,35 @@ export async function saveLegacyBamProfile(): Promise<never> {
   throw new Error("BAM-ID cannot authorize the web application.");
 }
 
-let requestedUrl: string | undefined = initialBrowserUrl
-  ? validatedAppReturnUrl(initialBrowserUrl)
-  : undefined;
+function currentBrowserOrigin(): string | undefined {
+  if (typeof window === "undefined" || !window.location) return undefined;
+  try {
+    return new URL(window.location.href).origin;
+  } catch {
+    return undefined;
+  }
+}
+
+function sameOriginBrowserUrl(value?: string): string | undefined {
+  const origin = currentBrowserOrigin();
+  if (!origin || !value) return undefined;
+  try {
+    const url = new URL(value, `${origin}/`);
+    if (
+      url.origin !== origin ||
+      url.username ||
+      url.password ||
+      !["http:", "https:"].includes(url.protocol)
+    ) {
+      return undefined;
+    }
+    return url.toString();
+  } catch {
+    return undefined;
+  }
+}
+
+let requestedUrl: string | undefined = sameOriginBrowserUrl(initialBrowserUrl);
 export function validatedAppReturnUrl(value?: string): string {
   const origin = process.env.EXPO_PUBLIC_APP_ORIGIN || DEFAULT_APP_ORIGIN;
   try {
@@ -76,7 +102,7 @@ export function captureRequestedUrl(force = false): void {
     typeof window !== "undefined" &&
     window.location
   )
-    requestedUrl = validatedAppReturnUrl(window.location.href);
+    requestedUrl = sameOriginBrowserUrl(window.location.href);
 }
 export function getPortalLoginUrl(returnTo?: string): string {
   const url = new URL(
@@ -91,11 +117,10 @@ export function getPortalLoginUrl(returnTo?: string): string {
 
 /** Expo 54 can serialize a hash before its query; retain the browser's original URL after mounting. */
 export function restoreRequestedUrl(): void {
-  if (
-    requestedUrl &&
-    typeof window !== "undefined" &&
-    window.location.pathname === new URL(requestedUrl).pathname
-  ) {
-    window.history.replaceState(window.history.state, "", requestedUrl);
-  }
+  if (typeof window === "undefined") return;
+  const safeRequestedUrl = sameOriginBrowserUrl(requestedUrl);
+  if (!safeRequestedUrl) return;
+  const requested = new URL(safeRequestedUrl);
+  if (window.location.pathname !== requested.pathname) return;
+  window.history.replaceState(window.history.state, "", safeRequestedUrl);
 }

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import {
+  Animated,
   Platform,
   Pressable,
   Text,
@@ -9,6 +10,7 @@ import {
 } from "react-native";
 import { Subtle, Title } from "./Ui";
 import { theme } from "./theme";
+import { usePressFeedback } from "./motion";
 
 const surfaceDepth = Platform.select<StyleProp<ViewStyle>>({
   ios: {
@@ -37,8 +39,10 @@ export function ToolPageHeader({
   actionDisplayLabel?: string;
   onAction?: () => void;
 }) {
+  const pwa = Platform.OS === "web";
+
   return (
-    <View style={{ gap: 7, marginTop: 10, marginBottom: 2 }}>
+    <View style={{ gap: 7, marginTop: pwa ? 0 : 10, marginBottom: pwa ? 4 : 2 }}>
       {badge ? (
         <View
           style={{
@@ -58,7 +62,7 @@ export function ToolPageHeader({
       ) : null}
       <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 10 }}>
         <View style={{ flex: 1, gap: 4 }}>
-          <Title style={{ fontSize: 27, lineHeight: 32 }}>{title}</Title>
+          <Title style={{ fontSize: pwa ? 26 : 27, lineHeight: pwa ? 31 : 32 }}>{title}</Title>
           {subtitle ? <Subtle style={{ fontSize: 14, lineHeight: 20 }}>{subtitle}</Subtle> : null}
         </View>
         {actionLabel && onAction ? (
@@ -114,7 +118,7 @@ export function ToolSurface({
       testID={testID}
       style={[
         {
-          borderRadius: 17,
+          borderRadius: Platform.OS === "web" ? theme.radii.card : 17,
           borderWidth: 1,
           padding: 15,
           gap: 11,
@@ -201,6 +205,8 @@ export function ToolActionButton({
   accessibilityLabel?: string;
   compact?: boolean;
 }) {
+  const pwa = Platform.OS === "web";
+  const pressFeedback = usePressFeedback(0.985);
   const colors =
     tone === "danger"
       ? { background: "rgba(255,123,114,0.11)", border: "rgba(255,123,114,0.38)", text: theme.colors.danger }
@@ -211,27 +217,31 @@ export function ToolActionButton({
           : { background: theme.colors.accentSurface, border: "rgba(174,190,144,0.34)", text: theme.colors.text };
 
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel ?? label}
-      disabled={disabled}
-      onPress={onPress}
-      style={({ pressed }) => ({
-        minHeight: 50,
-        alignItems: "center",
-        justifyContent: "center",
-        borderRadius: 15,
-        borderWidth: 1,
-        borderColor: colors.border,
-        backgroundColor: pressed ? theme.colors.pressed : colors.background,
-        paddingHorizontal: compact ? 7 : 16,
-        opacity: disabled ? 0.5 : pressed ? 0.78 : 1,
-        transform: [{ scale: pressed ? 0.992 : 1 }],
-      })}
-    >
-      <Text style={{ color: colors.text, fontSize: compact ? 14 : 16, lineHeight: 20, fontWeight: "900", textAlign: "center" }}>
-        {label}
-      </Text>
-    </Pressable>
+    <Animated.View style={pwa ? pressFeedback.animatedStyle : undefined}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel ?? label}
+        disabled={disabled}
+        onPress={onPress}
+        onPressIn={pwa ? pressFeedback.onPressIn : undefined}
+        onPressOut={pwa ? pressFeedback.onPressOut : undefined}
+        style={({ pressed }) => ({
+          minHeight: theme.controlHeight,
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: pwa ? theme.radii.control : 15,
+          borderWidth: 1,
+          borderColor: colors.border,
+          backgroundColor: pressed ? theme.colors.pressed : colors.background,
+          paddingHorizontal: compact ? 7 : 16,
+          opacity: disabled ? 0.5 : pressed ? 0.78 : 1,
+          transform: pwa ? undefined : [{ scale: pressed ? 0.992 : 1 }],
+        })}
+      >
+        <Text style={{ color: colors.text, fontSize: compact ? 14 : 16, lineHeight: 20, fontWeight: "900", textAlign: "center" }}>
+          {label}
+        </Text>
+      </Pressable>
+    </Animated.View>
   );
 }

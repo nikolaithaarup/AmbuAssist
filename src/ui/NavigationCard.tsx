@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  Animated,
   Platform,
   Pressable,
   Text,
@@ -8,6 +9,7 @@ import {
   type ViewStyle,
 } from "react-native";
 import { theme } from "./theme";
+import { usePressFeedback } from "./motion";
 
 type NavigationCardProps = {
   title: string;
@@ -42,17 +44,19 @@ export function NavigationCard({
 }: NavigationCardProps) {
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
+  const pwa = Platform.OS === "web";
+  const pressFeedback = usePressFeedback(0.985);
 
   return (
-    <View
+    <Animated.View
       testID={testID}
       style={[
         {
-          minHeight: description ? 68 : 56,
+          minHeight: pwa ? (description ? 76 : 64) : description ? 68 : 56,
           flexDirection: "row",
           alignItems: "stretch",
           overflow: "hidden",
-          borderRadius: 16,
+          borderRadius: pwa ? theme.radii.card : 16,
           borderWidth: 1,
           borderColor: focused
             ? "rgba(174,190,144,0.52)"
@@ -64,23 +68,26 @@ export function NavigationCard({
             : "rgba(38,43,34,0.78)",
         },
         platformDepth,
+        pwa ? pressFeedback.animatedStyle : undefined,
       ]}
     >
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={description ? `${title}. ${description}` : title}
         onPress={onPress}
+        onPressIn={pwa ? pressFeedback.onPressIn : undefined}
+        onPressOut={pwa ? pressFeedback.onPressOut : undefined}
         onHoverIn={() => setHovered(true)}
         onHoverOut={() => setHovered(false)}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         style={({ pressed }) => ({
           flex: 1,
-          minHeight: 56,
+          minHeight: pwa ? 64 : 56,
           flexDirection: "row",
           alignItems: "center",
           gap: 12,
-          paddingLeft: 17,
+          paddingLeft: pwa ? 18 : 17,
           paddingRight: onToggleFavourite ? 8 : 14,
           paddingVertical: description ? 14 : 12,
           backgroundColor: pressed
@@ -89,15 +96,15 @@ export function NavigationCard({
               ? "rgba(255,255,255,0.045)"
               : "transparent",
           opacity: pressed ? 0.88 : 1,
-          transform: [{ scale: pressed ? 0.995 : 1 }],
+          transform: pwa ? undefined : [{ scale: pressed ? 0.995 : 1 }],
         })}
       >
         <View style={{ flex: 1, alignItems: "flex-start", gap: 4 }}>
           <Text
             style={{
               color: theme.colors.text,
-              fontSize: 17,
-              lineHeight: 21,
+              fontSize: pwa ? 18 : 17,
+              lineHeight: pwa ? 22 : 21,
               fontWeight: "800",
               letterSpacing: -0.15,
             }}
@@ -138,8 +145,8 @@ export function NavigationCard({
           onPress={onToggleFavourite}
           hitSlop={2}
           style={({ pressed }) => ({
-            width: 54,
-            minHeight: 56,
+            width: pwa ? 58 : 54,
+            minHeight: pwa ? 64 : 56,
             alignItems: "center",
             justifyContent: "center",
             backgroundColor: pressed
@@ -161,6 +168,6 @@ export function NavigationCard({
           </Text>
         </Pressable>
       ) : null}
-    </View>
+    </Animated.View>
   );
 }

@@ -1,4 +1,4 @@
-import { reverseGeocodeWithDar } from "../src/server/destinationGeocoder";
+import { reverseGeocodeCandidatesWithDar } from "../src/server/destinationGeocoder";
 
 type HeaderValue = string | string[] | undefined;
 
@@ -102,11 +102,11 @@ export default async function handler(
   }
 
   try {
-    const address = await reverseGeocodeWithDar(
+    const addresses = await reverseGeocodeCandidatesWithDar(
       { latitude, longitude },
       { clientId, clientSecret },
     );
-    json(response, { address }, 200);
+    json(response, { addresses }, 200);
   } catch (error) {
     logProviderFailure(error);
     json(response, { error: "provider_unavailable" }, 502);

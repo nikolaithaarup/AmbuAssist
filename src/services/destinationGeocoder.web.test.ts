@@ -34,6 +34,7 @@ describe("web destination geocoder", () => {
           streetNumber: "10",
           postalCode: "3400",
           city: "Hillerød",
+          distanceMeters: 9,
         },
       }),
     });
@@ -69,11 +70,71 @@ describe("web destination geocoder", () => {
     ).resolves.toEqual([]);
   });
 
+  test("deduplicates, sorts and caps validated nearby candidates", async () => {
+    const address = (formattedAddress: string, distanceMeters: number) => ({
+      formattedAddress,
+      street: formattedAddress.split(" ")[0],
+      streetNumber: "1",
+      postalCode: "2100",
+      city: "København Ø",
+      distanceMeters,
+    });
+    const fetcher = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        addresses: [
+          address("Sjettevej 1, 2100 København Ø", 60),
+          address("Andenvej 1, 2100 København Ø", 20),
+          address("Førstevej 1, 2100 København Ø", 8),
+          address("Tredjevej 1, 2100 København Ø", 30),
+          address("Fjerdevej 1, 2100 København Ø", 40),
+          address("Femtevej 1, 2100 København Ø", 50),
+          address(" førstevej 1, 2100 københavn ø ", 12),
+        ],
+      }),
+    });
+
+    const result = await reverseGeocodeDestination(
+      { latitude: 55.93, longitude: 12.3 },
+      fetcher as typeof fetch,
+    );
+
+    expect(result).toHaveLength(5);
+    expect(result.map((candidate) => candidate.distanceMeters)).toEqual([
+      8, 20, 30, 40, 50,
+    ]);
+  });
+
   test("rejects malformed address data instead of guessing", async () => {
     const fetcher = jest.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ address: { city: "Hillerød" } }),
     });
+    await expect(
+      reverseGeocodeDestination(
+        { latitude: 55.93, longitude: 12.3 },
+        fetcher as typeof fetch,
+      ),
+    ).resolves.toEqual([]);
+  });
+
+  test("rejects candidates outside the 100 metre safety boundary", async () => {
+    const fetcher = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        addresses: [
+          {
+            formattedAddress: "Testvej 1, 2100 København Ø",
+            street: "Testvej",
+            streetNumber: "1",
+            postalCode: "2100",
+            city: "København Ø",
+            distanceMeters: 100.1,
+          },
+        ],
+      }),
+    });
+
     await expect(
       reverseGeocodeDestination(
         { latitude: 55.93, longitude: 12.3 },

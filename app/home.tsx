@@ -1,6 +1,8 @@
 import { useRouter } from "expo-router";
 import {
+  Animated,
   Image,
+  Platform,
   Pressable,
   ScrollView,
   useWindowDimensions,
@@ -15,10 +17,77 @@ import { hapticFavourite, hapticToolOpen } from "../src/ui/haptics";
 import { NavigationCard } from "../src/ui/NavigationCard";
 import { theme } from "../src/ui/theme";
 import { Screen, Subtle, Title } from "../src/ui/Ui";
+import { usePressFeedback } from "../src/ui/motion";
+
+function LanguageButton({
+  language,
+  selected,
+  compact,
+  onPress,
+}: {
+  language: "en" | "da";
+  selected: boolean;
+  compact: boolean;
+  onPress: () => void;
+}) {
+  const pwa = Platform.OS === "web";
+  const pressFeedback = usePressFeedback(0.95);
+
+  return (
+    <Animated.View style={pwa ? pressFeedback.animatedStyle : undefined}>
+      <Pressable
+        onPress={onPress}
+        onPressIn={pwa ? pressFeedback.onPressIn : undefined}
+        onPressOut={pwa ? pressFeedback.onPressOut : undefined}
+        style={({ pressed }) => ({
+          opacity: pressed ? 0.82 : 1,
+          transform: pwa ? undefined : [{ scale: pressed ? 0.96 : 1 }],
+          minWidth: pwa ? 50 : 44,
+          minHeight: pwa ? 50 : 44,
+          padding: compact ? 9 : 7,
+          borderRadius: pwa ? 15 : compact ? 12 : 14,
+          borderWidth: 1,
+          borderColor:
+            pwa && selected
+              ? "rgba(174,190,144,0.38)"
+              : theme.colors.cardBorder,
+          backgroundColor: selected
+            ? theme.colors.accentSurface
+            : pwa
+              ? "rgba(16,19,15,0.22)"
+              : "transparent",
+          alignItems: "center",
+          justifyContent: "center",
+          alignSelf: "center",
+        })}
+        accessibilityRole="button"
+        accessibilityLabel={language === "en" ? "English" : "Dansk"}
+        accessibilityState={{ selected }}
+      >
+        <Image
+          source={
+            language === "en"
+              ? require("../assets/flags/gb.png")
+              : require("../assets/flags/dk.png")
+          }
+          style={
+            compact
+              ? pwa
+                ? { width: 26, height: 26, borderRadius: 7 }
+                : { width: 24, height: 24, borderRadius: 6 }
+              : { width: 32, height: 32, borderRadius: 8 }
+          }
+          resizeMode="cover"
+        />
+      </Pressable>
+    </Animated.View>
+  );
+}
 
 export default function Home() {
   const { width } = useWindowDimensions();
   const compact = width < 600;
+  const pwa = Platform.OS === "web";
   const router = useRouter();
   const { setLanguage, settings } = useSettings();
   const { t } = useT();
@@ -40,7 +109,7 @@ export default function Home() {
       key={`${titleOnly ? "favourite" : "tool"}-${tool.path}`}
       title={t(tool.titleKey)}
       description={
-        !compact && !titleOnly && tool.descKey ? t(tool.descKey) : undefined
+        !pwa && !compact && !titleOnly && tool.descKey ? t(tool.descKey) : undefined
       }
       favourite={isFavourite(tool.path)}
       onPress={() => openTool(tool)}
@@ -53,25 +122,39 @@ export default function Home() {
       <Screen
         edges={["top", "left", "right", "bottom"]}
         style={{
-          paddingTop: compact ? 2 : 8,
-          paddingHorizontal: compact ? 10 : 18,
-          gap: compact ? 4 : 14,
+          paddingTop: pwa ? (compact ? 4 : 10) : compact ? 2 : 8,
+          paddingHorizontal: pwa ? (compact ? 14 : 22) : compact ? 10 : 18,
+          gap: pwa ? (compact ? 8 : 14) : compact ? 4 : 14,
         }}
       >
-        <View style={{ gap: 0, alignItems: "center", paddingBottom: compact ? 4 : 12 }}>
+        <View
+          testID="home-hero"
+          style={{
+            gap: 0,
+            alignItems: "center",
+            paddingTop: pwa ? (compact ? 2 : 8) : 0,
+            paddingBottom: pwa ? (compact ? 10 : 16) : compact ? 4 : 12,
+          }}
+        >
           <View
             style={{
               width: "100%",
-              flexDirection: compact ? "row" : "column",
+              flexDirection: pwa ? "column" : compact ? "row" : "column",
               alignItems: "center",
               justifyContent: "center",
-              gap: compact ? 4 : 0,
+              gap: pwa ? 0 : compact ? 4 : 0,
             }}
           >
             <Image
               source={require("../assets/her-icon.png")}
               style={
-                compact
+                pwa
+                  ? {
+                      width: compact ? 50 : 68,
+                      height: compact ? 50 : 68,
+                      opacity: 0.96,
+                    }
+                  : compact
                   ? { width: 48, height: 48, opacity: 0.95 }
                   : { width: 88, height: 88, marginTop: 10, marginBottom: 0, opacity: 0.95 }
               }
@@ -80,77 +163,62 @@ export default function Home() {
             <Image
               source={require("../assets/ambuassist-logo.png")}
               style={
-                compact
+                pwa
+                  ? {
+                      width: "100%",
+                      maxWidth: compact ? 310 : 440,
+                      height: compact ? 54 : 76,
+                      marginTop: compact ? -7 : -10,
+                    }
+                  : compact
                   ? { flex: 1, maxWidth: 220, height: 44 }
                   : { width: "100%", maxWidth: 440, height: 76, marginTop: -14, marginBottom: -8 }
               }
               resizeMode="contain"
             />
 
+            {pwa ? (
+              <Subtle
+                style={{
+                  textAlign: "center",
+                  marginTop: compact ? -3 : -5,
+                  fontSize: compact ? 13 : 14,
+                  lineHeight: 19,
+                }}
+              >
+                {t("homeTagline")}
+              </Subtle>
+            ) : null}
+
             <View
               style={{
                 flexDirection: "row",
-                gap: compact ? 4 : 10,
-                marginTop: compact ? 0 : 14,
+                gap: pwa ? 10 : compact ? 4 : 10,
+                marginTop: pwa ? (compact ? 9 : 12) : compact ? 0 : 14,
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
               {(["en", "da"] as const).map((language) => (
-                <Pressable
+                <LanguageButton
                   key={language}
+                  language={language}
+                  selected={settings.language === language}
+                  compact={compact}
                   onPress={() => setLanguage(language)}
-                  style={({ pressed }) => ({
-                    opacity: pressed ? 0.82 : 1,
-                    transform: [{ scale: pressed ? 0.96 : 1 }],
-                    minWidth: 44,
-                    minHeight: 44,
-                    padding: compact ? 9 : 7,
-                    borderRadius: compact ? 12 : 14,
-                    borderWidth: 1,
-                    borderColor: theme.colors.cardBorder,
-                    backgroundColor:
-                      settings.language === language
-                        ? theme.colors.accentSurface
-                        : "transparent",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    alignSelf: "center",
-                  })}
-                  accessibilityRole="button"
-                  accessibilityLabel={
-                    language === "en" ? "English" : "Dansk"
-                  }
-                  accessibilityState={{
-                    selected: settings.language === language,
-                  }}
-                >
-                  <Image
-                    source={
-                      language === "en"
-                        ? require("../assets/flags/gb.png")
-                        : require("../assets/flags/dk.png")
-                    }
-                    style={
-                      compact
-                        ? { width: 24, height: 24, borderRadius: 6 }
-                        : { width: 32, height: 32, borderRadius: 8 }
-                    }
-                    resizeMode="cover"
-                  />
-                </Pressable>
+                />
               ))}
             </View>
           </View>
-          {!compact ? (
+          {!pwa && !compact ? (
             <Subtle style={{ textAlign: "center", marginTop: 0, fontSize: 14 }}>
               {t("homeTagline")}
             </Subtle>
           ) : null}
         </View>
 
-        <ScrollView contentContainerStyle={{ paddingBottom: 24, paddingTop: compact ? 2 : 8, paddingHorizontal: compact ? 0 : 8, alignItems: "center" }}>
-          <View style={{ width: "100%", maxWidth: 560, gap: compact ? 10 : 12 }}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 28, paddingTop: compact ? 2 : 8, paddingHorizontal: compact ? 0 : 8, alignItems: "center" }}>
+          <View style={{ width: "100%", maxWidth: pwa ? 600 : 560, gap: compact ? 10 : 12 }}>
             {favouriteTools.length > 0 ? (
               <>
                 <Title style={{ fontSize: 19, marginBottom: 2 }}>
@@ -173,7 +241,7 @@ export default function Home() {
             <NavigationCard
               testID="home-about-support"
               title={t(ABOUT_SUPPORT_TOOL.titleKey)}
-              description={compact ? undefined : t(ABOUT_SUPPORT_TOOL.descKey)}
+              description={pwa || compact ? undefined : t(ABOUT_SUPPORT_TOOL.descKey)}
               secondary
               onPress={() => openTool(ABOUT_SUPPORT_TOOL)}
             />

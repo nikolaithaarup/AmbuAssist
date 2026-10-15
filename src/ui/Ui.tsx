@@ -1,11 +1,14 @@
 // src/ui/Ui.tsx
 import { PropsWithChildren } from "react";
 import {
+  Animated,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
   TextInput,
   type TextInputProps,
+  useWindowDimensions,
   View,
   type StyleProp,
   ViewStyle,
@@ -15,6 +18,7 @@ import {
   type Edge,
 } from "react-native-safe-area-context";
 import { theme } from "./theme";
+import { usePressFeedback } from "./motion";
 
 export function Screen({
   children,
@@ -24,9 +28,23 @@ export function Screen({
   style?: StyleProp<ViewStyle>;
   edges?: readonly Edge[];
 }>) {
+  const { width } = useWindowDimensions();
+  const webLayout =
+    Platform.OS === "web"
+      ? {
+          paddingHorizontal:
+            width < 600
+              ? theme.layout.mobileGutter
+              : theme.layout.desktopGutter,
+          paddingTop: width < 600 ? 10 : 18,
+          paddingBottom: width < 600 ? 14 : 18,
+          gap: theme.layout.contentGap,
+        }
+      : undefined;
+
   return (
     <SafeAreaView style={styles.safe} edges={edges}>
-      <ResponsiveToolContainer style={[styles.inner, style]}>
+      <ResponsiveToolContainer style={[styles.inner, webLayout, style]}>
         {children}
       </ResponsiveToolContainer>
     </SafeAreaView>
@@ -75,22 +93,31 @@ export function PrimaryButton({
   onPress: () => void;
   disabled?: boolean;
 }) {
+  const pressFeedback = usePressFeedback();
+
   return (
-    <Pressable
-      onPress={onPress}
-      disabled={disabled}
-      style={({ pressed }) => [
-        styles.btn,
-        pressed && {
-          opacity: 0.86,
-          transform: [{ scale: 0.99 }],
-          backgroundColor: theme.colors.pressed,
-        },
-        disabled && { opacity: 0.55 },
-      ]}
+    <Animated.View
+      style={Platform.OS === "web" ? pressFeedback.animatedStyle : undefined}
     >
-      <Text style={styles.btnText}>{label}</Text>
-    </Pressable>
+      <Pressable
+        onPress={onPress}
+        onPressIn={Platform.OS === "web" ? pressFeedback.onPressIn : undefined}
+        onPressOut={Platform.OS === "web" ? pressFeedback.onPressOut : undefined}
+        disabled={disabled}
+        style={({ pressed }) => [
+          styles.btn,
+          pressed && {
+            opacity: 0.86,
+            transform:
+              Platform.OS === "web" ? undefined : [{ scale: 0.99 }],
+            backgroundColor: theme.colors.pressed,
+          },
+          disabled && { opacity: 0.55 },
+        ]}
+      >
+        <Text style={styles.btnText}>{label}</Text>
+      </Pressable>
+    </Animated.View>
   );
 }
 
@@ -129,7 +156,7 @@ const styles = StyleSheet.create({
 
   title: {
     color: theme.colors.text,
-    fontSize: theme.typography.title,
+    fontSize: Platform.OS === "web" ? 28 : theme.typography.title,
     fontWeight: "800",
     letterSpacing: -0.4,
   },
@@ -143,8 +170,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.card,
     borderColor: theme.colors.cardBorder,
     borderWidth: 1,
-    borderRadius: theme.radius,
-    padding: 16,
+    borderRadius: Platform.OS === "web" ? theme.radii.card : theme.radius,
+    padding: Platform.OS === "web" ? 14 : 16,
     gap: 12,
     shadowColor: "#000",
     shadowOpacity: 0.24,
@@ -160,9 +187,9 @@ const styles = StyleSheet.create({
     flex: 1,
     color: theme.colors.text,
     backgroundColor: "rgba(0,0,0,0.18)",
-    borderRadius: 12,
+    borderRadius: Platform.OS === "web" ? theme.radii.control : 12,
     paddingHorizontal: 12,
-    minHeight: 46,
+    minHeight: Platform.OS === "web" ? theme.controlHeight : 46,
     paddingVertical: 12,
     borderWidth: 1,
     borderColor: theme.colors.cardBorder,
@@ -172,8 +199,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.accentSurface,
     borderColor: theme.colors.cardBorder,
     borderWidth: 1,
-    borderRadius: 14,
-    minHeight: 50,
+    borderRadius: theme.radii.control,
+    minHeight: theme.controlHeight,
     paddingVertical: 15,
     paddingHorizontal: 18,
     alignItems: "center",

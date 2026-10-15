@@ -5,6 +5,7 @@ import {
   DestinationProviderError,
   projectToEtrs89Utm32,
   resetDestinationGeocoderTokenCacheForTests,
+  reverseGeocodeCandidatesWithDar,
   reverseGeocodeWithDar,
 } from "./destinationGeocoder";
 
@@ -163,6 +164,65 @@ describe("Datafordeler DAR destination geocoder", () => {
     await expect(
       reverseGeocodeWithDar(coordinates, credentials, fetcher),
     ).resolves.toBeNull();
+  });
+
+  test("returns distinct valid candidates sorted by distance for explicit selection", async () => {
+    const fetcher = jest
+      .fn()
+      .mockResolvedValueOnce(
+        response({ access_token: "token", expires_in: 3600 }),
+      )
+      .mockResolvedValueOnce(
+        response({
+          data: {
+            DAR_Adressepunkt: {
+              nodes: [addressPoint("point-2", 12), addressPoint("point-1", 8)],
+            },
+          },
+        }),
+      )
+      .mockResolvedValueOnce(
+        response(houseNumber("Testvej 1, 2100 København Ø", "1")),
+      )
+      .mockResolvedValueOnce(
+        response(houseNumber("Andenvej 2, 2100 København Ø", "2")),
+      );
+
+    await expect(
+      reverseGeocodeCandidatesWithDar(coordinates, credentials, fetcher),
+    ).resolves.toMatchObject([
+      { formattedAddress: "Testvej 1, 2100 København Ø", distanceMeters: 8 },
+      { formattedAddress: "Andenvej 2, 2100 København Ø", distanceMeters: 12 },
+    ]);
+  });
+
+  test("deduplicates repeated DAR addresses while keeping the nearest match", async () => {
+    const fetcher = jest
+      .fn()
+      .mockResolvedValueOnce(
+        response({ access_token: "token", expires_in: 3600 }),
+      )
+      .mockResolvedValueOnce(
+        response({
+          data: {
+            DAR_Adressepunkt: {
+              nodes: [addressPoint("point-1", 5), addressPoint("point-2", 15)],
+            },
+          },
+        }),
+      )
+      .mockResolvedValueOnce(
+        response(houseNumber("Testvej 1, 2100 København Ø", "1")),
+      )
+      .mockResolvedValueOnce(
+        response(houseNumber("Testvej 1, 2100 København Ø", "1")),
+      );
+
+    await expect(
+      reverseGeocodeCandidatesWithDar(coordinates, credentials, fetcher),
+    ).resolves.toMatchObject([
+      { formattedAddress: "Testvej 1, 2100 København Ø", distanceMeters: 5 },
+    ]);
   });
 
   test("does not return an address outside the safe distance", async () => {

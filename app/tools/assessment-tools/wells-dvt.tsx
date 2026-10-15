@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ScrollView, View } from "react-native";
+import { Platform, ScrollView, View } from "react-native";
 import {
   calculateWellsDvtScore,
   classifyWellsDvt,
@@ -57,7 +57,7 @@ export default function WellsDvt() {
     <Background>
       <Screen>
         <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
-          <View style={{ gap: 12, marginTop: 12 }}>
+          <View style={{ gap: 12, marginTop: Platform.OS === "web" ? 0 : 12 }}>
             <FixedChoiceAssessment
               title={t("wells_title")}
               intro={t("wells_sub")}

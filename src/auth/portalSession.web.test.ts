@@ -158,4 +158,74 @@ describe("Pre-router URL capture", () => {
       Object.defineProperty(global, "window", { configurable: true, writable: true, value: originalWindow });
     }
   });
+
+  test("restores a localhost deep link without attempting a production-origin history write", () => {
+    const requested = "http://127.0.0.1:4173/tools/destination?source=gps#address";
+    const originalWindow = global.window;
+    const replaceState = jest.fn();
+    Object.defineProperty(global, "window", { configurable: true, writable: true, value: {
+      location: { href: "http://127.0.0.1:4173/tools/destination#address?source=gps", pathname: "/tools/destination" },
+      history: { state: null, replaceState },
+    } });
+    jest.doMock("./initialUrl", () => ({ initialBrowserUrl: requested }));
+    try {
+      jest.isolateModules(() => {
+        const client = require("./portalSession.web");
+        client.restoreRequestedUrl();
+        expect(replaceState).toHaveBeenCalledWith(null, "", requested);
+        expect(new URL(client.getPortalLoginUrl()).searchParams.get("returnTo")).toBe(
+          "https://ambuassist.synapsestudio.dk/",
+        );
+      });
+    } finally {
+      jest.dontMock("./initialUrl");
+      Object.defineProperty(global, "window", { configurable: true, writable: true, value: originalWindow });
+    }
+  });
+
+  test("accepts a relative localhost restoration URL", () => {
+    const originalWindow = global.window;
+    const replaceState = jest.fn();
+    Object.defineProperty(global, "window", { configurable: true, writable: true, value: {
+      location: { href: "http://localhost:4173/tools/destination", pathname: "/tools/destination" },
+      history: { state: null, replaceState },
+    } });
+    jest.doMock("./initialUrl", () => ({ initialBrowserUrl: "/tools/destination?source=gps#address" }));
+    try {
+      jest.isolateModules(() => {
+        require("./portalSession.web").restoreRequestedUrl();
+        expect(replaceState).toHaveBeenCalledWith(
+          null,
+          "",
+          "http://localhost:4173/tools/destination?source=gps#address",
+        );
+      });
+    } finally {
+      jest.dontMock("./initialUrl");
+      Object.defineProperty(global, "window", { configurable: true, writable: true, value: originalWindow });
+    }
+  });
+
+  test.each([
+    "https://ambuassist.synapsestudio.dk/tools/destination",
+    "//evil.test/tools/destination",
+    "http://[",
+  ])("does not restore a cross-origin or malformed URL: %s", (requested) => {
+    const originalWindow = global.window;
+    const replaceState = jest.fn();
+    Object.defineProperty(global, "window", { configurable: true, writable: true, value: {
+      location: { href: "http://127.0.0.1:4173/tools/destination", pathname: "/tools/destination" },
+      history: { state: null, replaceState },
+    } });
+    jest.doMock("./initialUrl", () => ({ initialBrowserUrl: requested }));
+    try {
+      jest.isolateModules(() => {
+        require("./portalSession.web").restoreRequestedUrl();
+        expect(replaceState).not.toHaveBeenCalled();
+      });
+    } finally {
+      jest.dontMock("./initialUrl");
+      Object.defineProperty(global, "window", { configurable: true, writable: true, value: originalWindow });
+    }
+  });
 });

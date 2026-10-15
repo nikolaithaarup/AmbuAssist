@@ -7,6 +7,7 @@ const mockSetLanguage = jest.fn();
 let mockWidth = 390;
 
 const ReactNative = require("react-native");
+const originalPlatform = ReactNative.Platform.OS;
 jest
   .spyOn(ReactNative, "useWindowDimensions")
   .mockImplementation(() => ({ width: mockWidth, height: 844 }));
@@ -78,6 +79,7 @@ describe("Home responsive mobile layout", () => {
 
   afterEach(() => {
     act(() => renderer?.unmount());
+    ReactNative.Platform.OS = originalPlatform;
   });
 
   function renderHome() {
@@ -121,5 +123,22 @@ describe("Home responsive mobile layout", () => {
     expect(danish).toBeDefined();
     act(() => danish?.props.onPress());
     expect(mockSetLanguage).toHaveBeenCalledWith("da");
+  });
+
+  test("uses the balanced branded hero and title-only cards in the web PWA", () => {
+    ReactNative.Platform.OS = "web";
+    const root = renderHome();
+
+    expect(root.findByProps({ testID: "home-hero" })).toBeDefined();
+    expect(
+      root.findAllByType(Text).some(
+        (node) => node.props.children === "homeTagline",
+      ),
+    ).toBe(true);
+    expect(
+      root.findAllByProps({ testID: "navigation-card" }).every(
+        (card) => card.props.description === undefined,
+      ),
+    ).toBe(true);
   });
 });

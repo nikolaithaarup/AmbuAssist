@@ -1,11 +1,11 @@
 import handler from "../../api/destination-geocode";
-import { reverseGeocodeWithDar } from "./destinationGeocoder";
+import { reverseGeocodeCandidatesWithDar } from "./destinationGeocoder";
 
 jest.mock("./destinationGeocoder", () => ({
-  reverseGeocodeWithDar: jest.fn(),
+  reverseGeocodeCandidatesWithDar: jest.fn(),
 }));
 
-const mockedReverseGeocode = jest.mocked(reverseGeocodeWithDar);
+const mockedReverseGeocode = jest.mocked(reverseGeocodeCandidatesWithDar);
 const originalClientId = process.env.DATAFORDELER_CLIENT_ID;
 const originalClientSecret = process.env.DATAFORDELER_CLIENT_SECRET;
 
@@ -82,13 +82,13 @@ describe("destination geocoder API boundary", () => {
   });
 
   test("accepts a same-origin Node.js serverless request", async () => {
-    mockedReverseGeocode.mockResolvedValue({
+    mockedReverseGeocode.mockResolvedValue([{
       street: "Testvej",
       streetNumber: "1",
       postalCode: "2100",
       city: "København Ø",
       formattedAddress: "Testvej 1, 2100 København Ø",
-    });
+    }]);
     const result = await invoke({
       "Content-Type": "application/json",
       Origin: "https://ambuassist.synapsestudio.dk",
@@ -96,7 +96,7 @@ describe("destination geocoder API boundary", () => {
     });
     expect(result.statusCode).toBe(200);
     expect(result.body).toMatchObject({
-      address: { formattedAddress: "Testvej 1, 2100 København Ø" },
+      addresses: [{ formattedAddress: "Testvej 1, 2100 København Ø" }],
     });
     expect(mockedReverseGeocode).toHaveBeenCalledWith(
       { latitude: 55.6761, longitude: 12.5683 },

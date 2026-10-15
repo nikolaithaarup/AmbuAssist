@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Platform, Pressable, ScrollView, Text, View } from "react-native";
 import { useT } from "../../src/i18n/useT";
 import { Background } from "../../src/ui/Background";
 import { ClinicalDisclosure } from "../../src/ui/ClinicalDisclosure";
@@ -237,7 +237,7 @@ export default function Exams() {
   return (
     <Background>
       <Screen>
-        <View style={{ gap: 6, marginTop: 12 }}>
+        <View style={{ gap: 6, marginTop: Platform.OS === "web" ? 0 : 12 }}>
           <Title>{t("exams_title")}</Title>
           <Subtle>{t("exams_sub")}</Subtle>
         </View>

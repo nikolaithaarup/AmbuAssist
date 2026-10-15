@@ -115,7 +115,7 @@ export default function ContactScreen({ apiBaseUrl }: Props) {
     <Background>
       <Screen>
         {/* Header row: title + back */}
-        <View style={{ marginTop: 12, gap: 6 }}>
+        <View style={{ marginTop: Platform.OS === "web" ? 0 : 12, gap: 6 }}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <View style={{ flex: 1, gap: 6 }}>
               <Title>{t2(lang, "Kontakt", "Contact")}</Title>

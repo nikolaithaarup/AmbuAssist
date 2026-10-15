@@ -19,6 +19,9 @@ export const theme = {
     primary: "#91A96C",
   },
   radius: 14,
+  radii: { control: 14, card: 17, largeCard: 20, pill: 999 },
+  controlHeight: 50,
   spacing: { xs: 6, sm: 10, md: 14, lg: 20, xl: 28 },
+  layout: { mobileGutter: 14, desktopGutter: 22, contentGap: 12 },
   typography: { title: 30, section: 18, body: 15, caption: 13 },
 };

@@ -1,8 +1,9 @@
 // src/ui/CollapsibleCard.tsx
 import { PropsWithChildren, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { LayoutAnimation, Platform, Pressable, Text, View } from "react-native";
 import { Card } from "./Ui";
 import { theme } from "./theme";
+import { useReducedMotionPreference } from "./motion";
 
 type Props = PropsWithChildren<{
   title: string;
@@ -17,12 +18,35 @@ export function CollapsibleCard({
   children,
 }: Props) {
   const [open, setOpen] = useState(defaultOpen);
+  const reducedMotion = useReducedMotionPreference(Platform.OS === "web");
+
+  const toggleOpen = () => {
+    if (Platform.OS === "web" && !reducedMotion) {
+      LayoutAnimation.configureNext({
+        duration: 180,
+        create: {
+          type: LayoutAnimation.Types.easeInEaseOut,
+          property: LayoutAnimation.Properties.opacity,
+        },
+        update: { type: LayoutAnimation.Types.easeInEaseOut },
+        delete: {
+          type: LayoutAnimation.Types.easeInEaseOut,
+          property: LayoutAnimation.Properties.opacity,
+        },
+      });
+    }
+    setOpen((current) => !current);
+  };
 
   return (
     <Card>
       <Pressable
-        onPress={() => setOpen((p) => !p)}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: open }}
+        onPress={toggleOpen}
         style={({ pressed }) => ({
+          minHeight: Platform.OS === "web" ? 48 : undefined,
+          justifyContent: "center",
           opacity: pressed ? 0.75 : 1,
         })}
       >

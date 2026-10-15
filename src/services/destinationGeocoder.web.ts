@@ -6,9 +6,11 @@ import {
 
 type DestinationGeocoderResponse = {
   address?: unknown;
+  addresses?: unknown;
 };
 
 const DESTINATION_GEOCODER_ENDPOINT = "/api/destination-geocode";
+const MAXIMUM_ADDRESS_DISTANCE_METERS = 100;
 
 function optionalString(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value.trim() : null;
@@ -84,10 +86,42 @@ export async function reverseGeocodeDestination(
     );
   }
 
-  const address = normalizeDestinationAddress(
-    (payload as DestinationGeocoderResponse).address,
-  );
-  return address ? [address] : [];
+  const responsePayload = payload as DestinationGeocoderResponse;
+  const rawAddresses = Array.isArray(responsePayload.addresses)
+    ? responsePayload.addresses
+    : [responsePayload.address];
+  const uniqueAddresses = new Map<string, DestinationGeocodedAddress>();
+  for (const value of rawAddresses) {
+    const address = normalizeDestinationAddress(value);
+    if (
+      !address?.formattedAddress ||
+      address.distanceMeters === null ||
+      address.distanceMeters === undefined ||
+      address.distanceMeters < 0 ||
+      address.distanceMeters > MAXIMUM_ADDRESS_DISTANCE_METERS
+    ) {
+      continue;
+    }
+    const key = address.formattedAddress
+      .normalize("NFKC")
+      .toLocaleLowerCase("da-DK")
+      .replace(/\s+/gu, " ")
+      .trim();
+    const current = uniqueAddresses.get(key);
+    if (
+      !current ||
+      (address.distanceMeters ?? Infinity) <
+        (current.distanceMeters ?? Infinity)
+    ) {
+      uniqueAddresses.set(key, address);
+    }
+  }
+  return [...uniqueAddresses.values()]
+    .sort(
+      (a, b) =>
+        (a.distanceMeters ?? Infinity) - (b.distanceMeters ?? Infinity),
+    )
+    .slice(0, 5);
 }
 
 export type { DestinationGeocodedAddress } from "./destinationGeocoder.types";

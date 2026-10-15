@@ -1,6 +1,6 @@
 // app/tools/assessment-tools/index.tsx
 import { type Href, useRouter } from "expo-router";
-import { ScrollView, View } from "react-native";
+import { Platform, ScrollView, View } from "react-native";
 import { useT } from "../../../src/i18n/useT";
 import { Background } from "../../../src/ui/Background";
 import { hapticToolOpen } from "../../../src/ui/haptics";
@@ -66,7 +66,7 @@ export default function AssessmentToolsPage() {
         <ScrollView
           contentContainerStyle={{
             paddingHorizontal: 16,
-            paddingTop: 16,
+            paddingTop: Platform.OS === "web" ? 0 : 16,
             paddingBottom: 24,
             alignItems: "center",
           }}

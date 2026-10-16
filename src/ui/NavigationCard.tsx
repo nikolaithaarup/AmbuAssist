@@ -46,6 +46,41 @@ export function NavigationCard({
   const [focused, setFocused] = useState(false);
   const pwa = Platform.OS === "web";
   const pressFeedback = usePressFeedback(0.985);
+  const favouriteFeedback = usePressFeedback(0.91);
+  const favouriteButton = onToggleFavourite ? (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={favourite ? "Remove favourite" : "Add favourite"}
+      accessibilityState={{ selected: favourite }}
+      onPress={onToggleFavourite}
+      onPressIn={pwa ? favouriteFeedback.onPressIn : undefined}
+      onPressOut={pwa ? favouriteFeedback.onPressOut : undefined}
+      hitSlop={2}
+      style={({ pressed }) => ({
+        flex: pwa ? 1 : undefined,
+        width: pwa ? undefined : 54,
+        minHeight: pwa ? 64 : 56,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: pressed
+          ? "rgba(255,255,255,0.05)"
+          : "transparent",
+        opacity: pressed ? 0.72 : 1,
+        transform: pwa ? undefined : [{ scale: pressed ? 0.96 : 1 }],
+      })}
+    >
+      <Text
+        style={{
+          color: favourite ? theme.colors.warn : theme.colors.mutedText,
+          fontSize: 24,
+          lineHeight: 28,
+          fontWeight: "800",
+        }}
+      >
+        {favourite ? "★" : "☆"}
+      </Text>
+    </Pressable>
+  ) : null;
 
   return (
     <Animated.View
@@ -138,35 +173,15 @@ export function NavigationCard({
       </Pressable>
 
       {onToggleFavourite ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={favourite ? "Remove favourite" : "Add favourite"}
-          accessibilityState={{ selected: favourite }}
-          onPress={onToggleFavourite}
-          hitSlop={2}
-          style={({ pressed }) => ({
-            width: pwa ? 58 : 54,
-            minHeight: pwa ? 64 : 56,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: pressed
-              ? "rgba(255,255,255,0.05)"
-              : "transparent",
-            opacity: pressed ? 0.72 : 1,
-            transform: [{ scale: pressed ? 0.96 : 1 }],
-          })}
-        >
-          <Text
-            style={{
-              color: favourite ? theme.colors.warn : theme.colors.mutedText,
-              fontSize: 24,
-              lineHeight: 28,
-              fontWeight: "800",
-            }}
+        pwa ? (
+          <Animated.View
+            style={[{ width: 58 }, favouriteFeedback.animatedStyle]}
           >
-            {favourite ? "★" : "☆"}
-          </Text>
-        </Pressable>
+            {favouriteButton}
+          </Animated.View>
+        ) : (
+          favouriteButton
+        )
       ) : null}
     </Animated.View>
   );

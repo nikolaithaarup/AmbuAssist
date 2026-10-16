@@ -1,31 +1,29 @@
 // app/_layout.tsx
-import { Stack } from "expo-router";
-import { Platform } from "react-native";
+import { Stack, usePathname } from "expo-router";
+import { Animated, Platform, View } from "react-native";
 import AuthLanding from "../src/features/auth/AuthLanding";
 import { StatusBar } from "expo-status-bar";
 import { SettingsProvider } from "../src/state/settings";
 import { FavouritesProvider } from "../src/state/favourites";
 import { AuthProvider, useAuth } from "../src/auth/AuthProvider";
-import { useReducedMotionPreference } from "../src/ui/motion";
+import { useWebRouteTransition } from "../src/ui/motion";
+import { theme } from "../src/ui/theme";
 
 function AppStack() {
   const { state } = useAuth();
-  const reducedMotion = useReducedMotionPreference(Platform.OS === "web");
+  const pathname = usePathname();
+  const pwa = Platform.OS === "web";
+  const routeTransition = useWebRouteTransition(pathname, pwa);
   const authorized = state.status === "authorized";
   // Keep the browser URL intact while checking access, before Expo can redirect a protected route.
   if (Platform.OS === "web" && !authorized) return <AuthLanding />;
 
-  return (
+  const stack = (
     <Stack
       screenOptions={{
         headerShown: false,
         contentStyle: { backgroundColor: "transparent" },
-        animation:
-          Platform.OS === "web"
-            ? reducedMotion
-              ? "none"
-              : "fade"
-            : undefined,
+        animation: pwa ? "none" : undefined,
       }}
     >
       <Stack.Screen name="index" />
@@ -34,6 +32,21 @@ function AppStack() {
         <Stack.Screen name="tools" />
       </Stack.Protected>
     </Stack>
+  );
+
+  if (!pwa) return stack;
+
+  return (
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: theme.colors.backgroundBase,
+      }}
+    >
+      <Animated.View style={[{ flex: 1 }, routeTransition]}>
+        {stack}
+      </Animated.View>
+    </View>
   );
 }
 

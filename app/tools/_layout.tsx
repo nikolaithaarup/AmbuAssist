@@ -10,7 +10,6 @@ import { Background } from "../../src/ui/Background";
 import { hapticFavourite } from "../../src/ui/haptics";
 import { theme } from "../../src/ui/theme";
 import { recordToolOpen, usageToolForPath } from "../../src/analytics/usage";
-import { useReducedMotionPreference } from "../../src/ui/motion";
 
 const HEADER_BAR_HEIGHT = 58;
 const TITLE_KEYS: Record<string, any> = {
@@ -46,7 +45,6 @@ export default function ToolsLayout() {
   const pathname = usePathname();
   const { t } = useT();
   const { isFavourite, toggleFavourite } = useFavourites();
-  const reducedMotion = useReducedMotionPreference(Platform.OS === "web");
   const showBack = pathname !== "/tools";
   const insets = useSafeAreaInsets();
   const statusBarH =
@@ -172,12 +170,7 @@ export default function ToolsLayout() {
       <Stack
         screenOptions={{
           headerShown: false,
-          animation:
-            Platform.OS === "web"
-              ? reducedMotion
-                ? "none"
-                : "fade"
-              : undefined,
+          animation: Platform.OS === "web" ? "none" : undefined,
           contentStyle: {
             backgroundColor: "transparent",
             paddingTop: topOffset,

@@ -9,7 +9,11 @@ import {
   type ViewStyle,
 } from "react-native";
 import { theme } from "./theme";
-import { usePressFeedback } from "./motion";
+import {
+  markNextWebRouteDirection,
+  usePressFeedback,
+  useStateChangeFeedback,
+} from "./motion";
 
 type NavigationCardProps = {
   title: string;
@@ -47,6 +51,7 @@ export function NavigationCard({
   const pwa = Platform.OS === "web";
   const pressFeedback = usePressFeedback(0.985);
   const favouriteFeedback = usePressFeedback(0.91);
+  const favouriteChangeFeedback = useStateChangeFeedback(favourite, 1.12);
   const favouriteButton = onToggleFavourite ? (
     <Pressable
       accessibilityRole="button"
@@ -109,7 +114,10 @@ export function NavigationCard({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={description ? `${title}. ${description}` : title}
-        onPress={onPress}
+        onPress={() => {
+          markNextWebRouteDirection("forward");
+          onPress();
+        }}
         onPressIn={pwa ? pressFeedback.onPressIn : undefined}
         onPressOut={pwa ? pressFeedback.onPressOut : undefined}
         onHoverIn={() => setHovered(true)}
@@ -175,9 +183,13 @@ export function NavigationCard({
       {onToggleFavourite ? (
         pwa ? (
           <Animated.View
-            style={[{ width: 58 }, favouriteFeedback.animatedStyle]}
+            style={[{ width: 58 }, favouriteChangeFeedback]}
           >
-            {favouriteButton}
+            <Animated.View
+              style={[{ flex: 1 }, favouriteFeedback.animatedStyle]}
+            >
+              {favouriteButton}
+            </Animated.View>
           </Animated.View>
         ) : (
           favouriteButton

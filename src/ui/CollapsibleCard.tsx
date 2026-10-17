@@ -107,7 +107,7 @@ export function CollapsibleCard({
               gridTemplateRows: open ? "1fr" : "0fr",
               transition: reducedMotion
                 ? "none"
-                : "grid-template-rows 180ms cubic-bezier(0.2, 0.8, 0.2, 1)",
+                : "grid-template-rows 240ms cubic-bezier(0.22, 1, 0.36, 1)",
             } as any
           }
         >
@@ -118,12 +118,12 @@ export function CollapsibleCard({
                 overflow: "hidden",
                 opacity: open ? 1 : 0,
                 visibility: open ? "visible" : "hidden",
-                transform: [{ translateY: open ? 0 : -4 }],
+                transform: [{ translateY: open ? 0 : -8 }],
                 transition: reducedMotion
                   ? "none"
                   : open
-                    ? "opacity 150ms ease-out, transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0s"
-                    : "opacity 110ms ease-in, transform 150ms ease-in, visibility 0s linear 180ms",
+                    ? "opacity 190ms ease-out, transform 240ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0s"
+                    : "opacity 150ms ease-in, transform 190ms ease-in, visibility 0s linear 240ms",
               } as any
             }
           >

@@ -41,9 +41,16 @@ function AppStack() {
       style={{
         flex: 1,
         backgroundColor: theme.colors.backgroundBase,
+        overflow: "hidden",
       }}
     >
-      <Animated.View style={[{ flex: 1 }, routeTransition]}>
+      <Animated.View
+        testID="web-route-transition"
+        style={[
+          { flex: 1, width: "100%" },
+          routeTransition,
+        ]}
+      >
         {stack}
       </Animated.View>
     </View>

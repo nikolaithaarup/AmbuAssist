@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { theme } from "./theme";
 import {
-  markNextWebRouteDirection,
+  runWebRouteTransition,
   usePressFeedback,
   useStateChangeFeedback,
 } from "./motion";
@@ -114,10 +114,7 @@ export function NavigationCard({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={description ? `${title}. ${description}` : title}
-        onPress={() => {
-          markNextWebRouteDirection("forward");
-          onPress();
-        }}
+        onPress={() => runWebRouteTransition("forward", onPress)}
         onPressIn={pwa ? pressFeedback.onPressIn : undefined}
         onPressOut={pwa ? pressFeedback.onPressOut : undefined}
         onHoverIn={() => setHovered(true)}

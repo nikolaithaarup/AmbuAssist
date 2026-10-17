@@ -40,8 +40,8 @@ function AppStack() {
     <View
       style={{
         flex: 1,
+        minHeight: "100dvh" as any,
         backgroundColor: theme.colors.backgroundBase,
-        overflow: "hidden",
       }}
     >
       <Animated.View

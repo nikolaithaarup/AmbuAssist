@@ -10,7 +10,7 @@ import { Background } from "../../src/ui/Background";
 import { hapticFavourite } from "../../src/ui/haptics";
 import { theme } from "../../src/ui/theme";
 import { recordToolOpen, usageToolForPath } from "../../src/analytics/usage";
-import { markNextWebRouteDirection } from "../../src/ui/motion";
+import { runWebRouteTransition } from "../../src/ui/motion";
 
 const HEADER_BAR_HEIGHT = 58;
 const TITLE_KEYS: Record<string, any> = {
@@ -94,9 +94,10 @@ export default function ToolsLayout() {
         {showBack ? (
           <Pressable
             onPress={() => {
-              markNextWebRouteDirection("back");
-              if (router.canGoBack()) router.back();
-              else router.replace("/home");
+              runWebRouteTransition("back", () => {
+                if (router.canGoBack()) router.back();
+                else router.replace("/home");
+              });
             }}
             hitSlop={10}
             style={({ pressed }) => ({

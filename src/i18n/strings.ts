@@ -1386,6 +1386,46 @@ export const en = {
   about_support_sub:
     "Medical disclaimer, contact, feedback, and app information in one place.",
 
+  about_made_by: "Developed by SynapseStudio",
+  about_safety_summary:
+    "AmbuAssist is a support tool. Always follow current local guidance and never let use of the app delay necessary treatment.",
+  about_help_title: "Help and information",
+  about_help_sub: "Sources, safe use, feedback, and privacy.",
+  about_sources_title: "Sources and clinical basis",
+  about_sources_sub: "How the tools are grounded, reviewed, and kept current.",
+  about_privacy_title: "Privacy and app information",
+  about_privacy_sub: "Local settings, Portal access, usage data, and version.",
+  about_privacy_local:
+    "Settings and favourites are stored locally on your device.",
+  about_privacy_auth:
+    "Access to the web app is verified through your existing SynapsePortal session.",
+  about_privacy_usage:
+    "Basic app and tool use may be recorded to operate and improve AmbuAssist; clinical values entered in tools are not included in that usage report.",
+  about_privacy_feedback:
+    "Feedback opens your email app. Do not include names, CPR numbers, or other patient-identifying information.",
+
+  install_title: "Add to Home Screen",
+  install_intro:
+    "AmbuAssist works in your browser and can optionally be added to your Home Screen for quicker access.",
+  install_optional: "Installation is optional — no App Store, Google Play, or TestFlight is required.",
+  install_show_guide: "Show installation guide",
+  install_hide_guide: "Hide installation guide",
+  install_ios_tab: "iPhone",
+  install_android_tab: "Android",
+  install_ios_1: "Open AmbuAssist in Safari.",
+  install_ios_2: "Tap the Share button.",
+  install_ios_3: "Choose Add to Home Screen.",
+  install_ios_4: "Confirm by tapping Add.",
+  install_android_1: "Open AmbuAssist in Chrome.",
+  install_android_2: "Open the browser menu or installation prompt.",
+  install_android_3: "Choose Install app or Add to Home screen.",
+  install_android_4: "Confirm the installation.",
+  install_installed_title: "AmbuAssist is open from your Home Screen",
+  install_installed_body:
+    "No installation steps are needed in this window.",
+  install_updates:
+    "The maintained web app receives updates through the website. Availability without a connection can vary, so do not rely on complete offline access.",
+
   about_what_title: "What AmbuAssist is",
   about_what_body:
     "AmbuAssist is designed as a simple support tool for quick access to selected clinical scores, assessment aids, destination help, and reference content in busy real-world settings.",
@@ -2876,6 +2916,46 @@ export const da: typeof en = {
   about_support_title: "Om & support",
   about_support_sub:
     "Medicinsk disclaimer, kontakt, feedback og appinformation samlet ét sted.",
+
+  about_made_by: "Udviklet af SynapseStudio",
+  about_safety_summary:
+    "AmbuAssist er et støtteværktøj. Følg altid gældende lokale instrukser, og lad aldrig brug af appen forsinke nødvendig behandling.",
+  about_help_title: "Hjælp og information",
+  about_help_sub: "Kilder, sikker brug, feedback og privatliv.",
+  about_sources_title: "Kilder og fagligt grundlag",
+  about_sources_sub: "Hvordan værktøjerne er funderet, gennemgået og holdes aktuelle.",
+  about_privacy_title: "Privatliv og app-information",
+  about_privacy_sub: "Lokale indstillinger, Portal-adgang, brugsdata og version.",
+  about_privacy_local:
+    "Indstillinger og favoritter gemmes lokalt på din enhed.",
+  about_privacy_auth:
+    "Adgang til webappen bekræftes via din eksisterende SynapsePortal-session.",
+  about_privacy_usage:
+    "Grundlæggende brug af appen og værktøjerne kan registreres for at drive og forbedre AmbuAssist; kliniske værdier, du indtaster i værktøjer, indgår ikke i denne brugsrapportering.",
+  about_privacy_feedback:
+    "Feedback åbner din email-app. Medtag ikke navne, CPR-numre eller andre patientidentificerende oplysninger.",
+
+  install_title: "Føj til hjemmeskærmen",
+  install_intro:
+    "AmbuAssist virker direkte i browseren og kan valgfrit føjes til hjemmeskærmen for hurtigere adgang.",
+  install_optional: "Installation er valgfri — App Store, Google Play og TestFlight er ikke nødvendige.",
+  install_show_guide: "Vis installationsguide",
+  install_hide_guide: "Skjul installationsguide",
+  install_ios_tab: "iPhone",
+  install_android_tab: "Android",
+  install_ios_1: "Åbn AmbuAssist i Safari.",
+  install_ios_2: "Tryk på Del-knappen.",
+  install_ios_3: "Vælg Føj til hjemmeskærm.",
+  install_ios_4: "Bekræft ved at trykke Tilføj.",
+  install_android_1: "Åbn AmbuAssist i Chrome.",
+  install_android_2: "Åbn browsermenuen eller installationsprompten.",
+  install_android_3: "Vælg Installer app eller Føj til startskærm.",
+  install_android_4: "Bekræft installationen.",
+  install_installed_title: "AmbuAssist er åbnet fra din hjemmeskærm",
+  install_installed_body:
+    "Der er ikke behov for installationstrin i dette vindue.",
+  install_updates:
+    "Den vedligeholdte webapp modtager opdateringer via hjemmesiden. Adgang uden forbindelse kan variere, så forvent ikke fuld offlinefunktion.",
 
   about_what_title: "Hvad AmbuAssist er",
   about_what_body:

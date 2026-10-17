@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: "#10130F",
-    ...(Platform.OS === "web" ? ({ minHeight: "100vh" } as any) : null),
+    ...(Platform.OS === "web" ? ({ minHeight: "100dvh" } as any) : null),
   },
   content: { flex: 1, backgroundColor: "transparent" },
   swirlLayer: { ...StyleSheet.absoluteFillObject, overflow: "hidden" },

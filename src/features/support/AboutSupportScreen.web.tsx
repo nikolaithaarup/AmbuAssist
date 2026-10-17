@@ -1,5 +1,5 @@
 import Constants from "expo-constants";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Animated,
   Image,
@@ -23,6 +23,7 @@ import { theme } from "../../ui/theme";
 
 export type AboutSupportSection =
   | "about"
+  | "sources"
   | "medical"
   | "contact"
   | "limitations"
@@ -94,41 +95,51 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 
 function DisclosureBody({ open, children }: { open: boolean; children: ReactNode }) {
   const reducedMotion = useReducedMotionPreference(true);
+  const reveal = useRef(new Animated.Value(open ? 1 : 0)).current;
+
+  useEffect(() => {
+    reveal.stopAnimation();
+    if (reducedMotion) {
+      reveal.setValue(open ? 1 : 0);
+      return;
+    }
+
+    if (open) {
+      reveal.setValue(0);
+      Animated.timing(reveal, {
+        toValue: 1,
+        duration: 220,
+        useNativeDriver: false,
+        isInteraction: false,
+      }).start();
+    }
+  }, [open, reducedMotion, reveal]);
+
+  // Closed content is deliberately not mounted. React Native Web has
+  // inconsistent support for CSS grid track animations on iOS Safari, which
+  // previously allowed collapsed copy to retain layout height and appear open.
+  if (!open) return null;
 
   return (
-    <View
-      accessibilityElementsHidden={!open}
-      importantForAccessibility={open ? "auto" : "no-hide-descendants"}
-      pointerEvents={open ? "auto" : "none"}
-      style={
-        {
-          display: "grid",
-          gridTemplateRows: open ? "1fr" : "0fr",
-          transition: reducedMotion
-            ? "none"
-            : "grid-template-rows 240ms cubic-bezier(0.22, 1, 0.36, 1)",
-        } as any
-      }
-    >
-      <View
-        style={
+    <Animated.View
+      testID="about-disclosure-body"
+      style={{
+        overflow: "hidden",
+        opacity: reveal,
+        transform: [
           {
-            minHeight: 0,
-            overflow: "hidden",
-            opacity: open ? 1 : 0,
-            visibility: open ? "visible" : "hidden",
-            transform: [{ translateY: open ? 0 : -8 }],
-            transition: reducedMotion
-              ? "none"
-              : open
-                ? "opacity 190ms ease-out, transform 240ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0s"
-                : "opacity 150ms ease-in, transform 190ms ease-in, visibility 0s linear 240ms",
-          } as any
-        }
-      >
+            translateY: reveal.interpolate({
+              inputRange: [0, 1],
+              outputRange: [-8, 0],
+            }),
+          },
+        ],
+      }}
+    >
+      <View>
         {children}
       </View>
-    </View>
+    </Animated.View>
   );
 }
 
@@ -156,6 +167,7 @@ function SupportSection({
           accessibilityRole="button"
           accessibilityLabel={title}
           accessibilityState={{ expanded: open }}
+          aria-expanded={open}
           onPress={onToggle}
           onPressIn={pressFeedback.onPressIn}
           onPressOut={pressFeedback.onPressOut}
@@ -308,13 +320,9 @@ function InstallGuide() {
       : [t("install_android_1"), t("install_android_2"), t("install_android_3"), t("install_android_4")];
 
   return (
-    <ToolSurface tone="accent" testID="about-install-card" style={{ gap: 9 }}>
-      <Text style={{ color: theme.colors.text, fontSize: 20, lineHeight: 25, fontWeight: "900" }}>
-        {t("install_title")}
-      </Text>
-      <Body>{t("install_intro")}</Body>
+    <ToolSurface tone="accent" testID="about-install-card" style={{ gap: 0, paddingVertical: 0 }}>
       {standalone ? (
-        <View style={{ gap: 4, paddingVertical: 4 }} testID="about-install-standalone">
+        <View style={{ gap: 4, paddingVertical: 14 }} testID="about-install-standalone">
           <Text style={{ color: theme.colors.ok, fontSize: 15, fontWeight: "900" }}>
             {t("install_installed_title")}
           </Text>
@@ -322,40 +330,40 @@ function InstallGuide() {
         </View>
       ) : (
         <>
-          <Subtle>{t("install_optional")}</Subtle>
           <Animated.View style={pressFeedback.animatedStyle}>
             <Pressable
               testID="about-install-toggle"
               accessibilityRole="button"
               accessibilityLabel={guideOpen ? t("install_hide_guide") : t("install_show_guide")}
               accessibilityState={{ expanded: guideOpen }}
+              aria-expanded={guideOpen}
               onPress={() => setGuideOpen((current) => !current)}
               onPressIn={pressFeedback.onPressIn}
               onPressOut={pressFeedback.onPressOut}
               style={({ pressed }) => ({
-                minHeight: 50,
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: "rgba(174,190,144,0.34)",
-                backgroundColor: pressed ? theme.colors.pressed : "rgba(145,169,108,0.13)",
+                minHeight: 64,
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
                 gap: 12,
-                paddingHorizontal: 14,
+                paddingVertical: 10,
                 opacity: pressed ? 0.78 : 1,
               })}
             >
-              <Text style={{ color: theme.colors.text, fontWeight: "900" }}>
-                {guideOpen ? t("install_hide_guide") : t("install_show_guide")}
-              </Text>
+              <View style={{ flex: 1, gap: 3 }}>
+                <Text style={{ color: theme.colors.text, fontSize: 17, fontWeight: "900" }}>
+                  {t("install_entry_title")}
+                </Text>
+                {!guideOpen ? <Subtle>{t("install_intro")}</Subtle> : null}
+              </View>
               <Text accessibilityElementsHidden style={{ color: theme.colors.accentMuted, fontSize: 20 }}>
                 {guideOpen ? "⌄" : "›"}
               </Text>
             </Pressable>
           </Animated.View>
           <DisclosureBody open={guideOpen}>
-            <View style={{ gap: 11, paddingTop: 11 }} testID="about-install-guide">
+            <View style={{ gap: 11, paddingTop: 2, paddingBottom: 14 }} testID="about-install-guide">
+              <Body>{t("install_optional")}</Body>
               <View style={{ flexDirection: "row", gap: 8 }}>
                 <PlatformButton
                   label={t("install_ios_tab")}
@@ -373,11 +381,11 @@ function InstallGuide() {
                   <InstallStep key={step} number={index + 1}>{step}</InstallStep>
                 ))}
               </View>
+              <Subtle>{t("install_updates")}</Subtle>
             </View>
           </DisclosureBody>
         </>
       )}
-      <Subtle>{t("install_updates")}</Subtle>
     </ToolSurface>
   );
 }
@@ -429,7 +437,7 @@ export function AboutSupportScreen({ initialSection }: { initialSection?: AboutS
         >
           <ToolPageHeader title={t("about_support_title")} />
 
-          <ToolSurface testID="about-product-identity" style={{ gap: 12 }}>
+          <View testID="about-product-identity" style={{ gap: 10, paddingHorizontal: 2 }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
               <View
                 style={{
@@ -455,29 +463,22 @@ export function AboutSupportScreen({ initialSection }: { initialSection?: AboutS
                 </Text>
               </View>
             </View>
-            <Body>{t("about_what_body")}</Body>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
-              <Subtle>{t("about_made_by")}</Subtle>
-              <Subtle>{t("about_info_version")} {appVersion}</Subtle>
-            </View>
-          </ToolSurface>
+            <Body>{t("about_compact_body")}</Body>
+          </View>
 
           <Warning>{t("about_safety_summary")}</Warning>
 
           <InstallGuide />
 
-          <View style={{ gap: 3, paddingTop: 4 }}>
-            <Text style={{ color: theme.colors.text, fontSize: 20, lineHeight: 25, fontWeight: "900" }}>
-              {t("about_help_title")}
-            </Text>
-            <Subtle>{t("about_help_sub")}</Subtle>
-          </View>
+          <Text style={{ color: theme.colors.mutedText, fontSize: 13, lineHeight: 18, fontWeight: "800", paddingTop: 4, paddingHorizontal: 2 }}>
+            {t("about_help_title")}
+          </Text>
 
           <ToolSurface style={{ paddingVertical: 0, paddingHorizontal: 14, gap: 0 }}>
             <SupportSection
               id="about"
-              title={t("about_sources_title")}
-              subtitle={t("about_sources_sub")}
+              title={t("about_project_title")}
+              subtitle={t("about_project_sub")}
               open={openSection === "about"}
               onToggle={() => toggleSection("about")}
             >
@@ -485,6 +486,20 @@ export function AboutSupportScreen({ initialSection }: { initialSection?: AboutS
               <Bullet>{t("about_purpose_1")}</Bullet>
               <Bullet>{t("about_purpose_2")}</Bullet>
               <Bullet>{t("about_purpose_3")}</Bullet>
+              <SectionHeading>{t("about_design_title")}</SectionHeading>
+              <Bullet>{t("about_design_1")}</Bullet>
+              <Bullet>{t("about_design_2")}</Bullet>
+              <Bullet>{t("about_design_3")}</Bullet>
+              <Bullet>{t("about_design_4")}</Bullet>
+            </SupportSection>
+
+            <SupportSection
+              id="sources"
+              title={t("about_sources_title")}
+              subtitle={t("about_sources_sub")}
+              open={openSection === "sources"}
+              onToggle={() => toggleSection("sources")}
+            >
               <SectionHeading>{t("meddisc_section_method_title")}</SectionHeading>
               <Bullet>{t("meddisc_method_1")}</Bullet>
               <Bullet>{t("meddisc_method_2")}</Bullet>
@@ -504,7 +519,7 @@ export function AboutSupportScreen({ initialSection }: { initialSection?: AboutS
 
             <SupportSection
               id="medical"
-              title={t("meddisc_title")}
+              title={t("about_disclaimer_title")}
               subtitle={t("meddisc_sub")}
               open={openSection === "medical"}
               onToggle={() => toggleSection("medical")}
@@ -530,8 +545,25 @@ export function AboutSupportScreen({ initialSection }: { initialSection?: AboutS
             </SupportSection>
 
             <SupportSection
+              id="app"
+              title={t("about_privacy_row_title")}
+              subtitle={t("about_privacy_sub")}
+              open={openSection === "app"}
+              onToggle={() => toggleSection("app")}
+            >
+              <Bullet>{t("about_privacy_local")}</Bullet>
+              <Bullet>{t("about_privacy_auth")}</Bullet>
+              <Bullet>{t("about_privacy_usage")}</Bullet>
+              <Warning>{t("about_privacy_feedback")}</Warning>
+              <InfoRow label={t("about_info_name")} value="AmbuAssist" />
+              <InfoRow label={t("about_info_version")} value={appVersion} />
+              <InfoRow label={t("about_info_use")} value={t("about_info_use_value")} />
+              <InfoRow label={t("about_info_focus")} value={t("about_info_focus_value")} />
+            </SupportSection>
+
+            <SupportSection
               id="contact"
-              title={t("contact_title")}
+              title={t("about_contact_row_title")}
               subtitle={t("contact_sub")}
               open={openSection === "contact"}
               onToggle={() => toggleSection("contact")}
@@ -571,24 +603,12 @@ export function AboutSupportScreen({ initialSection }: { initialSection?: AboutS
               <Bullet>{t("contact_suggestions_3")}</Bullet>
               <Bullet>{t("contact_suggestions_4")}</Bullet>
             </SupportSection>
-
-            <SupportSection
-              id="app"
-              title={t("about_privacy_title")}
-              subtitle={t("about_privacy_sub")}
-              open={openSection === "app"}
-              onToggle={() => toggleSection("app")}
-            >
-              <Bullet>{t("about_privacy_local")}</Bullet>
-              <Bullet>{t("about_privacy_auth")}</Bullet>
-              <Bullet>{t("about_privacy_usage")}</Bullet>
-              <Warning>{t("about_privacy_feedback")}</Warning>
-              <InfoRow label={t("about_info_name")} value="AmbuAssist" />
-              <InfoRow label={t("about_info_version")} value={appVersion} />
-              <InfoRow label={t("about_info_use")} value={t("about_info_use_value")} />
-              <InfoRow label={t("about_info_focus")} value={t("about_info_focus_value")} />
-            </SupportSection>
           </ToolSurface>
+
+          <View testID="about-footer" style={{ alignItems: "center", gap: 2, paddingTop: 5 }}>
+            <Subtle>{t("about_info_version")} {appVersion}</Subtle>
+            <Subtle>{t("about_made_by")}</Subtle>
+          </View>
         </ScrollView>
       </Screen>
     </Background>

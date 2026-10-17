@@ -10,15 +10,15 @@ import { AccessibilityInfo, Animated, Easing, Platform } from "react-native";
 export type RouteDirection = "forward" | "back";
 
 export const WEB_ROUTE_MOTION = {
-  distance: 30,
-  duration: 230,
-  initialOpacity: 0.88,
+  distance: 72,
+  duration: 310,
+  initialOpacity: 0.78,
 } as const;
 
 export const WEB_VIEW_TRANSITION_MOTION = {
-  duration: 240,
-  incomingDistance: 30,
-  outgoingDistance: 14,
+  duration: 320,
+  incomingDistance: 72,
+  outgoingDistance: 40,
 } as const;
 
 type WebViewTransition = {
@@ -50,6 +50,7 @@ const reducedMotionListeners = new Set<(enabled: boolean) => void>();
 let activeWebViewTransition: WebViewTransition | null = null;
 let activeWebViewTransitionId = 0;
 let pendingRouteCommit: PendingRouteCommit | null = null;
+let activeFallbackLayer: HTMLElement | null = null;
 const useBrowserLayoutEffect =
   typeof window === "undefined" ? useEffect : useLayoutEffect;
 
@@ -59,6 +60,7 @@ function publishReducedMotion(enabled: boolean) {
   if (enabled) {
     activeWebViewTransition?.skipTransition?.();
     pendingRouteCommit?.resolve();
+    removeFallbackLayer();
   }
   reducedMotionListeners.forEach((listener) => listener(enabled));
 }
@@ -249,14 +251,72 @@ function createPendingRouteCommit(targetPath?: string) {
   return pending;
 }
 
-function waitForTwoPaints() {
-  if (typeof requestAnimationFrame !== "function") {
-    return Promise.resolve();
+function waitForRouteCommitTimeout() {
+  return new Promise<void>((resolve) => {
+    setTimeout(resolve, 240);
+  });
+}
+
+function removeFallbackLayer(layer = activeFallbackLayer) {
+  if (!layer) return;
+  if (layer === activeFallbackLayer) activeFallbackLayer = null;
+  layer.remove();
+}
+
+function animateFallbackOutgoingLayer(direction: RouteDirection) {
+  if (
+    Platform.OS !== "web" ||
+    typeof document === "undefined" ||
+    typeof window === "undefined" ||
+    (webMotionQuery?.matches ?? cachedReducedMotion)
+  ) {
+    return;
   }
 
-  return new Promise<void>((resolve) => {
-    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+  const source = document.querySelector<HTMLElement>(
+    '[data-testid="web-route-transition"]',
+  );
+  if (!source || typeof source.animate !== "function") return;
+
+  removeFallbackLayer();
+  const rect = source.getBoundingClientRect();
+  const layer = source.cloneNode(true) as HTMLElement;
+  layer.removeAttribute("data-testid");
+  layer.setAttribute("aria-hidden", "true");
+  Object.assign(layer.style, {
+    position: "fixed",
+    left: `${rect.left}px`,
+    top: `${rect.top}px`,
+    width: `${rect.width}px`,
+    height: `${Math.max(rect.height, window.innerHeight)}px`,
+    margin: "0",
+    overflow: "hidden",
+    pointerEvents: "none",
+    transformOrigin: "center center",
+    willChange: "transform, opacity",
+    zIndex: "2147483000",
   });
+  document.body.appendChild(layer);
+  activeFallbackLayer = layer;
+
+  const distance = Math.min(56, Math.max(36, window.innerWidth * 0.11));
+  const translate = direction === "forward" ? -distance : distance;
+  const animation = layer.animate(
+    [
+      { opacity: 1, transform: "translateX(0) scale(1)" },
+      {
+        opacity: 0.72,
+        transform: `translateX(${translate}px) scale(0.985)`,
+      },
+    ],
+    {
+      duration: WEB_VIEW_TRANSITION_MOTION.duration,
+      easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+      fill: "forwards",
+    },
+  );
+  void animation.finished.catch(() => {}).finally(() => removeFallbackLayer(layer));
+  setTimeout(() => removeFallbackLayer(layer), WEB_VIEW_TRANSITION_MOTION.duration + 80);
 }
 
 function startWebViewTransition(
@@ -294,9 +354,10 @@ function startWebViewTransition(
         navigate();
       }
 
-      // Route layout effects normally resolve this immediately. The paint
-      // fallback prevents a no-op navigation from freezing the old snapshot.
-      await Promise.race([commit.promise, waitForTwoPaints()]);
+      // Wait for Expo Router's pathname commit so the new snapshot is actually
+      // different from the old one. Two animation frames were too short on
+      // mobile Safari and could capture the outgoing screen twice.
+      await Promise.race([commit.promise, waitForRouteCommitTimeout()]);
       resolvePendingRouteCommit();
     });
     activeWebViewTransition = transition;
@@ -323,7 +384,10 @@ export function runWebRouteTransition(
   navigate: () => void,
 ) {
   markNextWebRouteDirection(direction);
-  if (!startWebViewTransition(direction, navigate)) navigate();
+  if (!startWebViewTransition(direction, navigate)) {
+    animateFallbackOutgoingLayer(direction);
+    navigate();
+  }
 }
 
 function pathDepth(pathname: string) {
@@ -387,7 +451,9 @@ export function useWebRouteTransition(pathname: string, enabled = true) {
       const direction = readBrowserDirection() ?? "back";
       pendingWebRouteDirection = direction;
       if (activeWebViewTransition) return;
-      startWebViewTransition(direction, undefined, window.location.pathname);
+      if (!startWebViewTransition(direction, undefined, window.location.pathname)) {
+        animateFallbackOutgoingLayer(direction);
+      }
     };
 
     window.addEventListener("popstate", handlePopState, { capture: true });

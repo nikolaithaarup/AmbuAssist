@@ -7,16 +7,16 @@ import {
 
 describe("Synapse web route motion", () => {
   test("uses a perceptible, clinically quick transition", () => {
-    expect(WEB_ROUTE_MOTION.distance).toBeGreaterThanOrEqual(20);
-    expect(WEB_ROUTE_MOTION.distance).toBeLessThanOrEqual(35);
-    expect(WEB_ROUTE_MOTION.duration).toBeGreaterThanOrEqual(180);
-    expect(WEB_ROUTE_MOTION.duration).toBeLessThanOrEqual(260);
-    expect(WEB_ROUTE_MOTION.initialOpacity).toBeLessThanOrEqual(0.9);
+    expect(WEB_ROUTE_MOTION.distance).toBeGreaterThanOrEqual(60);
+    expect(WEB_ROUTE_MOTION.distance).toBeLessThanOrEqual(100);
+    expect(WEB_ROUTE_MOTION.duration).toBeGreaterThanOrEqual(280);
+    expect(WEB_ROUTE_MOTION.duration).toBeLessThanOrEqual(340);
+    expect(WEB_ROUTE_MOTION.initialOpacity).toBeLessThanOrEqual(0.8);
   });
 
   test("uses outgoing and incoming snapshots for perceptible continuity", () => {
-    expect(WEB_VIEW_TRANSITION_MOTION.duration).toBeGreaterThanOrEqual(200);
-    expect(WEB_VIEW_TRANSITION_MOTION.duration).toBeLessThanOrEqual(280);
+    expect(WEB_VIEW_TRANSITION_MOTION.duration).toBeGreaterThanOrEqual(280);
+    expect(WEB_VIEW_TRANSITION_MOTION.duration).toBeLessThanOrEqual(340);
     expect(WEB_VIEW_TRANSITION_MOTION.incomingDistance).toBeGreaterThan(
       WEB_VIEW_TRANSITION_MOTION.outgoingDistance,
     );

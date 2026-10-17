@@ -117,6 +117,125 @@ export default function Home() {
     />
   );
 
+  const hero = (
+    <View
+      testID="home-hero"
+      style={{
+        gap: 0,
+        alignItems: "center",
+        paddingTop: pwa ? (compact ? 2 : 8) : 0,
+        paddingBottom: pwa ? (compact ? 10 : 16) : compact ? 4 : 12,
+      }}
+    >
+      <View
+        style={{
+          width: "100%",
+          flexDirection: pwa ? "column" : compact ? "row" : "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: pwa ? 0 : compact ? 4 : 0,
+        }}
+      >
+        <Image
+          source={require("../assets/her-icon.png")}
+          style={
+            pwa
+              ? { width: compact ? 50 : 68, height: compact ? 50 : 68, opacity: 0.96 }
+              : compact
+                ? { width: 48, height: 48, opacity: 0.95 }
+                : { width: 88, height: 88, marginTop: 10, marginBottom: 0, opacity: 0.95 }
+          }
+          resizeMode="contain"
+        />
+        <Image
+          source={require("../assets/ambuassist-logo.png")}
+          style={
+            pwa
+              ? {
+                  width: "100%",
+                  maxWidth: compact ? 310 : 440,
+                  height: compact ? 54 : 76,
+                  marginTop: compact ? -7 : -10,
+                }
+              : compact
+                ? { flex: 1, maxWidth: 220, height: 44 }
+                : { width: "100%", maxWidth: 440, height: 76, marginTop: -14, marginBottom: -8 }
+          }
+          resizeMode="contain"
+        />
+
+        {pwa ? (
+          <Subtle
+            style={{
+              textAlign: "center",
+              marginTop: compact ? -3 : -5,
+              fontSize: compact ? 13 : 14,
+              lineHeight: 19,
+            }}
+          >
+            {t("homeTagline")}
+          </Subtle>
+        ) : null}
+
+        <View
+          style={{
+            flexDirection: "row",
+            gap: pwa ? 10 : compact ? 4 : 10,
+            marginTop: pwa ? (compact ? 9 : 12) : compact ? 0 : 14,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {(["en", "da"] as const).map((language) => (
+            <LanguageButton
+              key={language}
+              language={language}
+              selected={settings.language === language}
+              compact={compact}
+              onPress={() => setLanguage(language)}
+            />
+          ))}
+        </View>
+      </View>
+      {!pwa && !compact ? (
+        <Subtle style={{ textAlign: "center", marginTop: 0, fontSize: 14 }}>
+          {t("homeTagline")}
+        </Subtle>
+      ) : null}
+    </View>
+  );
+
+  const menu = (
+    <View style={{ width: "100%", maxWidth: pwa ? 600 : 560, gap: compact ? 10 : 12 }}>
+      {favouriteTools.length > 0 ? (
+        <>
+          <Title style={{ fontSize: 19, marginBottom: 2 }}>
+            {settings.language === "da" ? "Favoritter" : "Favourites"}
+          </Title>
+          {favouriteTools.map((tool) => renderTool(tool, true))}
+          <View style={{ height: 6 }} />
+        </>
+      ) : null}
+
+      <Title style={{ fontSize: 19, marginBottom: 2 }}>
+        {settings.language === "da" ? "Værktøjer" : "Tools"}
+      </Title>
+      {HOME_TOOLS.map((tool) => renderTool(tool))}
+
+      <View style={{ height: 8 }} />
+      <Title style={{ fontSize: 16, marginBottom: 0, color: theme.colors.mutedText }}>
+        App & support
+      </Title>
+      <NavigationCard
+        testID="home-about-support"
+        title={t(ABOUT_SUPPORT_TOOL.titleKey)}
+        description={pwa || compact ? undefined : t(ABOUT_SUPPORT_TOOL.descKey)}
+        secondary
+        onPress={() => openTool(ABOUT_SUPPORT_TOOL)}
+      />
+    </View>
+  );
+
   return (
     <Background variant="home">
       <Screen
@@ -127,126 +246,34 @@ export default function Home() {
           gap: pwa ? (compact ? 8 : 14) : compact ? 4 : 14,
         }}
       >
-        <View
-          testID="home-hero"
-          style={{
-            gap: 0,
-            alignItems: "center",
-            paddingTop: pwa ? (compact ? 2 : 8) : 0,
-            paddingBottom: pwa ? (compact ? 10 : 16) : compact ? 4 : 12,
-          }}
-        >
-          <View
-            style={{
-              width: "100%",
-              flexDirection: pwa ? "column" : compact ? "row" : "column",
+        {pwa ? (
+          <ScrollView
+            testID="home-scroll"
+            contentContainerStyle={{
+              paddingBottom: compact ? 6 : 14,
+              paddingTop: compact ? 2 : 8,
+              paddingHorizontal: compact ? 0 : 8,
               alignItems: "center",
-              justifyContent: "center",
-              gap: pwa ? 0 : compact ? 4 : 0,
             }}
           >
-            <Image
-              source={require("../assets/her-icon.png")}
-              style={
-                pwa
-                  ? {
-                      width: compact ? 50 : 68,
-                      height: compact ? 50 : 68,
-                      opacity: 0.96,
-                    }
-                  : compact
-                  ? { width: 48, height: 48, opacity: 0.95 }
-                  : { width: 88, height: 88, marginTop: 10, marginBottom: 0, opacity: 0.95 }
-              }
-              resizeMode="contain"
-            />
-            <Image
-              source={require("../assets/ambuassist-logo.png")}
-              style={
-                pwa
-                  ? {
-                      width: "100%",
-                      maxWidth: compact ? 310 : 440,
-                      height: compact ? 54 : 76,
-                      marginTop: compact ? -7 : -10,
-                    }
-                  : compact
-                  ? { flex: 1, maxWidth: 220, height: 44 }
-                  : { width: "100%", maxWidth: 440, height: 76, marginTop: -14, marginBottom: -8 }
-              }
-              resizeMode="contain"
-            />
-
-            {pwa ? (
-              <Subtle
-                style={{
-                  textAlign: "center",
-                  marginTop: compact ? -3 : -5,
-                  fontSize: compact ? 13 : 14,
-                  lineHeight: 19,
-                }}
-              >
-                {t("homeTagline")}
-              </Subtle>
-            ) : null}
-
-            <View
-              style={{
-                flexDirection: "row",
-                gap: pwa ? 10 : compact ? 4 : 10,
-                marginTop: pwa ? (compact ? 9 : 12) : compact ? 0 : 14,
+            {hero}
+            {menu}
+          </ScrollView>
+        ) : (
+          <>
+            {hero}
+            <ScrollView
+              contentContainerStyle={{
+                paddingBottom: 28,
+                paddingTop: compact ? 2 : 8,
+                paddingHorizontal: compact ? 0 : 8,
                 alignItems: "center",
-                justifyContent: "center",
               }}
             >
-              {(["en", "da"] as const).map((language) => (
-                <LanguageButton
-                  key={language}
-                  language={language}
-                  selected={settings.language === language}
-                  compact={compact}
-                  onPress={() => setLanguage(language)}
-                />
-              ))}
-            </View>
-          </View>
-          {!pwa && !compact ? (
-            <Subtle style={{ textAlign: "center", marginTop: 0, fontSize: 14 }}>
-              {t("homeTagline")}
-            </Subtle>
-          ) : null}
-        </View>
-
-        <ScrollView contentContainerStyle={{ paddingBottom: 28, paddingTop: compact ? 2 : 8, paddingHorizontal: compact ? 0 : 8, alignItems: "center" }}>
-          <View style={{ width: "100%", maxWidth: pwa ? 600 : 560, gap: compact ? 10 : 12 }}>
-            {favouriteTools.length > 0 ? (
-              <>
-                <Title style={{ fontSize: 19, marginBottom: 2 }}>
-                  {settings.language === "da" ? "Favoritter" : "Favourites"}
-                </Title>
-                {favouriteTools.map((tool) => renderTool(tool, true))}
-                <View style={{ height: 6 }} />
-              </>
-            ) : null}
-
-            <Title style={{ fontSize: 19, marginBottom: 2 }}>
-              {settings.language === "da" ? "Værktøjer" : "Tools"}
-            </Title>
-            {HOME_TOOLS.map((tool) => renderTool(tool))}
-
-            <View style={{ height: 8 }} />
-            <Title style={{ fontSize: 16, marginBottom: 0, color: theme.colors.mutedText }}>
-              {settings.language === "da" ? "App & support" : "App & support"}
-            </Title>
-            <NavigationCard
-              testID="home-about-support"
-              title={t(ABOUT_SUPPORT_TOOL.titleKey)}
-              description={pwa || compact ? undefined : t(ABOUT_SUPPORT_TOOL.descKey)}
-              secondary
-              onPress={() => openTool(ABOUT_SUPPORT_TOOL)}
-            />
-          </View>
-        </ScrollView>
+              {menu}
+            </ScrollView>
+          </>
+        )}
       </Screen>
     </Background>
   );

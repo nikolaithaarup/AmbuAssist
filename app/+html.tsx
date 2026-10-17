@@ -17,7 +17,8 @@ export default function Root({ children }: PropsWithChildren) {
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="theme-color" content="#25311f" />
         <link rel="manifest" href="/manifest.webmanifest" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180.png" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/pwa-icon-192.png?v=20261017" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20261017" />
         <ScrollViewStyleReset />
         <style
           dangerouslySetInnerHTML={{
@@ -41,13 +42,13 @@ export default function Root({ children }: PropsWithChildren) {
               }
 
               ::view-transition-group(ambu-route) {
-                animation-duration: 240ms;
+                animation-duration: 320ms;
                 animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
               }
 
               ::view-transition-old(ambu-route),
               ::view-transition-new(ambu-route) {
-                animation-duration: 240ms;
+                animation-duration: 320ms;
                 animation-fill-mode: both;
                 animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
                 height: 100%;
@@ -73,21 +74,21 @@ export default function Root({ children }: PropsWithChildren) {
 
               @keyframes ambu-route-old-forward {
                 from { opacity: 1; transform: translateX(0) scale(1); }
-                to { opacity: 0.7; transform: translateX(-14px) scale(0.995); }
+                to { opacity: 0.72; transform: translateX(clamp(-56px, -10vw, -36px)) scale(0.985); }
               }
 
               @keyframes ambu-route-new-forward {
-                from { opacity: 0.72; transform: translateX(30px) scale(0.998); }
+                from { opacity: 0.76; transform: translateX(clamp(64px, 18vw, 96px)) scale(0.992); }
                 to { opacity: 1; transform: translateX(0) scale(1); }
               }
 
               @keyframes ambu-route-old-back {
                 from { opacity: 1; transform: translateX(0) scale(1); }
-                to { opacity: 0.72; transform: translateX(16px) scale(0.997); }
+                to { opacity: 0.72; transform: translateX(clamp(36px, 10vw, 56px)) scale(0.985); }
               }
 
               @keyframes ambu-route-new-back {
-                from { opacity: 0.72; transform: translateX(-30px) scale(0.998); }
+                from { opacity: 0.76; transform: translateX(clamp(-96px, -18vw, -64px)) scale(0.992); }
                 to { opacity: 1; transform: translateX(0) scale(1); }
               }
 

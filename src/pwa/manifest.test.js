@@ -33,6 +33,7 @@ describe("PWA icon metadata", () => {
   });
 
   test.each([
+    ["public/apple-touch-icon.png", 180],
     ["public/apple-touch-icon-180.png", 180],
     ["public/pwa-icon-192.png", 192],
     ["public/pwa-icon-512.png", 512],
@@ -51,10 +52,15 @@ describe("PWA icon metadata", () => {
     expect(isOpaque).toBe(true);
   });
 
-  test("links the dedicated Apple touch icon without replacing viewport styles", () => {
+  test("links the conventional cache-busted Apple touch icon in initial HTML", () => {
     const htmlSource = fs.readFileSync(path.join(projectRoot, "app/+html.tsx"), "utf8");
     expect(htmlSource).toContain(
-      '<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180.png" />',
+      '<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20261017" />',
+    );
+    expect(
+      fs.readFileSync(path.join(projectRoot, "public/apple-touch-icon.png")),
+    ).toEqual(
+      fs.readFileSync(path.join(projectRoot, "public/apple-touch-icon-180.png")),
     );
     expect(htmlSource).toContain('name="viewport"');
     expect(htmlSource).toContain("viewport-fit=cover");

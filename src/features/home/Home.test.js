@@ -130,6 +130,9 @@ describe("Home responsive mobile layout", () => {
     const root = renderHome();
 
     expect(root.findByProps({ testID: "home-hero" })).toBeDefined();
+    const scroll = root.findByProps({ testID: "home-scroll" });
+    expect(scroll.props.contentContainerStyle.paddingBottom).toBe(6);
+    expect(scroll.findAllByProps({ testID: "home-hero" }).length).toBeGreaterThan(0);
     expect(
       root.findAllByType(Text).some(
         (node) => node.props.children === "homeTagline",

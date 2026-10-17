@@ -1387,10 +1387,17 @@ export const en = {
     "Medical disclaimer, contact, feedback, and app information in one place.",
 
   about_made_by: "Developed by SynapseStudio",
+  about_compact_body:
+    "Fast access to selected clinical tools, destination support, and reference content.",
   about_safety_summary:
     "AmbuAssist is a support tool. Always follow current local guidance and never let use of the app delay necessary treatment.",
   about_help_title: "Help and information",
   about_help_sub: "Sources, safe use, feedback, and privacy.",
+  about_project_title: "About the project",
+  about_project_sub: "Purpose, intended role, and design principles.",
+  about_disclaimer_title: "Disclaimer",
+  about_privacy_row_title: "Privacy and data",
+  about_contact_row_title: "Feedback and contact",
   about_sources_title: "Sources and clinical basis",
   about_sources_sub: "How the tools are grounded, reviewed, and kept current.",
   about_privacy_title: "Privacy and app information",
@@ -1405,6 +1412,7 @@ export const en = {
     "Feedback opens your email app. Do not include names, CPR numbers, or other patient-identifying information.",
 
   install_title: "Add to Home Screen",
+  install_entry_title: "Add to Home Screen",
   install_intro:
     "AmbuAssist works in your browser and can optionally be added to your Home Screen for quicker access.",
   install_optional: "Installation is optional — no App Store, Google Play, or TestFlight is required.",
@@ -2918,10 +2926,17 @@ export const da: typeof en = {
     "Medicinsk disclaimer, kontakt, feedback og appinformation samlet ét sted.",
 
   about_made_by: "Udviklet af SynapseStudio",
+  about_compact_body:
+    "Hurtig adgang til udvalgte kliniske værktøjer, destinationshjælp og referenceindhold.",
   about_safety_summary:
     "AmbuAssist er et støtteværktøj. Følg altid gældende lokale instrukser, og lad aldrig brug af appen forsinke nødvendig behandling.",
   about_help_title: "Hjælp og information",
   about_help_sub: "Kilder, sikker brug, feedback og privatliv.",
+  about_project_title: "Om projektet",
+  about_project_sub: "Formål, rolle og designprincipper.",
+  about_disclaimer_title: "Ansvarsfraskrivelse",
+  about_privacy_row_title: "Privatliv og data",
+  about_contact_row_title: "Feedback og kontakt",
   about_sources_title: "Kilder og fagligt grundlag",
   about_sources_sub: "Hvordan værktøjerne er funderet, gennemgået og holdes aktuelle.",
   about_privacy_title: "Privatliv og app-information",
@@ -2936,6 +2951,7 @@ export const da: typeof en = {
     "Feedback åbner din email-app. Medtag ikke navne, CPR-numre eller andre patientidentificerende oplysninger.",
 
   install_title: "Føj til hjemmeskærmen",
+  install_entry_title: "Tilføj til hjemmeskærmen",
   install_intro:
     "AmbuAssist virker direkte i browseren og kan valgfrit føjes til hjemmeskærmen for hurtigere adgang.",
   install_optional: "Installation er valgfri — App Store, Google Play og TestFlight er ikke nødvendige.",

@@ -12,6 +12,10 @@ describe("web route animation lifecycle", () => {
   let originalRequestAnimationFrame;
   let originalCancelAnimationFrame;
   let originalHistory;
+  let originalAddEventListener;
+  let originalRemoveEventListener;
+  let mockHistory;
+  let popStateHandler;
 
   function Harness({ pathname }) {
     latestStyle = useWebRouteTransition(pathname, true);
@@ -25,9 +29,13 @@ describe("web route animation lifecycle", () => {
     originalRequestAnimationFrame = global.requestAnimationFrame;
     originalCancelAnimationFrame = global.cancelAnimationFrame;
     originalHistory = global.window.history;
+    originalAddEventListener = global.window.addEventListener;
+    originalRemoveEventListener = global.window.removeEventListener;
+    popStateHandler = undefined;
+    mockHistory = { state: { id: "motion-test-home" } };
     Object.defineProperty(global.window, "history", {
       configurable: true,
-      value: { state: { id: "motion-test-home" } },
+      value: mockHistory,
     });
     global.requestAnimationFrame = jest.fn((callback) => {
       nextFrame = callback;
@@ -35,6 +43,10 @@ describe("web route animation lifecycle", () => {
       return frameId;
     });
     global.cancelAnimationFrame = jest.fn();
+    global.window.addEventListener = jest.fn((type, handler) => {
+      if (type === "popstate") popStateHandler = handler;
+    });
+    global.window.removeEventListener = jest.fn();
   });
 
   afterEach(() => {
@@ -44,6 +56,8 @@ describe("web route animation lifecycle", () => {
       configurable: true,
       value: originalHistory,
     });
+    global.window.addEventListener = originalAddEventListener;
+    global.window.removeEventListener = originalRemoveEventListener;
     jest.restoreAllMocks();
   });
 
@@ -92,6 +106,75 @@ describe("web route animation lifecycle", () => {
         duration: WEB_ROUTE_MOTION.duration,
         isInteraction: false,
       }),
+    );
+
+    act(() => renderer.unmount());
+  });
+
+  test("cancels an interrupted route frame before starting the latest route", () => {
+    const animation = {
+      start: jest.fn(),
+      stop: jest.fn(),
+      reset: jest.fn(),
+    };
+    const timing = jest.spyOn(Animated, "timing").mockReturnValue(animation);
+    let renderer;
+
+    act(() => {
+      renderer = TestRenderer.create(<Harness pathname="/home" />);
+    });
+    act(() => {
+      mockHistory.state = { id: "motion-test-assessment" };
+      renderer.update(<Harness pathname="/tools/assessment-tools" />);
+    });
+    expect(global.requestAnimationFrame).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      mockHistory.state = { id: "motion-test-news2" };
+      renderer.update(<Harness pathname="/tools/assessment-tools/news2" />);
+    });
+
+    expect(global.cancelAnimationFrame).toHaveBeenCalledWith(1);
+    expect(timing).not.toHaveBeenCalled();
+
+    act(() => {
+      nextFrame(16);
+    });
+    expect(timing).toHaveBeenCalledTimes(2);
+
+    act(() => renderer.unmount());
+  });
+
+  test("uses the actual browser history entry for Back and Forward direction", () => {
+    let renderer;
+
+    act(() => {
+      renderer = TestRenderer.create(<Harness pathname="/home" />);
+    });
+    act(() => {
+      mockHistory.state = { id: "motion-test-assessment" };
+      renderer.update(<Harness pathname="/tools/assessment-tools" />);
+    });
+    expect(latestStyle.transform[0].translateX.__getValue()).toBe(
+      WEB_ROUTE_MOTION.distance,
+    );
+
+    act(() => {
+      mockHistory.state = { id: "motion-test-home" };
+      popStateHandler();
+      renderer.update(<Harness pathname="/home" />);
+    });
+    expect(latestStyle.transform[0].translateX.__getValue()).toBe(
+      -WEB_ROUTE_MOTION.distance,
+    );
+
+    act(() => {
+      mockHistory.state = { id: "motion-test-assessment" };
+      popStateHandler();
+      renderer.update(<Harness pathname="/tools/assessment-tools" />);
+    });
+    expect(latestStyle.transform[0].translateX.__getValue()).toBe(
+      WEB_ROUTE_MOTION.distance,
     );
 
     act(() => renderer.unmount());

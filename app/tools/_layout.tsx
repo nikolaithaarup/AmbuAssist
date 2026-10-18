@@ -11,6 +11,12 @@ import { hapticFavourite } from "../../src/ui/haptics";
 import { theme } from "../../src/ui/theme";
 import { recordToolOpen, usageToolForPath } from "../../src/analytics/usage";
 import { runWebRouteTransition } from "../../src/ui/motion";
+import {
+  beginBackNavigation,
+  navigateBackOrFallback,
+  releaseBackNavigationOnRouteCommit,
+  type BackNavigationGate,
+} from "../../src/ui/navigation";
 
 const HEADER_BAR_HEIGHT = 58;
 const TITLE_KEYS: Record<string, any> = {
@@ -65,6 +71,13 @@ export default function ToolsLayout() {
     (tool) => tool.path === pathname,
   );
   const trackedTool = useRef<string | null>(null);
+  const backNavigationGate = useRef<BackNavigationGate>({
+    pendingFromPath: null,
+  });
+
+  useEffect(() => {
+    releaseBackNavigationOnRouteCommit(backNavigationGate.current, pathname);
+  }, [pathname]);
 
   useEffect(() => {
     const tool = usageToolForPath(pathname);
@@ -94,10 +107,15 @@ export default function ToolsLayout() {
         {showBack ? (
           <Pressable
             onPress={() => {
-              runWebRouteTransition("back", () => {
-                if (router.canGoBack()) router.back();
-                else router.replace("/home");
-              });
+              beginBackNavigation(
+                backNavigationGate.current,
+                Platform.OS,
+                pathname,
+                () =>
+                  runWebRouteTransition("back", () =>
+                    navigateBackOrFallback(router),
+                  ),
+              );
             }}
             hitSlop={10}
             style={({ pressed }) => ({

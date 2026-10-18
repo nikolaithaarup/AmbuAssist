@@ -10,34 +10,10 @@ import { AccessibilityInfo, Animated, Easing, Platform } from "react-native";
 export type RouteDirection = "forward" | "back";
 
 export const WEB_ROUTE_MOTION = {
-  distance: 72,
-  duration: 310,
-  initialOpacity: 0.78,
+  distance: 28,
+  duration: 220,
+  initialOpacity: 0.9,
 } as const;
-
-export const WEB_VIEW_TRANSITION_MOTION = {
-  duration: 320,
-  incomingDistance: 72,
-  outgoingDistance: 40,
-} as const;
-
-type WebViewTransition = {
-  finished: Promise<void>;
-  skipTransition?: () => void;
-};
-
-type ViewTransitionDocument = Document & {
-  startViewTransition?: (
-    update: () => void | Promise<void>,
-  ) => WebViewTransition;
-};
-
-type PendingRouteCommit = {
-  fromPath: string;
-  targetPath?: string;
-  resolve: () => void;
-  promise: Promise<void>;
-};
 
 const webMotionQuery =
   Platform.OS === "web" && typeof window !== "undefined"
@@ -47,21 +23,12 @@ const webMotionQuery =
 let cachedReducedMotion = webMotionQuery?.matches ?? false;
 let reducedMotionInitialized = false;
 const reducedMotionListeners = new Set<(enabled: boolean) => void>();
-let activeWebViewTransition: WebViewTransition | null = null;
-let activeWebViewTransitionId = 0;
-let pendingRouteCommit: PendingRouteCommit | null = null;
-let activeFallbackLayer: HTMLElement | null = null;
 const useBrowserLayoutEffect =
   typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 function publishReducedMotion(enabled: boolean) {
   if (cachedReducedMotion === enabled) return;
   cachedReducedMotion = enabled;
-  if (enabled) {
-    activeWebViewTransition?.skipTransition?.();
-    pendingRouteCommit?.resolve();
-    removeFallbackLayer();
-  }
   reducedMotionListeners.forEach((listener) => listener(enabled));
 }
 
@@ -206,188 +173,22 @@ export function markNextWebRouteDirection(direction: RouteDirection) {
   if (Platform.OS === "web") pendingWebRouteDirection = direction;
 }
 
-export function canUseWebViewTransitions(
-  platform: string,
-  reducedMotion: boolean,
-  startViewTransition: unknown,
-) {
-  return (
-    platform === "web" &&
-    !reducedMotion &&
-    typeof startViewTransition === "function"
-  );
-}
-
-function resolvePendingRouteCommit(pathname?: string) {
-  const pending = pendingRouteCommit;
-  if (!pending) return false;
-
-  const routeCommitted = pathname
-    ? pending.targetPath
-      ? pathname === pending.targetPath
-      : pathname !== pending.fromPath
-    : true;
-  if (!routeCommitted) return false;
-
-  pendingRouteCommit = null;
-  pending.resolve();
-  return true;
-}
-
-function createPendingRouteCommit(targetPath?: string) {
-  resolvePendingRouteCommit();
-  let resolve = () => {};
-  const promise = new Promise<void>((done) => {
-    resolve = done;
-  });
-  const pending = {
-    fromPath:
-      typeof window === "undefined" ? "" : window.location.pathname,
-    targetPath,
-    resolve,
-    promise,
-  };
-  pendingRouteCommit = pending;
-  return pending;
-}
-
-function waitForRouteCommitTimeout() {
-  return new Promise<void>((resolve) => {
-    setTimeout(resolve, 240);
-  });
-}
-
-function removeFallbackLayer(layer = activeFallbackLayer) {
-  if (!layer) return;
-  if (layer === activeFallbackLayer) activeFallbackLayer = null;
-  layer.remove();
-}
-
-function animateFallbackOutgoingLayer(direction: RouteDirection) {
-  if (
-    Platform.OS !== "web" ||
-    typeof document === "undefined" ||
-    typeof window === "undefined" ||
-    (webMotionQuery?.matches ?? cachedReducedMotion)
-  ) {
-    return;
-  }
-
-  const source = document.querySelector<HTMLElement>(
-    '[data-testid="web-route-transition"]',
-  );
-  if (!source || typeof source.animate !== "function") return;
-
-  removeFallbackLayer();
-  const rect = source.getBoundingClientRect();
-  const layer = source.cloneNode(true) as HTMLElement;
-  layer.removeAttribute("data-testid");
-  layer.setAttribute("aria-hidden", "true");
-  Object.assign(layer.style, {
-    position: "fixed",
-    left: `${rect.left}px`,
-    top: `${rect.top}px`,
-    width: `${rect.width}px`,
-    height: `${Math.max(rect.height, window.innerHeight)}px`,
-    margin: "0",
-    overflow: "hidden",
-    pointerEvents: "none",
-    transformOrigin: "center center",
-    willChange: "transform, opacity",
-    zIndex: "2147483000",
-  });
-  document.body.appendChild(layer);
-  activeFallbackLayer = layer;
-
-  const distance = Math.min(56, Math.max(36, window.innerWidth * 0.11));
-  const translate = direction === "forward" ? -distance : distance;
-  const animation = layer.animate(
-    [
-      { opacity: 1, transform: "translateX(0) scale(1)" },
-      {
-        opacity: 0.72,
-        transform: `translateX(${translate}px) scale(0.985)`,
-      },
-    ],
-    {
-      duration: WEB_VIEW_TRANSITION_MOTION.duration,
-      easing: "cubic-bezier(0.22, 1, 0.36, 1)",
-      fill: "forwards",
-    },
-  );
-  void animation.finished.catch(() => {}).finally(() => removeFallbackLayer(layer));
-  setTimeout(() => removeFallbackLayer(layer), WEB_VIEW_TRANSITION_MOTION.duration + 80);
-}
-
-function startWebViewTransition(
-  direction: RouteDirection,
-  navigate?: () => void,
-  targetPath?: string,
-) {
-  if (Platform.OS !== "web" || typeof document === "undefined") return false;
-
-  initializeReducedMotion();
-  const viewTransitionDocument = document as ViewTransitionDocument;
-  if (
-    !canUseWebViewTransitions(
-      Platform.OS,
-      webMotionQuery?.matches ?? cachedReducedMotion,
-      viewTransitionDocument.startViewTransition,
-    )
-  ) {
-    return false;
-  }
-
-  activeWebViewTransition?.skipTransition?.();
-  resolvePendingRouteCommit();
-
-  const transitionId = activeWebViewTransitionId + 1;
-  activeWebViewTransitionId = transitionId;
-  document.documentElement.dataset.ambuRouteDirection = direction;
-  const commit = createPendingRouteCommit(targetPath);
-  let navigationStarted = false;
-
-  try {
-    const transition = viewTransitionDocument.startViewTransition!(async () => {
-      if (navigate) {
-        navigationStarted = true;
-        navigate();
-      }
-
-      // Wait for Expo Router's pathname commit so the new snapshot is actually
-      // different from the old one. Two animation frames were too short on
-      // mobile Safari and could capture the outgoing screen twice.
-      await Promise.race([commit.promise, waitForRouteCommitTimeout()]);
-      resolvePendingRouteCommit();
-    });
-    activeWebViewTransition = transition;
-
-    void transition.finished
-      .catch(() => {})
-      .finally(() => {
-        if (activeWebViewTransitionId !== transitionId) return;
-        activeWebViewTransition = null;
-        resolvePendingRouteCommit();
-        delete document.documentElement.dataset.ambuRouteDirection;
-      });
-    return true;
-  } catch {
-    resolvePendingRouteCommit();
-    delete document.documentElement.dataset.ambuRouteDirection;
-    if (navigate && !navigationStarted) navigate();
-    return navigationStarted;
-  }
-}
-
 export function runWebRouteTransition(
   direction: RouteDirection,
   navigate: () => void,
 ) {
   markNextWebRouteDirection(direction);
-  if (!startWebViewTransition(direction, navigate)) {
-    animateFallbackOutgoingLayer(direction);
-    navigate();
-  }
+  // Navigation must stay synchronous. Browser-controlled View Transition
+  // callbacks can run after a newer interaction even when their animation was
+  // skipped, which can replay stale router.push/back actions out of order.
+  navigate();
+}
+
+export function shouldAnimateWebRoute(
+  enabled: boolean,
+  reducedMotion: boolean,
+) {
+  return enabled && !reducedMotion;
 }
 
 function pathDepth(pathname: string) {
@@ -450,10 +251,6 @@ export function useWebRouteTransition(pathname: string, enabled = true) {
     const handlePopState = () => {
       const direction = readBrowserDirection() ?? "back";
       pendingWebRouteDirection = direction;
-      if (activeWebViewTransition) return;
-      if (!startWebViewTransition(direction, undefined, window.location.pathname)) {
-        animateFallbackOutgoingLayer(direction);
-      }
     };
 
     window.addEventListener("popstate", handlePopState, { capture: true });
@@ -469,13 +266,11 @@ export function useWebRouteTransition(pathname: string, enabled = true) {
     previousPath.current = pathname;
     const explicitDirection = pendingWebRouteDirection;
     pendingWebRouteDirection = null;
-    const usedViewTransition =
-      resolvePendingRouteCommit(pathname) || !!activeWebViewTransition;
 
     opacity.stopAnimation();
     translateX.stopAnimation();
 
-    if (!enabled || reducedMotion || usedViewTransition) {
+    if (!shouldAnimateWebRoute(enabled, reducedMotion)) {
       opacity.setValue(1);
       translateX.setValue(0);
       return;

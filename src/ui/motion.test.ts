@@ -1,39 +1,47 @@
 import {
-  canUseWebViewTransitions,
   resolveWebRouteDirection,
+  runWebRouteTransition,
+  shouldAnimateWebRoute,
   WEB_ROUTE_MOTION,
-  WEB_VIEW_TRANSITION_MOTION,
 } from "./motion";
 
 describe("Synapse web route motion", () => {
   test("uses a perceptible, clinically quick transition", () => {
-    expect(WEB_ROUTE_MOTION.distance).toBeGreaterThanOrEqual(60);
-    expect(WEB_ROUTE_MOTION.distance).toBeLessThanOrEqual(100);
-    expect(WEB_ROUTE_MOTION.duration).toBeGreaterThanOrEqual(280);
-    expect(WEB_ROUTE_MOTION.duration).toBeLessThanOrEqual(340);
-    expect(WEB_ROUTE_MOTION.initialOpacity).toBeLessThanOrEqual(0.8);
+    expect(WEB_ROUTE_MOTION.distance).toBeGreaterThanOrEqual(20);
+    expect(WEB_ROUTE_MOTION.distance).toBeLessThanOrEqual(35);
+    expect(WEB_ROUTE_MOTION.duration).toBeGreaterThanOrEqual(180);
+    expect(WEB_ROUTE_MOTION.duration).toBeLessThanOrEqual(260);
+    expect(WEB_ROUTE_MOTION.initialOpacity).toBeLessThanOrEqual(0.92);
   });
 
-  test("uses outgoing and incoming snapshots for perceptible continuity", () => {
-    expect(WEB_VIEW_TRANSITION_MOTION.duration).toBeGreaterThanOrEqual(280);
-    expect(WEB_VIEW_TRANSITION_MOTION.duration).toBeLessThanOrEqual(340);
-    expect(WEB_VIEW_TRANSITION_MOTION.incomingDistance).toBeGreaterThan(
-      WEB_VIEW_TRANSITION_MOTION.outgoingDistance,
-    );
+  test("disables route motion when reduced motion is enabled", () => {
+    expect(shouldAnimateWebRoute(true, false)).toBe(true);
+    expect(shouldAnimateWebRoute(true, true)).toBe(false);
+    expect(shouldAnimateWebRoute(false, false)).toBe(false);
   });
 
-  test("progressively enhances only supported web sessions without reduced motion", () => {
-    const startViewTransition = () => {};
-    expect(
-      canUseWebViewTransitions("web", false, startViewTransition),
-    ).toBe(true);
-    expect(canUseWebViewTransitions("web", true, startViewTransition)).toBe(
-      false,
+  test("executes navigation synchronously and exactly once", () => {
+    const events: string[] = [];
+
+    runWebRouteTransition("forward", () => events.push("assessment"));
+
+    expect(events).toEqual(["assessment"]);
+  });
+
+  test("never replays stale navigation when a newer interaction interrupts motion", () => {
+    const pathStack = ["/home"];
+
+    runWebRouteTransition("forward", () =>
+      pathStack.push("/tools/assessment-tools"),
     );
-    expect(canUseWebViewTransitions("ios", false, startViewTransition)).toBe(
-      false,
+    runWebRouteTransition("forward", () =>
+      pathStack.push("/tools/assessment-tools/news2"),
     );
-    expect(canUseWebViewTransitions("web", false, undefined)).toBe(false);
+    runWebRouteTransition("back", () => {
+      pathStack.pop();
+    });
+
+    expect(pathStack).toEqual(["/home", "/tools/assessment-tools"]);
   });
 
   test("prefers explicit interaction intent for card and header navigation", () => {

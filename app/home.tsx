@@ -18,6 +18,7 @@ import { NavigationCard } from "../src/ui/NavigationCard";
 import { theme } from "../src/ui/theme";
 import { Screen, Subtle, Title } from "../src/ui/Ui";
 import { usePressFeedback } from "../src/ui/motion";
+import { useResponsiveLayout } from "../src/ui/responsive";
 
 function LanguageButton({
   language,
@@ -88,6 +89,8 @@ export default function Home() {
   const { width } = useWindowDimensions();
   const compact = width < 600;
   const pwa = Platform.OS === "web";
+  const { isExpanded } = useResponsiveLayout();
+  const expanded = pwa && isExpanded;
   const router = useRouter();
   const { setLanguage, settings } = useSettings();
   const { t } = useT();
@@ -206,7 +209,13 @@ export default function Home() {
   );
 
   const menu = (
-    <View style={{ width: "100%", maxWidth: pwa ? 600 : 560, gap: compact ? 10 : 12 }}>
+    <View
+      style={{
+        width: "100%",
+        maxWidth: pwa ? (expanded ? 580 : 600) : 560,
+        gap: compact ? 10 : 12,
+      }}
+    >
       {favouriteTools.length > 0 ? (
         <>
           <Title style={{ fontSize: 19, marginBottom: 2 }}>
@@ -253,11 +262,33 @@ export default function Home() {
               paddingBottom: compact ? 6 : 14,
               paddingTop: compact ? 2 : 8,
               paddingHorizontal: compact ? 0 : 8,
-              alignItems: "center",
+              alignItems: expanded ? "flex-start" : "center",
             }}
           >
-            {hero}
-            {menu}
+            <View
+              style={{
+                width: "100%",
+                maxWidth: expanded ? 1060 : 600,
+                alignSelf: "center",
+                flexDirection: expanded ? "row" : "column",
+                alignItems: expanded ? "flex-start" : "center",
+                gap: expanded ? 24 : 0,
+              }}
+            >
+              <View
+                style={{
+                  flex: expanded ? 0.78 : undefined,
+                  width: expanded ? undefined : "100%",
+                  minWidth: 0,
+                  paddingTop: expanded ? 26 : 0,
+                }}
+              >
+                {hero}
+              </View>
+              <View style={{ flex: expanded ? 1.22 : undefined, width: expanded ? undefined : "100%", minWidth: 0 }}>
+                {menu}
+              </View>
+            </View>
           </ScrollView>
         ) : (
           <>

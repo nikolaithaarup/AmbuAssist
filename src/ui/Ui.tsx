@@ -8,7 +8,6 @@ import {
   Text,
   TextInput,
   type TextInputProps,
-  useWindowDimensions,
   View,
   type StyleProp,
   ViewStyle,
@@ -19,6 +18,7 @@ import {
 } from "react-native-safe-area-context";
 import { theme } from "./theme";
 import { usePressFeedback } from "./motion";
+import { useResponsiveLayout } from "./responsive";
 
 export function Screen({
   children,
@@ -28,7 +28,7 @@ export function Screen({
   style?: StyleProp<ViewStyle>;
   edges?: readonly Edge[];
 }>) {
-  const { width } = useWindowDimensions();
+  const { isCompact, isExpanded } = useResponsiveLayout();
   const safeAreaEdges =
     Platform.OS === "web"
       ? {
@@ -50,12 +50,14 @@ export function Screen({
     Platform.OS === "web"
       ? {
           paddingHorizontal:
-            width < 600
-              ? theme.layout.mobileGutter
-              : theme.layout.desktopGutter,
-          paddingTop: 18,
-          paddingBottom: width < 600 ? 14 : 18,
-          gap: theme.layout.contentGap,
+            isCompact
+              ? 12
+              : isExpanded
+                ? theme.layout.desktopGutter
+                : 16,
+          paddingTop: isCompact ? 12 : isExpanded ? 20 : 16,
+          paddingBottom: isCompact ? 14 : isExpanded ? 20 : 18,
+          gap: isCompact ? 10 : theme.layout.contentGap,
         }
       : undefined;
 
@@ -71,7 +73,7 @@ export function Screen({
 export function ResponsiveToolContainer({
   children,
   style,
-  maxWidth = 960,
+  maxWidth = 1180,
 }: PropsWithChildren<{
   style?: StyleProp<ViewStyle>;
   maxWidth?: number;
@@ -81,6 +83,36 @@ export function ResponsiveToolContainer({
       {children}
     </View>
   );
+}
+
+export function ResponsiveColumns({
+  children,
+  style,
+}: PropsWithChildren<{ style?: StyleProp<ViewStyle> }>) {
+  const { isExpanded } = useResponsiveLayout();
+
+  if (Platform.OS !== "web") return <>{children}</>;
+
+  return (
+    <View
+      style={[
+        styles.responsiveColumns,
+        { flexDirection: isExpanded ? "row" : "column" },
+        style,
+      ]}
+    >
+      {children}
+    </View>
+  );
+}
+
+export function ResponsiveColumn({
+  children,
+  style,
+}: PropsWithChildren<{ style?: StyleProp<ViewStyle> }>) {
+  if (Platform.OS !== "web") return <>{children}</>;
+
+  return <View style={[styles.responsiveColumn, style]}>{children}</View>;
 }
 
 export function Card({
@@ -169,6 +201,12 @@ export function Input({
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "transparent" },
   responsiveContainer: { flex: 1, width: "100%", alignSelf: "center" },
+  responsiveColumns: {
+    width: "100%",
+    alignItems: "stretch",
+    gap: 12,
+  },
+  responsiveColumn: { flex: 1, minWidth: 0, gap: 12 },
   inner: { flex: 1, padding: 18, gap: 14 },
 
   title: {

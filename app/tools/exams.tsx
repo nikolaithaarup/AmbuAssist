@@ -4,6 +4,7 @@ import { useT } from "../../src/i18n/useT";
 import { Background } from "../../src/ui/Background";
 import { ClinicalDisclosure } from "../../src/ui/ClinicalDisclosure";
 import { Card, Screen, Subtle, Title } from "../../src/ui/Ui";
+import { useResponsiveLayout } from "../../src/ui/responsive";
 import { theme } from "../../src/ui/theme";
 
 type Exam = {
@@ -213,6 +214,7 @@ function SectionLabel({ label }: { label: string }) {
 
 export default function Exams() {
   const { t } = useT();
+  const { isExpanded } = useResponsiveLayout();
   const [openId, setOpenId] = useState<string | null>(null);
 
   const groups = useMemo(() => {
@@ -243,8 +245,24 @@ export default function Exams() {
         </View>
 
         <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
-          {groups.map((g) => (
-            <View key={g.key} style={{ gap: 10 }}>
+          <View
+            style={{
+              flexDirection: isExpanded ? "row" : "column",
+              flexWrap: isExpanded ? "wrap" : "nowrap",
+              alignItems: "flex-start",
+              gap: 12,
+            }}
+          >
+            {groups.map((g) => (
+            <View
+              key={g.key}
+              style={{
+                gap: 10,
+                flexBasis: isExpanded ? "48%" : "100%",
+                flexGrow: isExpanded ? 1 : 0,
+                minWidth: 0,
+              }}
+            >
               <Text
                 style={{
                   color: theme.colors.text,
@@ -372,7 +390,8 @@ export default function Exams() {
                 );
               })}
             </View>
-          ))}
+            ))}
+          </View>
 
           <ClinicalDisclosure
             disclaimer={t("exams_page_disclaimer")}

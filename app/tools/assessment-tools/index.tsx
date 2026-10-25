@@ -6,6 +6,7 @@ import { Background } from "../../../src/ui/Background";
 import { hapticToolOpen } from "../../../src/ui/haptics";
 import { NavigationCard } from "../../../src/ui/NavigationCard";
 import { Screen, Subtle, Title } from "../../../src/ui/Ui";
+import { useResponsiveLayout } from "../../../src/ui/responsive";
 
 type ToolLink = {
   titleKey: any;
@@ -16,6 +17,7 @@ type ToolLink = {
 export default function AssessmentToolsPage() {
   const router = useRouter();
   const { lang, t } = useT();
+  const { isExpanded } = useResponsiveLayout();
 
   const tools: ToolLink[] = [
     {
@@ -71,7 +73,7 @@ export default function AssessmentToolsPage() {
             alignItems: "center",
           }}
         >
-          <View style={{ width: "100%", maxWidth: 520, gap: 12 }}>
+          <View style={{ width: "100%", maxWidth: isExpanded ? 920 : 520, gap: 12 }}>
             <Title
               style={{
                 textAlign: "center",
@@ -87,17 +89,33 @@ export default function AssessmentToolsPage() {
               {t("tool_assessment_desc")}
             </Subtle>
 
-            {tools.map((tool) => (
-              <NavigationCard
-                key={tool.path}
-                title={t(tool.titleKey)}
-                description={t(tool.descKey)}
-                onPress={() => {
-                  hapticToolOpen();
-                  router.push(tool.path);
-                }}
-              />
-            ))}
+            <View
+              style={{
+                flexDirection: isExpanded ? "row" : "column",
+                flexWrap: isExpanded ? "wrap" : "nowrap",
+                gap: 12,
+              }}
+            >
+              {tools.map((tool) => (
+                <View
+                  key={tool.path}
+                  style={{
+                    flexBasis: isExpanded ? "48%" : "100%",
+                    flexGrow: isExpanded ? 1 : 0,
+                    minWidth: 0,
+                  }}
+                >
+                  <NavigationCard
+                    title={t(tool.titleKey)}
+                    description={t(tool.descKey)}
+                    onPress={() => {
+                      hapticToolOpen();
+                      router.push(tool.path);
+                    }}
+                  />
+                </View>
+              ))}
+            </View>
           </View>
         </ScrollView>
       </Screen>

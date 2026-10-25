@@ -20,6 +20,7 @@ import { useSettings } from "../../src/state/settings";
 import { Background } from "../../src/ui/Background";
 import { ClinicalDisclosure } from "../../src/ui/ClinicalDisclosure";
 import { Screen, Subtle } from "../../src/ui/Ui";
+import { useResponsiveLayout } from "../../src/ui/responsive";
 import {
   ToolActionButton,
   ToolPageHeader,
@@ -40,6 +41,7 @@ export default function SupportNumbersPage() {
   const { settings } = useSettings();
   const { t } = useT();
   const lang = settings.language === "da" ? "da" : "en";
+  const { isExpanded } = useResponsiveLayout();
 
   const [reference, setReference] = useState<ReferenceDoc | null>(null);
   const [numbers, setNumbers] = useState<SupportNumber[]>(
@@ -179,7 +181,13 @@ export default function SupportNumbersPage() {
                 {lang === "da" ? "Ingen supportnumre fundet endnu." : "No support numbers found yet."}
               </Text>
             ) : (
-              <View>
+              <View
+                style={{
+                  flexDirection: isExpanded ? "row" : "column",
+                  flexWrap: isExpanded ? "wrap" : "nowrap",
+                  columnGap: isExpanded ? 14 : 0,
+                }}
+              >
                 {sortedNumbers.map((item) => {
                   const name = lang === "da" ? item.nameDa : item.nameEn;
 
@@ -191,6 +199,9 @@ export default function SupportNumbersPage() {
                         alignItems: "center",
                         gap: 10,
                         paddingVertical: 10,
+                        flexBasis: isExpanded ? "48%" : "100%",
+                        flexGrow: isExpanded ? 1 : 0,
+                        minWidth: 0,
                         borderBottomWidth: 1,
                         borderBottomColor: theme.colors.divider,
                       }}

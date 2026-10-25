@@ -46,6 +46,8 @@ import {
   Card,
   Input,
   Label,
+  ResponsiveColumn,
+  ResponsiveColumns,
   Screen,
   Subtle,
   Title,
@@ -1865,6 +1867,8 @@ export default function DestinationTool() {
         </View>
 
         <ScrollView contentContainerStyle={{ gap: Platform.OS === "web" ? 14 : 18, paddingBottom: 28 }}>
+          <ResponsiveColumns>
+            <ResponsiveColumn>
           <View style={{ gap: 14, paddingTop: Platform.OS === "web" ? 0 : 4 }}>
             <DestinationCategoryPicker
               lang={lang}
@@ -2333,7 +2337,8 @@ export default function DestinationTool() {
             </View>
           )}
 
-
+            </ResponsiveColumn>
+            <ResponsiveColumn>
           {resolvedHospital && (
             <View testID="destination-result">
               <Card
@@ -2583,6 +2588,8 @@ export default function DestinationTool() {
               </Text>
             </CollapsibleCard>
           )}
+            </ResponsiveColumn>
+          </ResponsiveColumns>
 
           <ClinicalDisclosure
             disclaimer={reference?.disclaimer[lang] ?? t("dest_page_disclaimer")}

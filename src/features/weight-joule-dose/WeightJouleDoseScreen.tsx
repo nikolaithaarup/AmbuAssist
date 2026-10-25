@@ -25,6 +25,8 @@ import {
   Input,
   Label,
   PrimaryButton,
+  ResponsiveColumn,
+  ResponsiveColumns,
   Row,
   Screen,
   Subtle,
@@ -913,18 +915,23 @@ export function WeightJouleDoseScreen() {
         />
 
         <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
-          <WeightCalculatorCard
-            t={t}
-            ageYears={ageYears}
-            setAgeYears={setAgeYears}
-            weightKgOverride={weightKgOverride}
-            setWeightKgOverride={setWeightKgOverride}
-            jPerKgOverride={jPerKgOverride}
-            setJPerKgOverride={setJPerKgOverride}
-            placeholderDefaultJ={placeholderDefaultJ}
-          />
-
-          <ResultCard t={t} result={computed} />
+          <ResponsiveColumns>
+            <ResponsiveColumn>
+              <WeightCalculatorCard
+                t={t}
+                ageYears={ageYears}
+                setAgeYears={setAgeYears}
+                weightKgOverride={weightKgOverride}
+                setWeightKgOverride={setWeightKgOverride}
+                jPerKgOverride={jPerKgOverride}
+                setJPerKgOverride={setJPerKgOverride}
+                placeholderDefaultJ={placeholderDefaultJ}
+              />
+            </ResponsiveColumn>
+            <ResponsiveColumn>
+              <ResultCard t={t} result={computed} />
+            </ResponsiveColumn>
+          </ResponsiveColumns>
 
           <DoseCalculatorCard t={t} lang={lang} rows={computed.medRows} />
 

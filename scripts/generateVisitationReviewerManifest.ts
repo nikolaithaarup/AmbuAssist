@@ -124,6 +124,7 @@ function deriveConditions(row: AuditRow): {
 }
 
 const queueText = fs.readFileSync(QUEUE_FILE, "utf8");
+const canonicalQueueText = queueText.replace(/\r\n?/g, "\n");
 const queue = queueRecords(queueText);
 const audit = JSON.parse(fs.readFileSync(AUDIT_FILE, "utf8")) as Audit;
 if (queue.length !== 123) {
@@ -199,7 +200,7 @@ if (ids.size !== items.length) throw new Error("Review item coordinates are not 
 
 const output = {
   version: 1,
-  queueSha256: crypto.createHash("sha256").update(queueText).digest("hex"),
+  queueSha256: crypto.createHash("sha256").update(canonicalQueueText, "utf8").digest("hex"),
   sourcePdf: "docs/visitation-source/VisitationByen.pdf",
   generatedFrom: [
     "docs/visitation-review/byen-review-queue.csv",

@@ -21,6 +21,7 @@ import {
   resolveVisitationUpdate,
   type BackendVisitationData,
 } from "./visitationSchema";
+import { fetchPublishedVisitation } from "./visitationRemote";
 
 export type {
   BackendVisitationData,
@@ -35,6 +36,7 @@ export const LOCAL_VISITATION_DATA: BackendVisitationData = {
   byen: {
     categories: BYEN_CATEGORIES,
     map: BYEN_MAP,
+    aliases: BYEN_STREET_ALIASES,
     streetSample: STREET_SAMPLE,
   },
   region: {
@@ -62,6 +64,19 @@ export async function loadVisitationData(): Promise<BackendVisitationData> {
   const cached = safeParseCached(await AsyncStorage.getItem(CACHE_KEY));
 
   try {
+    const published = await fetchPublishedVisitation();
+    if (published) {
+      const update = resolveVisitationUpdate(
+        published,
+        cached,
+        LOCAL_VISITATION_DATA,
+      );
+      if (update.dataToCache) {
+        await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(update.dataToCache));
+        return update.data;
+      }
+    }
+
     const regionRef = doc(db, "visitation_regions", "regionh");
     const regionSnap = await getDoc(regionRef);
 
@@ -103,6 +118,7 @@ export async function loadVisitationData(): Promise<BackendVisitationData> {
       byen: {
         categories: byenArea.categories ?? BYEN_CATEGORIES,
         map: byenArea.map ?? BYEN_MAP,
+        aliases: byenArea.aliases ?? BYEN_STREET_ALIASES,
         streetSample: byenArea.streetSample ?? STREET_SAMPLE,
       },
       region: {

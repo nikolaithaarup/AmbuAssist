@@ -1,5 +1,6 @@
 const mockGetDoc = jest.fn();
 const mockGetDocs = jest.fn();
+const mockFetchPublishedVisitation = jest.fn();
 
 jest.mock("@react-native-async-storage/async-storage", () =>
   require("@react-native-async-storage/async-storage/jest/async-storage-mock"),
@@ -15,6 +16,9 @@ jest.mock("firebase/firestore", () => ({
 }));
 
 jest.mock("../lib/firebase", () => ({ db: {} }), { virtual: true });
+jest.mock("./visitationRemote", () => ({
+  fetchPublishedVisitation: (...args: unknown[]) => mockFetchPublishedVisitation(...args),
+}));
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SUPPORT_NUMBERS_FALLBACK } from "../data/supportNumbersFallback";
@@ -61,6 +65,7 @@ describe("offline and failure behavior", () => {
     jest.clearAllMocks();
     mockGetItem.mockResolvedValue(null);
     mockSetItem.mockResolvedValue(undefined);
+    mockFetchPublishedVisitation.mockResolvedValue(null);
     jest.spyOn(console, "log").mockImplementation(() => undefined);
     jest.spyOn(console, "warn").mockImplementation(() => undefined);
   });
@@ -70,6 +75,28 @@ describe("offline and failure behavior", () => {
   });
 
   describe("visitation fallback chain", () => {
+    test("uses and caches the authenticated Portal snapshot before the legacy Firestore source", async () => {
+      const published = cachedVisitation("published-v3");
+      mockFetchPublishedVisitation.mockResolvedValue(published);
+
+      await expect(loadVisitationData()).resolves.toEqual(published);
+      expect(mockSetItem).toHaveBeenCalledWith(
+        "ambuassist_visitation_regionh_v1",
+        JSON.stringify(published),
+      );
+      expect(mockGetDoc).not.toHaveBeenCalled();
+    });
+
+    test("keeps the previous validated version when a published update is malformed and legacy loading fails", async () => {
+      const cached = cachedVisitation("published-v2");
+      mockGetItem.mockResolvedValue(JSON.stringify(cached));
+      mockFetchPublishedVisitation.mockResolvedValue({ version: "published-v3", byen: {}, region: {} });
+      mockGetDoc.mockRejectedValue(new Error("legacy source unavailable"));
+
+      await expect(loadVisitationData()).resolves.toEqual(cached);
+      expect(mockSetItem).not.toHaveBeenCalled();
+    });
+
     test("uses valid remote data first and caches it", async () => {
       const local = LOCAL_VISITATION_DATA;
       mockGetItem.mockResolvedValue(JSON.stringify(cachedVisitation()));

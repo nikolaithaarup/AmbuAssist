@@ -434,6 +434,7 @@ export default function DestinationTool() {
   );
 
   const BYEN_MAP = visitationData.byen.map;
+  const STREET_ALIASES = visitationData.byen.aliases ?? BYEN_STREET_ALIASES;
   const STREET_SAMPLE = useMemo(
     () =>
       getCanonicalRoutingRows(
@@ -765,7 +766,7 @@ export default function DestinationTool() {
       side,
       houseNumber,
       postalCode,
-      BYEN_STREET_ALIASES,
+      STREET_ALIASES,
     );
 
     setArea("byen");
@@ -1088,7 +1089,7 @@ export default function DestinationTool() {
       text,
       STREET_SAMPLE,
       ALL_KOMMUNER,
-      BYEN_STREET_ALIASES,
+      STREET_ALIASES,
     );
     applyManualLocationMatch(match, text);
     if (match.area !== "unresolved") setStreetOpen(false);
@@ -1165,7 +1166,7 @@ export default function DestinationTool() {
         region,
       },
       STREET_SAMPLE,
-      BYEN_STREET_ALIASES,
+      STREET_ALIASES,
     );
 
     if (strategy.area === "byen") {
@@ -1570,7 +1571,7 @@ export default function DestinationTool() {
           region,
         },
         STREET_SAMPLE,
-        BYEN_STREET_ALIASES,
+        STREET_ALIASES,
       );
 
       if (strategy.area === "byen") {
@@ -2240,7 +2241,7 @@ export default function DestinationTool() {
                         value,
                         STREET_SAMPLE,
                         ALL_KOMMUNER,
-                        BYEN_STREET_ALIASES,
+                        STREET_ALIASES,
                       ),
                       value,
                     );

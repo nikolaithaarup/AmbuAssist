@@ -14,6 +14,7 @@
     "test:coverage": "jest --coverage",
     "visitation:generate": "tsx scripts/generateVisitationData.ts",
     "visitation:verify": "jest src/features/destination/data/visitationLedgerIntegrity.test.ts --runInBand",
+    "visitation:export-admin": "tsx scripts/exportVisitationAdminBootstrap.ts",
     "visitation:review": "tsx tools/visitation-review/server.ts",
     "visitation:review:manifest": "tsx scripts/generateVisitationReviewerManifest.ts",
     "visitation:review:apply": "tsx scripts/applyVisitationReviewDecisions.ts",
@@ -42,7 +43,7 @@
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.16.0",
     "react-native-web": "^0.21.0",
-    "zod": "^4.4.3"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/jest": "29.5.14",

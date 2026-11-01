@@ -78,4 +78,12 @@ describe("support-number payload validation", () => {
     expect(update.data).toEqual(cached);
     expect(update.dataToCache).toBeNull();
   });
+
+  test("rejects an oversized remote support-number collection", () => {
+    expect(
+      parseSupportNumbersPayload(
+        Array.from({ length: 501 }, (_, index) => number(String(index))),
+      ),
+    ).toBeNull();
+  });
 });

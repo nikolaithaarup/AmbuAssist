@@ -58,7 +58,7 @@ export const referencePayloadSchema = z.object({
   reviewDate: dateMetadataSchema.optional(),
   disclaimer: optionalLangMapSchema.optional(),
   sourcesSub: optionalLangMapSchema.optional(),
-  sources: z.array(referenceSourceSchema).optional(),
+  sources: z.array(referenceSourceSchema).max(500).optional(),
 });
 
 export type ReferencePayload = z.infer<typeof referencePayloadSchema>;

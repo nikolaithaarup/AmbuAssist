@@ -18,9 +18,10 @@ export function CollapsibleCard({
   children,
 }: Props) {
   const [open, setOpen] = useState(defaultOpen);
+  const [focused, setFocused] = useState(false);
   const pwa = Platform.OS === "web";
   const reducedMotion = useReducedMotionPreference(pwa);
-  const pressFeedback = usePressFeedback(0.99);
+  const pressFeedback = usePressFeedback(0.985);
 
   const toggleOpen = () => {
     setOpen((current) => !current);
@@ -31,10 +32,12 @@ export function CollapsibleCard({
       accessibilityRole="button"
       accessibilityState={{ expanded: open }}
       onPress={toggleOpen}
-      onPressIn={pwa ? pressFeedback.onPressIn : undefined}
-      onPressOut={pwa ? pressFeedback.onPressOut : undefined}
+      onPressIn={pressFeedback.onPressIn}
+      onPressOut={pressFeedback.onPressOut}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
       style={({ pressed }) => ({
-        minHeight: pwa ? 48 : undefined,
+        minHeight: 48,
         justifyContent: "center",
         opacity: pressed ? 0.75 : 1,
       })}
@@ -47,12 +50,13 @@ export function CollapsibleCard({
           gap: 12,
         }}
       >
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, minWidth: 0 }}>
           <Text
             style={{
               color: theme.colors.text,
-              fontSize: 18,
-              fontWeight: "900",
+              fontSize: 17,
+              lineHeight: 22,
+              fontWeight: "700",
             }}
           >
             {title}
@@ -73,21 +77,35 @@ export function CollapsibleCard({
           ) : null}
         </View>
 
-        <Text
+        <View
           style={{
-            color: theme.colors.mutedText,
-            fontSize: 18,
-            fontWeight: "900",
+            width: 34,
+            height: 34,
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: 11,
+            backgroundColor: open
+              ? theme.colors.accentSurface
+              : "rgba(255,255,255,0.035)",
           }}
         >
-          {open ? "▾" : "▸"}
-        </Text>
+          <Text
+            style={{
+              color: open ? theme.colors.accentMuted : theme.colors.mutedText,
+              fontSize: 20,
+              lineHeight: 22,
+              fontWeight: "800",
+            }}
+          >
+            {open ? "⌄" : "›"}
+          </Text>
+        </View>
       </View>
     </Pressable>
   );
 
   return (
-    <Card>
+    <Card style={focused ? { borderColor: theme.colors.focus } : undefined}>
       {pwa ? (
         <Animated.View style={pressFeedback.animatedStyle}>
           {trigger}

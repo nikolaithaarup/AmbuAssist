@@ -45,7 +45,7 @@ function CategoryChip({
 }) {
   const pwa = Platform.OS === "web";
   const pressFeedback = usePressFeedback(0.98);
-  const selectionFeedback = useStateChangeFeedback(selected, 1.045);
+  const selectionFeedback = useStateChangeFeedback(selected, 1.025);
 
   return (
     <Animated.View
@@ -54,15 +54,15 @@ function CategoryChip({
         pwa ? selectionFeedback : undefined,
       ]}
     >
-      <Animated.View style={pwa ? pressFeedback.animatedStyle : undefined}>
+      <Animated.View style={pressFeedback.animatedStyle}>
         <Pressable
           testID={`destination-favourite-category-${category}`}
           accessibilityRole="button"
           accessibilityLabel={label}
           accessibilityState={{ selected }}
           onPress={onPress}
-          onPressIn={pwa ? pressFeedback.onPressIn : undefined}
-          onPressOut={pwa ? pressFeedback.onPressOut : undefined}
+          onPressIn={pressFeedback.onPressIn}
+          onPressOut={pressFeedback.onPressOut}
           style={({ pressed }) => ({
             minHeight: pwa ? 50 : 46,
             maxWidth: "100%",
@@ -72,7 +72,7 @@ function CategoryChip({
             gap: 6,
             paddingHorizontal: 13,
             paddingVertical: 9,
-            borderRadius: 15,
+            borderRadius: theme.radii.control,
             borderWidth: selected ? 1.5 : 1,
             borderColor: selected
               ? theme.colors.accentMuted
@@ -81,7 +81,7 @@ function CategoryChip({
               ? "rgba(145,169,108,0.22)"
               : pressed
                 ? "rgba(255,255,255,0.07)"
-                : "rgba(38,43,34,0.68)",
+                : theme.colors.interactive,
             opacity: pressed ? 0.82 : 1,
           })}
         >
@@ -248,6 +248,9 @@ export function DestinationCategoryPicker({
             edges={["bottom"]}
             style={{
               maxHeight: "88%",
+              width: "100%",
+              maxWidth: 720,
+              alignSelf: "center",
               borderTopLeftRadius: 24,
               borderTopRightRadius: 24,
               borderWidth: 1,

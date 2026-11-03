@@ -1,10 +1,12 @@
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import {
   Animated,
   Image,
   Platform,
   Pressable,
   ScrollView,
+  Text,
   useWindowDimensions,
   View,
 } from "react-native";
@@ -16,7 +18,7 @@ import { Background } from "../src/ui/Background";
 import { hapticFavourite, hapticToolOpen } from "../src/ui/haptics";
 import { NavigationCard } from "../src/ui/NavigationCard";
 import { theme } from "../src/ui/theme";
-import { Screen, Subtle, Title } from "../src/ui/Ui";
+import { Screen, Subtle } from "../src/ui/Ui";
 import { usePressFeedback } from "../src/ui/motion";
 import { useResponsiveLayout } from "../src/ui/responsive";
 
@@ -33,27 +35,33 @@ function LanguageButton({
 }) {
   const pwa = Platform.OS === "web";
   const pressFeedback = usePressFeedback(0.95);
+  const [focused, setFocused] = useState(false);
 
   return (
-    <Animated.View style={pwa ? pressFeedback.animatedStyle : undefined}>
+    <Animated.View style={pressFeedback.animatedStyle}>
       <Pressable
         onPress={onPress}
-        onPressIn={pwa ? pressFeedback.onPressIn : undefined}
-        onPressOut={pwa ? pressFeedback.onPressOut : undefined}
+        onPressIn={pressFeedback.onPressIn}
+        onPressOut={pressFeedback.onPressOut}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
         style={({ pressed }) => ({
           opacity: pressed ? 0.82 : 1,
-          transform: pwa ? undefined : [{ scale: pressed ? 0.96 : 1 }],
           minWidth: pwa ? 50 : 44,
           minHeight: pwa ? 50 : 44,
           padding: compact ? 9 : 7,
           borderRadius: pwa ? 15 : compact ? 12 : 14,
           borderWidth: 1,
           borderColor:
-            pwa && selected
+            pwa && focused
+              ? theme.colors.focus
+              : pwa && selected
               ? "rgba(174,190,144,0.38)"
               : theme.colors.cardBorder,
           backgroundColor: selected
             ? theme.colors.accentSurface
+            : focused
+              ? "rgba(174,190,144,0.14)"
             : pwa
               ? "rgba(16,19,15,0.22)"
               : "transparent",
@@ -85,6 +93,67 @@ function LanguageButton({
   );
 }
 
+function HomeSectionHeader({
+  title,
+  count,
+}: {
+  title: string;
+  count?: number;
+}) {
+  return (
+    <View
+      style={{
+        minHeight: 34,
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 10,
+        marginTop: 2,
+      }}
+    >
+      <Text
+        style={{
+          color: theme.colors.text,
+          fontSize: 16,
+          lineHeight: 21,
+          fontWeight: "700",
+          letterSpacing: -0.1,
+        }}
+      >
+        {title}
+      </Text>
+      {typeof count === "number" ? (
+        <View
+          style={{
+            minWidth: 25,
+            height: 25,
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: theme.radii.pill,
+            backgroundColor: theme.colors.accentSurface,
+          }}
+        >
+          <Text
+            style={{
+              color: theme.colors.accentMuted,
+              fontSize: 12,
+              fontWeight: "800",
+            }}
+          >
+            {count}
+          </Text>
+        </View>
+      ) : null}
+      <View
+        style={{
+          flex: 1,
+          height: 1,
+          backgroundColor: theme.colors.divider,
+        }}
+      />
+    </View>
+  );
+}
+
 export default function Home() {
   const { width } = useWindowDimensions();
   const compact = width < 600;
@@ -111,8 +180,9 @@ export default function Home() {
     <NavigationCard
       key={`${titleOnly ? "favourite" : "tool"}-${tool.path}`}
       title={t(tool.titleKey)}
+      symbol={tool.symbol}
       description={
-        !pwa && !compact && !titleOnly && tool.descKey ? t(tool.descKey) : undefined
+        !compact && !titleOnly && tool.descKey ? t(tool.descKey) : undefined
       }
       favourite={isFavourite(tool.path)}
       onPress={() => openTool(tool)}
@@ -126,8 +196,13 @@ export default function Home() {
       style={{
         gap: 0,
         alignItems: "center",
-        paddingTop: pwa ? (compact ? 2 : 8) : 0,
-        paddingBottom: pwa ? (compact ? 10 : 16) : compact ? 4 : 12,
+        paddingTop: pwa ? (compact ? 14 : 20) : 0,
+        paddingBottom: pwa ? (compact ? 16 : 22) : compact ? 4 : 12,
+        paddingHorizontal: pwa ? (compact ? 14 : 20) : 0,
+        borderRadius: pwa ? theme.radii.largeCard : 0,
+        borderWidth: pwa ? 1 : 0,
+        borderColor: pwa ? "rgba(190,202,165,0.12)" : "transparent",
+        backgroundColor: pwa ? "rgba(31,35,28,0.46)" : "transparent",
       }}
     >
       <View
@@ -213,31 +288,32 @@ export default function Home() {
       style={{
         width: "100%",
         maxWidth: pwa ? (expanded ? 580 : 600) : 560,
-        gap: compact ? 10 : 12,
+        gap: compact ? 9 : 11,
       }}
     >
       {favouriteTools.length > 0 ? (
         <>
-          <Title style={{ fontSize: 19, marginBottom: 2 }}>
-            {settings.language === "da" ? "Favoritter" : "Favourites"}
-          </Title>
+          <HomeSectionHeader
+            title={settings.language === "da" ? "Favoritter" : "Favourites"}
+            count={favouriteTools.length}
+          />
           {favouriteTools.map((tool) => renderTool(tool, true))}
           <View style={{ height: 6 }} />
         </>
       ) : null}
 
-      <Title style={{ fontSize: 19, marginBottom: 2 }}>
-        {settings.language === "da" ? "Værktøjer" : "Tools"}
-      </Title>
+      <HomeSectionHeader
+        title={settings.language === "da" ? "Værktøjer" : "Tools"}
+        count={HOME_TOOLS.length}
+      />
       {HOME_TOOLS.map((tool) => renderTool(tool))}
 
       <View style={{ height: 8 }} />
-      <Title style={{ fontSize: 16, marginBottom: 0, color: theme.colors.mutedText }}>
-        App & support
-      </Title>
+      <HomeSectionHeader title="App & support" />
       <NavigationCard
         testID="home-about-support"
         title={t(ABOUT_SUPPORT_TOOL.titleKey)}
+        symbol={ABOUT_SUPPORT_TOOL.symbol}
         description={pwa || compact ? undefined : t(ABOUT_SUPPORT_TOOL.descKey)}
         secondary
         onPress={() => openTool(ABOUT_SUPPORT_TOOL)}

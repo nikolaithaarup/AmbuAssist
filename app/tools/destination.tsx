@@ -43,7 +43,6 @@ import { Background } from "../../src/ui/Background";
 import { ClinicalDisclosure } from "../../src/ui/ClinicalDisclosure";
 import { CollapsibleCard } from "../../src/ui/CollapsibleCard";
 import {
-  Card,
   Input,
   Label,
   ResponsiveColumn,
@@ -56,6 +55,12 @@ import { theme } from "../../src/ui/theme";
 import { openPhoneNumber } from "../../src/services/phoneAction";
 import { usePressFeedback } from "../../src/ui/motion";
 import { useResponsiveLayout } from "../../src/ui/responsive";
+import {
+  ToolActionButton,
+  ToolPageHeader,
+  ToolSectionLabel,
+  ToolSurface,
+} from "../../src/ui/ToolSurface";
 
 import type {
   Area,
@@ -264,18 +269,40 @@ function SimpleDropdown<T extends string>({
               : "transparent",
           }}
         >
-          {renderOption ? (
-            renderOption(option, selected)
-          ) : (
-            <Text
-              style={{
-                color: theme.colors.text,
-                fontWeight: selected ? "800" : "700",
-              }}
-            >
-              {renderValue ? renderValue(option) : option}
-            </Text>
-          )}
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 10,
+            }}
+          >
+            <View style={{ flex: 1, minWidth: 0 }}>
+              {renderOption ? (
+                renderOption(option, selected)
+              ) : (
+                <Text
+                  style={{
+                    color: theme.colors.text,
+                    fontWeight: selected ? "800" : "700",
+                  }}
+                >
+                  {renderValue ? renderValue(option) : option}
+                </Text>
+              )}
+            </View>
+            {selected ? (
+              <Text
+                accessibilityElementsHidden
+                style={{
+                  color: theme.colors.accentMuted,
+                  fontSize: 16,
+                  fontWeight: "900",
+                }}
+              >
+                ✓
+              </Text>
+            ) : null}
+          </View>
         </Pressable>
       </View>
     );
@@ -322,7 +349,7 @@ function SimpleDropdown<T extends string>({
           </View>
 
           <Text style={{ color: theme.colors.mutedText }}>
-            {open ? "▲" : "▼"}
+            {open ? "⌃" : "⌄"}
           </Text>
         </View>
       </Pressable>
@@ -389,13 +416,13 @@ function DestinationPrimaryButton({
   disabled?: boolean;
 }) {
   const pwa = Platform.OS === "web";
-  const pressFeedback = usePressFeedback(0.985);
+  const pressFeedback = usePressFeedback(0.98);
 
   return (
     <Animated.View
       style={[
         { width: "100%", minWidth: 0 },
-        pwa ? pressFeedback.animatedStyle : undefined,
+        pressFeedback.animatedStyle,
       ]}
     >
       <Pressable
@@ -404,8 +431,8 @@ function DestinationPrimaryButton({
         accessibilityState={{ disabled }}
         disabled={disabled}
         onPress={onPress}
-        onPressIn={pwa ? pressFeedback.onPressIn : undefined}
-        onPressOut={pwa ? pressFeedback.onPressOut : undefined}
+        onPressIn={pressFeedback.onPressIn}
+        onPressOut={pressFeedback.onPressOut}
         style={({ pressed }) => ({
           minHeight: pwa ? 54 : 52,
           borderRadius: pwa ? theme.radii.control : 14,
@@ -413,13 +440,15 @@ function DestinationPrimaryButton({
           paddingVertical: 14,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: theme.colors.primary,
+          borderWidth: 1,
+          borderColor: "rgba(220,230,199,0.42)",
+          backgroundColor: theme.colors.accentMuted,
           opacity: disabled ? 0.55 : pressed ? 0.82 : 1,
         })}
       >
         <Text
           style={{
-            color: theme.colors.text,
+            color: theme.colors.onAccent,
             fontSize: 16,
             fontWeight: "900",
             textAlign: "center",
@@ -1871,24 +1900,14 @@ export default function DestinationTool() {
   return (
     <Background>
       <Screen>
-        <View
-          style={{
-            width: "100%",
-            minWidth: 0,
-            gap: 5,
-            marginTop: Platform.OS === "web" ? 0 : 12,
-            alignItems: "center",
-          }}
-        >
-          <Title style={{ maxWidth: "100%", textAlign: "center" }}>
-            {t("dest_title")}
-          </Title>
-          <Subtle style={{ maxWidth: 620, textAlign: "center" }}>
-            {lang === "da"
-              ? "Vælg kategori, og find patientens placering med GPS eller adresse."
-              : "Choose a category, then locate the patient by GPS or address."}
-          </Subtle>
-        </View>
+        <ToolPageHeader
+          title={t("dest_title")}
+          subtitle={
+            lang === "da"
+              ? "Vælg visitation, og find patientens placering med GPS eller adresse."
+              : "Choose a visitation, then locate the patient by GPS or address."
+          }
+        />
 
         <ScrollView
           style={{ flex: 1, minWidth: 0 }}
@@ -1902,15 +1921,17 @@ export default function DestinationTool() {
         >
           <ResponsiveColumns style={stackedWebLayout ? { gap: 20 } : undefined}>
             <ResponsiveColumn style={stackedColumnStyle}>
-          <View
+          <ToolSurface
             testID="destination-primary-column"
             style={{
               width: "100%",
               minWidth: 0,
               gap: isCompact ? 12 : 14,
-              paddingTop: Platform.OS === "web" ? 0 : 4,
             }}
           >
+            <ToolSectionLabel>
+              {lang === "da" ? "Visitation og placering" : "Visitation and location"}
+            </ToolSectionLabel>
             <DestinationCategoryPicker
               lang={lang}
               selected={regCat}
@@ -1976,7 +1997,18 @@ export default function DestinationTool() {
             </View>
 
             {detectingLocation && (
-              <View style={{ gap: 8, alignItems: "center" }}>
+              <View
+                style={{
+                  minHeight: 64,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 10,
+                  paddingHorizontal: 12,
+                  borderRadius: theme.radii.control,
+                  backgroundColor: theme.colors.accentSurface,
+                }}
+              >
                 <ActivityIndicator />
                 <Text
                   accessibilityLiveRegion="polite"
@@ -2159,16 +2191,30 @@ export default function DestinationTool() {
               )}
 
             {!!locationMessage && !detectingLocation && (
-              <Text
-                accessibilityLiveRegion="assertive"
+              <View
                 style={{
-                  color: theme.colors.warn,
-                  fontWeight: "700",
-                  lineHeight: 20,
+                  gap: 4,
+                  padding: 12,
+                  borderRadius: theme.radii.control,
+                  borderWidth: 1,
+                  borderColor: "rgba(221,189,98,0.30)",
+                  backgroundColor: "rgba(65,57,31,0.42)",
                 }}
               >
-                {locationMessage}
-              </Text>
+                <ToolSectionLabel>
+                  {lang === "da" ? "Placering kræver handling" : "Location needs attention"}
+                </ToolSectionLabel>
+                <Text
+                  accessibilityLiveRegion="assertive"
+                  style={{
+                    color: theme.colors.warn,
+                    fontWeight: "700",
+                    lineHeight: 20,
+                  }}
+                >
+                  {locationMessage}
+                </Text>
+              </View>
             )}
 
             {!detectingLocation &&
@@ -2207,11 +2253,17 @@ export default function DestinationTool() {
             <Pressable
               testID="destination-manual-address-toggle"
               accessibilityRole="button"
+              accessibilityState={{ expanded: searchVisible }}
               onPress={toggleSearchVisible}
               style={({ pressed }) => ({
                 minHeight: 48,
                 alignItems: "center",
                 justifyContent: "center",
+                paddingHorizontal: 12,
+                borderRadius: theme.radii.control,
+                backgroundColor: pressed
+                  ? theme.colors.pressed
+                  : "rgba(255,255,255,0.025)",
                 opacity: pressed ? 0.65 : 1,
               })}
             >
@@ -2227,10 +2279,13 @@ export default function DestinationTool() {
                     : "Enter address manually"}
               </Text>
             </Pressable>
-          </View>
+          </ToolSurface>
 
           {searchVisible && (
-            <View style={{ gap: 14, paddingVertical: 4 }}>
+            <ToolSurface style={{ gap: 14 }}>
+              <ToolSectionLabel>
+                {lang === "da" ? "Manuel adresse" : "Manual address"}
+              </ToolSectionLabel>
               <View style={{ gap: 5 }}>
                 <Title style={{ fontSize: 20 }}>
                   {lang === "da" ? "Patientens placering" : "Patient location"}
@@ -2375,7 +2430,7 @@ export default function DestinationTool() {
                     )}
                   </View>
                 )}
-            </View>
+            </ToolSurface>
           )}
 
             </ResponsiveColumn>
@@ -2385,18 +2440,12 @@ export default function DestinationTool() {
             style={{ width: "100%", minWidth: 0, gap: 12 }}
           >
           {resolvedHospital && (
-            <View
+            <ToolSurface
+              tone="accent"
               testID="destination-result"
-              style={{ width: "100%", minWidth: 0 }}
+              style={{ width: "100%", minWidth: 0, gap: 15 }}
             >
-              <Card
-                style={{
-                  backgroundColor: theme.colors.cardElevated,
-                  borderColor: theme.colors.accent,
-                  gap: 14,
-                }}
-              >
-              <Subtle>
+              <ToolSectionLabel>
                 {manualHospitalCode
                   ? lang === "da"
                     ? "Manuelt valgt destination"
@@ -2404,48 +2453,96 @@ export default function DestinationTool() {
                   : lang === "da"
                     ? "Anbefalet destination"
                     : "Recommended destination"}
-              </Subtle>
+              </ToolSectionLabel>
 
-              <Title style={{ fontSize: 26, lineHeight: 32 }}>
+              <Title style={{ fontSize: 28, lineHeight: 34 }}>
                 {resolvedHospital.label}
               </Title>
 
-              <Text
-                style={{
-                  color: theme.colors.text,
-                  fontWeight: "800",
-                  fontSize: 16,
-                  lineHeight: 22,
-                }}
-              >
-                {selectedCategoryLabel}
-              </Text>
+              <View style={{ gap: 4 }}>
+                <ToolSectionLabel>
+                  {lang === "da" ? "Visitation" : "Visitation"}
+                </ToolSectionLabel>
+                <Text
+                  style={{
+                    color: theme.colors.text,
+                    fontWeight: "700",
+                    fontSize: 16,
+                    lineHeight: 22,
+                  }}
+                >
+                  {selectedCategoryLabel}
+                </Text>
+              </View>
 
               {!!resolvedHospital.extra && (
-                <Text style={{ color: theme.colors.mutedText, lineHeight: 20 }}>
-                  {resolvedHospital.extra}
-                </Text>
+                <View
+                  style={{
+                    gap: 4,
+                    paddingTop: 12,
+                    borderTopWidth: 1,
+                    borderTopColor: theme.colors.divider,
+                  }}
+                >
+                  <ToolSectionLabel>
+                    {lang === "da" ? "Placering" : "Location"}
+                  </ToolSectionLabel>
+                  <Text
+                    style={{
+                      color: theme.colors.mutedText,
+                      fontSize: 15,
+                      lineHeight: 21,
+                    }}
+                  >
+                    {resolvedHospital.extra}
+                  </Text>
+                </View>
               )}
 
               {loadingHospitalPhones ? (
-                <Text style={{ color: theme.colors.mutedText }}>
-                  {lang === "da"
-                    ? "Henter telefonnummer…"
-                    : "Loading phone number…"}
-                </Text>
+                <View
+                  style={{
+                    minHeight: 44,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 9,
+                  }}
+                >
+                  <ActivityIndicator size="small" />
+                  <Text
+                    accessibilityLiveRegion="polite"
+                    style={{ color: theme.colors.mutedText }}
+                  >
+                    {lang === "da"
+                      ? "Henter telefonnummer…"
+                      : "Loading phone number…"}
+                  </Text>
+                </View>
               ) : selectedHospitalPhone ? (
-                <View style={{ gap: 10 }}>
+                <View
+                  style={{
+                    gap: 10,
+                    paddingTop: 12,
+                    borderTopWidth: 1,
+                    borderTopColor: theme.colors.divider,
+                  }}
+                >
+                  <ToolSectionLabel>
+                    {lang === "da" ? "Telefon" : "Telephone"}
+                  </ToolSectionLabel>
                   <Text
                     selectable
                     style={{
                       color: theme.colors.text,
-                      fontWeight: "900",
-                      fontSize: 22,
+                      fontWeight: "800",
+                      fontSize: 24,
+                      lineHeight: 30,
                     }}
                   >
                     {selectedHospitalPhone.phone}
                   </Text>
-                  <DestinationPrimaryButton
+                  <ToolActionButton
+                    tone="call"
                     label={lang === "da" ? "Ring op" : "Call"}
                     onPress={() =>
                       callHospitalNumber(selectedHospitalPhone.phone)
@@ -2493,11 +2590,21 @@ export default function DestinationTool() {
 
               {!loadingHospitalPhones &&
                 hospitalPhones.some((item) => item.source === "bundled") && (
-                  <Text style={{ color: theme.colors.warn, lineHeight: 19 }}>
-                    {lang === "da"
-                      ? "Firestore-kontakten kunne ikke hentes. Viser den lokale, operationelle offline-liste."
-                      : "The Firestore contact could not be loaded. Showing the bundled operational offline list."}
-                  </Text>
+                  <View
+                    style={{
+                      padding: 11,
+                      borderRadius: theme.radii.control,
+                      borderWidth: 1,
+                      borderColor: "rgba(221,189,98,0.28)",
+                      backgroundColor: "rgba(65,57,31,0.38)",
+                    }}
+                  >
+                    <Text style={{ color: theme.colors.warn, lineHeight: 19 }}>
+                      {lang === "da"
+                        ? "Kontakten kunne ikke opdateres. Den lokale, operationelle offline-liste vises."
+                        : "The contact could not be refreshed. Showing the bundled operational offline list."}
+                    </Text>
+                  </View>
                 )}
 
               {resolvedHospital.code === "UNKNOWN" && (
@@ -2527,11 +2634,13 @@ export default function DestinationTool() {
                   </Text>
                 </Pressable>
               )}
-              </Card>
-            </View>
+            </ToolSurface>
           )}
 
-          <View style={{ gap: 8, paddingVertical: 4 }}>
+          <ToolSurface style={{ gap: 8 }}>
+            <ToolSectionLabel>
+              {lang === "da" ? "Alternativ destination" : "Alternative destination"}
+            </ToolSectionLabel>
             <Subtle style={{ textAlign: "center" }}>
               {lang === "da"
                 ? "Kan destinationen ikke findes?"
@@ -2540,6 +2649,7 @@ export default function DestinationTool() {
             <Pressable
               testID="destination-manual-hospital-toggle"
               accessibilityRole="button"
+              accessibilityState={{ expanded: manualHospitalSectionVisible }}
               onPress={() =>
                 setManualHospitalSectionVisible((current) => !current)
               }
@@ -2547,6 +2657,11 @@ export default function DestinationTool() {
                 minHeight: 48,
                 alignItems: "center",
                 justifyContent: "center",
+                paddingHorizontal: 12,
+                borderRadius: theme.radii.control,
+                backgroundColor: pressed
+                  ? theme.colors.pressed
+                  : "rgba(255,255,255,0.025)",
                 opacity: pressed ? 0.65 : 1,
               })}
             >
@@ -2616,7 +2731,7 @@ export default function DestinationTool() {
                 )}
               </View>
             )}
-          </View>
+          </ToolSurface>
 
           {__DEV__ && Object.keys(diagnostics).length > 0 && (
             <CollapsibleCard

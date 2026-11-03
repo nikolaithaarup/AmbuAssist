@@ -63,7 +63,7 @@ export default function ToolsLayout() {
   const statusBarH =
     Platform.OS === "android" ? (StatusBar.currentHeight ?? 0) : insets.top;
   const headerBarHeight =
-    Platform.OS === "web" ? (isCompact ? 50 : 54) : HEADER_BAR_HEIGHT;
+    Platform.OS === "web" ? (isCompact ? 56 : 60) : HEADER_BAR_HEIGHT;
   const topOffset = statusBarH + headerBarHeight;
   const title = useMemo(() => {
     const key = TITLE_KEYS[pathname];
@@ -111,7 +111,7 @@ export default function ToolsLayout() {
         alignItems: "center",
         justifyContent: "center",
         opacity: pressed ? 0.65 : 1,
-        transform: [{ scale: pressed ? 0.92 : 1 }],
+        transform: [{ scale: pressed ? 0.97 : 1 }],
       })}
     >
       <Text
@@ -200,7 +200,7 @@ export default function ToolsLayout() {
                   color: theme.colors.accentMuted,
                 }}
               >
-                ‹ Back
+                ‹ {t("back")}
               </Text>
             </Pressable>
           ) : null}
@@ -220,7 +220,10 @@ export default function ToolsLayout() {
             justifyContent: "center",
             borderBottomWidth: 1,
             borderBottomColor: theme.colors.divider,
-            backgroundColor: "rgba(16,19,15,0.84)",
+            backgroundColor: "rgba(16,19,15,0.94)",
+            ...(Platform.OS === "web"
+              ? ({ boxShadow: "0 6px 22px rgba(0,0,0,0.20)" } as any)
+              : null),
           }}
         >
         {showBack ? (
@@ -246,17 +249,18 @@ export default function ToolsLayout() {
                 color: theme.colors.accentMuted,
               }}
             >
-              ‹ Back
+              ‹ {t("back")}
             </Text>
           </Pressable>
         ) : null}
 
         <Text
-          numberOfLines={1}
+          numberOfLines={2}
           style={{
             color: theme.colors.text,
-            fontSize: 15,
-            fontWeight: "800",
+            fontSize: isCompact ? 14 : 15,
+            lineHeight: isCompact ? 17 : 19,
+            fontWeight: "700",
             textAlign: "center",
             marginHorizontal: 74,
           }}

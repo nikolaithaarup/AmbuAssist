@@ -10,8 +10,8 @@ import { AccessibilityInfo, Animated, Easing, Platform } from "react-native";
 export type RouteDirection = "forward" | "back";
 
 export const WEB_ROUTE_MOTION = {
-  distance: 28,
-  duration: 220,
+  distance: 24,
+  duration: 210,
   initialOpacity: 0.9,
 } as const;
 
@@ -74,8 +74,7 @@ export function useReducedMotionPreference(enabled = true) {
 export function usePressFeedback(pressedScale = 0.97) {
   const reducedMotion = useReducedMotionPreference(Platform.OS === "web");
   const scale = useRef(new Animated.Value(1)).current;
-  const perceptibleScale =
-    Platform.OS === "web" ? Math.min(pressedScale, 0.97) : pressedScale;
+  const perceptibleScale = Math.max(0.96, Math.min(pressedScale, 0.995));
 
   const animateTo = useCallback(
     (value: number) => {
@@ -99,8 +98,8 @@ export function usePressFeedback(pressedScale = 0.97) {
 
       Animated.spring(scale, {
         toValue: 1,
-        speed: 24,
-        bounciness: 4,
+          speed: 28,
+          bounciness: 2,
         useNativeDriver: Platform.OS !== "web",
         isInteraction: false,
       }).start();
@@ -124,7 +123,7 @@ export function usePressFeedback(pressedScale = 0.97) {
 
 export function useStateChangeFeedback(
   value: unknown,
-  peakScale = 1.1,
+  peakScale = 1.035,
   enabled = Platform.OS === "web",
 ) {
   const reducedMotion = useReducedMotionPreference(enabled);
@@ -143,19 +142,19 @@ export function useStateChangeFeedback(
     previousValue.current = value;
     scale.stopAnimation();
 
-    scale.setValue(0.82);
+    scale.setValue(0.94);
     Animated.sequence([
       Animated.timing(scale, {
         toValue: peakScale,
-        duration: 105,
+        duration: 90,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: Platform.OS !== "web",
         isInteraction: false,
       }),
       Animated.spring(scale, {
         toValue: 1,
-        speed: 24,
-        bounciness: 5,
+        speed: 28,
+        bounciness: 2,
         useNativeDriver: Platform.OS !== "web",
         isInteraction: false,
       }),

@@ -18,6 +18,7 @@ import {
 type NavigationCardProps = {
   title: string;
   description?: string;
+  symbol?: string;
   onPress: () => void;
   favourite?: boolean;
   onToggleFavourite?: () => void;
@@ -40,6 +41,7 @@ const platformDepth = Platform.select<StyleProp<ViewStyle>>({
 export function NavigationCard({
   title,
   description,
+  symbol,
   onPress,
   favourite = false,
   onToggleFavourite,
@@ -48,30 +50,36 @@ export function NavigationCard({
 }: NavigationCardProps) {
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
+  const [favouriteFocused, setFavouriteFocused] = useState(false);
   const pwa = Platform.OS === "web";
   const pressFeedback = usePressFeedback(0.985);
-  const favouriteFeedback = usePressFeedback(0.91);
-  const favouriteChangeFeedback = useStateChangeFeedback(favourite, 1.12);
+  const favouriteFeedback = usePressFeedback(0.96);
+  const favouriteChangeFeedback = useStateChangeFeedback(favourite, 1.025);
   const favouriteButton = onToggleFavourite ? (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={favourite ? "Remove favourite" : "Add favourite"}
       accessibilityState={{ selected: favourite }}
       onPress={onToggleFavourite}
-      onPressIn={pwa ? favouriteFeedback.onPressIn : undefined}
-      onPressOut={pwa ? favouriteFeedback.onPressOut : undefined}
+      onPressIn={favouriteFeedback.onPressIn}
+      onPressOut={favouriteFeedback.onPressOut}
+      onFocus={() => setFavouriteFocused(true)}
+      onBlur={() => setFavouriteFocused(false)}
       hitSlop={2}
       style={({ pressed }) => ({
         flex: pwa ? 1 : undefined,
-        width: pwa ? undefined : 54,
-        minHeight: pwa ? 64 : 56,
+        width: pwa ? undefined : 52,
+        minHeight: pwa ? 66 : 58,
         alignItems: "center",
         justifyContent: "center",
+        borderLeftWidth: 1,
+        borderLeftColor: favouriteFocused ? theme.colors.focus : theme.colors.divider,
         backgroundColor: pressed
-          ? "rgba(255,255,255,0.05)"
-          : "transparent",
+          ? theme.colors.pressed
+          : favouriteFocused
+            ? "rgba(174,190,144,0.14)"
+            : "transparent",
         opacity: pressed ? 0.72 : 1,
-        transform: pwa ? undefined : [{ scale: pressed ? 0.96 : 1 }],
       })}
     >
       <Text
@@ -92,42 +100,42 @@ export function NavigationCard({
       testID={testID}
       style={[
         {
-          minHeight: pwa ? (description ? 76 : 64) : description ? 68 : 56,
+          minHeight: pwa ? (description ? 82 : 66) : description ? 72 : 58,
           flexDirection: "row",
           alignItems: "stretch",
           overflow: "hidden",
-          borderRadius: pwa ? theme.radii.card : 16,
+          borderRadius: pwa ? theme.radii.card : 18,
           borderWidth: 1,
-          borderColor: focused
+          borderColor: focused || favouriteFocused
             ? "rgba(174,190,144,0.52)"
             : secondary
               ? "rgba(190,202,165,0.12)"
-              : "rgba(190,202,165,0.18)",
+              : "rgba(190,202,165,0.20)",
           backgroundColor: secondary
             ? "rgba(31,35,28,0.58)"
-            : "rgba(38,43,34,0.78)",
+            : theme.colors.interactive,
         },
         platformDepth,
-        pwa ? pressFeedback.animatedStyle : undefined,
+        pressFeedback.animatedStyle,
       ]}
     >
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={description ? `${title}. ${description}` : title}
         onPress={() => runWebRouteTransition("forward", onPress)}
-        onPressIn={pwa ? pressFeedback.onPressIn : undefined}
-        onPressOut={pwa ? pressFeedback.onPressOut : undefined}
+        onPressIn={pressFeedback.onPressIn}
+        onPressOut={pressFeedback.onPressOut}
         onHoverIn={() => setHovered(true)}
         onHoverOut={() => setHovered(false)}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         style={({ pressed }) => ({
           flex: 1,
-          minHeight: pwa ? 64 : 56,
+          minHeight: pwa ? 66 : 58,
           flexDirection: "row",
           alignItems: "center",
-          gap: 12,
-          paddingLeft: pwa ? 18 : 17,
+          gap: 13,
+          paddingLeft: pwa ? 15 : 14,
           paddingRight: onToggleFavourite ? 8 : 14,
           paddingVertical: description ? 14 : 12,
           backgroundColor: pressed
@@ -136,16 +144,42 @@ export function NavigationCard({
               ? "rgba(255,255,255,0.045)"
               : "transparent",
           opacity: pressed ? 0.88 : 1,
-          transform: pwa ? undefined : [{ scale: pressed ? 0.995 : 1 }],
         })}
       >
-        <View style={{ flex: 1, alignItems: "flex-start", gap: 4 }}>
+        {symbol ? (
+          <View
+            accessibilityElementsHidden
+            style={{
+              width: 40,
+              height: 40,
+              flexShrink: 0,
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: 13,
+              borderWidth: 1,
+              borderColor: "rgba(174,190,144,0.22)",
+              backgroundColor: theme.colors.accentSurface,
+            }}
+          >
+            <Text
+              style={{
+                color: theme.colors.accentMuted,
+                fontSize: 19,
+                lineHeight: 22,
+                fontWeight: "800",
+              }}
+            >
+              {symbol}
+            </Text>
+          </View>
+        ) : null}
+        <View style={{ flex: 1, minWidth: 0, alignItems: "flex-start", gap: 4 }}>
           <Text
             style={{
               color: theme.colors.text,
               fontSize: pwa ? 18 : 17,
               lineHeight: pwa ? 22 : 21,
-              fontWeight: "800",
+              fontWeight: "700",
               letterSpacing: -0.15,
             }}
           >
@@ -168,7 +202,7 @@ export function NavigationCard({
           accessibilityElementsHidden
           style={{
             color: theme.colors.accentMuted,
-            fontSize: 23,
+            fontSize: 22,
             lineHeight: 24,
             fontWeight: "600",
           }}
@@ -180,7 +214,7 @@ export function NavigationCard({
       {onToggleFavourite ? (
         pwa ? (
           <Animated.View
-            style={[{ width: 58 }, favouriteChangeFeedback]}
+            style={[{ width: 56 }, favouriteChangeFeedback]}
           >
             <Animated.View
               style={[{ flex: 1 }, favouriteFeedback.animatedStyle]}

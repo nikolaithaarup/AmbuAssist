@@ -49,7 +49,10 @@ function CategoryChip({
 
   return (
     <Animated.View
-      style={[{ maxWidth: "100%" }, pwa ? selectionFeedback : undefined]}
+      style={[
+        { maxWidth: "100%", minWidth: 0, flexShrink: 1 },
+        pwa ? selectionFeedback : undefined,
+      ]}
     >
       <Animated.View style={pwa ? pressFeedback.animatedStyle : undefined}>
         <Pressable
@@ -136,13 +139,13 @@ export function DestinationCategoryPicker({
   };
 
   return (
-    <View style={{ gap: 9 }}>
+    <View style={{ width: "100%", minWidth: 0, gap: 9 }}>
       <Label>{lang === "da" ? "Visitationstype" : "Visitation type"}</Label>
 
       {!selectedIsFavourite ? (
         <View style={{ gap: 6 }}>
           <Subtle>{lang === "da" ? "Valgt visitation" : "Selected visitation"}</Subtle>
-          <View style={{ alignItems: "flex-start" }}>
+          <View style={{ minWidth: 0, alignItems: "flex-start" }}>
             <CategoryChip
               category={selected}
               label={getLabel(selected)}
@@ -163,6 +166,7 @@ export function DestinationCategoryPicker({
               flexDirection: "row",
               flexWrap: "wrap",
               alignItems: "flex-start",
+              minWidth: 0,
               gap: 8,
             }}
           >
@@ -195,6 +199,8 @@ export function DestinationCategoryPicker({
         onPress={onOpen}
         style={({ pressed }) => ({
           minHeight: Platform.OS === "web" ? theme.controlHeight : 48,
+          width: "100%",
+          minWidth: 0,
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "space-between",
@@ -207,7 +213,14 @@ export function DestinationCategoryPicker({
           opacity: pressed ? 0.78 : 1,
         })}
       >
-        <Text style={{ color: theme.colors.accentMuted, fontWeight: "800" }}>
+        <Text
+          style={{
+            flex: 1,
+            minWidth: 0,
+            color: theme.colors.accentMuted,
+            fontWeight: "800",
+          }}
+        >
           {lang === "da" ? "Alle visitationer" : "All visitations"}
         </Text>
         <Text style={{ color: theme.colors.accentMuted, fontSize: 20 }}>›</Text>

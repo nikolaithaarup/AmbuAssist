@@ -55,6 +55,7 @@ import {
 import { theme } from "../../src/ui/theme";
 import { openPhoneNumber } from "../../src/services/phoneAction";
 import { usePressFeedback } from "../../src/ui/motion";
+import { useResponsiveLayout } from "../../src/ui/responsive";
 
 import type {
   Area,
@@ -281,7 +282,7 @@ function SimpleDropdown<T extends string>({
   };
 
   return (
-    <View style={{ gap: 8 }}>
+    <View style={{ width: "100%", minWidth: 0, gap: 8 }}>
       {!!label && <Label>{label}</Label>}
 
       <Pressable
@@ -292,6 +293,8 @@ function SimpleDropdown<T extends string>({
         accessibilityState={{ expanded: open }}
         onPress={onToggle}
         style={{
+          width: "100%",
+          minWidth: 0,
           borderRadius: 12,
           borderWidth: 1,
           borderColor: theme.colors.cardBorder,
@@ -308,7 +311,7 @@ function SimpleDropdown<T extends string>({
             gap: 12,
           }}
         >
-          <View style={{ flex: 1 }}>
+          <View style={{ flex: 1, minWidth: 0 }}>
             {typeof displayValue === "string" ? (
               <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
                 {displayValue}
@@ -389,7 +392,12 @@ function DestinationPrimaryButton({
   const pressFeedback = usePressFeedback(0.985);
 
   return (
-    <Animated.View style={pwa ? pressFeedback.animatedStyle : undefined}>
+    <Animated.View
+      style={[
+        { width: "100%", minWidth: 0 },
+        pwa ? pressFeedback.animatedStyle : undefined,
+      ]}
+    >
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={label}
@@ -427,7 +435,12 @@ function DestinationPrimaryButton({
 export default function DestinationTool() {
   const { t } = useT();
   const { settings, setSettings } = useSettings();
+  const { isCompact, isExpanded } = useResponsiveLayout();
   const lang = settings.language === "da" ? "da" : "en";
+  const stackedWebLayout = Platform.OS === "web" && !isExpanded;
+  const stackedColumnStyle = stackedWebLayout
+    ? ({ flex: 0, flexBasis: "auto", width: "100%", minWidth: 0 } as const)
+    : undefined;
 
   const [visitationData, setVisitationData] = useState<BackendVisitationData>(
     LOCAL_VISITATION_DATA,
@@ -1858,19 +1871,46 @@ export default function DestinationTool() {
   return (
     <Background>
       <Screen>
-        <View style={{ gap: 5, marginTop: Platform.OS === "web" ? 0 : 12, alignItems: "center" }}>
-          <Title style={{ textAlign: "center" }}>{t("dest_title")}</Title>
-          <Subtle style={{ textAlign: "center" }}>
+        <View
+          style={{
+            width: "100%",
+            minWidth: 0,
+            gap: 5,
+            marginTop: Platform.OS === "web" ? 0 : 12,
+            alignItems: "center",
+          }}
+        >
+          <Title style={{ maxWidth: "100%", textAlign: "center" }}>
+            {t("dest_title")}
+          </Title>
+          <Subtle style={{ maxWidth: 620, textAlign: "center" }}>
             {lang === "da"
               ? "Vælg kategori, og find patientens placering med GPS eller adresse."
               : "Choose a category, then locate the patient by GPS or address."}
           </Subtle>
         </View>
 
-        <ScrollView contentContainerStyle={{ gap: Platform.OS === "web" ? 14 : 18, paddingBottom: 28 }}>
-          <ResponsiveColumns>
-            <ResponsiveColumn>
-          <View style={{ gap: 14, paddingTop: Platform.OS === "web" ? 0 : 4 }}>
+        <ScrollView
+          style={{ flex: 1, minWidth: 0 }}
+          contentContainerStyle={{
+            width: "100%",
+            minWidth: 0,
+            gap: Platform.OS === "web" ? (isCompact ? 16 : 18) : 18,
+            paddingBottom: 28,
+          }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <ResponsiveColumns style={stackedWebLayout ? { gap: 20 } : undefined}>
+            <ResponsiveColumn style={stackedColumnStyle}>
+          <View
+            testID="destination-primary-column"
+            style={{
+              width: "100%",
+              minWidth: 0,
+              gap: isCompact ? 12 : 14,
+              paddingTop: Platform.OS === "web" ? 0 : 4,
+            }}
+          >
             <DestinationCategoryPicker
               lang={lang}
               selected={regCat}
@@ -2339,9 +2379,16 @@ export default function DestinationTool() {
           )}
 
             </ResponsiveColumn>
-            <ResponsiveColumn>
+            <ResponsiveColumn style={stackedColumnStyle}>
+          <View
+            testID="destination-secondary-column"
+            style={{ width: "100%", minWidth: 0, gap: 12 }}
+          >
           {resolvedHospital && (
-            <View testID="destination-result">
+            <View
+              testID="destination-result"
+              style={{ width: "100%", minWidth: 0 }}
+            >
               <Card
                 style={{
                   backgroundColor: theme.colors.cardElevated,
@@ -2589,6 +2636,7 @@ export default function DestinationTool() {
               </Text>
             </CollapsibleCard>
           )}
+          </View>
             </ResponsiveColumn>
           </ResponsiveColumns>
 

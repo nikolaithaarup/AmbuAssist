@@ -54,6 +54,7 @@ import {
 import { theme } from "../../src/ui/theme";
 import { openPhoneNumber } from "../../src/services/phoneAction";
 import { usePressFeedback } from "../../src/ui/motion";
+import { MotionPresence } from "../../src/ui/MotionPresence";
 import { useResponsiveLayout } from "../../src/ui/responsive";
 import {
   ToolActionButton,
@@ -241,6 +242,7 @@ function SimpleDropdown<T extends string>({
   emptyText = "No matches found.",
   maxHeight = 220,
 }: SimpleDropdownProps<T>) {
+  const pressFeedback = usePressFeedback();
   const displayValue =
     value && renderValue ? renderValue(value) : value || placeholder;
 
@@ -312,49 +314,53 @@ function SimpleDropdown<T extends string>({
     <View style={{ width: "100%", minWidth: 0, gap: 8 }}>
       {!!label && <Label>{label}</Label>}
 
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={
-          typeof displayValue === "string" ? displayValue : label
-        }
-        accessibilityState={{ expanded: open }}
-        onPress={onToggle}
-        style={{
-          width: "100%",
-          minWidth: 0,
-          borderRadius: 12,
-          borderWidth: 1,
-          borderColor: theme.colors.cardBorder,
-          paddingHorizontal: 12,
-          paddingVertical: 14,
-          backgroundColor: "rgba(0,0,0,0.10)",
-        }}
-      >
-        <View
+      <Animated.View style={pressFeedback.animatedStyle}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={
+            typeof displayValue === "string" ? displayValue : label
+          }
+          accessibilityState={{ expanded: open }}
+          onPress={onToggle}
+          onPressIn={pressFeedback.onPressIn}
+          onPressOut={pressFeedback.onPressOut}
           style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 12,
+            width: "100%",
+            minWidth: 0,
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: theme.colors.cardBorder,
+            paddingHorizontal: 12,
+            paddingVertical: 14,
+            backgroundColor: "rgba(0,0,0,0.10)",
           }}
         >
-          <View style={{ flex: 1, minWidth: 0 }}>
-            {typeof displayValue === "string" ? (
-              <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
-                {displayValue}
-              </Text>
-            ) : (
-              displayValue
-            )}
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12,
+            }}
+          >
+            <View style={{ flex: 1, minWidth: 0 }}>
+              {typeof displayValue === "string" ? (
+                <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
+                  {displayValue}
+                </Text>
+              ) : (
+                displayValue
+              )}
+            </View>
+
+            <Text style={{ color: theme.colors.mutedText }}>
+              {open ? "⌃" : "⌄"}
+            </Text>
           </View>
+        </Pressable>
+      </Animated.View>
 
-          <Text style={{ color: theme.colors.mutedText }}>
-            {open ? "⌃" : "⌄"}
-          </Text>
-        </View>
-      </Pressable>
-
-      {open && (
+      <MotionPresence visible={open} testID="destination-suggestions-transition">
         <View
           style={{
             borderRadius: 12,
@@ -401,7 +407,7 @@ function SimpleDropdown<T extends string>({
             </ScrollView>
           )}
         </View>
-      )}
+      </MotionPresence>
     </View>
   );
 }
@@ -416,7 +422,7 @@ function DestinationPrimaryButton({
   disabled?: boolean;
 }) {
   const pwa = Platform.OS === "web";
-  const pressFeedback = usePressFeedback(0.98);
+  const pressFeedback = usePressFeedback();
 
   return (
     <Animated.View
@@ -1996,7 +2002,11 @@ export default function DestinationTool() {
               />
             </View>
 
-            {detectingLocation && (
+            <MotionPresence
+              visible={detectingLocation}
+              enterDelayMs={120}
+              testID="destination-loading-transition"
+            >
               <View
                 style={{
                   minHeight: 64,
@@ -2009,7 +2019,7 @@ export default function DestinationTool() {
                   backgroundColor: theme.colors.accentSurface,
                 }}
               >
-                <ActivityIndicator />
+                <ActivityIndicator color={theme.colors.accentMuted} />
                 <Text
                   accessibilityLiveRegion="polite"
                   style={{ color: theme.colors.mutedText }}
@@ -2027,7 +2037,7 @@ export default function DestinationTool() {
                         : "Finding your location…"}
                 </Text>
               </View>
-            )}
+            </MotionPresence>
 
             {!detectingLocation &&
               (detectedArea || pendingAddressCandidates.length > 0) &&
@@ -2190,7 +2200,10 @@ export default function DestinationTool() {
                 </View>
               )}
 
-            {!!locationMessage && !detectingLocation && (
+            <MotionPresence
+              visible={!!locationMessage && !detectingLocation}
+              testID="destination-feedback-transition"
+            >
               <View
                 style={{
                   gap: 4,
@@ -2215,7 +2228,7 @@ export default function DestinationTool() {
                   {locationMessage}
                 </Text>
               </View>
-            )}
+            </MotionPresence>
 
             {!detectingLocation &&
               [
@@ -2281,7 +2294,10 @@ export default function DestinationTool() {
             </Pressable>
           </ToolSurface>
 
-          {searchVisible && (
+          <MotionPresence
+            visible={searchVisible}
+            testID="destination-manual-search-transition"
+          >
             <ToolSurface style={{ gap: 14 }}>
               <ToolSectionLabel>
                 {lang === "da" ? "Manuel adresse" : "Manual address"}
@@ -2431,7 +2447,7 @@ export default function DestinationTool() {
                   </View>
                 )}
             </ToolSurface>
-          )}
+          </MotionPresence>
 
             </ResponsiveColumn>
             <ResponsiveColumn style={stackedColumnStyle}>
@@ -2439,8 +2455,12 @@ export default function DestinationTool() {
             testID="destination-secondary-column"
             style={{ width: "100%", minWidth: 0, gap: 12 }}
           >
-          {resolvedHospital && (
-            <ToolSurface
+          <MotionPresence
+            visible={!!resolvedHospital}
+            testID="destination-result-transition"
+          >
+            {resolvedHospital ? (
+              <ToolSurface
               tone="accent"
               testID="destination-result"
               style={{ width: "100%", minWidth: 0, gap: 15 }}
@@ -2499,7 +2519,11 @@ export default function DestinationTool() {
                 </View>
               )}
 
-              {loadingHospitalPhones ? (
+              <MotionPresence
+                visible={loadingHospitalPhones}
+                enterDelayMs={100}
+                testID="destination-phone-loading-transition"
+              >
                 <View
                   style={{
                     minHeight: 44,
@@ -2508,7 +2532,10 @@ export default function DestinationTool() {
                     gap: 9,
                   }}
                 >
-                  <ActivityIndicator size="small" />
+                  <ActivityIndicator
+                    size="small"
+                    color={theme.colors.accentMuted}
+                  />
                   <Text
                     accessibilityLiveRegion="polite"
                     style={{ color: theme.colors.mutedText }}
@@ -2518,44 +2545,55 @@ export default function DestinationTool() {
                       : "Loading phone number…"}
                   </Text>
                 </View>
-              ) : selectedHospitalPhone ? (
-                <View
-                  style={{
-                    gap: 10,
-                    paddingTop: 12,
-                    borderTopWidth: 1,
-                    borderTopColor: theme.colors.divider,
-                  }}
-                >
-                  <ToolSectionLabel>
-                    {lang === "da" ? "Telefon" : "Telephone"}
-                  </ToolSectionLabel>
-                  <Text
-                    selectable
+              </MotionPresence>
+
+              <MotionPresence
+                visible={!loadingHospitalPhones && !!selectedHospitalPhone}
+                testID="destination-phone-result-transition"
+              >
+                {selectedHospitalPhone ? (
+                  <View
                     style={{
-                      color: theme.colors.text,
-                      fontWeight: "800",
-                      fontSize: 24,
-                      lineHeight: 30,
+                      gap: 10,
+                      paddingTop: 12,
+                      borderTopWidth: 1,
+                      borderTopColor: theme.colors.divider,
                     }}
                   >
-                    {selectedHospitalPhone.phone}
-                  </Text>
-                  <ToolActionButton
-                    tone="call"
-                    label={lang === "da" ? "Ring op" : "Call"}
-                    onPress={() =>
-                      callHospitalNumber(selectedHospitalPhone.phone)
-                    }
-                  />
-                </View>
-              ) : (
+                    <ToolSectionLabel>
+                      {lang === "da" ? "Telefon" : "Telephone"}
+                    </ToolSectionLabel>
+                    <Text
+                      selectable
+                      style={{
+                        color: theme.colors.text,
+                        fontWeight: "800",
+                        fontSize: 24,
+                        lineHeight: 30,
+                      }}
+                    >
+                      {selectedHospitalPhone.phone}
+                    </Text>
+                    <ToolActionButton
+                      tone="call"
+                      label={lang === "da" ? "Ring op" : "Call"}
+                      onPress={() =>
+                        callHospitalNumber(selectedHospitalPhone.phone)
+                      }
+                    />
+                  </View>
+                ) : null}
+              </MotionPresence>
+
+              <MotionPresence
+                visible={!loadingHospitalPhones && !selectedHospitalPhone}
+              >
                 <Text style={{ color: theme.colors.mutedText }}>
                   {lang === "da"
                     ? "Intet telefonnummer fundet endnu."
                     : "No phone number found yet."}
                 </Text>
-              )}
+              </MotionPresence>
 
               {!loadingHospitalPhones && hospitalPhones.length > 1 && (
                 <SimpleDropdown<PhoneOptionValue>
@@ -2634,8 +2672,9 @@ export default function DestinationTool() {
                   </Text>
                 </Pressable>
               )}
-            </ToolSurface>
-          )}
+              </ToolSurface>
+            ) : null}
+          </MotionPresence>
 
           <ToolSurface style={{ gap: 8 }}>
             <ToolSectionLabel>
@@ -2674,7 +2713,10 @@ export default function DestinationTool() {
               </Text>
             </Pressable>
 
-            {manualHospitalSectionVisible && (
+            <MotionPresence
+              visible={manualHospitalSectionVisible}
+              testID="destination-manual-hospital-transition"
+            >
               <View style={{ gap: 10 }}>
                 <SimpleDropdown<HospitalCode>
                   label="Hospital"
@@ -2730,7 +2772,7 @@ export default function DestinationTool() {
                   </Pressable>
                 )}
               </View>
-            )}
+            </MotionPresence>
           </ToolSurface>
 
           {__DEV__ && Object.keys(diagnostics).length > 0 && (

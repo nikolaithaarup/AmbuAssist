@@ -18,7 +18,6 @@ import {
 type NavigationCardProps = {
   title: string;
   description?: string;
-  symbol?: string;
   onPress: () => void;
   favourite?: boolean;
   onToggleFavourite?: () => void;
@@ -41,7 +40,6 @@ const platformDepth = Platform.select<StyleProp<ViewStyle>>({
 export function NavigationCard({
   title,
   description,
-  symbol,
   onPress,
   favourite = false,
   onToggleFavourite,
@@ -146,33 +144,6 @@ export function NavigationCard({
           opacity: pressed ? 0.88 : 1,
         })}
       >
-        {symbol ? (
-          <View
-            accessibilityElementsHidden
-            style={{
-              width: 40,
-              height: 40,
-              flexShrink: 0,
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: 13,
-              borderWidth: 1,
-              borderColor: "rgba(174,190,144,0.22)",
-              backgroundColor: theme.colors.accentSurface,
-            }}
-          >
-            <Text
-              style={{
-                color: theme.colors.accentMuted,
-                fontSize: 19,
-                lineHeight: 22,
-                fontWeight: "800",
-              }}
-            >
-              {symbol}
-            </Text>
-          </View>
-        ) : null}
         <View style={{ flex: 1, minWidth: 0, alignItems: "flex-start", gap: 4 }}>
           <Text
             style={{

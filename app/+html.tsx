@@ -31,6 +31,56 @@ export default function Root({ children }: PropsWithChildren) {
                 min-height: 100vh;
                 min-height: 100dvh;
               }
+
+              ::view-transition-group(ambuassist-route) {
+                animation-duration: 260ms;
+                animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+              }
+
+              ::view-transition-old(ambuassist-route) {
+                animation: ambuassist-route-old-forward 110ms cubic-bezier(0.4, 0, 1, 1) both;
+              }
+
+              ::view-transition-new(ambuassist-route) {
+                animation: ambuassist-route-new-forward 190ms 45ms cubic-bezier(0.22, 1, 0.36, 1) both;
+              }
+
+              html[data-ambu-route-direction="back"]::view-transition-old(ambuassist-route) {
+                animation: ambuassist-route-old-back 110ms cubic-bezier(0.4, 0, 1, 1) both;
+              }
+
+              html[data-ambu-route-direction="back"]::view-transition-new(ambuassist-route) {
+                animation: ambuassist-route-new-back 190ms 45ms cubic-bezier(0.22, 1, 0.36, 1) both;
+              }
+
+              @keyframes ambuassist-route-old-forward {
+                from { opacity: 1; transform: translate3d(0, 0, 0); }
+                to { opacity: 0; transform: translate3d(-4px, 0, 0); }
+              }
+
+              @keyframes ambuassist-route-new-forward {
+                from { opacity: 0; transform: translate3d(6px, 0, 0); }
+                to { opacity: 1; transform: translate3d(0, 0, 0); }
+              }
+
+              @keyframes ambuassist-route-old-back {
+                from { opacity: 1; transform: translate3d(0, 0, 0); }
+                to { opacity: 0; transform: translate3d(4px, 0, 0); }
+              }
+
+              @keyframes ambuassist-route-new-back {
+                from { opacity: 0; transform: translate3d(-6px, 0, 0); }
+                to { opacity: 1; transform: translate3d(0, 0, 0); }
+              }
+
+              @media (prefers-reduced-motion: reduce) {
+                ::view-transition-group(ambuassist-route),
+                ::view-transition-old(ambuassist-route),
+                ::view-transition-new(ambuassist-route) {
+                  animation-duration: 0.001ms !important;
+                  animation-delay: 0ms !important;
+                }
+              }
             `,
           }}
         />

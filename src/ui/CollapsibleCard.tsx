@@ -1,6 +1,14 @@
 // src/ui/CollapsibleCard.tsx
 import { PropsWithChildren, useState } from "react";
-import { Animated, Platform, Pressable, Text, View } from "react-native";
+import {
+  Animated,
+  LayoutAnimation,
+  Platform,
+  Pressable,
+  Text,
+  UIManager,
+  View,
+} from "react-native";
 import { Card } from "./Ui";
 import { theme } from "./theme";
 import { usePressFeedback, useReducedMotionPreference } from "./motion";
@@ -11,6 +19,13 @@ type Props = PropsWithChildren<{
   defaultOpen?: boolean;
 }>;
 
+if (
+  Platform.OS === "android" &&
+  typeof UIManager.setLayoutAnimationEnabledExperimental === "function"
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
 export function CollapsibleCard({
   title,
   subtitle,
@@ -20,15 +35,30 @@ export function CollapsibleCard({
   const [open, setOpen] = useState(defaultOpen);
   const [focused, setFocused] = useState(false);
   const pwa = Platform.OS === "web";
-  const reducedMotion = useReducedMotionPreference(pwa);
-  const pressFeedback = usePressFeedback(0.985);
+  const reducedMotion = useReducedMotionPreference(true);
+  const pressFeedback = usePressFeedback();
 
   const toggleOpen = () => {
+    if (!pwa && !reducedMotion) {
+      LayoutAnimation.configureNext({
+        duration: 220,
+        update: { type: LayoutAnimation.Types.easeInEaseOut },
+        create: {
+          type: LayoutAnimation.Types.easeOut,
+          property: LayoutAnimation.Properties.opacity,
+        },
+        delete: {
+          type: LayoutAnimation.Types.easeIn,
+          property: LayoutAnimation.Properties.opacity,
+        },
+      });
+    }
     setOpen((current) => !current);
   };
 
   const trigger = (
     <Pressable
+      testID="collapsible-trigger"
       accessibilityRole="button"
       accessibilityState={{ expanded: open }}
       onPress={toggleOpen}
@@ -116,13 +146,14 @@ export function CollapsibleCard({
 
       {pwa ? (
         <View
+          testID="collapsible-content"
           accessibilityElementsHidden={!open}
           importantForAccessibility={open ? "auto" : "no-hide-descendants"}
-          pointerEvents={open ? "auto" : "none"}
           style={
             {
               display: "grid",
               gridTemplateRows: open ? "1fr" : "0fr",
+              pointerEvents: open ? "auto" : "none",
               transition: reducedMotion
                 ? "none"
                 : "grid-template-rows 240ms cubic-bezier(0.22, 1, 0.36, 1)",
@@ -149,7 +180,9 @@ export function CollapsibleCard({
           </View>
         </View>
       ) : open ? (
-        <View style={{ marginTop: 10 }}>{children}</View>
+        <View testID="collapsible-content" style={{ marginTop: 10 }}>
+          {children}
+        </View>
       ) : null}
     </Card>
   );

@@ -47,7 +47,11 @@ function AppStack() {
       <Animated.View
         testID="web-route-transition"
         style={[
-          { flex: 1, width: "100%" },
+          {
+            flex: 1,
+            width: "100%",
+            viewTransitionName: "ambuassist-route",
+          } as any,
           routeTransition,
         ]}
       >

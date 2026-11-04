@@ -180,7 +180,6 @@ export default function Home() {
     <NavigationCard
       key={`${titleOnly ? "favourite" : "tool"}-${tool.path}`}
       title={t(tool.titleKey)}
-      symbol={tool.symbol}
       description={
         !compact && !titleOnly && tool.descKey ? t(tool.descKey) : undefined
       }
@@ -313,7 +312,6 @@ export default function Home() {
       <NavigationCard
         testID="home-about-support"
         title={t(ABOUT_SUPPORT_TOOL.titleKey)}
-        symbol={ABOUT_SUPPORT_TOOL.symbol}
         description={pwa || compact ? undefined : t(ABOUT_SUPPORT_TOOL.descKey)}
         secondary
         onPress={() => openTool(ABOUT_SUPPORT_TOOL)}

@@ -1,7 +1,7 @@
 import { Stack, usePathname, useRouter } from "expo-router";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useRef } from "react";
-import { Platform, Pressable, StatusBar, Text, View } from "react-native";
+import { Animated, Platform, Pressable, StatusBar, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useT } from "../../src/i18n/useT";
 import { FAVOURITABLE_TOOLS } from "../../src/features/tools/catalog";
@@ -10,7 +10,7 @@ import { Background } from "../../src/ui/Background";
 import { hapticFavourite } from "../../src/ui/haptics";
 import { theme } from "../../src/ui/theme";
 import { recordToolOpen, usageToolForPath } from "../../src/analytics/usage";
-import { runWebRouteTransition } from "../../src/ui/motion";
+import { runWebRouteTransition, usePressFeedback } from "../../src/ui/motion";
 import {
   EXPANDED_TOOL_RAIL_WIDTH,
   useResponsiveLayout,
@@ -81,6 +81,8 @@ export default function ToolsLayout() {
   const backNavigationGate = useRef<BackNavigationGate>({
     pendingFromPath: null,
   });
+  const backFeedback = usePressFeedback();
+  const favouriteFeedback = usePressFeedback();
 
   useEffect(() => {
     releaseBackNavigationOnRouteCommit(backNavigationGate.current, pathname);
@@ -97,13 +99,16 @@ export default function ToolsLayout() {
   };
 
   const favouriteControl = showBack && canFavourite ? (
-    <Pressable
+    <Animated.View style={favouriteFeedback.animatedStyle}>
+      <Pressable
       accessibilityRole="button"
       accessibilityLabel={favourite ? "Remove favourite" : "Add favourite"}
       onPress={() => {
         hapticFavourite();
         toggleFavourite(pathname);
       }}
+      onPressIn={favouriteFeedback.onPressIn}
+      onPressOut={favouriteFeedback.onPressOut}
       hitSlop={8}
       style={({ pressed }) => ({
         width: 48,
@@ -111,7 +116,6 @@ export default function ToolsLayout() {
         alignItems: "center",
         justifyContent: "center",
         opacity: pressed ? 0.65 : 1,
-        transform: [{ scale: pressed ? 0.97 : 1 }],
       })}
     >
       <Text
@@ -122,7 +126,8 @@ export default function ToolsLayout() {
       >
         {favourite ? "★" : "☆"}
       </Text>
-    </Pressable>
+      </Pressable>
+    </Animated.View>
   ) : null;
 
   useEffect(() => {
@@ -176,10 +181,13 @@ export default function ToolsLayout() {
             {title}
           </Text>
           {showBack ? (
-            <Pressable
+            <Animated.View style={backFeedback.animatedStyle}>
+              <Pressable
               accessibilityRole="button"
               accessibilityLabel="Back"
               onPress={handleBack}
+              onPressIn={backFeedback.onPressIn}
+              onPressOut={backFeedback.onPressOut}
               style={({ pressed }) => ({
                 minHeight: 48,
                 justifyContent: "center",
@@ -202,7 +210,8 @@ export default function ToolsLayout() {
               >
                 ‹ {t("back")}
               </Text>
-            </Pressable>
+              </Pressable>
+            </Animated.View>
           ) : null}
           <View style={{ flex: 1 }} />
           {favouriteControl}
@@ -227,15 +236,24 @@ export default function ToolsLayout() {
           }}
         >
         {showBack ? (
-          <Pressable
+          <Animated.View
+            style={[
+              {
+                position: "absolute",
+                left: 8,
+                bottom: 4,
+              },
+              backFeedback.animatedStyle,
+            ]}
+          >
+            <Pressable
             accessibilityRole="button"
             accessibilityLabel="Back"
             onPress={handleBack}
+            onPressIn={backFeedback.onPressIn}
+            onPressOut={backFeedback.onPressOut}
             hitSlop={10}
             style={({ pressed }) => ({
-              position: "absolute",
-              left: 8,
-              bottom: 4,
               minHeight: 48,
               justifyContent: "center",
               paddingHorizontal: 12,
@@ -251,7 +269,8 @@ export default function ToolsLayout() {
             >
               ‹ {t("back")}
             </Text>
-          </Pressable>
+            </Pressable>
+          </Animated.View>
         ) : null}
 
         <Text

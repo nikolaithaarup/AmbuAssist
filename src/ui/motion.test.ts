@@ -1,17 +1,26 @@
 import {
   resolveWebRouteDirection,
   runWebRouteTransition,
+  PRESS_MOTION,
   shouldAnimateWebRoute,
   WEB_ROUTE_MOTION,
 } from "./motion";
 
 describe("Synapse web route motion", () => {
   test("uses a perceptible, clinically quick transition", () => {
-    expect(WEB_ROUTE_MOTION.distance).toBeGreaterThanOrEqual(20);
-    expect(WEB_ROUTE_MOTION.distance).toBeLessThanOrEqual(35);
+    expect(WEB_ROUTE_MOTION.distance).toBeGreaterThanOrEqual(4);
+    expect(WEB_ROUTE_MOTION.distance).toBeLessThanOrEqual(8);
     expect(WEB_ROUTE_MOTION.duration).toBeGreaterThanOrEqual(180);
-    expect(WEB_ROUTE_MOTION.duration).toBeLessThanOrEqual(260);
-    expect(WEB_ROUTE_MOTION.initialOpacity).toBeLessThanOrEqual(0.92);
+    expect(WEB_ROUTE_MOTION.totalDuration).toBeLessThanOrEqual(300);
+    expect(WEB_ROUTE_MOTION.initialOpacity).toBeLessThanOrEqual(0.1);
+  });
+
+  test("uses visible but restrained tactile press feedback", () => {
+    expect(PRESS_MOTION.minimumScale).toBeGreaterThanOrEqual(0.96);
+    expect(PRESS_MOTION.maximumScale).toBeLessThanOrEqual(0.97);
+    expect(PRESS_MOTION.defaultScale).toBeGreaterThanOrEqual(0.96);
+    expect(PRESS_MOTION.defaultScale).toBeLessThanOrEqual(0.97);
+    expect(PRESS_MOTION.pressDuration).toBeLessThanOrEqual(70);
   });
 
   test("disables route motion when reduced motion is enabled", () => {

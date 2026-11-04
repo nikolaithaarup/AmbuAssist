@@ -120,7 +120,8 @@ export function DestinationCategoryPicker({
   onToggleFavourite,
 }: Props) {
   const pwa = Platform.OS === "web";
-  const reducedMotion = useReducedMotionPreference(pwa);
+  const reducedMotion = useReducedMotionPreference(true);
+  const openFeedback = usePressFeedback();
   const [query, setQuery] = useState("");
   const selectedIsFavourite = favourites.includes(selected);
   const filteredOptions = useMemo(() => {
@@ -189,42 +190,46 @@ export function DestinationCategoryPicker({
         </Subtle>
       )}
 
-      <Pressable
-        testID="destination-all-categories-toggle"
-        accessibilityRole="button"
-        accessibilityLabel={
-          lang === "da" ? "Alle visitationer" : "All visitations"
-        }
-        accessibilityState={{ expanded: open }}
-        onPress={onOpen}
-        style={({ pressed }) => ({
-          minHeight: Platform.OS === "web" ? theme.controlHeight : 48,
-          width: "100%",
-          minWidth: 0,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 12,
-          paddingHorizontal: 13,
-          borderRadius: 14,
-          backgroundColor: pressed
-            ? "rgba(255,255,255,0.07)"
-            : "rgba(255,255,255,0.035)",
-          opacity: pressed ? 0.78 : 1,
-        })}
-      >
-        <Text
-          style={{
-            flex: 1,
+      <Animated.View style={openFeedback.animatedStyle}>
+        <Pressable
+          testID="destination-all-categories-toggle"
+          accessibilityRole="button"
+          accessibilityLabel={
+            lang === "da" ? "Alle visitationer" : "All visitations"
+          }
+          accessibilityState={{ expanded: open }}
+          onPress={onOpen}
+          onPressIn={openFeedback.onPressIn}
+          onPressOut={openFeedback.onPressOut}
+          style={({ pressed }) => ({
+            minHeight: Platform.OS === "web" ? theme.controlHeight : 48,
+            width: "100%",
             minWidth: 0,
-            color: theme.colors.accentMuted,
-            fontWeight: "800",
-          }}
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+            paddingHorizontal: 13,
+            borderRadius: 14,
+            backgroundColor: pressed
+              ? "rgba(255,255,255,0.07)"
+              : "rgba(255,255,255,0.035)",
+            opacity: pressed ? 0.78 : 1,
+          })}
         >
-          {lang === "da" ? "Alle visitationer" : "All visitations"}
-        </Text>
-        <Text style={{ color: theme.colors.accentMuted, fontSize: 20 }}>›</Text>
-      </Pressable>
+          <Text
+            style={{
+              flex: 1,
+              minWidth: 0,
+              color: theme.colors.accentMuted,
+              fontWeight: "800",
+            }}
+          >
+            {lang === "da" ? "Alle visitationer" : "All visitations"}
+          </Text>
+          <Text style={{ color: theme.colors.accentMuted, fontSize: 20 }}>›</Text>
+        </Pressable>
+      </Animated.View>
 
       <Modal
         testID="destination-category-modal"

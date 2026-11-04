@@ -4,24 +4,22 @@ export type ToolDefinition = {
   path: Extract<Href, string>;
   titleKey: any;
   descKey?: any;
-  symbol?: string;
 };
 
 export const HOME_TOOLS: ToolDefinition[] = [
-  { path: "/tools/assessment-tools/cardiac-resus" as Extract<Href, string>, titleKey: "tool_cardiacResus_title", descKey: "tool_cardiacResus_desc", symbol: "✚" },
-  { path: "/tools/destination", titleKey: "tool_dest_title", descKey: "tool_dest_desc", symbol: "➜" },
-  { path: "/tools/weight-joule-dose", titleKey: "tool_weightDose_title", descKey: "tool_weightDose_desc", symbol: "⚡" },
-  { path: "/tools/trombolysis", titleKey: "tool_trombolysis_title", descKey: "tool_trombolysis_desc", symbol: "◷" },
-  { path: "/tools/support-numbers", titleKey: "tool_supportNumbers_title", descKey: "tool_supportNumbers_desc", symbol: "☎" },
-  { path: "/tools/exams", titleKey: "tool_exams_title", descKey: "tool_exams_desc", symbol: "✓" },
-  { path: "/tools/assessment-tools", titleKey: "tool_assessment_title", descKey: "tool_assessment_desc", symbol: "◎" },
+  { path: "/tools/assessment-tools/cardiac-resus" as Extract<Href, string>, titleKey: "tool_cardiacResus_title", descKey: "tool_cardiacResus_desc" },
+  { path: "/tools/destination", titleKey: "tool_dest_title", descKey: "tool_dest_desc" },
+  { path: "/tools/weight-joule-dose", titleKey: "tool_weightDose_title", descKey: "tool_weightDose_desc" },
+  { path: "/tools/trombolysis", titleKey: "tool_trombolysis_title", descKey: "tool_trombolysis_desc" },
+  { path: "/tools/support-numbers", titleKey: "tool_supportNumbers_title", descKey: "tool_supportNumbers_desc" },
+  { path: "/tools/exams", titleKey: "tool_exams_title", descKey: "tool_exams_desc" },
+  { path: "/tools/assessment-tools", titleKey: "tool_assessment_title", descKey: "tool_assessment_desc" },
 ];
 
 export const ABOUT_SUPPORT_TOOL: ToolDefinition = {
   path: "/tools/about-support",
   titleKey: "tool_about_support_title",
   descKey: "tool_about_support_desc",
-  symbol: "i",
 };
 
 export const FAVOURITABLE_TOOLS: ToolDefinition[] = [

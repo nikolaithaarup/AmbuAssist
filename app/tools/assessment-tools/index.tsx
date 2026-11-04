@@ -100,8 +100,9 @@ export default function AssessmentToolsPage() {
                 <View
                   key={tool.path}
                   style={{
-                    flexBasis: isExpanded ? "48%" : "100%",
+                    flexBasis: isExpanded ? "48%" : "auto",
                     flexGrow: isExpanded ? 1 : 0,
+                    width: isExpanded ? undefined : "100%",
                     minWidth: 0,
                   }}
                 >

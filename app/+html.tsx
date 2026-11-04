@@ -37,6 +37,12 @@ export default function Root({ children }: PropsWithChildren) {
                 animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
               }
 
+              ::view-transition-group(root),
+              ::view-transition-old(root),
+              ::view-transition-new(root) {
+                animation: none;
+              }
+
               ::view-transition-old(ambuassist-route) {
                 animation: ambuassist-route-old-forward 110ms cubic-bezier(0.4, 0, 1, 1) both;
               }
@@ -46,11 +52,15 @@ export default function Root({ children }: PropsWithChildren) {
               }
 
               html[data-ambu-route-direction="back"]::view-transition-old(ambuassist-route) {
-                animation: ambuassist-route-old-back 110ms cubic-bezier(0.4, 0, 1, 1) both;
+                animation: ambuassist-route-old-back 140ms ease-out both;
+              }
+
+              html[data-ambu-route-direction="back"]::view-transition-group(ambuassist-route) {
+                animation-duration: 140ms;
               }
 
               html[data-ambu-route-direction="back"]::view-transition-new(ambuassist-route) {
-                animation: ambuassist-route-new-back 190ms 45ms cubic-bezier(0.22, 1, 0.36, 1) both;
+                animation: ambuassist-route-new-back 140ms ease-out both;
               }
 
               @keyframes ambuassist-route-old-forward {
@@ -64,13 +74,13 @@ export default function Root({ children }: PropsWithChildren) {
               }
 
               @keyframes ambuassist-route-old-back {
-                from { opacity: 1; transform: translate3d(0, 0, 0); }
-                to { opacity: 0; transform: translate3d(4px, 0, 0); }
+                from { opacity: 1; }
+                to { opacity: 0; }
               }
 
               @keyframes ambuassist-route-new-back {
-                from { opacity: 0; transform: translate3d(-6px, 0, 0); }
-                to { opacity: 1; transform: translate3d(0, 0, 0); }
+                from { opacity: 0; }
+                to { opacity: 1; }
               }
 
               @media (prefers-reduced-motion: reduce) {

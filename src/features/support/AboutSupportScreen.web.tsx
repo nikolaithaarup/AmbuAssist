@@ -20,12 +20,14 @@ import { usePressFeedback, useReducedMotionPreference } from "../../ui/motion";
 import { ToolPageHeader, ToolSurface } from "../../ui/ToolSurface";
 import { Screen, Subtle } from "../../ui/Ui";
 import { theme } from "../../ui/theme";
+import { useAuth } from "../../auth/AuthProvider";
 
 export type AboutSupportSection =
   | "about"
   | "sources"
   | "medical"
   | "contact"
+  | "account"
   | "limitations"
   | "app";
 
@@ -392,14 +394,28 @@ function InstallGuide() {
 
 export function AboutSupportScreen({ initialSection }: { initialSection?: AboutSupportSection }) {
   const { t } = useT();
+  const { state, logout } = useAuth();
   const appVersion = Constants.expoConfig?.version ?? "unknown";
   const initialOpen = initialSection === "limitations" ? "medical" : initialSection;
   const [openSection, setOpenSection] = useState<Exclude<AboutSupportSection, "limitations"> | null>(
     initialOpen ?? null,
   );
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState(false);
 
   const toggleSection = (section: Exclude<AboutSupportSection, "limitations">) => {
     setOpenSection((current) => current === section ? null : section);
+  };
+
+  const signOut = async () => {
+    setLoggingOut(true);
+    setLogoutError(false);
+    try {
+      await logout();
+    } catch {
+      setLogoutError(true);
+      setLoggingOut(false);
+    }
   };
 
   const openEmail = async () => {
@@ -542,6 +558,43 @@ export function AboutSupportScreen({ initialSection }: { initialSection?: AboutS
               <SectionHeading>{t("meddisc_section_emergency_title")}</SectionHeading>
               <Body>{t("meddisc_emergency_body")}</Body>
               <Subtle style={{ textAlign: "center", marginTop: 4 }}>{t("meddisc_footer")}</Subtle>
+            </SupportSection>
+
+            <SupportSection
+              id="account"
+              title={t("account_title")}
+              subtitle={t("account_sub")}
+              open={openSection === "account"}
+              onToggle={() => toggleSection("account")}
+            >
+              <Body>
+                {state.status === "authorized" && state.session.assurance === "offline-cache"
+                  ? t("account_offline")
+                  : t("account_remembered")}
+              </Body>
+              <Pressable
+                testID="about-support-logout"
+                accessibilityRole="button"
+                accessibilityLabel={t("account_logout")}
+                accessibilityState={{ disabled: loggingOut }}
+                disabled={loggingOut}
+                onPress={() => void signOut()}
+                style={({ pressed }) => ({
+                  minHeight: 50,
+                  borderRadius: 14,
+                  borderWidth: 1,
+                  borderColor: theme.colors.cardBorder,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  paddingHorizontal: 14,
+                  opacity: loggingOut ? 0.5 : pressed ? 0.72 : 1,
+                })}
+              >
+                <Text style={{ color: theme.colors.accentMuted, fontWeight: "900" }}>
+                  {loggingOut ? t("account_logging_out") : t("account_logout")}
+                </Text>
+              </Pressable>
+              {logoutError ? <Warning>{t("account_logout_error")}</Warning> : null}
             </SupportSection>
 
             <SupportSection

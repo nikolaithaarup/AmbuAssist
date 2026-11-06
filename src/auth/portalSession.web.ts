@@ -9,6 +9,7 @@ const DEFAULT_SESSION_URL =
   "https://portal.synapsestudio.dk/api/auth/product-session";
 const DEFAULT_LOGIN_URL = "https://portal.synapsestudio.dk/auth/ambuassist";
 const DEFAULT_APP_ORIGIN = "https://ambuassist.synapsestudio.dk";
+const OFFLINE_ACCESS_KEY = "ambuassist:offline-access-v1";
 
 export async function loadAmbuAssistSession(): Promise<SessionLookupResult> {
   try {
@@ -50,6 +51,47 @@ export async function loadAmbuAssistSession(): Promise<SessionLookupResult> {
       message: "Forbindelsen til SynapsePortal kunne ikke oprettes.",
     };
   }
+}
+
+export async function rememberOfflineAccess(): Promise<void> {
+  try {
+    window.localStorage.setItem(OFFLINE_ACCESS_KEY, "1");
+  } catch {
+    // Browser privacy/storage settings may disable local persistence.
+  }
+}
+
+export async function hasOfflineAccess(): Promise<boolean> {
+  try {
+    return window.localStorage.getItem(OFFLINE_ACCESS_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export async function clearOfflineAccess(): Promise<void> {
+  try {
+    window.localStorage.removeItem(OFFLINE_ACCESS_KEY);
+  } catch {
+    // A failed local removal does not preserve any server authorization.
+  }
+}
+
+export async function logoutAmbuAssistDevice(): Promise<void> {
+  const sessionUrl =
+    process.env.EXPO_PUBLIC_PORTAL_SESSION_URL ?? DEFAULT_SESSION_URL;
+  const logoutUrl = new URL(
+    "/api/auth/ambuassist/device/logout",
+    sessionUrl,
+  ).toString();
+  const response = await fetch(logoutUrl, {
+    method: "POST",
+    credentials: "include",
+    cache: "no-store",
+    signal: AbortSignal.timeout(15_000),
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) throw new Error("LOGOUT_FAILED");
 }
 
 export async function saveLegacyBamProfile(): Promise<never> {

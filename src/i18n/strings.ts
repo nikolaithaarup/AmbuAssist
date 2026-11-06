@@ -1459,6 +1459,16 @@ export const en = {
   about_info_use_value: "Reference and support tool",
   about_info_focus: "Primary focus",
   about_info_focus_value: "Prehospital and clinical support content",
+  account_title: "Account",
+  account_sub: "Remembered device and sign-out.",
+  account_remembered:
+    "This device stays signed in through secure renewal until you sign out, an administrator revokes it, or your access is withdrawn.",
+  account_offline:
+    "AmbuAssist is using the last local authorization while offline. Server access will be checked again when a connection is available.",
+  account_logout: "Sign out on this device",
+  account_logging_out: "Signing out…",
+  account_logout_error:
+    "The device could not be signed out. Check the connection and try again.",
 
   about_design_title: "Design philosophy",
   about_design_1: "Fast to open.",
@@ -2998,6 +3008,16 @@ export const da: typeof en = {
   about_info_use_value: "Opslags- og støtteværktøj",
   about_info_focus: "Primært fokus",
   about_info_focus_value: "Præhospitalt og klinisk støtteindhold",
+  account_title: "Konto",
+  account_sub: "Husket enhed og log ud.",
+  account_remembered:
+    "Denne enhed forbliver logget ind via sikker fornyelse, indtil du logger ud, en administrator tilbagekalder den, eller din adgang fjernes.",
+  account_offline:
+    "AmbuAssist bruger den seneste lokale adgangskontrol offline. Serveradgangen kontrolleres igen, når forbindelsen er tilbage.",
+  account_logout: "Log ud på denne enhed",
+  account_logging_out: "Logger ud…",
+  account_logout_error:
+    "Enheden kunne ikke logges ud. Kontrollér forbindelsen, og prøv igen.",
 
   about_design_title: "Designfilosofi",
   about_design_1: "Hurtig at åbne.",

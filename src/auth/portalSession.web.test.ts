@@ -1,4 +1,11 @@
-import { getPortalLoginUrl, loadAmbuAssistSession } from "./portalSession.web";
+import {
+  clearOfflineAccess,
+  getPortalLoginUrl,
+  hasOfflineAccess,
+  loadAmbuAssistSession,
+  logoutAmbuAssistDevice,
+  rememberOfflineAccess,
+} from "./portalSession.web";
 
 const validResponse = {
   user: {
@@ -90,6 +97,48 @@ describe("AmbuAssist Portal client", () => {
     await expect(loadAmbuAssistSession()).resolves.toMatchObject({
       status: "error",
     });
+  });
+
+  test("logs out only through the credentialed current-device endpoint", async () => {
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, status: 204 });
+    await expect(logoutAmbuAssistDevice()).resolves.toBeUndefined();
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://portal.synapsestudio.dk/api/auth/ambuassist/device/logout",
+      {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+        signal: expect.anything(),
+        headers: { Accept: "application/json" },
+      },
+    );
+  });
+
+  test("keeps the offline marker installation-local and removes it on logout/revocation", async () => {
+    const storage = new Map<string, string>();
+    const localStorage = {
+      getItem: jest.fn((key: string) => storage.get(key) ?? null),
+      setItem: jest.fn((key: string, value: string) => storage.set(key, value)),
+      removeItem: jest.fn((key: string) => storage.delete(key)),
+    };
+    const originalWindow = global.window;
+    Object.defineProperty(global, "window", {
+      configurable: true,
+      writable: true,
+      value: { ...originalWindow, localStorage },
+    });
+    try {
+      await rememberOfflineAccess();
+      await expect(hasOfflineAccess()).resolves.toBe(true);
+      await clearOfflineAccess();
+      await expect(hasOfflineAccess()).resolves.toBe(false);
+    } finally {
+      Object.defineProperty(global, "window", {
+        configurable: true,
+        writable: true,
+        value: originalWindow,
+      });
+    }
   });
 });
 

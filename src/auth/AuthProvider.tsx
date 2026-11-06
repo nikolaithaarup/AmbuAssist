@@ -15,14 +15,19 @@ import {
   restoreRequestedUrl,
   loadAmbuAssistSession,
   saveLegacyBamProfile,
+  rememberOfflineAccess,
+  hasOfflineAccess,
+  clearOfflineAccess,
+  logoutAmbuAssistDevice,
 } from "./portalSession";
-import type { AuthState } from "./types";
+import { offlineAmbuAssistSession, type AuthState } from "./types";
 import { recordAppOpen } from "../analytics/usage";
 import { getSessionRefreshDelay } from "./sessionRefresh";
 
 type AuthContextValue = {
   state: AuthState;
   refresh: () => Promise<void>;
+  logout: () => Promise<void>;
   authorizeLegacyNativeProfile: (bamId: string) => Promise<void>;
   portalLoginUrl: (returnTo?: string) => string;
 };
@@ -35,18 +40,41 @@ export function AuthProvider({ children }: PropsWithChildren) {
     state.status === "authorized" &&
     state.session.assurance === "portal-session";
 
-  const wasAuthorized = useRef(false);
+  const stateRef = useRef<AuthState>(state);
   const lookupVersion = useRef(0);
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
   const refresh = useCallback(async () => {
-    captureRequestedUrl(wasAuthorized.current);
-    wasAuthorized.current = false;
+    const previous = stateRef.current;
+    captureRequestedUrl(previous.status === "authorized");
     const version = ++lookupVersion.current;
-    setState({ status: "checking" });
+    if (previous.status !== "authorized") setState({ status: "checking" });
     const result = await loadAmbuAssistSession();
-    if (version === lookupVersion.current) {
-      wasAuthorized.current = result.status === "authorized";
+    if (version !== lookupVersion.current) return;
+    if (result.status === "authorized") {
+      await rememberOfflineAccess();
       setState(result);
+      return;
     }
+    if (result.status === "error") {
+      if (previous.status === "authorized") return;
+      if (await hasOfflineAccess()) {
+        setState({ status: "authorized", session: offlineAmbuAssistSession() });
+        return;
+      }
+      setState(result);
+      return;
+    }
+    await clearOfflineAccess();
+    setState(result);
+  }, []);
+
+  const logout = useCallback(async () => {
+    await logoutAmbuAssistDevice();
+    lookupVersion.current += 1;
+    await clearOfflineAccess();
+    setState({ status: "unauthenticated" });
   }, []);
 
   useEffect(() => {
@@ -102,10 +130,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
     () => ({
       state,
       refresh,
+      logout,
       authorizeLegacyNativeProfile,
       portalLoginUrl: getPortalLoginUrl,
     }),
-    [state, refresh, authorizeLegacyNativeProfile],
+    [state, refresh, logout, authorizeLegacyNativeProfile],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

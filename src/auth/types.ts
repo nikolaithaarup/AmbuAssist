@@ -24,7 +24,7 @@ export type AmbuAssistSession = {
   identity: PortalIdentity;
   entitlements: { [key: string]: ProductEntitlement | undefined };
   expiresAt: string;
-  assurance: "portal-session" | "legacy-native-profile";
+  assurance: "portal-session" | "legacy-native-profile" | "offline-cache";
 };
 
 export type SessionLookupResult =
@@ -39,6 +39,22 @@ export type AuthState =
   | { status: "unauthenticated" }
   | { status: "forbidden"; identity?: PortalIdentity }
   | { status: "error"; message: string };
+
+export function offlineAmbuAssistSession(): AmbuAssistSession {
+  return {
+    identity: {
+      id: "offline-device",
+      email: "",
+      emailVerified: true,
+      displayName: null,
+    },
+    entitlements: {
+      ambuassist: { granted: true, source: "offline-cache" },
+    },
+    expiresAt: "9999-12-31T23:59:59.999Z",
+    assurance: "offline-cache",
+  };
+}
 
 export function hasActiveAmbuAssistEntitlement(
   session: AmbuAssistSession,

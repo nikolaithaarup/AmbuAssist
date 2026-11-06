@@ -9,6 +9,12 @@ jest.mock("../../i18n/useT", () => {
   const { da } = jest.requireActual("../../i18n/strings");
   return { useT: () => ({ lang: "da", t: (key) => da[key] ?? key }) };
 });
+jest.mock("../../auth/AuthProvider", () => ({
+  useAuth: () => ({
+    state: { status: "authorized", session: { assurance: "portal-session" } },
+    logout: jest.fn(),
+  }),
+}));
 
 jest.mock("../../ui/motion", () => ({
   usePressFeedback: () => ({
@@ -74,7 +80,7 @@ describe("AboutSupportScreen web experience", () => {
     expect(textContent(renderer.root)).toContain("Installer app eller Føj til startskærm");
   });
 
-  test("uses five compact disclosures and preserves legacy deep-link targets", () => {
+  test("uses compact disclosures and preserves legacy deep-link targets", () => {
     let renderer;
     act(() => {
       renderer = TestRenderer.create(<AboutSupportScreen initialSection="limitations" />);
@@ -85,6 +91,7 @@ describe("AboutSupportScreen web experience", () => {
     expect(renderer.root.findAllByProps({ testID: "about-support-section-medical" }).length).toBeGreaterThan(0);
     expect(renderer.root.findAllByProps({ testID: "about-support-section-contact" }).length).toBeGreaterThan(0);
     expect(renderer.root.findAllByProps({ testID: "about-support-section-app" }).length).toBeGreaterThan(0);
+    expect(renderer.root.findAllByProps({ testID: "about-support-section-account" }).length).toBeGreaterThan(0);
     expect(renderer.root.findAllByProps({ testID: "about-support-section-limitations" })).toHaveLength(0);
     expect(
       renderer.root.findByProps({ accessibilityLabel: "Ansvarsfraskrivelse" }).props.accessibilityState,

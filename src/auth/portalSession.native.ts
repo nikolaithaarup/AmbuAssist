@@ -40,6 +40,16 @@ export async function saveLegacyBamProfile(bamId: string): Promise<void> {
   await AsyncStorage.setItem(BAM_ID_STORAGE_KEY, bamId);
 }
 
+export async function logoutAmbuAssistDevice(): Promise<void> {
+  await AsyncStorage.removeItem(BAM_ID_STORAGE_KEY);
+}
+
+export async function rememberOfflineAccess(): Promise<void> {}
+export async function hasOfflineAccess(): Promise<boolean> {
+  return false;
+}
+export async function clearOfflineAccess(): Promise<void> {}
+
 export function getPortalLoginUrl(): string {
   return "https://portal.synapsestudio.dk/login";
 }

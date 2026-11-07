@@ -5,6 +5,7 @@ export type DestinationGeocodedAddress = {
   distanceMeters?: number | null;
   formattedAddress?: string | null;
   isoCountryCode?: string | null;
+  municipalityCode?: string | null;
   name?: string | null;
   postalCode?: string | null;
   region?: string | null;

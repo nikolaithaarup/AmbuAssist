@@ -12,6 +12,7 @@ describe("web destination geocoder", () => {
         streetNumber: "13A",
         postalCode: "1621",
         city: "København V",
+        municipalityCode: "0101",
         distanceMeters: 7.5,
       }),
     ).toMatchObject({
@@ -20,8 +21,22 @@ describe("web destination geocoder", () => {
       postalCode: "1621",
       city: "København V",
       isoCountryCode: "DK",
+      municipalityCode: "0101",
       distanceMeters: 7.5,
     });
+  });
+
+
+  test("keeps DAR municipality codes but rejects malformed values", () => {
+    const base = {
+      formattedAddress: "Øtoftegårdsvej 4, 2630 Taastrup",
+      street: "Øtoftegårdsvej", streetNumber: "4",
+      postalCode: "2630", city: "Taastrup",
+    };
+    expect(normalizeDestinationAddress({ ...base, municipalityCode: "0169" }))
+      .toMatchObject({ municipalityCode: "0169" });
+    expect(normalizeDestinationAddress({ ...base, municipalityCode: "Taastrup" }))
+      .toMatchObject({ municipalityCode: null });
   });
 
   test("posts coordinates only to the same-origin server route", async () => {

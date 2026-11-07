@@ -4,6 +4,7 @@ import {
   STREET_SAMPLE,
 } from "../../features/destination/data/byen";
 import { REGION_NORD_MAP } from "../../features/destination/data/regionNord";
+import { REGION_SYD_MAP } from "../../features/destination/data/regionSyd";
 import { resolveHospitalCode } from "./resolution";
 import {
   deriveAutomaticRoutingStrategy,
@@ -90,6 +91,50 @@ describe("automatic Destination routing strategy", () => {
         STREET_SAMPLE,
       ),
     ).toEqual({ area: "region", kommune: "Hillerød" });
+  });
+
+
+  test("uses official DAR kommune code rather than postal town for Taastrup", () => {
+    const strategy = deriveAutomaticRoutingStrategy(
+      { street: "Øtoftegårdsvej", houseNumber: 4, postcode: "2630",
+        city: "Taastrup", municipalityCode: "0169" },
+      STREET_SAMPLE,
+    );
+    expect(strategy).toEqual({ area: "region", kommune: "Høje-Taastrup" });
+    if (strategy.area !== "region") throw new Error("Expected region route");
+    expect(resolveHospitalCode({
+      area: "region", kommune: strategy.kommune,
+      category: "akutmodtagelse", map: REGION_SYD_MAP,
+    })).toBe("HVH");
+  });
+
+  test("does not guess municipality from 2630 Taastrup alone", () => {
+    expect(deriveAutomaticRoutingStrategy(
+      { street: "Øtoftegårdsvej", postcode: "2630", city: "Taastrup" },
+      STREET_SAMPLE,
+    )).toEqual({ area: "unresolved", reason: "missing_area_evidence" });
+  });
+
+  test("official DAR code takes priority over conflicting regional locality", () => {
+    expect(deriveAutomaticRoutingStrategy(
+      { street: "Testvej", city: "Hillerød", municipalityCode: "0169" },
+      STREET_SAMPLE,
+    )).toEqual({ area: "region", kommune: "Høje-Taastrup" });
+  });
+
+  test("unmapped or split DAR municipalities fail closed instead of guessing", () => {
+    expect(deriveAutomaticRoutingStrategy(
+      { street: "Testvej", city: "Hillerød", municipalityCode: "0253" },
+      STREET_SAMPLE,
+    )).toEqual({ area: "unresolved", reason: "missing_area_evidence" });
+    expect(deriveAutomaticRoutingStrategy(
+      { street: "Testvej", city: "Ukendt", municipalityCode: "0190" },
+      STREET_SAMPLE,
+    )).toEqual({ area: "unresolved", reason: "missing_area_evidence" });
+    expect(deriveAutomaticRoutingStrategy(
+      { street: "Testvej", city: "Farum", municipalityCode: "0190" },
+      STREET_SAMPLE,
+    )).toEqual({ area: "region", kommune: "Furesø (Farum)" });
   });
 
   test.each([

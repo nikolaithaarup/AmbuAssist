@@ -457,6 +457,20 @@ describe("DestinationTool simplified entry flow", () => {
     expect(renderedText(renderer.root)).toContain("NOH");
   });
 
+
+  test("GPS routes Taastrup via DAR municipality to Hvidovre for emergency reception", async () => {
+    mockReverseGeocode.mockResolvedValue([{
+      street: "Øtoftegårdsvej", streetNumber: "4", postalCode: "2630",
+      city: "Taastrup", municipalityCode: "0169",
+      formattedAddress: "Øtoftegårdsvej 4, 2630 Taastrup", distanceMeters: 7,
+    }]);
+    const renderer = await renderTool();
+    await pressGps(renderer.root);
+    expect(renderer.root.findAllByProps({ testID: "destination-result" }).length)
+      .toBeGreaterThan(0);
+    expect(renderedText(renderer.root)).toContain("HVH");
+  });
+
   test("medium confidence requires confirmation before showing a destination", async () => {
     mockGetCurrentPosition.mockResolvedValue(location(60));
     mockReverseGeocode.mockResolvedValue([

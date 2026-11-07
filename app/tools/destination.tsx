@@ -38,6 +38,7 @@ import {
   reverseGeocodeDestination,
   type DestinationGeocodedAddress,
 } from "../../src/services/destinationGeocoder";
+import { buildGpsConfirmationChoices, type GpsConfirmationChoice } from "../../src/domain/destination/gpsConfirmation";
 import { useSettings } from "../../src/state/settings";
 import { Background } from "../../src/ui/Background";
 import { ClinicalDisclosure } from "../../src/ui/ClinicalDisclosure";
@@ -506,6 +507,11 @@ export default function DestinationTool() {
   const [pendingAddressCandidates, setPendingAddressCandidates] = useState<
     DestinationGeocodedAddress[]
   >([]);
+  const gpsConfirmationChoices = useMemo(
+    () => buildGpsConfirmationChoices(pendingAddressCandidates, STREET_SAMPLE, STREET_ALIASES),
+    [pendingAddressCandidates, STREET_SAMPLE, STREET_ALIASES],
+  );
+
   const [selectedAddressCandidate, setSelectedAddressCandidate] = useState<
     number | null
   >(null);
@@ -515,6 +521,8 @@ export default function DestinationTool() {
   const [kommune, setKommune] = useState<Kommune | "">("");
   const [selectedStreet, setSelectedStreet] = useState<string>("");
   const [streetRouteNeedsHouseNumber, setStreetRouteNeedsHouseNumber] = useState(false);
+  const [streetRouteNeedsSide, setStreetRouteNeedsSide] = useState(false);
+  const [gpsStreetNeedsDetails, setGpsStreetNeedsDetails] = useState(false);
   const [streetRouteNeedsPostalCode, setStreetRouteNeedsPostalCode] = useState(false);
 
   const [regCat, setRegCat] = useState<DestinationCategoryIntent>(
@@ -619,6 +627,7 @@ export default function DestinationTool() {
 
   const resetStreetRouteState = () => {
     setStreetRouteNeedsHouseNumber(false);
+    setStreetRouteNeedsSide(false);
     setStreetRouteNeedsPostalCode(false);
   };
 
@@ -828,6 +837,7 @@ export default function DestinationTool() {
     if (result.status === "single") {
       setBydel(result.officialBydel);
       setStreetRouteNeedsHouseNumber(false);
+      setStreetRouteNeedsSide(false);
       setStreetRouteNeedsPostalCode(false);
       setLocationStatus("matched");
       setLocationMessage("");
@@ -849,9 +859,8 @@ export default function DestinationTool() {
       result.status === "still_ambiguous"
     ) {
       setBydel("");
-      setStreetRouteNeedsHouseNumber(
-        result.status === "needs_house_number" || result.status === "needs_side",
-      );
+      setStreetRouteNeedsHouseNumber(result.status === "needs_house_number");
+      setStreetRouteNeedsSide(result.status === "needs_side");
       setStreetRouteNeedsPostalCode(result.status === "needs_postal_code");
       setLocationStatus("not_found");
       setDiagnostics((current) => ({
@@ -865,6 +874,7 @@ export default function DestinationTool() {
 
     setBydel("");
     setStreetRouteNeedsHouseNumber(false);
+    setStreetRouteNeedsSide(false);
     setStreetRouteNeedsPostalCode(false);
     setLocationStatus("not_found");
     setDiagnostics((current) => ({
@@ -1124,6 +1134,7 @@ export default function DestinationTool() {
   };
 
   const handleStreetChange = (text: string) => {
+    setGpsStreetNeedsDetails(false);
     setPendingAddressCandidates([]);
     setSelectedAddressCandidate(null);
     pendingGeocodeContextRef.current = null;
@@ -1402,6 +1413,7 @@ export default function DestinationTool() {
       setDetectedArea(null);
       setManualHospitalCode("");
       setRequiresAddressConfirmation(false);
+      setGpsStreetNeedsDetails(false);
       setPendingAddressCandidates([]);
       setSelectedAddressCandidate(null);
       pendingGeocodeContextRef.current = null;
@@ -1849,6 +1861,50 @@ export default function DestinationTool() {
     }
   };
 
+  const confirmGpsChoice = (choice: GpsConfirmationChoice) => {
+    const context = pendingGeocodeContextRef.current;
+    const candidate = choice.kind === "address"
+      ? pendingAddressCandidates[choice.candidateIndex]
+      : choice.kind === "street" && choice.postalFallbackCandidate !== undefined
+        ? pendingAddressCandidates[choice.postalFallbackCandidate]
+        : null;
+    setPendingAddressCandidates([]);
+    setSelectedAddressCandidate(null);
+    pendingGeocodeContextRef.current = null;
+    setRequiresAddressConfirmation(false);
+    setGpsStreetNeedsDetails(false);
+    setLocationMessage("");
+
+    if (choice.kind === "municipality") {
+      applyManualLocationMatch({ area: "region", kommune: choice.kommune }, choice.label);
+      return;
+    }
+    if (choice.kind === "street") {
+      if (candidate && context) {
+        // Preserve the existing reviewed Amager postal-district fallback.
+        applyGeocodedAddress(candidate, context, true);
+        return;
+      }
+      setHouseNumberQ("");
+      setPostalCodeQ(choice.postcode ?? "");
+      const resolved = applyStreetRoute(choice.street, "", undefined, choice.postcode);
+      if (!resolved) {
+        const rule = resolveStreetRoute(
+          STREET_SAMPLE, choice.street, "", undefined, choice.postcode, STREET_ALIASES,
+        );
+        const needsDetail = ["needs_side", "needs_house_number", "needs_postal_code"].includes(rule.status);
+        setGpsStreetNeedsDetails(needsDetail);
+        setSearchVisible(!needsDetail);
+      }
+      return;
+    }
+    if (candidate && context) {
+      applyGeocodedAddress(candidate, context, true);
+    } else {
+      setSearchVisible(true);
+    }
+  };
+
   const retryLocation = () => {
     lastGeocodeAtRef.current = 0;
     void detectLocation();
@@ -2045,107 +2101,65 @@ export default function DestinationTool() {
               (detectedArea || pendingAddressCandidates.length > 0) &&
               requiresAddressConfirmation && (
                 <View
+                  testID="destination-gps-confirmation"
                   style={{
                     borderRadius: 14,
                     borderWidth: 1,
                     borderColor: theme.colors.warn,
                     backgroundColor: "rgba(255,209,102,0.10)",
                     padding: 14,
-                    gap: 12,
+                    gap: 10,
                   }}
                 >
-                  <Text style={{ color: theme.colors.text, fontWeight: "900" }}>
-                    {pendingAddressCandidates.length > 1
-                      ? lang === "da"
-                        ? "Vælg patientens adresse"
-                        : "Choose the patient's address"
-                      : lang === "da"
-                        ? "Kontrollér den fundne adresse"
-                        : "Check the detected address"}
+                  <Text style={{ color: theme.colors.text, fontWeight: "900", fontSize: 17 }}>
+                    {gpsConfirmationChoices.length > 0 && gpsConfirmationChoices.every(c => c.kind === "municipality")
+                      ? lang === "da" ? "Vælg kommune" : "Choose municipality"
+                      : gpsConfirmationChoices.length > 0 && gpsConfirmationChoices.every(c => c.kind === "street")
+                        ? lang === "da" ? "Vælg gade" : "Choose street"
+                        : lang === "da" ? "Bekræft placering" : "Confirm location"}
                   </Text>
-                  {pendingAddressCandidates.length > 1 ? (
-                    <Text style={{ color: theme.colors.mutedText, lineHeight: 20 }}>
-                      {lang === "da"
-                        ? "Forslagene er adresser i nærheden og er ikke bekræftede patientplaceringer."
-                        : "These are nearby address suggestions, not verified patient locations."}
-                    </Text>
-                  ) : null}
-                  {pendingAddressCandidates.length > 0 ? (
+                  {gpsConfirmationChoices.length > 0 ? (
                     <View style={{ gap: 8 }}>
-                      {pendingAddressCandidates.map((candidate, index) => {
-                        const selected = selectedAddressCandidate === index;
-                        return (
-                          <Pressable
-                            key={`${candidate.formattedAddress}-${index}`}
-                            testID={`destination-address-candidate-${index}`}
-                            accessibilityRole="radio"
-                            accessibilityState={{ selected }}
-                            onPress={() => setSelectedAddressCandidate(index)}
-                            style={({ pressed }) => ({
-                              minHeight: 52,
-                              justifyContent: "center",
-                              borderRadius: 12,
-                              borderWidth: 1,
-                              borderColor: selected
-                                ? theme.colors.accentMuted
-                                : theme.colors.border,
-                              backgroundColor: selected
-                                ? "rgba(183,205,139,0.12)"
-                                : theme.colors.card,
-                              paddingHorizontal: 12,
-                              paddingVertical: 10,
-                              opacity: pressed ? 0.72 : 1,
-                            })}
-                          >
-                            <Text
-                              style={{
-                                color: theme.colors.text,
-                                fontWeight: selected ? "900" : "700",
-                                lineHeight: 21,
-                              }}
-                            >
-                              {candidate.formattedAddress || t("dest_unknown_area")}
-                            </Text>
-                          </Pressable>
-                        );
-                      })}
+                      {gpsConfirmationChoices.map((choice, index) => (
+                        <Pressable
+                          key={choice.key}
+                          testID={`destination-gps-choice-${choice.kind}-${index}`}
+                          accessibilityRole="button"
+                          accessibilityLabel={choice.label}
+                          onPress={() => confirmGpsChoice(choice)}
+                          style={({ pressed }) => ({
+                            minHeight: 52,
+                            justifyContent: "center",
+                            borderRadius: 12,
+                            borderWidth: 1,
+                            borderColor: theme.colors.border,
+                            backgroundColor: theme.colors.card,
+                            paddingHorizontal: 12,
+                            paddingVertical: 10,
+                            opacity: pressed ? 0.72 : 1,
+                          })}
+                        >
+                          <Text style={{ color: theme.colors.text, fontWeight: "800", fontSize: 16 }}>
+                            {choice.label}
+                          </Text>
+                        </Pressable>
+                      ))}
                     </View>
                   ) : (
-                    <Text style={{ color: theme.colors.text, lineHeight: 21 }}>
-                      {detectedArea?.label || t("dest_unknown_area")}
-                    </Text>
-                  )}
-                  <View style={{ gap: 8 }}>
                     <View testID="destination-confirm-address">
+                      <Text style={{ color: theme.colors.text, marginBottom: 10 }}>
+                        {detectedArea?.label || t("dest_unknown_area")}
+                      </Text>
                       <DestinationPrimaryButton
-                        label={
-                          lang === "da"
-                            ? "Brug denne adresse"
-                            : "Use this address"
-                        }
-                        disabled={
-                          pendingAddressCandidates.length > 0 &&
-                          selectedAddressCandidate === null
-                        }
+                        label={lang === "da" ? "Bekræft placering" : "Confirm location"}
                         onPress={() => {
-                          if (pendingAddressCandidates.length > 0) {
-                            const candidate =
-                              selectedAddressCandidate === null
-                                ? null
-                                : pendingAddressCandidates[selectedAddressCandidate];
-                            const context = pendingGeocodeContextRef.current;
-                            if (!candidate || !context) return;
-                            setPendingAddressCandidates([]);
-                            setSelectedAddressCandidate(null);
-                            pendingGeocodeContextRef.current = null;
-                            applyGeocodedAddress(candidate, context, true);
-                          } else {
-                            setRequiresAddressConfirmation(false);
-                            setLocationMessage("");
-                          }
+                          setRequiresAddressConfirmation(false);
+                          setLocationMessage("");
                         }}
                       />
                     </View>
+                  )}
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", flexWrap: "wrap" }}>
                     <Pressable
                       accessibilityRole="button"
                       onPress={() => {
@@ -2153,54 +2167,103 @@ export default function DestinationTool() {
                         setSelectedAddressCandidate(null);
                         pendingGeocodeContextRef.current = null;
                         setRequiresAddressConfirmation(false);
-                        setArea(null);
-                        setBydel("");
-                        setKommune("");
+                        setGpsStreetNeedsDetails(false);
+                        setArea(null); setBydel(""); setKommune("");
                         setDetectedArea(null);
                         setLocationMessage("");
                         setSearchVisible(true);
                       }}
-                      style={({ pressed }) => ({
-                        minHeight: 48,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        opacity: pressed ? 0.65 : 1,
-                      })}
+                      style={{ minHeight: 48, justifyContent: "center", paddingHorizontal: 8 }}
                     >
-                      <Text
-                        style={{
-                          color: theme.colors.accentMuted,
-                          fontWeight: "900",
-                        }}
-                      >
+                      <Text style={{ color: theme.colors.accentMuted, fontWeight: "800" }}>
                         {lang === "da" ? "Ret adresse" : "Correct address"}
                       </Text>
                     </Pressable>
-                    {pendingAddressCandidates.length > 0 ? (
-                      <Pressable
-                        testID="destination-retry-gps"
-                        accessibilityRole="button"
-                        onPress={retryLocation}
-                        style={({ pressed }) => ({
-                          minHeight: 48,
-                          alignItems: "center",
-                          justifyContent: "center",
-                          opacity: pressed ? 0.65 : 1,
-                        })}
-                      >
-                        <Text
-                          style={{
-                            color: theme.colors.accentMuted,
-                            fontWeight: "900",
-                          }}
-                        >
-                          {lang === "da" ? "Prøv GPS igen" : "Retry GPS"}
-                        </Text>
-                      </Pressable>
-                    ) : null}
+                    <Pressable
+                      testID="destination-retry-gps"
+                      accessibilityRole="button"
+                      onPress={retryLocation}
+                      style={{ minHeight: 48, justifyContent: "center", paddingHorizontal: 8 }}
+                    >
+                      <Text style={{ color: theme.colors.accentMuted, fontWeight: "800" }}>
+                        {lang === "da" ? "Prøv GPS igen" : "Retry GPS"}
+                      </Text>
+                    </Pressable>
                   </View>
                 </View>
               )}
+
+            {gpsStreetNeedsDetails && !!selectedStreet && !searchVisible && (
+              <View testID="destination-gps-street-details" style={{ gap: 10, padding: 12, borderRadius: 12, borderColor: theme.colors.warn, borderWidth: 1 }}>
+                <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
+                  {selectedStreet}
+                </Text>
+                {streetRouteNeedsSide && (
+                  <View style={{ gap: 8 }}>
+                    <Text style={{ color: theme.colors.text }}>
+                      {lang === "da" ? "Hvilken side af gaden?" : "Which side of the street?"}
+                    </Text>
+                    <View style={{ flexDirection: "row", gap: 10 }}>
+                      {(["odd", "even"] as StreetSide[]).map(side => (
+                        <Pressable
+                          key={side}
+                          testID={`destination-gps-side-${side}`}
+                          accessibilityRole="button"
+                          onPress={() => {
+                            if (applyStreetRoute(selectedStreet, side, undefined, postalCodeQ || undefined))
+                              setGpsStreetNeedsDetails(false);
+                          }}
+                          style={{ minHeight: 48, flex: 1, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: theme.colors.cardBorder, borderRadius: 12 }}
+                        >
+                          <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
+                            {side === "odd" ? lang === "da" ? "Ulige" : "Odd" : lang === "da" ? "Lige" : "Even"}
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  </View>
+                )}
+                {streetRouteNeedsHouseNumber && (
+                  <View style={{ gap: 6 }}>
+                    <Label>{lang === "da" ? "Husnummer" : "House number"}</Label>
+                    <Input
+                      value={houseNumberQ}
+                      onChangeText={value => {
+                        const cleaned = value.replace(/[^0-9a-zæøå]/giu, "").slice(0, 6);
+                        setHouseNumberQ(cleaned);
+                        if (applyStreetRoute(selectedStreet, "", parseHouseNumber(cleaned).number, postalCodeQ || undefined))
+                          setGpsStreetNeedsDetails(false);
+                      }}
+                      placeholder="Fx 13A"
+                    />
+                  </View>
+                )}
+                {streetRouteNeedsPostalCode && (
+                  <View style={{ gap: 6 }}>
+                    <Label>{lang === "da" ? "Postnummer" : "Postcode"}</Label>
+                    <Input
+                      value={postalCodeQ}
+                      onChangeText={value => {
+                        const postcode = value.replace(/\D/g, "").slice(0, 4);
+                        setPostalCodeQ(postcode);
+                        if (applyStreetRoute(selectedStreet, "", parseHouseNumber(houseNumberQ).number, postcode || undefined))
+                          setGpsStreetNeedsDetails(false);
+                      }}
+                      keyboardType="number-pad"
+                    />
+                  </View>
+                )}
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => { setGpsStreetNeedsDetails(false); setSearchVisible(true); }}
+                  style={{ minHeight: 44, justifyContent: "center" }}
+                >
+                  <Text style={{ color: theme.colors.accentMuted, fontWeight: "800" }}>
+                    {lang === "da" ? "Søg manuelt i stedet" : "Search manually instead"}
+                  </Text>
+                </Pressable>
+              </View>
+            )}
 
             <MotionPresence
               visible={!!locationMessage && !detectingLocation}
@@ -2383,6 +2446,26 @@ export default function DestinationTool() {
                 }
                 maxHeight={260}
               />
+
+              {!!selectedStreet && streetRouteNeedsSide && (
+                <View style={{ gap: 8 }}>
+                  <Label>{lang === "da" ? "Gadeside" : "Street side"}</Label>
+                  <View style={{ flexDirection: "row", gap: 10 }}>
+                    {(["odd", "even"] as StreetSide[]).map(side => (
+                      <Pressable
+                        key={side}
+                        accessibilityRole="button"
+                        onPress={() => applyStreetRoute(selectedStreet, side, undefined, postalCodeQ || undefined)}
+                        style={{ flex: 1, minHeight: 48, alignItems: "center", justifyContent: "center", borderRadius: 10, borderWidth: 1, borderColor: theme.colors.cardBorder }}
+                      >
+                        <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
+                          {side === "odd" ? lang === "da" ? "Ulige" : "Odd" : lang === "da" ? "Lige" : "Even"}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                </View>
+              )}
 
               {!!selectedStreet &&
                 (streetRouteNeedsHouseNumber || !!houseNumberQ) && (

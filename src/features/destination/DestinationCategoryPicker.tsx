@@ -11,12 +11,11 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { DestinationCategoryIntent } from "../../domain/destination/categoryRouting";
-import { Input, Label, Subtle, Title } from "../../ui/Ui";
+import { Input, Subtle, Title } from "../../ui/Ui";
 import { theme } from "../../ui/theme";
 import {
   usePressFeedback,
   useReducedMotionPreference,
-  useStateChangeFeedback,
 } from "../../ui/motion";
 
 type Props = {
@@ -32,6 +31,7 @@ type Props = {
   onToggleFavourite: (category: DestinationCategoryIntent) => void;
 };
 
+// destination-compact-favourite-rows-v1
 function CategoryChip({
   category,
   label,
@@ -43,67 +43,39 @@ function CategoryChip({
   selected: boolean;
   onPress: () => void;
 }) {
-  const pwa = Platform.OS === "web";
-  const pressFeedback = usePressFeedback(0.98);
-  const selectionFeedback = useStateChangeFeedback(selected, 1.025);
-
   return (
-    <Animated.View
-      style={[
-        { maxWidth: "100%", minWidth: 0, flexShrink: 1 },
-        pwa ? selectionFeedback : undefined,
-      ]}
+    <Pressable
+      testID={`destination-favourite-category-${category}`}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ selected }}
+      onPress={onPress}
+      style={({ pressed }) => ({
+        minHeight: 48,
+        width: "100%",
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 12,
+        paddingHorizontal: 13,
+        paddingVertical: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: theme.colors.divider,
+        backgroundColor: pressed
+          ? "rgba(255,255,255,0.07)"
+          : selected
+            ? "rgba(145,169,108,0.11)"
+            : "transparent",
+      })}
     >
-      <Animated.View style={pressFeedback.animatedStyle}>
-        <Pressable
-          testID={`destination-favourite-category-${category}`}
-          accessibilityRole="button"
-          accessibilityLabel={label}
-          accessibilityState={{ selected }}
-          onPress={onPress}
-          onPressIn={pressFeedback.onPressIn}
-          onPressOut={pressFeedback.onPressOut}
-          style={({ pressed }) => ({
-            minHeight: pwa ? 50 : 46,
-            maxWidth: "100%",
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 6,
-            paddingHorizontal: 13,
-            paddingVertical: 9,
-            borderRadius: theme.radii.control,
-            borderWidth: selected ? 1.5 : 1,
-            borderColor: selected
-              ? theme.colors.accentMuted
-              : "rgba(190,202,165,0.18)",
-            backgroundColor: selected
-              ? "rgba(145,169,108,0.22)"
-              : pressed
-                ? "rgba(255,255,255,0.07)"
-                : theme.colors.interactive,
-            opacity: pressed ? 0.82 : 1,
-          })}
-        >
-          {selected ? (
-            <Text style={{ color: theme.colors.accentMuted, fontWeight: "900" }}>
-              ✓
-            </Text>
-          ) : null}
-          <Text
-            style={{
-              flexShrink: 1,
-              color: theme.colors.text,
-              fontSize: 14,
-              lineHeight: 18,
-              fontWeight: selected ? "900" : "700",
-            }}
-          >
-            {label}
-          </Text>
-        </Pressable>
-      </Animated.View>
-    </Animated.View>
+      <Text style={{ flex: 1, minWidth: 0, color: theme.colors.text, fontSize: 15, fontWeight: selected ? "800" : "600" }}>
+        {label}
+      </Text>
+      {selected ? (
+        <Text style={{ color: theme.colors.accentMuted, fontWeight: "900", fontSize: 17 }}>
+          ✓
+        </Text>
+      ) : null}
+    </Pressable>
   );
 }
 
@@ -141,8 +113,6 @@ export function DestinationCategoryPicker({
 
   return (
     <View style={{ width: "100%", minWidth: 0, gap: 9 }}>
-      <Label>{lang === "da" ? "Visitationstype" : "Visitation type"}</Label>
-
       {!selectedIsFavourite ? (
         <View style={{ gap: 6 }}>
           <Subtle>{lang === "da" ? "Valgt visitation" : "Selected visitation"}</Subtle>
@@ -162,15 +132,8 @@ export function DestinationCategoryPicker({
           <Subtle style={{ fontWeight: "800" }}>
             {lang === "da" ? "Favoritter" : "Favourites"}
           </Subtle>
-          <View
-            style={{
-              flexDirection: "row",
-              flexWrap: "wrap",
-              alignItems: "flex-start",
-              minWidth: 0,
-              gap: 8,
-            }}
-          >
+          <ScrollView nestedScrollEnabled style={{ maxHeight: 242 }} showsVerticalScrollIndicator={favourites.length > 4}>
+            <View style={{ width: "100%", minWidth: 0, overflow: "hidden", borderRadius: 12, borderWidth: 1, borderColor: theme.colors.cardBorder }}>
             {favourites.map((category) => (
               <CategoryChip
                 key={category}
@@ -180,7 +143,8 @@ export function DestinationCategoryPicker({
                 onPress={() => onSelect(category)}
               />
             ))}
-          </View>
+            </View>
+          </ScrollView>
         </View>
       ) : (
         <Subtle>

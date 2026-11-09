@@ -132,6 +132,7 @@ function gpsChoiceButton(root, testID) {
 describe("DestinationTool simplified entry flow", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.requireMock("../../dev/hospitalNumbers").getHospitalPhoneNumbersByCode.mockResolvedValue([]);
     mockSettings = {
       language: "da",
       destinationCategoryFavourites: null,
@@ -169,6 +170,43 @@ describe("DestinationTool simplified entry flow", () => {
         .props.onPress();
     });
     expect(renderedText(root)).toContain("Hospital");
+  });
+
+  // destination-compact-call-regression-v1
+  test("compact result hides the dialled digits, but retains the selected contact and call action", async () => {
+    const phones = jest.requireMock("../../dev/hospitalNumbers").getHospitalPhoneNumbersByCode;
+    phones.mockResolvedValue([{
+      id: "test-main", specialtyKey: "main", displayNameDa: "Hovednummer",
+      displayNameEn: "Main number", phone: "+4512345678", source: "remote",
+    }]);
+    mockReverseGeocode.mockResolvedValue([{
+      street: "Frederiksberg Allé", streetNumber: "13A", name: "Frederiksberg Allé",
+      postalCode: "1621", city: "København V", district: "Vesterbro",
+      subregion: "København", region: "Region Hovedstaden", formattedAddress: null,
+    }]);
+    const renderer = await renderTool();
+    await pressGps(renderer.root);
+    await act(async () => { await Promise.resolve(); await Promise.resolve(); });
+    const root = renderer.root;
+    expect(root.findAllByProps({ testID: "destination-result" }).length).toBeGreaterThan(0);
+    expect(root.findAllByProps({ testID: "destination-phone-type" }).length).toBeGreaterThan(0);
+    expect(root.findAllByProps({ testID: "destination-phone-call" }).length).toBeGreaterThan(0);
+    expect(renderedText(root)).toContain("Hovednummer");
+    expect(renderedText(root)).not.toContain("+4512345678");
+  });
+
+  test("GPS confirmation shows the selection UI without duplicate status panel", async () => {
+    mockGetCurrentPosition.mockResolvedValue(location(60));
+    mockReverseGeocode.mockResolvedValue([{
+      street: "Frederiksberg Allé", name: "13A",
+      postalCode: "1621", city: "København V", district: "Vesterbro",
+      subregion: "København", region: "Region Hovedstaden", formattedAddress: "Frederiksberg Allé 13A, 1621 København V",
+    }]);
+    const renderer = await renderTool();
+    await pressGps(renderer.root);
+    expect(renderer.root.findAllByProps({ testID: "destination-result" })).toHaveLength(0);
+    expect(renderer.root.findAllByProps({ testID: "destination-gps-confirmation" }).length).toBeGreaterThan(0);
+    expect(renderedText(renderer.root)).not.toContain("Placering kræver handling");
   });
 
   test("starts GPS automatically once when the page mounts", async () => {
@@ -449,6 +487,7 @@ describe("DestinationTool simplified entry flow", () => {
     await selectDepartment("traumecenter", "Traumecenter");
     expect(root.findAllByProps({ testID: "destination-category-unavailable" }).length).toBeGreaterThan(0);
     expect(root.findAllByProps({ testID: "destination-result" })).toHaveLength(0);
+    expect(root.findAllByProps({ testID: "destination-phone-call" })).toHaveLength(0);
     expect(mockHasServicesEnabled).toHaveBeenCalledTimes(gpsChecks);
   });
 

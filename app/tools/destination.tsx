@@ -46,8 +46,6 @@ import { CollapsibleCard } from "../../src/ui/CollapsibleCard";
 import {
   Input,
   Label,
-  ResponsiveColumn,
-  ResponsiveColumns,
   Screen,
   Subtle,
   Title,
@@ -471,12 +469,8 @@ function DestinationPrimaryButton({
 export default function DestinationTool() {
   const { t } = useT();
   const { settings, setSettings } = useSettings();
-  const { isCompact, isExpanded } = useResponsiveLayout();
+  const { isCompact } = useResponsiveLayout();
   const lang = settings.language === "da" ? "da" : "en";
-  const stackedWebLayout = Platform.OS === "web" && !isExpanded;
-  const stackedColumnStyle = stackedWebLayout
-    ? ({ flex: 0, flexBasis: "auto", width: "100%", minWidth: 0 } as const)
-    : undefined;
 
   const [visitationData, setVisitationData] = useState<BackendVisitationData>(
     LOCAL_VISITATION_DATA,
@@ -555,6 +549,9 @@ export default function DestinationTool() {
   );
   const [selectedPhoneId, setSelectedPhoneId] = useState<string>("");
   const [loadingHospitalPhones, setLoadingHospitalPhones] = useState(false);
+  const [loadedPhoneContext, setLoadedPhoneContext] = useState("");
+  const [departmentChooserVisible, setDepartmentChooserVisible] = useState(false);
+  const automaticGpsStartedRef = useRef(false);
 
   const selectedGeographicCategory = area
     ? getCategoryForArea(regCat, area)
@@ -969,11 +966,19 @@ export default function DestinationTool() {
     lang,
   ]);
 
+  const requestedPhoneContext =
+    resolvedHospital && resolvedHospital.code !== "UNKNOWN"
+      ? resolvedHospital.code + ":" + selectedSpecialtyKey
+      : "";
+  const phoneContextPending = !!requestedPhoneContext &&
+    requestedPhoneContext !== loadedPhoneContext;
+
   useEffect(() => {
     let active = true;
 
     const loadHospitalPhones = async () => {
       if (!resolvedHospital || resolvedHospital.code === "UNKNOWN") {
+        setLoadedPhoneContext("");
         setHospitalPhones([]);
         setSelectedPhoneId("");
         setLoadingHospitalPhones(false);
@@ -989,6 +994,7 @@ export default function DestinationTool() {
         if (!active) return;
 
         setHospitalPhones(results);
+        setLoadedPhoneContext(requestedPhoneContext);
 
         const preferred =
           results.find((item) => item.specialtyKey === selectedSpecialtyKey) ??
@@ -1001,6 +1007,7 @@ export default function DestinationTool() {
         console.error("Error loading hospital phones:", error);
         if (!active) return;
         setHospitalPhones([]);
+        setLoadedPhoneContext("");
         setSelectedPhoneId("");
       } finally {
         if (active) setLoadingHospitalPhones(false);
@@ -1011,11 +1018,12 @@ export default function DestinationTool() {
     return () => {
       active = false;
     };
-  }, [resolvedHospital?.code, selectedSpecialtyKey]);
+  }, [resolvedHospital?.code, selectedSpecialtyKey, requestedPhoneContext]);
 
   const selectedHospitalPhone = useMemo(() => {
+    if (phoneContextPending || loadingHospitalPhones || !requestedPhoneContext) return null;
     return hospitalPhones.find((item) => item.id === selectedPhoneId) ?? null;
-  }, [hospitalPhones, selectedPhoneId]);
+  }, [hospitalPhones, selectedPhoneId, phoneContextPending, loadingHospitalPhones, requestedPhoneContext]);
 
   const phoneOptions = useMemo(() => {
     return hospitalPhones.map((item) => item.id);
@@ -1905,6 +1913,14 @@ export default function DestinationTool() {
     }
   };
 
+  useEffect(() => {
+    if (automaticGpsStartedRef.current) return;
+    automaticGpsStartedRef.current = true;
+    void detectLocation();
+    // One automatic lookup per mounted screen, not per state update.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const retryLocation = () => {
     lastGeocodeAtRef.current = 0;
     void detectLocation();
@@ -1968,8 +1984,8 @@ export default function DestinationTool() {
           title={t("dest_title")}
           subtitle={
             lang === "da"
-              ? "Vælg visitation, og find patientens placering med GPS eller adresse."
-              : "Choose a visitation, then locate the patient by GPS or address."
+              ? "Hospital, visitation og opkald samlet ét sted."
+              : "Hospital, department and calling in one place."
           }
         />
 
@@ -1983,9 +1999,191 @@ export default function DestinationTool() {
           }}
           keyboardShouldPersistTaps="handled"
         >
-          <ResponsiveColumns style={stackedWebLayout ? { gap: 20 } : undefined}>
-            <ResponsiveColumn style={stackedColumnStyle}>
-          <ToolSurface
+          {!resolvedHospital && (
+            <View testID="destination-awaiting-result" style={{ paddingVertical: 10, gap: 4 }}>
+              <Text style={{ color: theme.colors.text, fontWeight: "800", fontSize: 17 }}>
+                {detectingLocation || locationStatus === "initial"
+                  ? lang === "da" ? "Finder destination…" : "Finding destination…"
+                  : requiresAddressConfirmation
+                    ? lang === "da" ? "Bekræft placering" : "Confirm location"
+                    : lang === "da" ? "Ingen sikker destination endnu" : "No confirmed destination yet"}
+              </Text>
+              <Text style={{ color: theme.colors.mutedText, fontSize: 13 }}>
+                {lang === "da" ? "Kontrollér patientens placering før opkald." : "Confirm the patient location before calling."}
+              </Text>
+            </View>
+          )}
+
+          {/* destination-first-safe-result-v1 */}
+{!categoryUnavailable && !!resolvedHospital && (
+<>
+            {resolvedHospital ? (
+              <ToolSurface
+              tone="accent"
+              testID="destination-result"
+              style={{ width: "100%", minWidth: 0, gap: 15 }}
+            >
+              <ToolSectionLabel>
+                {manualHospitalCode
+                  ? lang === "da"
+                    ? "Manuelt valgt destination"
+                    : "Manually selected destination"
+                  : lang === "da"
+                    ? "Anbefalet destination"
+                    : "Recommended destination"}
+              </ToolSectionLabel>
+
+              <Title style={{ fontSize: 28, lineHeight: 34 }}>
+                {resolvedHospital.label}
+              </Title>
+
+              <Text style={{ color: theme.colors.text, fontSize: 16, fontWeight: "700" }}>
+                {selectedCategoryLabel}
+              </Text>
+
+              <MotionPresence
+                visible={loadingHospitalPhones || phoneContextPending}
+                enterDelayMs={100}
+                testID="destination-phone-loading-transition"
+              >
+                <View
+                  style={{
+                    minHeight: 44,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 9,
+                  }}
+                >
+                  <ActivityIndicator
+                    size="small"
+                    color={theme.colors.accentMuted}
+                  />
+                  <Text
+                    accessibilityLiveRegion="polite"
+                    style={{ color: theme.colors.mutedText }}
+                  >
+                    {lang === "da"
+                      ? "Henter telefonnummer…"
+                      : "Loading phone number…"}
+                  </Text>
+                </View>
+              </MotionPresence>
+
+              <MotionPresence
+                visible={!loadingHospitalPhones && !phoneContextPending && !!selectedHospitalPhone}
+                testID="destination-phone-result-transition"
+              >
+                {selectedHospitalPhone ? (
+                  <View
+                    style={{
+                      gap: 10,
+                      paddingTop: 12,
+                      borderTopWidth: 1,
+                      borderTopColor: theme.colors.divider,
+                    }}
+                  >
+                    <ToolSectionLabel>
+                      {selectedHospitalPhone.specialtyKey === "main"
+                        ? lang === "da" ? "Hovednummer" : "Main number"
+                        : getPhoneDisplayName(selectedHospitalPhone)}
+                    </ToolSectionLabel>
+                    <Text
+                      selectable
+                      style={{
+                        color: theme.colors.text,
+                        fontWeight: "800",
+                        fontSize: 24,
+                        lineHeight: 30,
+                      }}
+                    >
+                      {selectedHospitalPhone.phone}
+                    </Text>
+                    <ToolActionButton
+                      tone="call"
+                      label={lang === "da" ? "Ring op" : "Call"}
+                      onPress={() =>
+                        callHospitalNumber(selectedHospitalPhone.phone)
+                      }
+                    />
+                  </View>
+                ) : null}
+              </MotionPresence>
+
+              <MotionPresence
+                visible={!loadingHospitalPhones && !phoneContextPending && !selectedHospitalPhone}
+              >
+                <Text style={{ color: theme.colors.mutedText }}>
+                  {lang === "da"
+                    ? "Intet telefonnummer fundet endnu."
+                    : "No phone number found yet."}
+                </Text>
+              </MotionPresence>
+
+              {!loadingHospitalPhones && !phoneContextPending && hospitalPhones.length > 1 && (
+                <SimpleDropdown<PhoneOptionValue>
+                  label={
+                    lang === "da"
+                      ? "Andet hospitalsnummer"
+                      : "Another hospital number"
+                  }
+                  value={selectedPhoneId}
+                  open={phoneDropdownOpen}
+                  onToggle={togglePhoneDropdown}
+                  options={phoneOptions}
+                  onSelect={(value) => {
+                    setSelectedPhoneId(value);
+                    setPhoneDropdownOpen(false);
+                  }}
+                  renderValue={renderPhoneSelectedValue}
+                  renderOption={renderPhoneOptionRow}
+                  placeholder={
+                    lang === "da"
+                      ? "Vælg hospitalsnummer"
+                      : "Choose hospital number"
+                  }
+                  emptyText={
+                    lang === "da"
+                      ? "Ingen telefonnumre fundet."
+                      : "No phone numbers found."
+                  }
+                  maxHeight={240}
+                />
+              )}
+
+              {!loadingHospitalPhones && !phoneContextPending &&
+                hospitalPhones.some((item) => item.source === "bundled") && (
+                  <View
+                    style={{
+                      padding: 11,
+                      borderRadius: theme.radii.control,
+                      borderWidth: 1,
+                      borderColor: "rgba(221,189,98,0.28)",
+                      backgroundColor: "rgba(65,57,31,0.38)",
+                    }}
+                  >
+                    <Text style={{ color: theme.colors.warn, lineHeight: 19 }}>
+                      {lang === "da"
+                        ? "Kontakten kunne ikke opdateres. Den lokale, operationelle offline-liste vises."
+                        : "The contact could not be refreshed. Showing the bundled operational offline list."}
+                    </Text>
+                  </View>
+                )}
+
+              {resolvedHospital.code === "UNKNOWN" && (
+                <Text style={{ color: theme.colors.warn, fontWeight: "800" }}>
+                  {t("dest_unknown")}
+                </Text>
+              )}
+
+              </ToolSurface>
+            ) : null}
+          </>
+)}
+
+
+          <View style={{ width: "100%", minWidth: 0, gap: 10 }}>
+            <View style={{ width: "100%", minWidth: 0 }}>
+          <View
             testID="destination-primary-column"
             style={{
               width: "100%",
@@ -1993,10 +2191,25 @@ export default function DestinationTool() {
               gap: isCompact ? 12 : 14,
             }}
           >
-            <ToolSectionLabel>
-              {lang === "da" ? "Visitation og placering" : "Visitation and location"}
-            </ToolSectionLabel>
-            <DestinationCategoryPicker
+            <Pressable
+              testID="destination-department-toggle"
+              accessibilityRole="button"
+              accessibilityState={{ expanded: departmentChooserVisible }}
+              accessibilityLabel={lang === "da" ? "Skift visitationstype" : "Change destination department"}
+              onPress={() => setDepartmentChooserVisible((v) => !v)}
+              style={{ minHeight: 52, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: theme.colors.divider }}
+            >
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text style={{ color: theme.colors.mutedText, fontSize: 12, fontWeight: "700" }}>
+                  {lang === "da" ? "VISITATIONSTYPE" : "DEPARTMENT"}
+                </Text>
+                <Text style={{ color: theme.colors.text, fontWeight: "800", fontSize: 17 }}>{selectedCategoryLabel}</Text>
+              </View>
+              <Text style={{ color: theme.colors.accentMuted, fontWeight: "700" }}>
+                {departmentChooserVisible ? "▲" : "▼"}
+              </Text>
+            </Pressable>
+            {departmentChooserVisible && <DestinationCategoryPicker
               lang={lang}
               selected={regCat}
               favourites={favouriteCategoryOptions}
@@ -2007,9 +2220,54 @@ export default function DestinationTool() {
               }
               onOpen={toggleRegCatDropdown}
               onClose={() => setRegCatOpen(false)}
-              onSelect={setRegCat}
+              onSelect={(value) => { setRegCat(value); setDepartmentChooserVisible(false); }}
               onToggleFavourite={toggleCategoryFavourite}
-            />
+            />}
+
+            <View testID="destination-location-row" style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 10, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: theme.colors.divider }}>
+              <View style={{ flex: 1, minWidth: 150, gap: 3 }}>
+                <Text style={{ color: theme.colors.mutedText, fontWeight: "700", fontSize: 12 }}>
+                  {lang === "da" ? "PLACERING" : "LOCATION"}
+                </Text>
+                <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: "700" }}>
+                  {requiresAddressConfirmation
+                    ? lang === "da" ? "Kræver bekræftelse" : "Needs confirmation"
+                    : area === "byen" && bydel
+                      ? (selectedStreet ? selectedStreet + (houseNumberQ ? " " + houseNumberQ : "") + " · " + bydel : bydel)
+                      : area === "region" && kommune
+                        ? kommune
+                        : detectingLocation
+                          ? lang === "da" ? "Finder placering…" : "Finding location…"
+                          : lang === "da" ? "Ingen bekræftet placering" : "No confirmed location"}
+                </Text>
+                {detectedArea && <Text style={{ color: theme.colors.mutedText, fontSize: 12 }}>
+                  {lang === "da" ? "Enhedens GPS — kontrollér patientens adresse" : "Device GPS — verify patient address"}
+                </Text>}
+              </View>
+              <Pressable
+                testID="destination-change-location"
+                accessibilityRole="button"
+                onPress={() => setSearchVisible(true)}
+                style={{ minHeight: 48, justifyContent: "center", paddingHorizontal: 6 }}
+              >
+                <Text style={{ color: theme.colors.accentMuted, fontWeight: "800" }}>
+                  {lang === "da" ? "Skift" : "Change"}
+                </Text>
+              </Pressable>
+              <View testID="destination-primary-gps">
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={lang === "da" ? "Opdater GPS" : "Refresh GPS"}
+                  disabled={detectingLocation}
+                  onPress={retryLocation}
+                  style={{ minHeight: 48, justifyContent: "center", paddingHorizontal: 6, opacity: detectingLocation ? 0.5 : 1 }}
+                >
+                  <Text style={{ color: theme.colors.accentMuted, fontWeight: "800" }}>
+                    {lang === "da" ? "Opdater GPS" : "Refresh GPS"}
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
 
             {categoryUnavailable && (
               <View
@@ -2043,22 +2301,6 @@ export default function DestinationTool() {
                   : neurokirNote}
               </Text>
             )}
-
-            <View testID="destination-primary-gps">
-              <DestinationPrimaryButton
-                label={
-                  detectingLocation
-                    ? lang === "da"
-                      ? "Finder placering…"
-                      : "Finding location…"
-                    : lang === "da"
-                      ? "Find destination med GPS"
-                      : "Find destination with GPS"
-                }
-                onPress={detectLocation}
-                disabled={detectingLocation}
-              />
-            </View>
 
             <MotionPresence
               visible={detectingLocation}
@@ -2357,16 +2599,13 @@ export default function DestinationTool() {
                     : "Enter address manually"}
               </Text>
             </Pressable>
-          </ToolSurface>
+          </View>
 
           <MotionPresence
             visible={searchVisible}
             testID="destination-manual-search-transition"
           >
-            <ToolSurface style={{ gap: 14 }}>
-              <ToolSectionLabel>
-                {lang === "da" ? "Manuel adresse" : "Manual address"}
-              </ToolSectionLabel>
+            <View style={{ gap: 12, paddingVertical: 8 }}>
               <View style={{ gap: 5 }}>
                 <Title style={{ fontSize: 20 }}>
                   {lang === "da" ? "Patientens placering" : "Patient location"}
@@ -2531,245 +2770,16 @@ export default function DestinationTool() {
                     )}
                   </View>
                 )}
-            </ToolSurface>
+            </View>
           </MotionPresence>
 
-            </ResponsiveColumn>
-            <ResponsiveColumn style={stackedColumnStyle}>
+            </View>
+            <View style={{ width: "100%", minWidth: 0 }}>
           <View
             testID="destination-secondary-column"
             style={{ width: "100%", minWidth: 0, gap: 12 }}
           >
-          <MotionPresence
-            visible={!!resolvedHospital}
-            testID="destination-result-transition"
-          >
-            {resolvedHospital ? (
-              <ToolSurface
-              tone="accent"
-              testID="destination-result"
-              style={{ width: "100%", minWidth: 0, gap: 15 }}
-            >
-              <ToolSectionLabel>
-                {manualHospitalCode
-                  ? lang === "da"
-                    ? "Manuelt valgt destination"
-                    : "Manually selected destination"
-                  : lang === "da"
-                    ? "Anbefalet destination"
-                    : "Recommended destination"}
-              </ToolSectionLabel>
-
-              <Title style={{ fontSize: 28, lineHeight: 34 }}>
-                {resolvedHospital.label}
-              </Title>
-
-              <View style={{ gap: 4 }}>
-                <ToolSectionLabel>
-                  {lang === "da" ? "Visitation" : "Visitation"}
-                </ToolSectionLabel>
-                <Text
-                  style={{
-                    color: theme.colors.text,
-                    fontWeight: "700",
-                    fontSize: 16,
-                    lineHeight: 22,
-                  }}
-                >
-                  {selectedCategoryLabel}
-                </Text>
-              </View>
-
-              {!!resolvedHospital.extra && (
-                <View
-                  style={{
-                    gap: 4,
-                    paddingTop: 12,
-                    borderTopWidth: 1,
-                    borderTopColor: theme.colors.divider,
-                  }}
-                >
-                  <ToolSectionLabel>
-                    {lang === "da" ? "Placering" : "Location"}
-                  </ToolSectionLabel>
-                  <Text
-                    style={{
-                      color: theme.colors.mutedText,
-                      fontSize: 15,
-                      lineHeight: 21,
-                    }}
-                  >
-                    {resolvedHospital.extra}
-                  </Text>
-                </View>
-              )}
-
-              <MotionPresence
-                visible={loadingHospitalPhones}
-                enterDelayMs={100}
-                testID="destination-phone-loading-transition"
-              >
-                <View
-                  style={{
-                    minHeight: 44,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 9,
-                  }}
-                >
-                  <ActivityIndicator
-                    size="small"
-                    color={theme.colors.accentMuted}
-                  />
-                  <Text
-                    accessibilityLiveRegion="polite"
-                    style={{ color: theme.colors.mutedText }}
-                  >
-                    {lang === "da"
-                      ? "Henter telefonnummer…"
-                      : "Loading phone number…"}
-                  </Text>
-                </View>
-              </MotionPresence>
-
-              <MotionPresence
-                visible={!loadingHospitalPhones && !!selectedHospitalPhone}
-                testID="destination-phone-result-transition"
-              >
-                {selectedHospitalPhone ? (
-                  <View
-                    style={{
-                      gap: 10,
-                      paddingTop: 12,
-                      borderTopWidth: 1,
-                      borderTopColor: theme.colors.divider,
-                    }}
-                  >
-                    <ToolSectionLabel>
-                      {lang === "da" ? "Telefon" : "Telephone"}
-                    </ToolSectionLabel>
-                    <Text
-                      selectable
-                      style={{
-                        color: theme.colors.text,
-                        fontWeight: "800",
-                        fontSize: 24,
-                        lineHeight: 30,
-                      }}
-                    >
-                      {selectedHospitalPhone.phone}
-                    </Text>
-                    <ToolActionButton
-                      tone="call"
-                      label={lang === "da" ? "Ring op" : "Call"}
-                      onPress={() =>
-                        callHospitalNumber(selectedHospitalPhone.phone)
-                      }
-                    />
-                  </View>
-                ) : null}
-              </MotionPresence>
-
-              <MotionPresence
-                visible={!loadingHospitalPhones && !selectedHospitalPhone}
-              >
-                <Text style={{ color: theme.colors.mutedText }}>
-                  {lang === "da"
-                    ? "Intet telefonnummer fundet endnu."
-                    : "No phone number found yet."}
-                </Text>
-              </MotionPresence>
-
-              {!loadingHospitalPhones && hospitalPhones.length > 1 && (
-                <SimpleDropdown<PhoneOptionValue>
-                  label={
-                    lang === "da"
-                      ? "Andet hospitalsnummer"
-                      : "Another hospital number"
-                  }
-                  value={selectedPhoneId}
-                  open={phoneDropdownOpen}
-                  onToggle={togglePhoneDropdown}
-                  options={phoneOptions}
-                  onSelect={(value) => {
-                    setSelectedPhoneId(value);
-                    setPhoneDropdownOpen(false);
-                  }}
-                  renderValue={renderPhoneSelectedValue}
-                  renderOption={renderPhoneOptionRow}
-                  placeholder={
-                    lang === "da"
-                      ? "Vælg hospitalsnummer"
-                      : "Choose hospital number"
-                  }
-                  emptyText={
-                    lang === "da"
-                      ? "Ingen telefonnumre fundet."
-                      : "No phone numbers found."
-                  }
-                  maxHeight={240}
-                />
-              )}
-
-              {!loadingHospitalPhones &&
-                hospitalPhones.some((item) => item.source === "bundled") && (
-                  <View
-                    style={{
-                      padding: 11,
-                      borderRadius: theme.radii.control,
-                      borderWidth: 1,
-                      borderColor: "rgba(221,189,98,0.28)",
-                      backgroundColor: "rgba(65,57,31,0.38)",
-                    }}
-                  >
-                    <Text style={{ color: theme.colors.warn, lineHeight: 19 }}>
-                      {lang === "da"
-                        ? "Kontakten kunne ikke opdateres. Den lokale, operationelle offline-liste vises."
-                        : "The contact could not be refreshed. Showing the bundled operational offline list."}
-                    </Text>
-                  </View>
-                )}
-
-              {resolvedHospital.code === "UNKNOWN" && (
-                <Text style={{ color: theme.colors.warn, fontWeight: "800" }}>
-                  {t("dest_unknown")}
-                </Text>
-              )}
-
-              {!manualHospitalCode && (
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => setSearchVisible(true)}
-                  style={({ pressed }) => ({
-                    minHeight: 48,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    opacity: pressed ? 0.65 : 1,
-                  })}
-                >
-                  <Text
-                    style={{
-                      color: theme.colors.accentMuted,
-                      fontWeight: "900",
-                    }}
-                  >
-                    {lang === "da" ? "Ret adresse" : "Correct address"}
-                  </Text>
-                </Pressable>
-              )}
-              </ToolSurface>
-            ) : null}
-          </MotionPresence>
-
-          <ToolSurface style={{ gap: 8 }}>
-            <ToolSectionLabel>
-              {lang === "da" ? "Alternativ destination" : "Alternative destination"}
-            </ToolSectionLabel>
-            <Subtle style={{ textAlign: "center" }}>
-              {lang === "da"
-                ? "Kan destinationen ikke findes?"
-                : "Could the destination not be found?"}
-            </Subtle>
+          <View style={{ gap: 5, paddingVertical: 4 }}>
             <Pressable
               testID="destination-manual-hospital-toggle"
               accessibilityRole="button"
@@ -2858,7 +2868,7 @@ export default function DestinationTool() {
                 )}
               </View>
             </MotionPresence>
-          </ToolSurface>
+          </View>
 
           {__DEV__ && Object.keys(diagnostics).length > 0 && (
             <CollapsibleCard
@@ -2879,8 +2889,8 @@ export default function DestinationTool() {
             </CollapsibleCard>
           )}
           </View>
-            </ResponsiveColumn>
-          </ResponsiveColumns>
+            </View>
+          </View>
 
           <ClinicalDisclosure
             disclaimer={reference?.disclaimer[lang] ?? t("dest_page_disclaimer")}

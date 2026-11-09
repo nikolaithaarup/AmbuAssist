@@ -108,12 +108,15 @@ async function renderTool() {
 }
 
 async function pressGps(root) {
-  const container = root.findByProps({ testID: "destination-primary-gps" });
-  const button = container.find(
-    (node) => typeof node.props.onPress === "function",
-  );
+  // Automatic lookup runs on mount. Flush completion without duplicating it.
+  if (mockHasServicesEnabled.mock.calls.length === 0) {
+    const container = root.findByProps({ testID: "destination-primary-gps" });
+    const button = container.find(node => typeof node.props.onPress === "function");
+    await act(async () => { await button.props.onPress(); });
+  }
   await act(async () => {
-    await button.props.onPress();
+    await Promise.resolve();
+    await Promise.resolve();
     await Promise.resolve();
     await Promise.resolve();
   });
@@ -152,8 +155,8 @@ describe("DestinationTool simplified entry flow", () => {
     const root = renderer.root;
     const text = renderedText(root);
 
-    expect(text).toContain("Visitationstype");
-    expect(text).toContain("Find destination med GPS");
+    expect(text).toContain("VISITATIONSTYPE");
+    expect(text).toContain("Opdater GPS");
     expect(text).toContain("Søg adresse manuelt");
     expect(text).toContain("Vælg hospital manuelt");
     expect(text).not.toContain("Byen");
@@ -166,6 +169,13 @@ describe("DestinationTool simplified entry flow", () => {
         .props.onPress();
     });
     expect(renderedText(root)).toContain("Hospital");
+  });
+
+  test("starts GPS automatically once when the page mounts", async () => {
+    const renderer = await renderTool();
+    expect(mockHasServicesEnabled).toHaveBeenCalledTimes(1);
+    expect(renderer.root.findAllByProps({ testID: "destination-primary-gps" }).length).toBeGreaterThan(0);
+    expect(renderer.root.findAllByProps({ testID: "destination-department-toggle" }).length).toBeGreaterThan(0);
   });
 
   test("GPS automatically routes a high-confidence Copenhagen address", async () => {
@@ -272,6 +282,9 @@ describe("DestinationTool simplified entry flow", () => {
     const renderer = await renderTool();
     const root = renderer.root;
     act(() => {
+      root.findByProps({ testID: "destination-department-toggle" }).props.onPress();
+    });
+    act(() => {
       root
         .findByProps({ testID: "destination-all-categories-toggle" })
         .props.onPress();
@@ -312,6 +325,7 @@ describe("DestinationTool simplified entry flow", () => {
       destinationCategoryFavourites: [],
     };
     const renderer = await renderTool();
+    act(() => renderer.root.findByProps({ testID: "destination-department-toggle" }).props.onPress());
     expect(renderedText(renderer.root)).not.toContain("Favoritter");
     expect(renderedText(renderer.root)).toContain("Alle visitationer");
     act(() => {
@@ -326,6 +340,9 @@ describe("DestinationTool simplified entry flow", () => {
   test("selects a favourite category directly from its compact chip", async () => {
     const renderer = await renderTool();
     const root = renderer.root;
+    act(() => {
+      root.findByProps({ testID: "destination-department-toggle" }).props.onPress();
+    });
 
     act(() => {
       root
@@ -336,16 +353,17 @@ describe("DestinationTool simplified entry flow", () => {
         .props.onPress();
     });
 
-    expect(
-      root.findByProps({
-        testID: "destination-favourite-category-neurologi_ekskl_apopleksi",
-      }).props.accessibilityState,
-    ).toEqual({ selected: true });
+    expect(renderedText(root)).toContain("Neurologi");
+    expect(root.findByProps({ testID: "destination-department-toggle" }).props.accessibilityState)
+      .toEqual({ expanded: false });
   });
 
   test("searches all categories and closes the sheet after selection", async () => {
     const renderer = await renderTool();
     const root = renderer.root;
+    act(() => {
+      root.findByProps({ testID: "destination-department-toggle" }).props.onPress();
+    });
 
     act(() => {
       root
@@ -374,15 +392,64 @@ describe("DestinationTool simplified entry flow", () => {
         .findByProps({ testID: "destination-category-option-kardiologi" })
         .props.onPress();
     });
-    expect(
-      root.findByProps({ testID: "destination-all-categories-toggle" }).props
-        .accessibilityState,
-    ).toEqual({ expanded: false });
-    expect(
-      root
-        .findAllByProps({ accessibilityLabel: "Kardiologi" })
-        .some((node) => node.props.accessibilityState?.selected === true),
-    ).toBe(true);
+    expect(root.findByProps({ testID: "destination-department-toggle" }).props.accessibilityState)
+      .toEqual({ expanded: false });
+    expect(renderedText(root)).toContain("Kardiologi");
+  });
+
+  test("switching the department after GPS reroutes without a second GPS lookup", async () => {
+    // destination-switch-explicit-v5: select through the real compact chooser and All visitations modal.
+    // Never use accessibility-label fallback: it can click a non-selection control.
+    mockReverseGeocode.mockResolvedValue([{
+      street: "Frederiksberg Allé", streetNumber: "13A", name: "Frederiksberg Allé",
+      postalCode: "1621", city: "København V", district: "Vesterbro",
+      subregion: "København", region: "Region Hovedstaden", formattedAddress: null,
+    }]);
+    const renderer = await renderTool();
+    const root = renderer.root;
+    await pressGps(root);
+    expect(root.findAllByProps({ testID: "destination-result" }).length).toBeGreaterThan(0);
+    const gpsChecks = mockHasServicesEnabled.mock.calls.length;
+
+    const actionableById = (testID) => root.findAllByProps({ testID })
+      .find((node) => typeof node.props.onPress === "function");
+    const selectDepartment = async (intent, label) => {
+      const toggle = actionableById("destination-department-toggle");
+      if (!toggle) throw new Error("The compact department selector is not actionable");
+      await act(async () => {
+        toggle.props.onPress();
+        await Promise.resolve();
+      });
+      const all = actionableById("destination-all-categories-toggle");
+      if (!all) throw new Error("All visitations is not reachable through the compact selector");
+      await act(async () => {
+        all.props.onPress();
+        await Promise.resolve();
+      });
+      const option = actionableById("destination-category-option-" + intent);
+      if (!option) throw new Error("The requested department is not available: " + intent);
+      await act(async () => {
+        option.props.onPress();
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      const selectedToggle = actionableById("destination-department-toggle");
+      const shownLabel = selectedToggle.findAllByType(Text)
+        .flatMap((node) => node.props.children)
+        .filter((part) => typeof part === "string").join(" ");
+      expect(shownLabel).toContain(label);
+      expect(selectedToggle.props.accessibilityState).toEqual({ expanded: false });
+    };
+
+    await selectDepartment("medicinsk_modtagelse", "Medicinsk modtagelse");
+    expect(root.findAllByProps({ testID: "destination-result" }).length).toBeGreaterThan(0);
+    expect(mockHasServicesEnabled).toHaveBeenCalledTimes(gpsChecks);
+
+    await selectDepartment("traumecenter", "Traumecenter");
+    expect(root.findAllByProps({ testID: "destination-category-unavailable" }).length).toBeGreaterThan(0);
+    expect(root.findAllByProps({ testID: "destination-result" })).toHaveLength(0);
+    expect(mockHasServicesEnabled).toHaveBeenCalledTimes(gpsChecks);
   });
 
   test("a regional-only category fails explicitly after Copenhagen routing", async () => {
@@ -399,6 +466,9 @@ describe("DestinationTool simplified entry flow", () => {
     ]);
     const renderer = await renderTool();
     const root = renderer.root;
+    act(() => {
+      root.findByProps({ testID: "destination-department-toggle" }).props.onPress();
+    });
     act(() => {
       root
         .findByProps({ testID: "destination-all-categories-toggle" })

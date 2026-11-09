@@ -71,6 +71,7 @@ export function WeightJouleDoseScreen() {
 
   const [draft, setDraft] = useState<AppSettings>(safeSettings);
   const [medText, setMedText] = useState<Record<string, MedFieldText>>({});
+  const [expandedMedId, setExpandedMedId] = useState<string | null>(null);
 
   const MEDICINE_FOLDER_URL =
     "https://drive.google.com/drive/folders/16VfsoyO-JrI934rgZCRCebiU27lXKMTm?usp=sharing";
@@ -188,17 +189,18 @@ export function WeightJouleDoseScreen() {
     setDraft(next);
     setSettings(next);
     setMedText({});
+    setExpandedMedId(null);
     setShowSettings(false);
   };
 
   const addMed = () => {
-    setDraft((p) => ({
-      ...p,
-      meds: [...(p.meds ?? []), newMed()],
-    }));
+    const med = newMed();
+    setDraft((p) => ({ ...p, meds: [...(p.meds ?? []), med] }));
+    setExpandedMedId(med.id);
   };
 
   const removeMed = (id: string) => {
+    setExpandedMedId((current) => current === id ? null : current);
     setDraft((p) => ({
       ...p,
       meds: (p.meds ?? []).filter((x) => x.id !== id),
@@ -220,33 +222,38 @@ export function WeightJouleDoseScreen() {
         <Screen>
           <Header
             title={t("wjd_settings_title")}
-            subtitle={t("wjd_settings_sub")}
+            subtitle=""
+            inSettings
             rightLabel={t("close")}
             onRightPress={() => setShowSettings(false)}
           />
 
           <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
             <Card>
-              <Title>{t("settings_weight_title")}</Title>
-              <Subtle>{t("settings_weight_sub")}</Subtle>
+              <Title style={{ fontSize: 20, lineHeight: 25 }}>{t("settings_weight_title")}</Title>
 
-              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
                 {(
                   [
-                    { key: "APLS_1_5", label: t("settings_apls_1_5") },
-                    { key: "APLS_6_12", label: t("settings_apls_6_12") },
-                    { key: "CUSTOM_LINEAR", label: t("settings_custom") },
+                    { key: "APLS_1_5", label: "APLS 1–5" },
+                    { key: "APLS_6_12", label: "APLS 6–12" },
+                    { key: "CUSTOM_LINEAR", label: draft.language === "da" ? "Egen" : "Custom" },
                   ] as const
                 ).map((opt) => (
                   <TouchableOpacity
                     key={opt.key}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: draft.formula === opt.key }}
                     activeOpacity={0.7}
                     onPress={() =>
                       setDraft((p) => ({ ...p, formula: opt.key }))
                     }
                     style={{
-                      paddingVertical: 10,
-                      paddingHorizontal: 12,
+                      flex: 1,
+                      minWidth: 84,
+                      alignItems: "center",
+                      paddingVertical: 9,
+                      paddingHorizontal: 6,
                       borderRadius: 12,
                       borderWidth: 1,
                       borderColor: theme.colors.cardBorder,
@@ -257,7 +264,7 @@ export function WeightJouleDoseScreen() {
                     }}
                   >
                     <Text
-                      style={{ color: theme.colors.text, fontWeight: "800" }}
+                      style={{ color: theme.colors.text, fontWeight: "800", fontSize: 13 }}
                     >
                       {opt.label}
                     </Text>
@@ -266,8 +273,8 @@ export function WeightJouleDoseScreen() {
               </View>
 
               {draft.formula === "CUSTOM_LINEAR" && (
-                <View style={{ marginTop: 10, gap: 10 }}>
-                  <View style={{ gap: 6 }}>
+                <View style={{ flexDirection: "row", marginTop: 8, gap: 8 }}>
+                  <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
                     <Label>a</Label>
                     <Input
                       value={String(draft.customLinearA)}
@@ -285,7 +292,7 @@ export function WeightJouleDoseScreen() {
                     />
                   </View>
 
-                  <View style={{ gap: 6 }}>
+                  <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
                     <Label>b</Label>
                     <Input
                       value={String(draft.customLinearB)}
@@ -307,12 +314,13 @@ export function WeightJouleDoseScreen() {
             </Card>
 
             <Card>
-              <Title>{t("settings_default_energy_title")}</Title>
+              <Title style={{ fontSize: 20, lineHeight: 25 }}>{t("settings_default_energy_title")}</Title>
 
               <View style={{ marginTop: 8, gap: 6 }}>
                 <Label>{t("settings_j_per_kg")}</Label>
                 <Input
                   value={String(draft.defaultJPerKg)}
+                  style={{ width: 110, minHeight: 44, paddingVertical: 8 }}
                   onChangeText={(tt) => {
                     if (tt.trim() === "") {
                       setDraft((p) => ({ ...p, defaultJPerKg: 0 }));
@@ -329,8 +337,7 @@ export function WeightJouleDoseScreen() {
             </Card>
 
             <Card>
-              <Title>{t("settings_meds_title")}</Title>
-              <Subtle>{t("settings_meds_sub")}</Subtle>
+              <Title style={{ fontSize: 20, lineHeight: 25 }}>{t("settings_meds_title")}</Title>
 
               <View style={{ marginTop: 10, alignItems: "flex-start" }}>
                 <TouchableOpacity
@@ -371,11 +378,37 @@ export function WeightJouleDoseScreen() {
                       style={{
                         borderTopWidth: idx === 0 ? 0 : 1,
                         borderTopColor: theme.colors.cardBorder,
-                        paddingTop: idx === 0 ? 0 : 14,
-                        marginTop: idx === 0 ? 0 : 14,
-                        gap: 12,
+                        paddingTop: idx === 0 ? 0 : 8,
+                        marginTop: idx === 0 ? 0 : 8,
+                        gap: 8,
                       }}
                     >
+                      <Pressable
+                        testID={`wjd-med-expand-${m.id}`}
+                        accessibilityRole="button"
+                        accessibilityLabel={m.name || (draft.language === "da" ? "Ny medicin" : "New medicine")}
+                        accessibilityState={{ expanded: expandedMedId === m.id }}
+                        onPress={() => setExpandedMedId((current) => current === m.id ? null : m.id)}
+                        style={{ minHeight: 48, paddingVertical: 6, justifyContent: "center", gap: 4 }}
+                      >
+                        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                          <Text style={{ flex: 1, minWidth: 0, color: theme.colors.text, fontWeight: "800", fontSize: 15 }}>
+                            {m.name || (draft.language === "da" ? "Ny medicin" : "New medicine")}
+                          </Text>
+                          <Text style={{ color: theme.colors.accentMuted, fontSize: 17 }}>
+                            {expandedMedId === m.id ? "⌃" : "⌄"}
+                          </Text>
+                        </View>
+                        {expandedMedId !== m.id ? (
+                          <Text style={{ color: theme.colors.mutedText, fontSize: 12 }}>
+                            {m.enabled
+                              ? `${fmtNum(m.dosePerKg)} ${doseUnitLbl}/kg${m.concentration === undefined ? "" : ` · ${fmtNum(m.concentration)} ${concUnitLbl}/mL`}`
+                              : (draft.language === "da" ? "Deaktiveret" : "Disabled")}
+                          </Text>
+                        ) : null}
+                      </Pressable>
+                      {expandedMedId === m.id ? (
+                        <>
                       <View
                         style={{
                           flexDirection: "row",
@@ -388,6 +421,7 @@ export function WeightJouleDoseScreen() {
                           <Input
                             value={m.name}
                             keyboardType="default"
+                            style={{ minHeight: 44, paddingVertical: 8 }}
                             onChangeText={(tt) =>
                               setDraft((p) => ({
                                 ...p,
@@ -402,6 +436,9 @@ export function WeightJouleDoseScreen() {
 
                         <TouchableOpacity
                           activeOpacity={0.7}
+                          accessibilityRole="switch"
+                          accessibilityLabel={m.name}
+                          accessibilityState={{ checked: m.enabled }}
                           onPress={() =>
                             setDraft((p) => ({
                               ...p,
@@ -546,13 +583,14 @@ export function WeightJouleDoseScreen() {
                               }}
                               placeholder="e.g. 0,1"
                               keyboardType={numKeyboard}
+                              style={{ minHeight: 44, paddingVertical: 8 }}
                             />
                           </View>
                         </View>
                       </View>
 
                       <View style={{ gap: 6 }}>
-                        <Label>{t("settings_med_max")}</Label>
+                        <Label>{draft.language === "da" ? "Maks. dosis (valgfri)" : "Maximum dose (optional)"}</Label>
                         <View
                           style={{
                             flexDirection: "row",
@@ -606,6 +644,7 @@ export function WeightJouleDoseScreen() {
                               }}
                               placeholder="e.g. 10"
                               keyboardType={numKeyboard}
+                              style={{ minHeight: 44, paddingVertical: 8 }}
                             />
                           </View>
                           <Text style={{ color: theme.colors.mutedText }}>
@@ -730,6 +769,7 @@ export function WeightJouleDoseScreen() {
                               }}
                               placeholder="e.g. 5,0"
                               keyboardType={numKeyboard}
+                              style={{ minHeight: 44, paddingVertical: 8 }}
                             />
                           </View>
                         </View>
@@ -772,6 +812,8 @@ export function WeightJouleDoseScreen() {
                           </Text>
                         </TouchableOpacity>
                       </View>
+                      </>
+                      ) : null}
                     </View>
                   );
                 })
@@ -813,6 +855,7 @@ export function WeightJouleDoseScreen() {
     );
   }
 
+  /* wjd-compact-v1 */
   /** ---------- CALCULATOR VIEW ---------- */
   const placeholderDefaultJ = Number.isFinite(computed.defaultJPerKg)
     ? `${t("default")} ${computed.defaultJPerKg}`
@@ -909,7 +952,7 @@ export function WeightJouleDoseScreen() {
       <Screen>
         <Header
           title={t("wjd_title")}
-          subtitle={t("wjd_sub")}
+          subtitle=""
           rightLabel={t("wjd_openSettings")}
           onRightPress={() => setShowSettings(true)}
         />
@@ -933,7 +976,7 @@ export function WeightJouleDoseScreen() {
             </ResponsiveColumn>
           </ResponsiveColumns>
 
-          <DoseCalculatorCard t={t} lang={lang} rows={computed.medRows} />
+          <DoseCalculatorCard t={t} lang={lang} rows={computed.medRows} weightKg={computed.weightKg} />
 
           <ClinicalDisclosure
             disclaimer={reference?.disclaimer[lang] ?? t("wjd_page_disclaimer")}

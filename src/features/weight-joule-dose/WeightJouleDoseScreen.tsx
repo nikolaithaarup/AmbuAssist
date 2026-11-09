@@ -59,7 +59,6 @@ export function WeightJouleDoseScreen() {
   /** ---------- calculator state ---------- */
   const [ageYears, setAgeYears] = useState("");
   const [weightKgOverride, setWeightKgOverride] = useState("");
-  const [jPerKgOverride, setJPerKgOverride] = useState("");
 
   /** ---------- settings state ---------- */
   const safeSettings = useMemo<AppSettings>(() => {
@@ -120,11 +119,8 @@ export function WeightJouleDoseScreen() {
     weightKgOverride,
     settings,
   );
-  const jouleCalculation = useJouleCalculation(
-    weightCalculation.weightKg,
-    jPerKgOverride,
-    settings.defaultJPerKg,
-  );
+  // The ambulance quick tool always uses 4 J/kg; there is no per-patient energy override.
+  const jouleCalculation = useJouleCalculation(weightCalculation.weightKg);
   const medRows = useDoseCalculation(weightCalculation.weightKg, settings.meds);
   const computed = isReady
     ? { ...weightCalculation, ...jouleCalculation, medRows }
@@ -229,113 +225,6 @@ export function WeightJouleDoseScreen() {
           />
 
           <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
-            <Card>
-              <Title style={{ fontSize: 20, lineHeight: 25 }}>{t("settings_weight_title")}</Title>
-
-              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
-                {(
-                  [
-                    { key: "APLS_1_5", label: "APLS 1–5" },
-                    { key: "APLS_6_12", label: "APLS 6–12" },
-                    { key: "CUSTOM_LINEAR", label: draft.language === "da" ? "Egen" : "Custom" },
-                  ] as const
-                ).map((opt) => (
-                  <TouchableOpacity
-                    key={opt.key}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: draft.formula === opt.key }}
-                    activeOpacity={0.7}
-                    onPress={() =>
-                      setDraft((p) => ({ ...p, formula: opt.key }))
-                    }
-                    style={{
-                      flex: 1,
-                      minWidth: 84,
-                      alignItems: "center",
-                      paddingVertical: 9,
-                      paddingHorizontal: 6,
-                      borderRadius: 12,
-                      borderWidth: 1,
-                      borderColor: theme.colors.cardBorder,
-                      backgroundColor:
-                        draft.formula === opt.key
-                          ? "rgba(220,220,220,0.18)"
-                          : "transparent",
-                    }}
-                  >
-                    <Text
-                      style={{ color: theme.colors.text, fontWeight: "800", fontSize: 13 }}
-                    >
-                      {opt.label}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-
-              {draft.formula === "CUSTOM_LINEAR" && (
-                <View style={{ flexDirection: "row", marginTop: 8, gap: 8 }}>
-                  <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
-                    <Label>a</Label>
-                    <Input
-                      value={String(draft.customLinearA)}
-                      onChangeText={(tt) => {
-                        if (tt.trim() === "") {
-                          setDraft((p) => ({ ...p, customLinearA: 0 }));
-                          return;
-                        }
-                        const v = toNum(tt);
-                        if (Number.isFinite(v))
-                          setDraft((p) => ({ ...p, customLinearA: v }));
-                      }}
-                      placeholder="e.g. 2"
-                      keyboardType={numKeyboard}
-                    />
-                  </View>
-
-                  <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
-                    <Label>b</Label>
-                    <Input
-                      value={String(draft.customLinearB)}
-                      onChangeText={(tt) => {
-                        if (tt.trim() === "") {
-                          setDraft((p) => ({ ...p, customLinearB: 0 }));
-                          return;
-                        }
-                        const v = toNum(tt);
-                        if (Number.isFinite(v))
-                          setDraft((p) => ({ ...p, customLinearB: v }));
-                      }}
-                      placeholder="e.g. 8"
-                      keyboardType={numKeyboard}
-                    />
-                  </View>
-                </View>
-              )}
-            </Card>
-
-            <Card>
-              <Title style={{ fontSize: 20, lineHeight: 25 }}>{t("settings_default_energy_title")}</Title>
-
-              <View style={{ marginTop: 8, gap: 6 }}>
-                <Label>{t("settings_j_per_kg")}</Label>
-                <Input
-                  value={String(draft.defaultJPerKg)}
-                  style={{ width: 110, minHeight: 44, paddingVertical: 8 }}
-                  onChangeText={(tt) => {
-                    if (tt.trim() === "") {
-                      setDraft((p) => ({ ...p, defaultJPerKg: 0 }));
-                      return;
-                    }
-                    const v = toNum(tt);
-                    if (Number.isFinite(v))
-                      setDraft((p) => ({ ...p, defaultJPerKg: v }));
-                  }}
-                  placeholder="e.g. 4"
-                  keyboardType={numKeyboard}
-                />
-              </View>
-            </Card>
-
             <Card>
               <Title style={{ fontSize: 20, lineHeight: 25 }}>{t("settings_meds_title")}</Title>
 
@@ -857,10 +746,6 @@ export function WeightJouleDoseScreen() {
 
   /* wjd-compact-v1 */
   /** ---------- CALCULATOR VIEW ---------- */
-  const placeholderDefaultJ = Number.isFinite(computed.defaultJPerKg)
-    ? `${t("default")} ${computed.defaultJPerKg}`
-    : `${t("default")} —`;
-
   const lang = settings.language;
 
   const fallbackSources = [
@@ -962,13 +847,11 @@ export function WeightJouleDoseScreen() {
             <ResponsiveColumn>
               <WeightCalculatorCard
                 t={t}
+                language={settings.language}
                 ageYears={ageYears}
                 setAgeYears={setAgeYears}
                 weightKgOverride={weightKgOverride}
                 setWeightKgOverride={setWeightKgOverride}
-                jPerKgOverride={jPerKgOverride}
-                setJPerKgOverride={setJPerKgOverride}
-                placeholderDefaultJ={placeholderDefaultJ}
               />
             </ResponsiveColumn>
             <ResponsiveColumn>

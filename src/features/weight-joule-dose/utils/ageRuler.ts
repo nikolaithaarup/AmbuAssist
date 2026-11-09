@@ -6,12 +6,10 @@ export const AGE_RULER_MONTHS: readonly number[] = [
   ...Array.from({ length: 12 }, (_, year) => (year + 1) * 12),
 ];
 
-/** Finer control for small children; manual input remains available for exact kg. */
-export const WEIGHT_RULER_KG: readonly number[] = [
-  ...Array.from({ length: 40 }, (_, index) => (index + 1) / 2),
-  ...Array.from({ length: 30 }, (_, index) => index + 21),
-  ...Array.from({ length: 15 }, (_, index) => (index + 26) * 2),
-];
+/** Compact 1–80 kg ruler. Manual typing still accepts fractional measured weights. */
+export const WEIGHT_RULER_KG: readonly number[] = Array.from(
+  { length: 80 }, (_, index) => index + 1,
+);
 
 export function parseAgeYears(input: string): number {
   const value = String(input ?? "").trim();

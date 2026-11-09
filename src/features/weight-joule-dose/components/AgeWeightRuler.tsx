@@ -22,7 +22,7 @@ import {
 } from "../utils/ageRuler";
 import { toNum } from "../utils/parsing";
 
-const TICK = 32;
+const TICK = 36;
 type RulerMode = "age" | "weight";
 
 type Props = {
@@ -35,7 +35,7 @@ type Props = {
 
 /** Horizontal, snap-to-tick ruler: animated visual depth, no circular dial or dependency. */
 export function AgeWeightRuler({ language, ageYears, weightKg, onAgeChange, onWeightChange }: Props) {
-  const [mode, setMode] = useState<RulerMode>("age");
+  const [mode, setMode] = useState<RulerMode>(weightKg.trim() ? "weight" : "age");
   const [viewportWidth, setViewportWidth] = useState(0);
   const offset = useRef(new Animated.Value(0)).current;
   const scroller = useRef<ScrollView | null>(null);
@@ -44,7 +44,13 @@ export function AgeWeightRuler({ language, ageYears, weightKg, onAgeChange, onWe
   const options = mode === "age" ? AGE_RULER_MONTHS : WEIGHT_RULER_KG;
   const parsedAge = parseAgeYears(ageYears);
   const parsedWeight = toNum(weightKg);
-  const target = mode === "age" ? parsedAge * 12 : parsedWeight;
+  // When no measured weight is present, position the weight ruler at the AGE estimate.
+  // Merely opening the weight tab never converts that estimate into a measured override.
+  const estimatedWeight = Number.isFinite(parsedAge) && parsedAge >= 1 && parsedAge <= 12
+    ? parsedAge * 2 + 8 : NaN;
+  const effectiveWeight = Number.isFinite(parsedWeight) && parsedWeight > 0
+    ? parsedWeight : estimatedWeight;
+  const target = mode === "age" ? parsedAge * 12 : effectiveWeight;
   const defaultIndex = mode === "age" ? 12 : nearestRulerIndex(WEIGHT_RULER_KG, 10);
   const indexFromText = nearestRulerIndex(options, target, defaultIndex);
   const hasSelection = mode === "age" ? ageYears.trim().length > 0 : weightKg.trim().length > 0;
@@ -58,7 +64,8 @@ export function AgeWeightRuler({ language, ageYears, weightKg, onAgeChange, onWe
 
   const choose = (index: number) => {
     const safe = Math.min(options.length - 1, Math.max(0, index));
-    if (safe === selectedIndex.current && hasSelection) return;
+    // Re-selecting an age must still clear a previous measured-weight override.
+    if (safe === selectedIndex.current && hasSelection && (mode === "weight" || !weightKg.trim())) return;
     selectedIndex.current = safe;
     if (mode === "age") onAgeChange(formatAgeRulerInput(options[safe], language));
     else onWeightChange(formatWeightRulerInput(options[safe]));
@@ -87,13 +94,16 @@ export function AgeWeightRuler({ language, ageYears, weightKg, onAgeChange, onWe
     if (next > 0 && next !== viewportWidth) setViewportWidth(next);
   };
 
-  const currentValue = hasSelection
-    ? mode === "age"
-      ? Number.isFinite(parsedAge)
-        ? ageRulerLabel(Math.round(parsedAge * 12), language)
-        : ageYears
-      : `${weightKg} kg`
-    : language === "da" ? "Træk for at vælge" : "Drag to select";
+  const prompt = language === "da" ? "Træk for at vælge" : "Drag to select";
+  const currentValue = mode === "age"
+    ? (hasSelection && Number.isFinite(parsedAge)
+      ? ageRulerLabel(Math.round(parsedAge * 12), language)
+      : prompt)
+    : weightKg.trim()
+      ? `${weightKg} kg`
+      : Number.isFinite(estimatedWeight)
+        ? `≈ ${Math.round(estimatedWeight)} kg`
+        : prompt;
 
   return (
     <View testID="wjd-horizontal-ruler" style={{ gap: 5 }}>
@@ -143,8 +153,9 @@ export function AgeWeightRuler({ language, ageYears, weightKg, onAgeChange, onWe
           onMomentumScrollEnd={(event) => { scrollEnd(event); userScrolling.current = false; }}
         >
           {options.map((value, index) => {
-            const major = mode === "age" ? value % 12 === 0 : Number.isInteger(value) && value % 5 === 0;
-            const tickLabel = mode === "age" ? (value < 12 ? `${value}m` : String(value / 12)) : (major ? String(value) : "");
+            const major = mode === "age" ? value % 12 === 0 : value % 5 === 0;
+            // Every whole kilogram has a printed number; fives read as landmarks.
+            const tickLabel = mode === "age" ? (value < 12 ? `${value}m` : String(value / 12)) : String(value);
             const inputRange = [(index - 3) * TICK, index * TICK, (index + 3) * TICK];
             return (
               <Pressable
@@ -162,7 +173,7 @@ export function AgeWeightRuler({ language, ageYears, weightKg, onAgeChange, onWe
               >
                 <Animated.View style={{ alignItems: "center", gap: 3, opacity: offset.interpolate({ inputRange, outputRange: [0.38, 1, 0.38], extrapolate: "clamp" }), transform: [{ scale: offset.interpolate({ inputRange, outputRange: [0.81, 1.09, 0.81], extrapolate: "clamp" }) }] }}>
                   <View style={{ width: major ? 2 : 1, height: major ? 14 : 9, backgroundColor: major ? theme.colors.accentMuted : theme.colors.mutedText, borderRadius: 2 }} />
-                  <Text style={{ color: theme.colors.mutedText, fontSize: 10, fontWeight: major ? "800" : "500" }} numberOfLines={1}>{tickLabel || " "}</Text>
+                  <Text style={{ color: major ? theme.colors.accentMuted : theme.colors.mutedText, fontSize: major ? 13 : 11, fontWeight: major ? "900" : "600" }} numberOfLines={1}>{tickLabel}</Text>
                 </Animated.View>
               </Pressable>
             );

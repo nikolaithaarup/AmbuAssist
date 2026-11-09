@@ -27,8 +27,13 @@ export function WeightCalculatorCard({
   const enteredWeight = toNum(weightKgOverride);
   const needsInfantWeight = Number.isFinite(years) && years >= 0 && years < 1 &&
     !(Number.isFinite(enteredWeight) && enteredWeight > 0);
+  // Selecting/typing an age restores age-based estimation instead of leaving a stale measured override.
+  const selectAge = (value: string) => {
+    setAgeYears(value);
+    setWeightKgOverride("");
+  };
   const fields = [
-    { key: "age", label: t("wjd_age"), hint: t("wjd_years"), value: ageYears, onChange: setAgeYears, keyboard: "number-pad" as const },
+    { key: "age", label: t("wjd_age"), hint: t("wjd_years"), value: ageYears, onChange: selectAge, keyboard: "number-pad" as const },
     { key: "weight", label: `${t("wjd_weight_override")} · kg`, hint: "—", value: weightKgOverride, onChange: setWeightKgOverride, keyboard: "decimal-pad" as const },
   ];
   return (
@@ -54,7 +59,7 @@ export function WeightCalculatorCard({
         language={language}
         ageYears={ageYears}
         weightKg={weightKgOverride}
-        onAgeChange={setAgeYears}
+        onAgeChange={selectAge}
         onWeightChange={setWeightKgOverride}
       />
       {needsInfantWeight ? (

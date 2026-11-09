@@ -16,15 +16,10 @@ describe("compact age and weight ruler", () => {
     expect(new Set(AGE_RULER_MONTHS).size).toBe(AGE_RULER_MONTHS.length);
   });
 
-  it("keeps smooth finer weight stops without inventing precision at high weights", () => {
-    expect(WEIGHT_RULER_KG[0]).toBe(0.5);
-    expect(WEIGHT_RULER_KG).toContain(4.5);
-    expect(WEIGHT_RULER_KG).toContain(20);
-    expect(WEIGHT_RULER_KG).toContain(21);
-    expect(WEIGHT_RULER_KG).toContain(50);
-    expect(WEIGHT_RULER_KG).toContain(52);
-    expect(WEIGHT_RULER_KG[WEIGHT_RULER_KG.length - 1]).toBe(80);
-    expect(WEIGHT_RULER_KG.every((value, index) => index === 0 || value > WEIGHT_RULER_KG[index - 1])).toBe(true);
+  it("shows each whole kilogram from 1 to 80, with every fifth as a visual landmark", () => {
+    expect(WEIGHT_RULER_KG).toEqual(Array.from({ length: 80 }, (_, index) => index + 1));
+    expect(WEIGHT_RULER_KG.every(Number.isInteger)).toBe(true);
+    expect(WEIGHT_RULER_KG.filter((value) => value % 5 === 0)).toHaveLength(16);
   });
 
   it("understands month selections while preserving manual decimal years", () => {
@@ -51,7 +46,7 @@ describe("compact age and weight ruler", () => {
   it("can find the nearest visual stop without changing the manually entered value", () => {
     expect(nearestRulerIndex(AGE_RULER_MONTHS, 6)).toBe(6);
     expect(nearestRulerIndex(AGE_RULER_MONTHS, 19)).toBe(13); // nearest is 2 years / 24 months
-    expect(nearestRulerIndex(WEIGHT_RULER_KG, 13.2)).toBe(25); // 13 kg
+    expect(nearestRulerIndex(WEIGHT_RULER_KG, 13.2)).toBe(12); // 13 kg on 1-based whole-kg scale
     expect(nearestRulerIndex(AGE_RULER_MONTHS, NaN, 12)).toBe(12);
   });
 });

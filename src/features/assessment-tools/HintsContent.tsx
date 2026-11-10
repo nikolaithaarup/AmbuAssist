@@ -10,7 +10,8 @@ import {
 } from "../../domain/assessments/hints";
 import { useT } from "../../i18n/useT";
 import type { ReferenceDoc } from "../../services/referenceService";
-import { Card, Row, Subtle, Title } from "../../ui/Ui";
+import { Row, Subtle, Title } from "../../ui/Ui";
+import { AssessmentCard as Card } from "../../ui/AssessmentCompact";
 import { theme } from "../../ui/theme";
 import {
   AssessmentQuestionCard,
@@ -224,6 +225,7 @@ export default function HintsContent({ lang, reference }: { lang: Lang; referenc
         />
       ) : null}
 
+      {flow.state.path.length > 0 ? (
       <Card>
         <Title style={{ fontSize: 18 }}>{t("hints_selections")}</Title>
         {flow.state.path.map((stepId, index) => {
@@ -236,6 +238,7 @@ export default function HintsContent({ lang, reference }: { lang: Lang; referenc
           ) : null;
         })}
       </Card>
+      ) : null}
 
       <Card>
         <Row>

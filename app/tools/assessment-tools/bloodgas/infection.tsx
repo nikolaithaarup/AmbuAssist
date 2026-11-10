@@ -11,7 +11,8 @@ import {
 } from "../../../../src/services/referenceService";
 import { Background } from "../../../../src/ui/Background";
 import { ClinicalDisclosure } from "../../../../src/ui/ClinicalDisclosure";
-import { Card, Row, Screen, Subtle, Title } from "../../../../src/ui/Ui";
+import { Row, Screen, Subtle, Title } from "../../../../src/ui/Ui";
+import { AssessmentCard as Card } from "../../../../src/ui/AssessmentCompact";
 import { theme } from "../../../../src/ui/theme";
 
 import { BloodGasInputCard } from "../../../../src/features/bloodgas/BloodGasInputCard";
@@ -103,7 +104,7 @@ export default function InfectionPage() {
       <Screen>
         <BloodGasPageHeader title={t("tool_bg_infection_title")} subtitle={t("tool_bg_infection_desc")} />
 
-        <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
+        <ScrollView contentContainerStyle={{ gap: 8, paddingBottom: 16 }}>
           <BloodGasInputCard
             values={form}
             onChange={handleChange}

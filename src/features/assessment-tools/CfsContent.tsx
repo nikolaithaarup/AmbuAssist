@@ -4,7 +4,8 @@ import { useT } from "../../i18n/useT";
 import type { Key } from "../../i18n/strings";
 import type { ReferenceDoc } from "../../services/referenceService";
 import { ClinicalDisclosure } from "../../ui/ClinicalDisclosure";
-import { Card, Subtle, Title } from "../../ui/Ui";
+import { Subtle, Title } from "../../ui/Ui";
+import { AssessmentCard as Card } from "../../ui/AssessmentCompact";
 import { theme } from "../../ui/theme";
 import { hapticReset } from "../../ui/haptics";
 
@@ -70,8 +71,8 @@ export default function CfsContent({ lang, reference }: Props) {
           style={{
             flexDirection: "row",
             flexWrap: "wrap",
-            gap: 10,
-            marginTop: 10,
+            gap: 7,
+            marginTop: 6,
           }}
         >
           {levels.map((lvl) => {
@@ -82,8 +83,9 @@ export default function CfsContent({ lang, reference }: Props) {
                 onPress={() => setSelected(lvl.score)}
                 style={({ pressed }) => ({
                   opacity: pressed ? 0.75 : 1,
-                  paddingVertical: 10,
-                  paddingHorizontal: 14,
+                  minHeight: 44,
+                  paddingVertical: 8,
+                  paddingHorizontal: 12,
                   borderRadius: 14,
                   borderWidth: 1,
                   borderColor: theme.colors.cardBorder,
@@ -145,9 +147,9 @@ export default function CfsContent({ lang, reference }: Props) {
 
           <View
             style={{
-              marginTop: 10,
-              borderRadius: 14,
-              borderWidth: 1,
+              marginTop: 6,
+              borderRadius: 10,
+              borderWidth: 0,
               borderColor: theme.colors.cardBorder,
               padding: 12,
               backgroundColor: "rgba(0,0,0,0.14)",
@@ -176,9 +178,9 @@ export default function CfsContent({ lang, reference }: Props) {
 
           <View
             style={{
-              marginTop: 12,
-              borderRadius: 14,
-              borderWidth: 1,
+              marginTop: 6,
+              borderRadius: 10,
+              borderWidth: 0,
               borderColor: theme.colors.cardBorder,
               padding: 12,
               backgroundColor: "rgba(0,0,0,0.10)",
@@ -195,12 +197,7 @@ export default function CfsContent({ lang, reference }: Props) {
             </Text>
           </View>
         </Card>
-      ) : (
-        <Card>
-          <Title>{t("result")}</Title>
-          <Subtle>{t("cfs_noSelection")}</Subtle>
-        </Card>
-      )}
+      ) : null}
 
       <ClinicalDisclosure
         disclaimer={disclaimerText}

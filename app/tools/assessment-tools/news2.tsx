@@ -75,7 +75,7 @@ function VitalInput({
   onChangeText: (value: string) => void;
 }) {
   return (
-    <View style={{ flexGrow: 1, flexBasis: "46%", minWidth: 118, gap: 6 }}>
+    <View style={{ flexGrow: 1, flexBasis: "46%", minWidth: 118, gap: 4 }}>
       <View style={{ minHeight: 25, flexDirection: "row", alignItems: "center", gap: 7 }}>
         <Text style={{ flex: 1, color: theme.colors.text, fontSize: 13, fontWeight: "800" }}>{label}</Text>
         <View
@@ -98,7 +98,7 @@ function VitalInput({
         placeholder={placeholder}
         keyboardType="decimal-pad"
         selectTextOnFocus
-        style={{ flex: 0, width: "100%", minHeight: 48, textAlign: "center", fontSize: 18, fontWeight: "800" }}
+        style={{ flex: 0, width: "100%", minHeight: 44, textAlign: "center", fontSize: 18, fontWeight: "800" }}
       />
     </View>
   );
@@ -165,12 +165,13 @@ export default function NEWS2() {
   return (
     <Background>
       <Screen>
-        <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
+        <ScrollView contentContainerStyle={{ gap: 8, paddingBottom: 16 }}>
           <ToolPageHeader title={t("news2_title")} subtitle={t("news2_sub")} />
 
           <ResponsiveColumns>
             <ResponsiveColumn>
           <ToolSurface
+            style={{ padding: 12, gap: 8 }}
             tone={
               computed.total >= 7 || computed.anyThree
                 ? "danger"
@@ -194,7 +195,7 @@ export default function NEWS2() {
             </Text>
           </ToolSurface>
 
-          <ToolSurface>
+          <ToolSurface style={{ padding: 12, gap: 8 }}>
             <ToolSectionLabel>{t("news2_scale")}</ToolSectionLabel>
             <View style={{ flexDirection: "row", gap: 8 }}>
               <SegmentButton label={t("news2_scale1")} selected={scale === 1} onPress={() => setScale(1)} />
@@ -215,7 +216,7 @@ export default function NEWS2() {
             </ResponsiveColumn>
 
             <ResponsiveColumn>
-          <ToolSurface>
+          <ToolSurface style={{ padding: 12, gap: 8 }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
               <ToolSectionLabel>{t("tool_filled")} {computed.filledCount}/5</ToolSectionLabel>
               <Text style={{ marginLeft: "auto", color: theme.colors.mutedText, fontSize: 11 }}>{t("news2_points")}</Text>

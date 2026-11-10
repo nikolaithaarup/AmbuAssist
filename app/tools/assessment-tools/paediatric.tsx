@@ -7,7 +7,7 @@ import {
   type ReferenceDoc,
 } from "../../../src/services/referenceService";
 import { Background } from "../../../src/ui/Background";
-import { Card, Screen, Subtle, Title } from "../../../src/ui/Ui";
+import { Screen, Subtle, Title } from "../../../src/ui/Ui";
 import { theme } from "../../../src/ui/theme";
 import ApgarContent from "../../../src/features/assessment-tools/ApgarContent";
 import FlaccContent from "../../../src/features/assessment-tools/FlaccContent";
@@ -48,22 +48,22 @@ export default function Paediatric() {
   return (
     <Background>
       <Screen>
-        <View style={{ gap: 6, marginTop: Platform.OS === "web" ? 0 : 12 }}>
-          <Title>{t("paediatric_title")}</Title>
+        <View style={{ gap: 3, marginTop: Platform.OS === "web" ? 0 : 8 }}>
+          <Title style={{ fontSize: 22, lineHeight: 27 }}>{t("paediatric_title")}</Title>
           <Subtle>{t("paediatric_sub")}</Subtle>
         </View>
 
-        <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
-          <Card>
-            <View style={{ flexDirection: "row", gap: 10 }}>
+        <ScrollView contentContainerStyle={{ gap: 8, paddingBottom: 16 }}>
+          <View style={{ paddingVertical: 2 }}>
+            <View style={{ flexDirection: "row", gap: 6 }}>
               <Pressable
                 onPress={() => setTool("apgar")}
                 style={({ pressed }) => ({
                   opacity: pressed ? 0.75 : 1,
                   flex: 1,
-                  minHeight: Platform.OS === "web" ? 50 : undefined,
-                  paddingVertical: 12,
-                  borderRadius: 14,
+                  minHeight: 44,
+                  paddingVertical: 7,
+                  borderRadius: 10,
                   borderWidth: 1,
                   borderColor: theme.colors.cardBorder,
                   backgroundColor:
@@ -83,9 +83,9 @@ export default function Paediatric() {
                 style={({ pressed }) => ({
                   opacity: pressed ? 0.75 : 1,
                   flex: 1,
-                  minHeight: Platform.OS === "web" ? 50 : undefined,
-                  paddingVertical: 12,
-                  borderRadius: 14,
+                  minHeight: 44,
+                  paddingVertical: 7,
+                  borderRadius: 10,
                   borderWidth: 1,
                   borderColor: theme.colors.cardBorder,
                   backgroundColor:
@@ -100,7 +100,7 @@ export default function Paediatric() {
                 </Text>
               </Pressable>
             </View>
-          </Card>
+          </View>
 
           {tool === "apgar" ? (
             <ApgarContent lang={lang} reference={apgarRef} />

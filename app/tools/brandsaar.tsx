@@ -71,10 +71,10 @@ function ZoneButton({
       style={({ pressed }) => ({
         flex: 1,
         minWidth: "45%",
-        minHeight: 58,
+        minHeight: 52,
         opacity: pressed ? 0.7 : 1,
         borderRadius: 14,
-        padding: 10,
+        padding: 8,
         borderWidth: 1,
         borderColor: selected ? theme.colors.text : theme.colors.border,
         backgroundColor: selected
@@ -119,13 +119,13 @@ function ChoiceButton({ label, selected, onPress }: { label: string; selected: b
 function BurnInfoSection({ title, children }: { title: string; children: ReactNode }) {
   const [open, setOpen] = useState(false);
   return (
-    <ToolSurface style={{ paddingVertical: 4 }}>
+    <ToolSurface style={{ paddingVertical: 4, paddingHorizontal: 10, gap: 5 }}>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={title}
         accessibilityState={{ expanded: open }}
         onPress={() => setOpen((current) => !current)}
-        style={({ pressed }) => ({ minHeight: 52, flexDirection: "row", alignItems: "center", gap: 10, opacity: pressed ? 0.72 : 1 })}
+        style={({ pressed }) => ({ minHeight: 44, flexDirection: "row", alignItems: "center", gap: 10, opacity: pressed ? 0.72 : 1 })}
       >
         <Text style={{ flex: 1, color: theme.colors.text, fontSize: 16, fontWeight: "900" }}>{title}</Text>
         <Text accessibilityElementsHidden style={{ color: theme.colors.accentMuted, fontSize: 20 }}>{open ? "⌄" : "›"}</Text>
@@ -218,13 +218,13 @@ export default function BurnsPage() {
   return (
     <Background>
       <Screen>
-        <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
+        <ScrollView contentContainerStyle={{ gap: 8, paddingBottom: 16 }}>
           <ToolPageHeader
             title={lang === "da" ? "Brandsår" : "Burns"}
             subtitle={lang === "da" ? "TBSA, RH-kontakt og væskeestimat" : "TBSA, RH contact and fluid estimate"}
           />
 
-          <ToolSurface tone="accent">
+          <ToolSurface tone="accent" style={{ padding: 12, gap: 8 }}>
             <ToolSectionLabel>{lang === "da" ? "Kontakt brandsårslæge" : "Call burns doctor"}</ToolSectionLabel>
 
             <View style={{ marginTop: 12, gap: 12 }}>
@@ -253,7 +253,7 @@ export default function BurnsPage() {
             </View>
           </ToolSurface>
 
-          <ToolSurface>
+          <ToolSurface style={{ padding: 12, gap: 8 }}>
             <ToolSectionLabel>{lang === "da" ? "Patienttype" : "Patient type"}</ToolSectionLabel>
 
             <View
@@ -284,7 +284,7 @@ export default function BurnsPage() {
             </View>
           </ToolSurface>
 
-          <ToolSurface>
+          <ToolSurface style={{ padding: 12, gap: 8 }}>
             <Title style={{ fontSize: 19 }}>
               {lang === "da" ? "Klik TBSA-zoner" : "Tap TBSA zones"}
             </Title>
@@ -320,9 +320,9 @@ export default function BurnsPage() {
             <View
               style={{
                 marginTop: 14,
-                padding: 14,
-                borderRadius: 18,
-                borderWidth: 1,
+                padding: 10,
+                borderRadius: 10,
+                borderWidth: 0,
                 borderColor: theme.colors.border,
                 backgroundColor: "rgba(255,255,255,0.04)",
               }}
@@ -344,7 +344,7 @@ export default function BurnsPage() {
             </View>
           </ToolSurface>
 
-          <ToolSurface>
+          <ToolSurface style={{ padding: 12, gap: 8 }}>
             <ToolSectionLabel>{lang === "da" ? "Alternativ" : "Alternative"}</ToolSectionLabel>
             <Title style={{ fontSize: 19 }}>{lang === "da" ? "Manuel TBSA" : "Manual TBSA"}</Title>
 
@@ -381,7 +381,7 @@ export default function BurnsPage() {
             </View>
           </ToolSurface>
 
-          <ToolSurface tone={patientWeight > 0 && tbsa > 0 ? "accent" : "default"}>
+          <ToolSurface tone={patientWeight > 0 && tbsa > 0 ? "accent" : "default"} style={{ padding: 12, gap: 8 }}>
             <Title style={{ fontSize: 19 }}>
               {lang === "da"
                 ? "Væskeestimat — modificeret Parkland"
@@ -408,9 +408,9 @@ export default function BurnsPage() {
 
               <View
                 style={{
-                  padding: 14,
-                  borderRadius: 18,
-                  borderWidth: 1,
+                  padding: 10,
+                  borderRadius: 10,
+                  borderWidth: 0,
                   borderColor: theme.colors.border,
                   backgroundColor: "rgba(255,255,255,0.04)",
                   gap: 8,
@@ -470,9 +470,9 @@ export default function BurnsPage() {
               {patientWeight > 0 && tbsa > 0 && (
                 <View
                   style={{
-                    padding: 14,
-                    borderRadius: 18,
-                    borderWidth: 1,
+                    padding: 10,
+                    borderRadius: 10,
+                    borderWidth: 0,
                     borderColor: theme.colors.border,
                     backgroundColor: "rgba(255,255,255,0.04)",
                     gap: 8,

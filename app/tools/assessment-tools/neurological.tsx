@@ -7,7 +7,7 @@ import {
   type ReferenceDoc,
 } from "../../../src/services/referenceService";
 import { Background } from "../../../src/ui/Background";
-import { Card, Screen, Subtle, Title } from "../../../src/ui/Ui";
+import { Screen, Subtle, Title } from "../../../src/ui/Ui";
 import { theme } from "../../../src/ui/theme";
 import NihssContent from "../../../src/features/assessment-tools/NihssContent";
 import PressContent from "../../../src/features/assessment-tools/PressContent";
@@ -53,23 +53,23 @@ export default function Neurological() {
   return (
     <Background>
       <Screen>
-        <View style={{ gap: 6, marginTop: Platform.OS === "web" ? 0 : 12 }}>
-          <Title>{t("neurological_title")}</Title>
+        <View style={{ gap: 3, marginTop: Platform.OS === "web" ? 0 : 8 }}>
+          <Title style={{ fontSize: 22, lineHeight: 27 }}>{t("neurological_title")}</Title>
           <Subtle>{t("neurological_sub")}</Subtle>
         </View>
 
-        <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
-          <Card>
-            <View style={{ flexDirection: "row", flexWrap: Platform.OS === "web" ? "wrap" : "nowrap", gap: 10 }}>
+        <ScrollView contentContainerStyle={{ gap: 8, paddingBottom: 16 }}>
+          <View style={{ paddingVertical: 2 }}>
+            <View style={{ flexDirection: "row", flexWrap: Platform.OS === "web" ? "wrap" : "nowrap", gap: 6 }}>
               <Pressable
                 onPress={() => setTool("nihss")}
                 style={({ pressed }) => ({
                   opacity: pressed ? 0.75 : 1,
                   flex: 1,
                   minWidth: Platform.OS === "web" ? 88 : undefined,
-                  minHeight: Platform.OS === "web" ? 50 : undefined,
-                  paddingVertical: 12,
-                  borderRadius: 14,
+                  minHeight: 44,
+                  paddingVertical: 7,
+                  borderRadius: 10,
                   borderWidth: 1,
                   borderColor: theme.colors.cardBorder,
                   backgroundColor:
@@ -90,9 +90,9 @@ export default function Neurological() {
                   opacity: pressed ? 0.75 : 1,
                   flex: 1,
                   minWidth: Platform.OS === "web" ? 88 : undefined,
-                  minHeight: Platform.OS === "web" ? 50 : undefined,
-                  paddingVertical: 12,
-                  borderRadius: 14,
+                  minHeight: 44,
+                  paddingVertical: 7,
+                  borderRadius: 10,
                   borderWidth: 1,
                   borderColor: theme.colors.cardBorder,
                   backgroundColor:
@@ -113,9 +113,9 @@ export default function Neurological() {
                   opacity: pressed ? 0.75 : 1,
                   flex: 1,
                   minWidth: Platform.OS === "web" ? 88 : undefined,
-                  minHeight: Platform.OS === "web" ? 50 : undefined,
-                  paddingVertical: 12,
-                  borderRadius: 14,
+                  minHeight: 44,
+                  paddingVertical: 7,
+                  borderRadius: 10,
                   borderWidth: 1,
                   borderColor: theme.colors.cardBorder,
                   backgroundColor:
@@ -130,7 +130,7 @@ export default function Neurological() {
                 </Text>
               </Pressable>
             </View>
-          </Card>
+          </View>
 
           {tool === "nihss" ? (
             <NihssContent lang={lang} reference={nihssRef} />

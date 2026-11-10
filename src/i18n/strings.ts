@@ -45,8 +45,8 @@ export const en = {
   // =========================================================
   // HOME TOOL CARDS
   // =========================================================
-  tool_dest_title: "Destination",
-  tool_dest_desc: "Choose category, then use GPS or a manual address",
+  tool_dest_title: "Visitation",
+  tool_dest_desc: "Choose receiving department using GPS or address",
 
   tool_trombolysis_title: "Thrombolysis",
   tool_trombolysis_desc:
@@ -56,7 +56,7 @@ export const en = {
   tool_weightDose_desc: "Age → weight estimate → joules + configured meds",
 
   tool_exams_title: "Clinical exams",
-  tool_exams_desc: "Quick bedside signs",
+  tool_exams_desc: "Examinations and clinical signs by topic",
 
   tool_assessment_title: "Assessment tools",
   tool_assessment_desc: "Clinical scores, scales, and structured assessments",
@@ -705,145 +705,145 @@ export const en = {
   // =========================================================
   // EXAMS
   // =========================================================
-  exams_title: "Clinical exams & signs",
+  exams_title: "Clinical examinations",
   exams_sub:
-    "Tap an item to expand. Use as a memory aid — guidelines and context win.",
+    "Choose a topic, then an examination.",
 
-  ex_label_how: "How to examine",
-  ex_label_positive: "Positive sign",
-  ex_label_indicates: "Indicates",
-  ex_label_prehospital: "Prehospital note",
+  ex_label_how: "Examination",
+  ex_label_positive: "Positive finding",
+  ex_label_indicates: "May suggest",
+  ex_label_prehospital: "Prehospital relevance",
 
-  ex_group_abdomen: "Abdomen (acute abdomen)",
-  ex_group_cns: "CNS / meningeal irritation",
-  ex_group_back: "Back / nerves",
-  ex_group_thorax: "Thorax / heart",
-  ex_group_uro: "Kidneys / urology",
-  ex_group_ob: "Obstetrics",
-  ex_group_trauma: "Head / trauma",
+  ex_group_abdomen: "Abdomen",
+  ex_group_cns: "Neurology / meninges",
+  ex_group_back: "Back / nerve roots",
+  ex_group_thorax: "Heart / circulation",
+  ex_group_uro: "Kidneys / urinary tract",
+  ex_group_ob: "Obstetric warning signs",
+  ex_group_trauma: "Head injury",
 
   ex_mcburney_title: "McBurney's point",
   ex_mcburney_how:
-    "Palpate one-third of the distance from the right ASIS toward the umbilicus.",
-  ex_mcburney_pos: "Localized tenderness/pain.",
-  ex_mcburney_ind: "Acute appendicitis (classic).",
+    "Palpate approximately one-third of the distance from the right anterior superior iliac spine (ASIS) towards the umbilicus.",
+  ex_mcburney_pos: "Localised tenderness in the right lower abdomen.",
+  ex_mcburney_ind: "Appendicitis, assessed together with the history and other findings.",
   ex_mcburney_pre:
-    "Supports suspicion of a surgical abdomen → rapid transport and appropriate destination. Avoid masking the clinical picture without consultation.",
+    "Assess vital signs and other red flags. Provide pain relief according to local guidance; analgesia need not be withheld to preserve examination findings.",
 
   ex_murphy_title: "Murphy's sign",
   ex_murphy_how:
-    "Palpate under the right costal margin and ask the patient to take a deep breath in.",
+    "Palpate just below the right costal margin while the patient takes a deep breath.",
   ex_murphy_pos: "Inspiratory arrest due to pain.",
-  ex_murphy_ind: "Acute cholecystitis.",
+  ex_murphy_ind: "Acute cholecystitis; a negative sign does not exclude it.",
   ex_murphy_pre:
-    "Helps explain fever + RUQ pain and guides the correct receiving specialty.",
+    "Interpret with right upper-quadrant pain, fever and the overall clinical picture.",
 
   ex_blumberg_title: "Blumberg's sign (rebound tenderness)",
-  ex_blumberg_how: "Press slowly and deeply, then release quickly.",
-  ex_blumberg_pos: "Pain on release rather than on pressure.",
-  ex_blumberg_ind: "Peritoneal irritation (peritonitis, perforation).",
+  ex_blumberg_how: "Apply steady abdominal pressure, then release quickly. Avoid repeatedly provoking pain.",
+  ex_blumberg_pos: "Pain is greater on release than during pressure.",
+  ex_blumberg_ind: "Peritoneal irritation; the finding does not establish the cause.",
   ex_blumberg_pre:
-    "Serious abdomen → high priority, keep NPO, rapid transport.",
+    "Check for guarding, abnormal vital signs and other signs of an acute abdomen.",
 
   ex_rovsing_title: "Rovsing's sign",
   ex_rovsing_how: "Palpate the left lower quadrant.",
   ex_rovsing_pos: "Pain in the right lower quadrant.",
-  ex_rovsing_ind: "Appendicitis.",
+  ex_rovsing_ind: "Can support suspected appendicitis; sensitivity is limited.",
 
   ex_psoas_title: "Psoas sign",
   ex_psoas_how:
     "The patient raises a straight leg against resistance OR you extend the hip.",
-  ex_psoas_pos: "Abdominal pain.",
-  ex_psoas_ind: "Retrocecal appendicitis / retroperitoneal irritation.",
+  ex_psoas_pos: "Pain in the right lower abdomen when the iliopsoas muscle is activated or stretched.",
+  ex_psoas_ind: "Can occur in retrocaecal appendicitis or retroperitoneal irritation.",
 
   ex_obturator_title: "Obturator sign",
   ex_obturator_how: "Flex hip and knee, then internally rotate the hip.",
   ex_obturator_pos: "Lower abdominal/pelvic pain.",
-  ex_obturator_ind: "Appendicitis located in the pelvis.",
+  ex_obturator_ind: "Can occur with pelvic appendicitis; not diagnostic alone.",
 
   ex_brudzinski_title: "Brudzinski's sign",
   ex_brudzinski_how: "Passive neck flexion with the patient supine.",
   ex_brudzinski_pos: "Involuntary hip/knee flexion.",
-  ex_brudzinski_ind: "Meningitis / meningeal irritation.",
+  ex_brudzinski_ind: "Meningeal irritation; absence does not rule out meningitis.",
   ex_brudzinski_pre:
-    "Fever + neck stiffness + altered mental status → high urgency and early destination/alerting.",
+    "Fever, headache, neck stiffness or altered consciousness needs urgent assessment regardless of these signs.",
 
   ex_kernig_title: "Kernig's sign",
   ex_kernig_how: "Flex hip and knee to 90°, then attempt to extend the knee.",
   ex_kernig_pos: "Pain or resistance.",
-  ex_kernig_ind: "Meningitis / meningeal irritation.",
+  ex_kernig_ind: "Meningeal irritation; low sensitivity means a negative test does not rule out meningitis.",
 
   ex_babinski_title: "Babinski reflex",
   ex_babinski_how: "Stroke the lateral sole of the foot toward the big toe.",
   ex_babinski_pos: "Upgoing big toe (± fanning of toes).",
-  ex_babinski_ind: "Upper motor neuron lesion (CNS).",
+  ex_babinski_ind: "An extensor plantar response in adults may indicate an upper motor neuron lesion.",
   ex_babinski_pre:
     "Supports a central neurological cause (e.g. stroke or intracranial pathology).",
 
   ex_lasegue_title: "Lasègue's sign (Straight Leg Raise)",
   ex_lasegue_how: "Passively raise the straight leg with the patient supine.",
-  ex_lasegue_pos: "Radiating pain down the leg.",
-  ex_lasegue_ind: "Sciatica / disc herniation.",
-  ex_lasegue_pre: "Helps separate radicular pain from muscular back pain.",
+  ex_lasegue_pos: "Radiating nerve-root pain, typically below the knee, rather than isolated hamstring tightness.",
+  ex_lasegue_ind: "May suggest lumbar radiculopathy, including disc-related nerve-root irritation.",
+  ex_lasegue_pre: "Assess motor function, sensation and neurological red flags.",
 
   ex_becks_title: "Beck's triad",
   ex_becks_how: "Assess for hypotension, JVD, and muffled heart sounds.",
   ex_becks_pos: "Triad present (often incomplete).",
-  ex_becks_ind: "Cardiac tamponade.",
+  ex_becks_ind: "Cardiac tamponade; the complete triad is often absent.",
   ex_becks_pre:
     "Life-threatening obstructive shock → rapid transport and pre-alert.",
 
   ex_pulsus_title: "Pulsus paradoxus",
-  ex_pulsus_how: "Systolic BP drop >10 mmHg during inspiration.",
-  ex_pulsus_pos: "Drop >10 mmHg.",
-  ex_pulsus_ind: "Tamponade, severe asthma, COPD exacerbation.",
+  ex_pulsus_how: "Measure systolic blood pressure through the respiratory cycle.",
+  ex_pulsus_pos: "Inspiratory fall in systolic pressure greater than 10 mmHg.",
+  ex_pulsus_ind: "May occur in cardiac tamponade or severe obstructive airway disease.",
 
   ex_kussmaul_title: "Kussmaul's sign",
   ex_kussmaul_how: "Observe neck veins during inspiration.",
   ex_kussmaul_pos: "No collapse / increased JVP on inspiration.",
   ex_kussmaul_ind:
-    "Right-sided heart failure, tamponade (and other obstructive physiology).",
+    "Constrictive pericarditis or impaired right-heart filling; not typical of isolated cardiac tamponade.",
 
   ex_giordano_title: "Giordano's sign (CVA tenderness)",
-  ex_giordano_how: "Gently percuss over the flank/kidney angle.",
+  ex_giordano_how: "Gently percuss the costovertebral angle (CVA) over the kidney.",
   ex_giordano_pos: "Pain.",
-  ex_giordano_ind: "Pyelonephritis or renal stone.",
+  ex_giordano_ind: "May occur in pyelonephritis or urinary stones; not specific.",
 
   ex_ob_painless_bleeding_title: "Painless vaginal bleeding",
   ex_ob_painless_bleeding_how:
     "History/observation: vaginal bleeding without pain.",
   ex_ob_painless_bleeding_pos: "Bleeding without abdominal pain.",
-  ex_ob_painless_bleeding_ind: "Placenta previa.",
+  ex_ob_painless_bleeding_ind: "Placenta praevia is one possibility; bleeding during pregnancy needs obstetric assessment.",
 
   ex_ob_boardlike_uterus_title: "Pain + “board-like” uterus",
   ex_ob_boardlike_uterus_how:
     "History/assessment: abdominal pain with a hard/rigid uterus on palpation.",
   ex_ob_boardlike_uterus_pos: "Pain + rigid, tender uterus.",
-  ex_ob_boardlike_uterus_ind: "Abruptio placentae.",
+  ex_ob_boardlike_uterus_ind: "Raises concern for placental abruption; presentation can vary.",
 
   ex_ob_prev_csection_pain_title: "Sudden pain with previous C-section",
   ex_ob_prev_csection_pain_how:
     "History: sudden severe pain in a patient with prior uterine surgery (e.g. C-section).",
   ex_ob_prev_csection_pain_pos: "Sudden severe abdominal pain ± shock.",
-  ex_ob_prev_csection_pain_ind: "Uterine rupture.",
+  ex_ob_prev_csection_pain_ind: "Raises concern for uterine rupture, especially with maternal instability.",
 
   ex_ob_no_fetal_movement_title: "Absent fetal movements",
   ex_ob_no_fetal_movement_how:
     "History: patient reports reduced/absent fetal movement.",
   ex_ob_no_fetal_movement_pos: "Reported no fetal movement.",
-  ex_ob_no_fetal_movement_ind: "Fetal distress or intrauterine fetal death.",
+  ex_ob_no_fetal_movement_ind: "Requires assessment of fetal wellbeing; the report alone does not confirm fetal compromise or death.",
   ex_ob_no_fetal_movement_pre:
-    "Always urgent → consult and transport to the correct destination.",
+    "Follow local guidance for prompt obstetric advice and assessment.",
 
   ex_battles_title: "Battle’s sign",
   ex_battles_how: "Inspect behind the ear (mastoid region).",
   ex_battles_pos: "Bruising over the mastoid.",
-  ex_battles_ind: "Basilar skull fracture.",
+  ex_battles_ind: "Can occur with a skull-base fracture; bruising may appear after the injury.",
 
   ex_raccoon_title: "Raccoon eyes",
   ex_raccoon_how: "Inspect around the eyes.",
   ex_raccoon_pos: "Periorbital ecchymosis (bruising).",
-  ex_raccoon_ind: "Basilar skull fracture.",
+  ex_raccoon_ind: "Can occur with a skull-base fracture; assess the mechanism and other findings.",
 
   ex_dix_hallpike_title: "Dix-Hallpike test",
   ex_dix_hallpike_how:
@@ -853,10 +853,10 @@ export const en = {
   ex_dix_hallpike_ind:
     "Suggests benign paroxysmal positional vertigo (BPPV), usually involving the posterior semicircular canal on the affected side.",
   ex_dix_hallpike_pre:
-    "Use with caution in patients with neck pain, cervical spine instability, vascular risk, trauma, or inability to tolerate positioning. A negative test does not exclude central causes of vertigo.",
+    "Avoid if cervical instability or significant neck injury is suspected. Central neurological signs require urgent assessment; a negative result does not exclude central vertigo.",
 
   exams_page_disclaimer:
-    "These examination signs are intended as teaching and support content only. They must not be used alone to confirm a diagnosis, exclude serious illness, or determine treatment. Findings must always be interpreted in the full clinical context and according to local guidance.",
+    "These findings support clinical assessment but do not independently confirm or exclude disease. Consider the history, ABCDE, vital signs and local clinical guidance.",
   exams_item_disclaimer:
     "Single examination signs may have limited sensitivity or specificity and must be interpreted together with history, the overall examination, vital signs, and clinical judgement.",
   exams_sources_sub:
@@ -977,7 +977,7 @@ export const en = {
   // =========================================================
   // DESTINATION
   // =========================================================
-  dest_title: "Destination helper",
+  dest_title: "Visitation",
   dest_sub: "Choose category, then use GPS or a manual address.",
   dest_function_title: "Choose function",
   dest_area: "Area",
@@ -1596,8 +1596,8 @@ export const da: typeof en = {
   // =========================================================
   // HOME TOOL CARDS
   // =========================================================
-  tool_dest_title: "Destination",
-  tool_dest_desc: "Vælg kategori, og brug GPS eller manuel adresse",
+  tool_dest_title: "Visitation",
+  tool_dest_desc: "Find modtagende afdeling med GPS eller adresse",
 
   tool_trombolysis_title: "Trombolyse",
   tool_trombolysis_desc:
@@ -1607,7 +1607,7 @@ export const da: typeof en = {
   tool_weightDose_desc: "Alder → vægtestimat → joule + valgte lægemidler",
 
   tool_exams_title: "Kliniske undersøgelser",
-  tool_exams_desc: "Hurtige bedside-tegn",
+  tool_exams_desc: "Kliniske undersøgelser og tegn opdelt efter emne",
 
   tool_assessment_title: "Vurderingsværktøjer",
   tool_assessment_desc: "Kliniske scores, skalaer og strukturerede vurderinger",
@@ -2259,143 +2259,143 @@ export const da: typeof en = {
   // =========================================================
   // EXAMS
   // =========================================================
-  exams_title: "Kliniske undersøgelser & tegn",
+  exams_title: "Kliniske undersøgelser",
   exams_sub:
-    "Tryk for at folde ud. Brug som huskeliste — retningslinjer og kontekst vinder.",
+    "Vælg et emne og derefter en undersøgelse.",
 
-  ex_label_how: "Sådan undersøges",
-  ex_label_positive: "Positivt tegn",
-  ex_label_indicates: "Indikerer",
-  ex_label_prehospital: "Præhospital note",
+  ex_label_how: "Undersøgelse",
+  ex_label_positive: "Positivt fund",
+  ex_label_indicates: "Kan tale for",
+  ex_label_prehospital: "Præhospital betydning",
 
-  ex_group_abdomen: "Akut abdomen",
-  ex_group_cns: "CNS / meningeal irritation",
-  ex_group_back: "Ryg / nerver",
-  ex_group_thorax: "Thorax / hjerte",
-  ex_group_uro: "Nyrer / urologi",
-  ex_group_ob: "Obstetrik",
-  ex_group_trauma: "Kranie / traume",
+  ex_group_abdomen: "Abdomen",
+  ex_group_cns: "Neurologi / meninges",
+  ex_group_back: "Ryg / nerverødder",
+  ex_group_thorax: "Hjerte / kredsløb",
+  ex_group_uro: "Nyrer / urinveje",
+  ex_group_ob: "Obstetriske faresignaler",
+  ex_group_trauma: "Hovedtraumer",
 
   ex_mcburney_title: "McBurneys punkt",
   ex_mcburney_how:
-    "Palpér 1/3 af afstanden fra spina iliaca anterior superior mod navlen på højre side.",
-  ex_mcburney_pos: "Lokaliseret smerte/ømhed.",
-  ex_mcburney_ind: "Akut appendicit (klassisk).",
+    "Palpér cirka en tredjedel af afstanden fra højre spina iliaca anterior superior (SIAS) mod navlen.",
+  ex_mcburney_pos: "Lokaliseret ømhed i højre nedre del af abdomen.",
+  ex_mcburney_ind: "Appendicit, vurderet sammen med anamnese og øvrige fund.",
   ex_mcburney_pre:
-    "Støtter mistanke om kirurgisk mave → hurtig visitation/transport. Undgå at maskere klinikken uden konference.",
+    "Vurdér vitalparametre og faresignaler. Giv smertelindring efter lokale instrukser; den behøver ikke udskydes af hensyn til undersøgelsen.",
 
   ex_murphy_title: "Murphys tegn",
   ex_murphy_how:
-    "Palpér under højre kurvatur (leverrand) og bed patienten tage en dyb indånding.",
+    "Palpér lige under højre ribbensrand, mens patienten trækker vejret dybt ind.",
   ex_murphy_pos: "Inspirationsstop pga. smerte.",
-  ex_murphy_ind: "Akut cholecystitis.",
+  ex_murphy_ind: "Akut cholecystitis; et negativt tegn udelukker ikke sygdommen.",
   ex_murphy_pre:
-    "Forklarer feber + smerter → relevant for korrekt modtagelse (kirurgisk/medicinsk).",
+    "Vurdér fundet sammen med smerter under højre kurvatur, feber og øvrige symptomer.",
 
   ex_blumberg_title: "Blumbergs tegn (rebound)",
-  ex_blumberg_how: "Tryk dybt og langsomt – slip hurtigt.",
-  ex_blumberg_pos: "Smerte ved slip, ikke ved tryk.",
-  ex_blumberg_ind: "Peritoneal irritation (peritonitis, perforation).",
-  ex_blumberg_pre: "Alvorlig mave → høj prioritet, fastende, hurtig transport.",
+  ex_blumberg_how: "Tryk roligt på abdomen, og slip hurtigt. Undgå gentagne smerteprovokerende undersøgelser.",
+  ex_blumberg_pos: "Større smerte ved slip end under trykket.",
+  ex_blumberg_ind: "Peritoneal irritation; fundet siger ikke noget sikkert om årsagen.",
+  ex_blumberg_pre: "Se efter défense, påvirkede vitalparametre og andre tegn på akut abdomen.",
 
   ex_rovsing_title: "Rovsings tegn",
   ex_rovsing_how: "Palpér venstre fossa iliaca.",
   ex_rovsing_pos: "Smerter i højre fossa iliaca.",
-  ex_rovsing_ind: "Appendicit.",
+  ex_rovsing_ind: "Kan støtte mistanke om appendicit; sensitiviteten er begrænset.",
 
   ex_psoas_title: "Psoas-tegn",
   ex_psoas_how:
     "Patienten løfter strakt ben mod modstand – eller du ekstenderer hoften.",
-  ex_psoas_pos: "Smerter i abdomen.",
-  ex_psoas_ind: "Retrocekal appendicit / retroperitoneal irritation.",
+  ex_psoas_pos: "Smerter i højre nedre abdomen, når m. iliopsoas aktiveres eller strækkes.",
+  ex_psoas_ind: "Kan ses ved retrocøkal appendicit eller retroperitoneal irritation.",
 
   ex_obturator_title: "Obturator-tegn",
   ex_obturator_how: "Flekter hofte og knæ → indadroter hoften.",
   ex_obturator_pos: "Smerter i underlivet.",
-  ex_obturator_ind: "Appendicit beliggende i bækkenet.",
+  ex_obturator_ind: "Kan ses ved bækkennær appendicit; fundet er ikke diagnostisk alene.",
 
   ex_brudzinski_title: "Brudzinskis tegn",
   ex_brudzinski_how: "Passiv fleksion af nakken i rygleje.",
   ex_brudzinski_pos: "Ufrivillig fleksion af hofter/knæ.",
-  ex_brudzinski_ind: "Meningitis / meningisme.",
+  ex_brudzinski_ind: "Meningeal irritation; fravær udelukker ikke meningitis.",
   ex_brudzinski_pre:
-    "Feber + nakkestivhed + ændret mental status → høj hastegrad og tidlig visitation/varsling.",
+    "Feber, hovedpine, nakkestivhed eller bevidsthedspåvirkning kræver hurtig vurdering, også uden positivt tegn.",
 
   ex_kernig_title: "Kernigs tegn",
   ex_kernig_how: "Flekter hofte og knæ 90°, forsøg at ekstendere knæet.",
   ex_kernig_pos: "Smerter/modstand.",
-  ex_kernig_ind: "Meningitis / meningisme.",
+  ex_kernig_ind: "Meningeal irritation; lav sensitivitet betyder, at en negativ test ikke udelukker meningitis.",
 
   ex_babinski_title: "Babinskis refleks",
   ex_babinski_how: "Stryg lateralt langs fodsålen og ind mod storetåen.",
   ex_babinski_pos: "Dorsalfleksion af storetå (evt. spredning af tæer).",
-  ex_babinski_ind: "Central motorisk læsion (CNS).",
+  ex_babinski_ind: "Ekstensor plantarrespons hos voksne kan tyde på læsion af øvre motorneuron.",
   ex_babinski_pre:
     "Understøtter central neurologisk årsag (fx apopleksi eller intrakraniel patologi).",
 
   ex_lasegue_title: "Lasègues tegn (Straight Leg Raise)",
   ex_lasegue_how: "Løft strakt ben passivt i rygleje.",
-  ex_lasegue_pos: "Radierende smerter ned i benet.",
-  ex_lasegue_ind: "Iskias / diskusprolaps.",
-  ex_lasegue_pre: "Adskiller nerverodssmerter fra muskulære smerter.",
+  ex_lasegue_pos: "Udstrålende nerverodssmerte, typisk neden for knæet, frem for blot stram baglårsmuskulatur.",
+  ex_lasegue_ind: "Kan tyde på lumbal radikulopati, fx ved diskusrelateret nerverodspåvirkning.",
+  ex_lasegue_pre: "Undersøg kraft, sensibilitet og neurologiske faresignaler.",
 
   ex_becks_title: "Becks triade",
   ex_becks_how: "Vurder for: hypotension, halsvenestase og dæmpede hjertelyde.",
   ex_becks_pos: "Triaden til stede (ofte ufuldstændig).",
-  ex_becks_ind: "Hjertetamponade.",
+  ex_becks_ind: "Hjertetamponade; den fulde triade er ofte fraværende.",
   ex_becks_pre: "Livstruende obstruktivt shock → hurtig transport og varsling.",
 
   ex_pulsus_title: "Pulsus paradoxus",
-  ex_pulsus_how: "BT falder >10 mmHg under inspiration.",
-  ex_pulsus_pos: "Fald >10 mmHg.",
-  ex_pulsus_ind: "Tamponade, svær astma, KOL-exacerbation.",
+  ex_pulsus_how: "Mål systolisk blodtryk gennem respirationscyklussen.",
+  ex_pulsus_pos: "Systolisk trykfald på mere end 10 mmHg under inspiration.",
+  ex_pulsus_ind: "Kan ses ved hjertetamponade eller svær obstruktiv lungesygdom.",
 
   ex_kussmaul_title: "Kussmauls tegn",
   ex_kussmaul_how: "Observer halsvener under inspiration.",
   ex_kussmaul_pos: "Manglende kollaps / øget fyldning ved inspiration.",
   ex_kussmaul_ind:
-    "Højresidig hjertesvigt, tamponade (og anden obstruktiv fysiologi).",
+    "Konstriktiv perikarditis eller hæmmet højresidig hjertefyldning; ikke typisk ved isoleret tamponade.",
 
   ex_giordano_title: "Giordanos tegn (bankeømhed)",
-  ex_giordano_how: "Let bankeømhed/perkussion over flanken (nyrelogen).",
+  ex_giordano_how: "Perkutér forsigtigt i den costovertebrale vinkel over nyren.",
   ex_giordano_pos: "Smerter.",
-  ex_giordano_ind: "Pyelonefritis eller nyresten.",
+  ex_giordano_ind: "Kan forekomme ved pyelonefritis eller urinvejssten; er ikke specifikt.",
 
   ex_ob_painless_bleeding_title: "Smertefri vaginal blødning",
   ex_ob_painless_bleeding_how:
     "Anamnese/observation: vaginal blødning uden smerter.",
   ex_ob_painless_bleeding_pos: "Blødning uden mavesmerter.",
-  ex_ob_painless_bleeding_ind: "Placenta prævia.",
+  ex_ob_painless_bleeding_ind: "Placenta prævia er én mulighed; blødning under graviditet kræver obstetrisk vurdering.",
 
   ex_ob_boardlike_uterus_title: "Smerter + “stenhård” uterus",
   ex_ob_boardlike_uterus_how:
     "Anamnese/vurdering: smerter med hård/rigid uterus ved palpation.",
   ex_ob_boardlike_uterus_pos: "Smerter + stenhård, øm uterus.",
-  ex_ob_boardlike_uterus_ind: "Abruptio placentae.",
+  ex_ob_boardlike_uterus_ind: "Giver mistanke om abruptio placentae; symptomerne kan variere.",
 
   ex_ob_prev_csection_pain_title: "Pludselige smerter efter tidligere sectio",
   ex_ob_prev_csection_pain_how:
     "Anamnese: pludselige kraftige smerter hos patient med tidligere uterusoperation (fx sectio).",
   ex_ob_prev_csection_pain_pos: "Pludselige stærke smerter ± shock.",
-  ex_ob_prev_csection_pain_ind: "Uterusruptur.",
+  ex_ob_prev_csection_pain_ind: "Giver mistanke om uterusruptur, især ved påvirket kredsløb.",
 
   ex_ob_no_fetal_movement_title: "Manglende fosterbevægelser",
   ex_ob_no_fetal_movement_how:
     "Anamnese: patienten oplever nedsatte/manglende fosterbevægelser.",
   ex_ob_no_fetal_movement_pos: "Oplyser ingen fosterbevægelser.",
-  ex_ob_no_fetal_movement_ind: "Føtal distress eller intrauterin fosterdød.",
+  ex_ob_no_fetal_movement_ind: "Kræver vurdering af fosterets tilstand; oplysningen alene beviser ikke iltmangel eller fosterdød.",
   ex_ob_no_fetal_movement_pre:
-    "Altid akut → konference og korrekt visitation/transport.",
+    "Følg lokale instrukser om hurtig obstetrisk rådgivning og vurdering.",
 
   ex_battles_title: "Battle’s sign",
   ex_battles_how: "Inspicér bag øret (mastoide-regionen).",
   ex_battles_pos: "Blå mærker bag øret.",
-  ex_battles_ind: "Basis cranii-fraktur.",
+  ex_battles_ind: "Kan ses ved basis cranii-fraktur; misfarvningen kan komme forsinket.",
 
   ex_raccoon_title: "Raccoon eyes",
   ex_raccoon_how: "Inspicér periorbitalt.",
   ex_raccoon_pos: "Periorbitale hæmatomer.",
-  ex_raccoon_ind: "Basis cranii-fraktur.",
+  ex_raccoon_ind: "Kan ses ved basis cranii-fraktur; vurder skadesmekanisme og øvrige fund.",
 
   ex_dix_hallpike_title: "Dix-Hallpike-test",
   ex_dix_hallpike_how:
@@ -2405,10 +2405,10 @@ export const da: typeof en = {
   ex_dix_hallpike_ind:
     "Taler for benign paroksystisk positionsvertigo (BPPV), oftest fra den bageste buegang på den afficerede side.",
   ex_dix_hallpike_pre:
-    "Bruges med forsigtighed ved nakkesmerter, cervikal instabilitet, vaskulære risikofaktorer, traume eller hvis patienten ikke tåler positioneringen. En negativ test udelukker ikke centrale årsager til vertigo.",
+    "Undgå ved mistanke om cervikal instabilitet eller betydende nakkeskade. Centrale neurologiske tegn kræver akut vurdering; negativ test udelukker ikke central vertigo.",
 
   exams_page_disclaimer:
-    "Disse undersøgelsestegn er kun tænkt som undervisnings- og støtteindhold. De må ikke bruges alene til at bekræfte en diagnose, udelukke alvorlig sygdom eller afgøre behandling. Fund skal altid tolkes i den samlede kliniske kontekst og efter lokale retningslinjer.",
+    "Fundene er støtte til den kliniske vurdering og kan ikke alene be- eller afkræfte sygdom. Sammenhold anamnese, ABCDE, vitalparametre og lokale instrukser.",
   exams_item_disclaimer:
     "Enkeltstående undersøgelsestegn kan have begrænset sensitivitet eller specificitet og skal tolkes sammen med anamnese, den samlede objektive undersøgelse, vitalparametre og klinisk skøn.",
   exams_sources_sub:
@@ -2530,7 +2530,7 @@ export const da: typeof en = {
   // =========================================================
   // DESTINATION
   // =========================================================
-  dest_title: "Destinationshjælper",
+  dest_title: "Visitation",
   dest_sub: "Vælg kategori, og brug GPS eller manuel adresse.",
   dest_function_title: "Vælg funktion",
   dest_area: "Område",

@@ -1,13 +1,8 @@
 import { useMemo } from "react";
+import { View } from "react-native";
 import type { AssessmentDefinition } from "../../domain/assessment-flow/flow";
 import type { ReferenceDoc } from "../../services/referenceService";
-import {
-  Card,
-  ResponsiveColumn,
-  ResponsiveColumns,
-  Subtle,
-  Title,
-} from "../../ui/Ui";
+import { Subtle, Title } from "../../ui/Ui";
 import {
   AssessmentQuestionCard,
   AssessmentResultCard,
@@ -64,44 +59,35 @@ export function FixedChoiceAssessment<Answer>({
   const result = evaluate(flow.state.answers);
 
   return (
-    <>
-      <ResponsiveColumns>
-        <ResponsiveColumn>
-          <Card>
-            <Title>{title}</Title>
-            <Subtle>{intro}</Subtle>
-          </Card>
-        </ResponsiveColumn>
-        <ResponsiveColumn>
-          {flow.state.completed ? (
-            <AssessmentResultCard
-              score={result.score}
-              interpretation={result.interpretation}
-              supportingText={result.supportingText}
-              onReview={flow.back}
-              onRestart={flow.restart}
-              labels={getAssessmentUiLabels(lang)}
-            />
-          ) : current ? (
-            <AssessmentQuestionCard
-              title={current.title}
-              subtitle={current.subtitle}
-              progress={flow.progress}
-              choices={current.choices}
-              selected={flow.state.answers[current.id]}
-              onSelect={(answer) => flow.answer(current.id, answer)}
-              onBack={flow.back}
-              canGoBack={flow.state.position > 0}
-              labels={getAssessmentUiLabels(lang)}
-            />
-          ) : null}
-        </ResponsiveColumn>
-      </ResponsiveColumns>
-      <AssessmentReferenceCards
-        reference={reference}
-        lang={lang}
-      />
+    <View style={{ width: "100%", maxWidth: 780, alignSelf: "center", gap: 9 }}>
+      <View style={{ gap: 2, paddingHorizontal: 2 }}>
+        <Title style={{ fontSize: 17, lineHeight: 22 }}>{title}</Title>
+        {intro ? <Subtle style={{ fontSize: 13, lineHeight: 18 }}>{intro}</Subtle> : null}
+      </View>
+      {flow.state.completed ? (
+        <AssessmentResultCard
+          score={result.score}
+          interpretation={result.interpretation}
+          supportingText={result.supportingText}
+          onReview={flow.back}
+          onRestart={flow.restart}
+          labels={getAssessmentUiLabels(lang)}
+        />
+      ) : current ? (
+        <AssessmentQuestionCard
+          title={current.title}
+          subtitle={current.subtitle}
+          progress={flow.progress}
+          choices={current.choices}
+          selected={flow.state.answers[current.id]}
+          onSelect={(answer) => flow.answer(current.id, answer)}
+          onBack={flow.back}
+          canGoBack={flow.state.position > 0}
+          labels={getAssessmentUiLabels(lang)}
+        />
+      ) : null}
+      <AssessmentReferenceCards reference={reference} lang={lang} />
       {footer ? <Subtle style={{ textAlign: "center" }}>{footer}</Subtle> : null}
-    </>
+    </View>
   );
 }

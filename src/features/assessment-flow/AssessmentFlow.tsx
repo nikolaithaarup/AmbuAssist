@@ -10,7 +10,8 @@ import {
   type AssessmentDefinition,
   type AssessmentFlowState,
 } from "../../domain/assessment-flow/flow";
-import { Card, Subtle, Title } from "../../ui/Ui";
+import { Subtle, Title } from "../../ui/Ui";
+import { AssessmentCard as Card } from "../../ui/AssessmentCompact";
 import { theme } from "../../ui/theme";
 import { hapticReset, hapticToolOpen } from "../../ui/haptics";
 
@@ -95,9 +96,9 @@ export function AssessmentQuestionCard<Answer>({
       <View style={{ height: 6, borderRadius: 999, backgroundColor: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
         <View style={{ height: "100%", width: `${(progress.current / progress.total) * 100}%`, backgroundColor: theme.colors.accent }} />
       </View>
-      <Title style={{ fontSize: 22, lineHeight: 29 }}>{title}</Title>
+      <Title style={{ fontSize: 20, lineHeight: 26 }}>{title}</Title>
       {subtitle ? <Subtle style={{ fontSize: 14, lineHeight: 20 }}>{subtitle}</Subtle> : null}
-      <View style={{ gap: 10, marginTop: 4 }}>
+      <View style={{ gap: 7, marginTop: 2 }}>
         {choices.map((choice, index) => {
           const active = Object.is(choice.value, selected);
           return (
@@ -108,17 +109,17 @@ export function AssessmentQuestionCard<Answer>({
               accessibilityLabel={choice.detail ? `${choice.label}. ${choice.detail}` : choice.label}
               onPress={() => onSelect(choice.value)}
               style={({ pressed }) => ({
-                minHeight: 54,
-                borderRadius: 14,
+                minHeight: 46,
+                borderRadius: 10,
                 borderWidth: 1,
                 borderColor: active ? theme.colors.accent : theme.colors.cardBorder,
                 backgroundColor: active ? theme.colors.accentSurface : "rgba(0,0,0,0.10)",
-                paddingHorizontal: 14,
-                paddingVertical: 13,
+                paddingHorizontal: 11,
+                paddingVertical: 8,
                 opacity: pressed ? 0.72 : 1,
                 flexDirection: "row",
                 alignItems: "center",
-                gap: 12,
+                gap: 8,
               })}
             >
               {choice.badge ? (
@@ -128,14 +129,14 @@ export function AssessmentQuestionCard<Answer>({
               ) : null}
               <View style={{ flex: 1, gap: 3 }}>
                 <Text style={{ color: theme.colors.text, fontWeight: "800", fontSize: 15, lineHeight: 21 }}>{choice.label}</Text>
-                {choice.detail ? <Subtle>{choice.detail}</Subtle> : null}
+                {choice.detail ? <Subtle style={{ fontSize: 12, lineHeight: 17 }}>{choice.detail}</Subtle> : null}
               </View>
             </Pressable>
           );
         })}
       </View>
       {canGoBack ? (
-        <Pressable accessibilityRole="button" accessibilityLabel={labels.back} onPress={onBack} style={({ pressed }) => ({ minHeight: 48, justifyContent: "center", alignItems: "center", opacity: pressed ? 0.65 : 1 })}>
+        <Pressable accessibilityRole="button" accessibilityLabel={labels.back} onPress={onBack} style={({ pressed }) => ({ minHeight: 44, justifyContent: "center", alignItems: "center", opacity: pressed ? 0.65 : 1 })}>
           <Text style={{ color: theme.colors.accentMuted, fontWeight: "900" }}>← {labels.back}</Text>
         </Pressable>
       ) : null}
@@ -167,10 +168,10 @@ export function AssessmentResultCard({
       <Text style={{ color: theme.colors.text, fontSize: 15, lineHeight: 22 }}>{interpretation}</Text>
       {supportingText ? <Subtle>{supportingText}</Subtle> : null}
       <View style={{ flexDirection: "row", gap: 10, flexWrap: "wrap" }}>
-        <Pressable accessibilityRole="button" onPress={onReview} style={({ pressed }) => ({ minHeight: 50, flexGrow: 1, flexBasis: "45%", borderRadius: 14, borderWidth: 1, borderColor: theme.colors.cardBorder, backgroundColor: theme.colors.accentSurface, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+        <Pressable accessibilityRole="button" onPress={onReview} style={({ pressed }) => ({ minHeight: 44, flexGrow: 1, flexBasis: "45%", borderRadius: 14, borderWidth: 1, borderColor: theme.colors.cardBorder, backgroundColor: theme.colors.accentSurface, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
           <Text style={{ color: theme.colors.text, fontWeight: "900" }}>{labels.review}</Text>
         </Pressable>
-        <Pressable accessibilityRole="button" onPress={onRestart} style={({ pressed }) => ({ minHeight: 50, flexGrow: 1, flexBasis: "45%", borderRadius: 14, borderWidth: 1, borderColor: theme.colors.cardBorder, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+        <Pressable accessibilityRole="button" onPress={onRestart} style={({ pressed }) => ({ minHeight: 44, flexGrow: 1, flexBasis: "45%", borderRadius: 14, borderWidth: 1, borderColor: theme.colors.cardBorder, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
           <Text style={{ color: theme.colors.accentMuted, fontWeight: "900" }}>{labels.restart}</Text>
         </Pressable>
       </View>

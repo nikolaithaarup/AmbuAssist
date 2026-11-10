@@ -5,7 +5,7 @@ import { useT } from "../../../src/i18n/useT";
 import { Background } from "../../../src/ui/Background";
 import { hapticToolOpen } from "../../../src/ui/haptics";
 import { NavigationCard } from "../../../src/ui/NavigationCard";
-import { Screen, Subtle, Title } from "../../../src/ui/Ui";
+import { Screen, Title } from "../../../src/ui/Ui";
 import { useResponsiveLayout } from "../../../src/ui/responsive";
 
 type ToolLink = {
@@ -67,13 +67,13 @@ export default function AssessmentToolsPage() {
       <Screen>
         <ScrollView
           contentContainerStyle={{
-            paddingHorizontal: 16,
+            paddingHorizontal: 4,
             paddingTop: Platform.OS === "web" ? 0 : 16,
-            paddingBottom: 24,
+            paddingBottom: 16,
             alignItems: "center",
           }}
         >
-          <View style={{ width: "100%", maxWidth: isExpanded ? 920 : 520, gap: 12 }}>
+          <View style={{ width: "100%", maxWidth: isExpanded ? 900 : 560, gap: 8 }}>
             <Title
               style={{
                 textAlign: "center",
@@ -85,15 +85,12 @@ export default function AssessmentToolsPage() {
               {t("tool_assessment_title")}
             </Title>
 
-            <Subtle style={{ textAlign: "center", marginBottom: 4 }}>
-              {t("tool_assessment_desc")}
-            </Subtle>
 
             <View
               style={{
                 flexDirection: isExpanded ? "row" : "column",
                 flexWrap: isExpanded ? "wrap" : "nowrap",
-                gap: 12,
+                gap: 7,
               }}
             >
               {tools.map((tool) => (
@@ -108,7 +105,8 @@ export default function AssessmentToolsPage() {
                 >
                   <NavigationCard
                     title={t(tool.titleKey)}
-                    description={t(tool.descKey)}
+                    compact
+                    description={undefined}
                     onPress={() => {
                       hapticToolOpen();
                       router.push(tool.path);

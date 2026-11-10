@@ -182,16 +182,16 @@ export default function SpinalTraumaFlow() {
   return (
     <Background>
       <Screen>
-        <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
+        <ScrollView contentContainerStyle={{ gap: 8, paddingBottom: 16 }}>
           <ToolPageHeader title={t("spine_title")} subtitle={t("spine_sub")} />
 
-          <ToolSurface style={{ paddingVertical: 4 }}>
+          <ToolSurface style={{ paddingVertical: 4, paddingHorizontal: 10, gap: 5 }}>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={t("spine_info_title")}
               accessibilityState={{ expanded: showInfo }}
               onPress={() => setShowInfo((current) => !current)}
-              style={({ pressed }) => ({ minHeight: 52, flexDirection: "row", alignItems: "center", gap: 12, opacity: pressed ? 0.72 : 1 })}
+              style={({ pressed }) => ({ minHeight: 44, flexDirection: "row", alignItems: "center", gap: 12, opacity: pressed ? 0.72 : 1 })}
             >
               <View style={{ flex: 1, gap: 3 }}>
                 <Text style={{ color: theme.colors.text, fontWeight: "900", fontSize: 15 }}>{t("spine_info_title")}</Text>

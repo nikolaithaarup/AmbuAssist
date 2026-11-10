@@ -7,7 +7,8 @@ import {
 import type { Key } from "../../i18n/strings";
 import { useT } from "../../i18n/useT";
 import type { ReferenceDoc } from "../../services/referenceService";
-import { Card, Subtle, Title } from "../../ui/Ui";
+import { Subtle, Title } from "../../ui/Ui";
+import { AssessmentCard as Card } from "../../ui/AssessmentCompact";
 import {
   AssessmentQuestionCard,
   AssessmentResultCard,

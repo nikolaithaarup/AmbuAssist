@@ -1,12 +1,10 @@
 import { useRouter } from "expo-router";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { BloodGasPageHeader, BloodGasProvenance } from "../../../../src/features/bloodgas/BloodGasPresentation";
 import { useT } from "../../../../src/i18n/useT";
-import { useSettings } from "../../../../src/state/settings";
 import { Background } from "../../../../src/ui/Background";
 import { NavigationCard } from "../../../../src/ui/NavigationCard";
-import { Card, Screen, Subtle } from "../../../../src/ui/Ui";
-import { theme } from "../../../../src/ui/theme";
+import { Screen } from "../../../../src/ui/Ui";
 
 const TOOLS = [
   { titleKey: "tool_bg_acidbase_title", descKey: "tool_bg_acidbase_desc", path: "/tools/assessment-tools/bloodgas/acid-base" },
@@ -17,34 +15,24 @@ const TOOLS = [
 export default function BloodGasPage() {
   const router = useRouter();
   const { t } = useT();
-  const { settings } = useSettings();
 
   return (
     <Background>
       <Screen>
         <BloodGasPageHeader title={t("tool_bloodgas_title")} subtitle={t("tool_bloodgas_desc")} />
-        <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
-          <View style={{ gap: 12 }}>
+        <ScrollView contentContainerStyle={{ gap: 8, paddingBottom: 16 }}>
+          <View style={{ gap: 7 }}>
             {TOOLS.map((tool) => (
               <NavigationCard
                 key={tool.path}
                 title={t(tool.titleKey)}
-                description={t(tool.descKey)}
+                compact
+                description={undefined}
                 onPress={() => router.push(tool.path)}
               />
             ))}
           </View>
           <BloodGasProvenance />
-          <Card style={{ backgroundColor: "rgba(221,189,98,0.07)", borderColor: "rgba(221,189,98,0.25)" }}>
-            <Text style={{ color: theme.colors.warn, fontWeight: "800" }}>
-              {settings.language === "da" ? "Prelaunch-værktøj" : "Prelaunch tool"}
-            </Text>
-            <Subtle style={{ lineHeight: 20 }}>
-              {settings.language === "da"
-                ? "Kontrollér altid indtastede værdier og konklusioner mod patientens klinik og lokale instrukser."
-                : "Always verify entered values and conclusions against the patient’s clinical presentation and local guidance."}
-            </Subtle>
-          </Card>
         </ScrollView>
       </Screen>
     </Background>

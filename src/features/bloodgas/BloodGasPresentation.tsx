@@ -1,20 +1,19 @@
 import { Text, View } from "react-native";
 import { useSettings } from "../../state/settings";
 import { CollapsibleCard } from "../../ui/CollapsibleCard";
-import { Card, Subtle, Title } from "../../ui/Ui";
+import { Subtle, Title } from "../../ui/Ui";
+import { AssessmentCard as Card } from "../../ui/AssessmentCompact";
 import { theme } from "../../ui/theme";
 import { DevelopmentChip } from "./PrelaunchGate";
 
 export function BloodGasPageHeader({ title, subtitle }: { title: string; subtitle: string }) {
   const { settings } = useSettings();
   const isDa = settings.language === "da";
-  return <View style={{ gap: 8, marginTop: 12, marginBottom: 4 }}>
+  return <View style={{ gap: 5, marginTop: 4, marginBottom: 2 }}>
     <DevelopmentChip />
-    <Title style={{ fontSize: 27 }}>{title}</Title>
-    <Subtle style={{ fontSize: 14, lineHeight: 20 }}>{subtitle}</Subtle>
-    <View style={{ borderRadius: 12, borderWidth: 1, borderColor: "rgba(221,189,98,0.35)", backgroundColor: "rgba(221,189,98,0.08)", padding: 10 }}>
-      <Text style={{ color: theme.colors.warn, fontWeight: "800", lineHeight: 18 }}>{isDa ? "Kun VGAS. Sammenhold med klinik, vitalparametre, SpO₂, iltbehandling og lokale retningslinjer." : "VGAS only. Compare with clinical context, vital signs, SpO₂, oxygen therapy, and local guidelines."}</Text>
-    </View>
+    <Title style={{ fontSize: 22, lineHeight: 27 }}>{title}</Title>
+    <Subtle style={{ fontSize: 13, lineHeight: 18 }}>{subtitle}</Subtle>
+    <Text style={{ color: theme.colors.warn, fontWeight: "700", fontSize: 12, lineHeight: 17 }}>{isDa ? "Kun VGAS. Sammenhold med klinik, vitalparametre, SpO₂, iltbehandling og lokale retningslinjer." : "VGAS only. Compare with clinical context, vital signs, SpO₂, oxygen therapy, and local guidelines."}</Text>
   </View>;
 }
 

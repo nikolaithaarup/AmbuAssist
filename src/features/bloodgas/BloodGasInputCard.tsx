@@ -1,7 +1,8 @@
 import { Text, View } from "react-native";
 import { useT } from "../../i18n/useT";
 import { useSettings } from "../../state/settings";
-import { Card, Input, Label } from "../../ui/Ui";
+import { Input, Label } from "../../ui/Ui";
+import { AssessmentCard as Card } from "../../ui/AssessmentCompact";
 import { theme } from "../../ui/theme";
 import { VGAS_FIELDS } from "./fieldConfig";
 import { validateBloodGasField } from "./helpers";
@@ -15,13 +16,13 @@ export function BloodGasInputCard({ values, onChange, fields, title, embedded = 
   const isDa = settings.language === "da";
   const content = <>
       {title ? <Text style={{ color: theme.colors.text, fontSize: 17, fontWeight: "800" }}>{title}</Text> : null}
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
         {fields.map((fieldKey) => {
           const field = VGAS_FIELDS[fieldKey];
           const validation = validateBloodGasField(fieldKey, values[fieldKey]);
           const helper = isDa ? field.helperDa : field.helperEn;
           return (
-            <View key={field.id} style={{ gap: 8, minWidth: 140, flexGrow: 1, flexBasis: "46%" }}>
+            <View key={field.id} style={{ gap: 5, minWidth: 140, flexGrow: 1, flexBasis: "46%" }}>
               <Label>{t(field.labelKey as any)}</Label>
               <Input value={values[field.id]} onChangeText={(text) => onChange(field.id, text)} placeholder={field.reference ? `${field.reference}${field.unit ? ` ${field.unit}` : ""}` : field.unit} keyboardType="decimal-pad" autoCapitalize="none" autoCorrect={false} selectTextOnFocus style={validation === "invalid" || validation === "implausible" ? { borderColor: theme.colors.danger } : undefined} />
               {validation === "invalid" ? <Text style={{ color: theme.colors.danger, fontSize: 12 }}>{isDa ? "Indtast et gyldigt tal" : "Enter a valid number"}</Text> : null}
@@ -32,5 +33,5 @@ export function BloodGasInputCard({ values, onChange, fields, title, embedded = 
         })}
       </View>
     </>;
-  return embedded ? <View style={{ gap: 12 }}>{content}</View> : <Card>{content}</Card>;
+  return embedded ? <View style={{ gap: 8 }}>{content}</View> : <Card>{content}</Card>;
 }

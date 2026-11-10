@@ -14,7 +14,8 @@ import type { Key } from "../../../../src/i18n/strings";
 import { useSettings } from "../../../../src/state/settings";
 import { Background } from "../../../../src/ui/Background";
 import { CollapsibleCard } from "../../../../src/ui/CollapsibleCard";
-import { Card, PrimaryButton, Screen, Subtle, Title } from "../../../../src/ui/Ui";
+import { PrimaryButton, Screen, Subtle, Title } from "../../../../src/ui/Ui";
+import { AssessmentCard as Card } from "../../../../src/ui/AssessmentCompact";
 import { theme } from "../../../../src/ui/theme";
 
 export default function PatternsPage() {
@@ -49,7 +50,7 @@ export default function PatternsPage() {
 
   return <Background><Screen>
     <BloodGasPageHeader title={t("tool_bg_patterns_title")} subtitle={isDa ? "Manuel VGAS-indtastning og mønsterstøtte" : "Manual VGAS entry and pattern support"} />
-    <ScrollView ref={scrollRef} contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
+    <ScrollView ref={scrollRef} contentContainerStyle={{ gap: 8, paddingBottom: 16 }}>
       <GroupedBloodGasInput values={form} onChange={onChange} isDa={isDa} />
 
       <Card style={{ padding: 12, gap: 7 }}>

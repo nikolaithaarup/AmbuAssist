@@ -47,6 +47,7 @@ const HOUSE_NUMBER_QUERY = `
       nodes {
         adgangsadressebetegnelse
         husnummertekst
+        vejmidte
       }
     }
   }
@@ -65,6 +66,7 @@ type AddressPointNode = {
 type HouseNumberNode = {
   adgangsadressebetegnelse?: unknown;
   husnummertekst?: unknown;
+  vejmidte?: unknown;
 };
 
 export type DatafordelerCredentials = {
@@ -150,6 +152,7 @@ export function parseDarAddress(
   formattedAddress: unknown,
   houseNumber: unknown,
   distance: number,
+  vejmidte?: unknown,
 ): DestinationGeocodedAddress | null {
   if (typeof formattedAddress !== "string") return null;
   const value = formattedAddress.trim();
@@ -166,12 +169,20 @@ export function parseDarAddress(
 
   if (!locality || !street || !parsedHouseNumber) return null;
 
+  // DAR_Husnummer.vejmidte is "kommunekode-vejkode" (e.g. 0169-1234).
+  // Unlike the post town, the first four digits identify the address's municipality.
+  const municipalityCode =
+    typeof vejmidte === "string"
+      ? /^(\d{4})-\d{4}$/u.exec(vejmidte.trim())?.[1] ?? null
+      : null;
+
   return {
     city: locality[2].trim(),
     country: "Danmark",
     distanceMeters: distance,
     formattedAddress: value,
     isoCountryCode: "DK",
+    municipalityCode,
     name: parsedHouseNumber,
     postalCode: locality[1],
     street,
@@ -348,6 +359,7 @@ export async function reverseGeocodeCandidatesWithDar(
           node.adgangsadressebetegnelse,
           node.husnummertekst,
           candidate.distance,
+          node.vejmidte,
         ),
       )
       .filter(

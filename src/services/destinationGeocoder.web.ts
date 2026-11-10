@@ -30,6 +30,7 @@ export function normalizeDestinationAddress(
   const postalCode = optionalString(raw.postalCode);
   const city = optionalString(raw.city);
   const formattedAddress = optionalString(raw.formattedAddress);
+  const municipalityCode = optionalString(raw.municipalityCode);
 
   if (!street || !postalCode || !city || !formattedAddress) return null;
 
@@ -40,6 +41,9 @@ export function normalizeDestinationAddress(
     distanceMeters: optionalNumber(raw.distanceMeters),
     formattedAddress,
     isoCountryCode: optionalString(raw.isoCountryCode) ?? "DK",
+    municipalityCode: municipalityCode && /^\d{4}$/u.test(municipalityCode)
+      ? municipalityCode
+      : null,
     name: streetNumber,
     postalCode,
     street,

@@ -108,20 +108,31 @@ async function renderTool() {
 }
 
 async function pressGps(root) {
-  const container = root.findByProps({ testID: "destination-primary-gps" });
-  const button = container.find(
-    (node) => typeof node.props.onPress === "function",
-  );
+  // Automatic lookup runs on mount. Flush completion without duplicating it.
+  if (mockHasServicesEnabled.mock.calls.length === 0) {
+    const container = root.findByProps({ testID: "destination-primary-gps" });
+    const button = container.find(node => typeof node.props.onPress === "function");
+    await act(async () => { await button.props.onPress(); });
+  }
   await act(async () => {
-    await button.props.onPress();
+    await Promise.resolve();
+    await Promise.resolve();
     await Promise.resolve();
     await Promise.resolve();
   });
 }
 
+function gpsChoiceButton(root, testID) {
+  const candidates = root.findAllByProps({ testID });
+  const actionable = candidates.find((node) => typeof node.props.onPress === "function");
+  if (!actionable) throw new Error("No actionable GPS choice for " + testID);
+  return actionable;
+}
+
 describe("DestinationTool simplified entry flow", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.requireMock("../../dev/hospitalNumbers").getHospitalPhoneNumbersByCode.mockResolvedValue([]);
     mockSettings = {
       language: "da",
       destinationCategoryFavourites: null,
@@ -145,8 +156,8 @@ describe("DestinationTool simplified entry flow", () => {
     const root = renderer.root;
     const text = renderedText(root);
 
-    expect(text).toContain("Visitationstype");
-    expect(text).toContain("Find destination med GPS");
+    expect(text).toContain("VISITATIONSTYPE");
+    expect(text).toContain("Opdater GPS");
     expect(text).toContain("Søg adresse manuelt");
     expect(text).toContain("Vælg hospital manuelt");
     expect(text).not.toContain("Byen");
@@ -159,6 +170,50 @@ describe("DestinationTool simplified entry flow", () => {
         .props.onPress();
     });
     expect(renderedText(root)).toContain("Hospital");
+  });
+
+  // destination-compact-call-regression-v1
+  test("compact result hides the dialled digits, but retains the selected contact and call action", async () => {
+    const phones = jest.requireMock("../../dev/hospitalNumbers").getHospitalPhoneNumbersByCode;
+    phones.mockResolvedValue([{
+      id: "test-main", specialtyKey: "main", displayNameDa: "Hovednummer",
+      displayNameEn: "Main number", phone: "+4512345678", source: "remote",
+    }]);
+    mockReverseGeocode.mockResolvedValue([{
+      street: "Frederiksberg Allé", streetNumber: "13A", name: "Frederiksberg Allé",
+      postalCode: "1621", city: "København V", district: "Vesterbro",
+      subregion: "København", region: "Region Hovedstaden", formattedAddress: null,
+    }]);
+    const renderer = await renderTool();
+    await pressGps(renderer.root);
+    await act(async () => { await Promise.resolve(); await Promise.resolve(); });
+    const root = renderer.root;
+    expect(root.findAllByProps({ testID: "destination-result" }).length).toBeGreaterThan(0);
+    expect(root.findAllByProps({ testID: "destination-phone-type" }).length).toBeGreaterThan(0);
+    expect(root.findAllByProps({ testID: "destination-phone-call" }).length).toBeGreaterThan(0);
+    expect(renderedText(root)).toContain("Hovednummer");
+    expect(renderedText(root)).not.toContain("+4512345678");
+  });
+
+  test("GPS confirmation shows the selection UI without duplicate status panel", async () => {
+    mockGetCurrentPosition.mockResolvedValue(location(60));
+    mockReverseGeocode.mockResolvedValue([{
+      street: "Frederiksberg Allé", name: "13A",
+      postalCode: "1621", city: "København V", district: "Vesterbro",
+      subregion: "København", region: "Region Hovedstaden", formattedAddress: "Frederiksberg Allé 13A, 1621 København V",
+    }]);
+    const renderer = await renderTool();
+    await pressGps(renderer.root);
+    expect(renderer.root.findAllByProps({ testID: "destination-result" })).toHaveLength(0);
+    expect(renderer.root.findAllByProps({ testID: "destination-gps-confirmation" }).length).toBeGreaterThan(0);
+    expect(renderedText(renderer.root)).not.toContain("Placering kræver handling");
+  });
+
+  test("starts GPS automatically once when the page mounts", async () => {
+    const renderer = await renderTool();
+    expect(mockHasServicesEnabled).toHaveBeenCalledTimes(1);
+    expect(renderer.root.findAllByProps({ testID: "destination-primary-gps" }).length).toBeGreaterThan(0);
+    expect(renderer.root.findAllByProps({ testID: "destination-department-toggle" }).length).toBeGreaterThan(0);
   });
 
   test("GPS automatically routes a high-confidence Copenhagen address", async () => {
@@ -265,6 +320,9 @@ describe("DestinationTool simplified entry flow", () => {
     const renderer = await renderTool();
     const root = renderer.root;
     act(() => {
+      root.findByProps({ testID: "destination-department-toggle" }).props.onPress();
+    });
+    act(() => {
       root
         .findByProps({ testID: "destination-all-categories-toggle" })
         .props.onPress();
@@ -305,6 +363,7 @@ describe("DestinationTool simplified entry flow", () => {
       destinationCategoryFavourites: [],
     };
     const renderer = await renderTool();
+    act(() => renderer.root.findByProps({ testID: "destination-department-toggle" }).props.onPress());
     expect(renderedText(renderer.root)).not.toContain("Favoritter");
     expect(renderedText(renderer.root)).toContain("Alle visitationer");
     act(() => {
@@ -319,6 +378,9 @@ describe("DestinationTool simplified entry flow", () => {
   test("selects a favourite category directly from its compact chip", async () => {
     const renderer = await renderTool();
     const root = renderer.root;
+    act(() => {
+      root.findByProps({ testID: "destination-department-toggle" }).props.onPress();
+    });
 
     act(() => {
       root
@@ -329,16 +391,17 @@ describe("DestinationTool simplified entry flow", () => {
         .props.onPress();
     });
 
-    expect(
-      root.findByProps({
-        testID: "destination-favourite-category-neurologi_ekskl_apopleksi",
-      }).props.accessibilityState,
-    ).toEqual({ selected: true });
+    expect(renderedText(root)).toContain("Neurologi");
+    expect(root.findByProps({ testID: "destination-department-toggle" }).props.accessibilityState)
+      .toEqual({ expanded: false });
   });
 
   test("searches all categories and closes the sheet after selection", async () => {
     const renderer = await renderTool();
     const root = renderer.root;
+    act(() => {
+      root.findByProps({ testID: "destination-department-toggle" }).props.onPress();
+    });
 
     act(() => {
       root
@@ -367,15 +430,65 @@ describe("DestinationTool simplified entry flow", () => {
         .findByProps({ testID: "destination-category-option-kardiologi" })
         .props.onPress();
     });
-    expect(
-      root.findByProps({ testID: "destination-all-categories-toggle" }).props
-        .accessibilityState,
-    ).toEqual({ expanded: false });
-    expect(
-      root
-        .findAllByProps({ accessibilityLabel: "Kardiologi" })
-        .some((node) => node.props.accessibilityState?.selected === true),
-    ).toBe(true);
+    expect(root.findByProps({ testID: "destination-department-toggle" }).props.accessibilityState)
+      .toEqual({ expanded: false });
+    expect(renderedText(root)).toContain("Kardiologi");
+  });
+
+  test("switching the department after GPS reroutes without a second GPS lookup", async () => {
+    // destination-switch-explicit-v5: select through the real compact chooser and All visitations modal.
+    // Never use accessibility-label fallback: it can click a non-selection control.
+    mockReverseGeocode.mockResolvedValue([{
+      street: "Frederiksberg Allé", streetNumber: "13A", name: "Frederiksberg Allé",
+      postalCode: "1621", city: "København V", district: "Vesterbro",
+      subregion: "København", region: "Region Hovedstaden", formattedAddress: null,
+    }]);
+    const renderer = await renderTool();
+    const root = renderer.root;
+    await pressGps(root);
+    expect(root.findAllByProps({ testID: "destination-result" }).length).toBeGreaterThan(0);
+    const gpsChecks = mockHasServicesEnabled.mock.calls.length;
+
+    const actionableById = (testID) => root.findAllByProps({ testID })
+      .find((node) => typeof node.props.onPress === "function");
+    const selectDepartment = async (intent, label) => {
+      const toggle = actionableById("destination-department-toggle");
+      if (!toggle) throw new Error("The compact department selector is not actionable");
+      await act(async () => {
+        toggle.props.onPress();
+        await Promise.resolve();
+      });
+      const all = actionableById("destination-all-categories-toggle");
+      if (!all) throw new Error("All visitations is not reachable through the compact selector");
+      await act(async () => {
+        all.props.onPress();
+        await Promise.resolve();
+      });
+      const option = actionableById("destination-category-option-" + intent);
+      if (!option) throw new Error("The requested department is not available: " + intent);
+      await act(async () => {
+        option.props.onPress();
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      const selectedToggle = actionableById("destination-department-toggle");
+      const shownLabel = selectedToggle.findAllByType(Text)
+        .flatMap((node) => node.props.children)
+        .filter((part) => typeof part === "string").join(" ");
+      expect(shownLabel).toContain(label);
+      expect(selectedToggle.props.accessibilityState).toEqual({ expanded: false });
+    };
+
+    await selectDepartment("medicinsk_modtagelse", "Medicinsk modtagelse");
+    expect(root.findAllByProps({ testID: "destination-result" }).length).toBeGreaterThan(0);
+    expect(mockHasServicesEnabled).toHaveBeenCalledTimes(gpsChecks);
+
+    await selectDepartment("traumecenter", "Traumecenter");
+    expect(root.findAllByProps({ testID: "destination-category-unavailable" }).length).toBeGreaterThan(0);
+    expect(root.findAllByProps({ testID: "destination-result" })).toHaveLength(0);
+    expect(root.findAllByProps({ testID: "destination-phone-call" })).toHaveLength(0);
+    expect(mockHasServicesEnabled).toHaveBeenCalledTimes(gpsChecks);
   });
 
   test("a regional-only category fails explicitly after Copenhagen routing", async () => {
@@ -392,6 +505,9 @@ describe("DestinationTool simplified entry flow", () => {
     ]);
     const renderer = await renderTool();
     const root = renderer.root;
+    act(() => {
+      root.findByProps({ testID: "destination-department-toggle" }).props.onPress();
+    });
     act(() => {
       root
         .findByProps({ testID: "destination-all-categories-toggle" })
@@ -457,6 +573,20 @@ describe("DestinationTool simplified entry flow", () => {
     expect(renderedText(renderer.root)).toContain("NOH");
   });
 
+
+  test("GPS routes Taastrup via DAR municipality to Hvidovre for emergency reception", async () => {
+    mockReverseGeocode.mockResolvedValue([{
+      street: "Øtoftegårdsvej", streetNumber: "4", postalCode: "2630",
+      city: "Taastrup", municipalityCode: "0169",
+      formattedAddress: "Øtoftegårdsvej 4, 2630 Taastrup", distanceMeters: 7,
+    }]);
+    const renderer = await renderTool();
+    await pressGps(renderer.root);
+    expect(renderer.root.findAllByProps({ testID: "destination-result" }).length)
+      .toBeGreaterThan(0);
+    expect(renderedText(renderer.root)).toContain("HVH");
+  });
+
   test("medium confidence requires confirmation before showing a destination", async () => {
     mockGetCurrentPosition.mockResolvedValue(location(60));
     mockReverseGeocode.mockResolvedValue([
@@ -491,86 +621,81 @@ describe("DestinationTool simplified entry flow", () => {
     ).toBeGreaterThan(0);
   });
 
-  test("web requires confirmation even for one high-confidence address", async () => {
+  test("web confirms a mapped Copenhagen street without listing house numbers", async () => {
     const originalOs = Object.getOwnPropertyDescriptor(Platform, "OS");
     Object.defineProperty(Platform, "OS", { configurable: true, value: "web" });
     try {
-      mockReverseGeocode.mockResolvedValue([
-        {
-          street: "Frederiksberg Allé",
-          streetNumber: "13A",
-          postalCode: "1621",
-          city: "København V",
-          formattedAddress: "Frederiksberg Allé 13A, 1621 København V",
-          distanceMeters: 7,
-        },
-      ]);
+      mockReverseGeocode.mockResolvedValue([{
+        street: "Gammel Torv", streetNumber: "1", postalCode: "1457",
+        city: "København K", formattedAddress: "Gammel Torv 1, 1457 København K", distanceMeters: 7,
+      }]);
       const renderer = await renderTool();
       await pressGps(renderer.root);
-
-      expect(renderedText(renderer.root)).toContain("Bekræft den fundne adresse");
-      expect(renderer.root.findAllByProps({ testID: "destination-result" })).toHaveLength(0);
-
-      const confirmButton = renderer.root
-        .findByProps({ testID: "destination-confirm-address" })
-        .find((node) => typeof node.props.onPress === "function");
+      const root = renderer.root;
+      expect(renderedText(root)).toContain("Vælg gade");
+      expect(root.findAllByProps({ testID: "destination-result" })).toHaveLength(0);
       await act(async () => {
-        confirmButton.props.onPress();
+        gpsChoiceButton(root, "destination-gps-choice-street-0").props.onPress();
         await Promise.resolve();
       });
-      expect(renderer.root.findAllByProps({ testID: "destination-result" }).length).toBeGreaterThan(0);
+      expect(root.findAllByProps({ testID: "destination-result" }).length).toBeGreaterThan(0);
     } finally {
       if (originalOs) Object.defineProperty(Platform, "OS", originalOs);
     }
   });
 
-  test("web candidate list requires an explicit selection and confirmation", async () => {
+  test("web collapses five Taastrup DAR addresses to one municipality option", async () => {
     const originalOs = Object.getOwnPropertyDescriptor(Platform, "OS");
     Object.defineProperty(Platform, "OS", { configurable: true, value: "web" });
     try {
-      mockReverseGeocode.mockResolvedValue([
-        {
-          street: "Frederiksberg Allé",
-          streetNumber: "13A",
-          postalCode: "1621",
-          city: "København V",
-          formattedAddress: "Frederiksberg Allé 13A, 1621 København V",
-          distanceMeters: 7,
-        },
-        {
-          street: "Frederiksberg Allé",
-          streetNumber: "15",
-          postalCode: "1621",
-          city: "København V",
-          formattedAddress: "Frederiksberg Allé 15, 1621 København V",
-          distanceMeters: 11,
-        },
-      ]);
+      mockReverseGeocode.mockResolvedValue(["4T", "4", "6", "6T", "2"].map((number, i) => ({
+        street: "Øtoftegårdsvej", streetNumber: number, postalCode: "2630",
+        city: "Taastrup", municipalityCode: "0169",
+        formattedAddress: `Øtoftegårdsvej ${number}, 2630 Taastrup`, distanceMeters: 5 + i,
+      })));
       const renderer = await renderTool();
       await pressGps(renderer.root);
       const root = renderer.root;
-
-      expect(renderedText(root)).toContain("Vælg patientens adresse");
+      expect(renderedText(root)).toContain("Vælg kommune");
+      expect(root.findAllByProps({ testID: "destination-gps-choice-municipality-0" }).length).toBeGreaterThan(0);
+      expect(root.findAllByProps({ testID: "destination-gps-choice-municipality-1" })).toHaveLength(0);
+      expect(renderedText(root)).not.toContain("4T");
       expect(root.findAllByProps({ testID: "destination-result" })).toHaveLength(0);
-      expect(
-        root.findByProps({ testID: "destination-address-candidate-0" }).props
-          .accessibilityState,
-      ).toEqual({ selected: false });
-
-      act(() => {
-        root
-          .findByProps({ testID: "destination-address-candidate-1" })
-          .props.onPress();
-      });
-      const confirmButton = root
-        .findByProps({ testID: "destination-confirm-address" })
-        .find((node) => typeof node.props.onPress === "function");
       await act(async () => {
-        confirmButton.props.onPress();
+        gpsChoiceButton(root, "destination-gps-choice-municipality-0").props.onPress();
         await Promise.resolve();
       });
+      expect(renderedText(root)).toContain("Høje-Taastrup");
+      expect(renderedText(root)).toContain("HVH");
       expect(root.findAllByProps({ testID: "destination-result" }).length).toBeGreaterThan(0);
-      expect(renderedText(root)).toContain("Frederiksberg Allé 15");
+    } finally {
+      if (originalOs) Object.defineProperty(Platform, "OS", originalOs);
+    }
+  });
+
+  test("web collapses nearby house numbers into one street; asks details only when needed", async () => {
+    const originalOs = Object.getOwnPropertyDescriptor(Platform, "OS");
+    Object.defineProperty(Platform, "OS", { configurable: true, value: "web" });
+    try {
+      mockReverseGeocode.mockResolvedValue(["13A", "15"].map((number, i) => ({
+        street: "Frederiksberg Allé", streetNumber: number, postalCode: "1621",
+        city: "København V", formattedAddress: `Frederiksberg Allé ${number}, 1621 København V`, distanceMeters: i + 7,
+      })));
+      const renderer = await renderTool();
+      await pressGps(renderer.root);
+      const root = renderer.root;
+      expect(renderedText(root)).toContain("Vælg gade");
+      expect(root.findAllByProps({ testID: "destination-gps-choice-street-0" }).length).toBeGreaterThan(0);
+      expect(root.findAllByProps({ testID: "destination-gps-choice-street-1" })).toHaveLength(0);
+      await act(async () => {
+        gpsChoiceButton(root, "destination-gps-choice-street-0").props.onPress();
+        await Promise.resolve();
+      });
+      // A route covering several sides/ranges must still demand the required evidence.
+      expect(root.findAllByProps({ testID: "destination-gps-confirmation" })).toHaveLength(0);
+      if (root.findAllByProps({ testID: "destination-gps-street-details" }).length) {
+        expect(root.findAllByProps({ testID: "destination-result" })).toHaveLength(0);
+      }
     } finally {
       if (originalOs) Object.defineProperty(Platform, "OS", originalOs);
     }
@@ -661,7 +786,7 @@ describe("DestinationTool simplified entry flow", () => {
         ]);
       const renderer = await renderTool();
       await pressGps(renderer.root);
-      expect(renderedText(renderer.root)).toContain("Frederiksberg Allé 13A");
+      expect(renderedText(renderer.root)).toContain("Frederiksberg Allé");
 
       await act(async () => {
         renderer.root
@@ -673,7 +798,7 @@ describe("DestinationTool simplified entry flow", () => {
       });
 
       expect(mockReverseGeocode).toHaveBeenCalledTimes(2);
-      expect(renderedText(renderer.root)).toContain("Frederiksberg Allé 15");
+      expect(renderedText(renderer.root)).toContain("Frederiksberg Allé");
       expect(renderedText(renderer.root)).not.toContain("Frederiksberg Allé 13A");
       expect(renderer.root.findAllByProps({ testID: "destination-result" })).toHaveLength(0);
     } finally {

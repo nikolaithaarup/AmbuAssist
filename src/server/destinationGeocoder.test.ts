@@ -29,7 +29,7 @@ function addressPoint(id: string, eastOffset: number, northOffset = 0) {
   };
 }
 
-function houseNumber(address: string, number: string) {
+function houseNumber(address: string, number: string, vejmidte?: string) {
   return {
     data: {
       DAR_Husnummer: {
@@ -37,6 +37,7 @@ function houseNumber(address: string, number: string) {
           {
             adgangsadressebetegnelse: address,
             husnummertekst: number,
+            vejmidte,
           },
         ],
       },
@@ -118,6 +119,39 @@ describe("Datafordeler DAR destination geocoder", () => {
       easting - 120,
       northing - 120,
     ]);
+  });
+
+
+  test("carries the official DAR municipality code for a Taastrup street address", async () => {
+    const fetcher = jest.fn()
+      .mockResolvedValueOnce(response({ access_token: "token", expires_in: 3600 }))
+      .mockResolvedValueOnce(response({
+        data: { DAR_Adressepunkt: { nodes: [addressPoint("point-1", 7)] } },
+      }))
+      .mockResolvedValueOnce(response(houseNumber(
+        "Øtoftegårdsvej 4, 2630 Taastrup", "4", "0169-1234",
+      )));
+
+    await expect(reverseGeocodeWithDar(coordinates, credentials, fetcher))
+      .resolves.toMatchObject({
+        city: "Taastrup", postalCode: "2630", street: "Øtoftegårdsvej",
+        municipalityCode: "0169",
+      });
+    const houseQuery = JSON.parse(String(fetcher.mock.calls[2][1].body));
+    expect(houseQuery.query).toContain("vejmidte");
+  });
+
+  test("does not infer municipality from malformed DAR vejmidte", async () => {
+    const fetcher = jest.fn()
+      .mockResolvedValueOnce(response({ access_token: "token", expires_in: 3600 }))
+      .mockResolvedValueOnce(response({
+        data: { DAR_Adressepunkt: { nodes: [addressPoint("point-1", 7)] } },
+      }))
+      .mockResolvedValueOnce(response(houseNumber(
+        "Øtoftegårdsvej 4, 2630 Taastrup", "4", "bad-value",
+      )));
+    await expect(reverseGeocodeWithDar(coordinates, credentials, fetcher))
+      .resolves.toMatchObject({ municipalityCode: null });
   });
 
   test("rejects invalid OAuth credentials", async () => {

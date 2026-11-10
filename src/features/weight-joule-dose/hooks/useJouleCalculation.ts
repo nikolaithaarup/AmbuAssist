@@ -1,24 +1,14 @@
 import { useMemo } from "react";
 import { calculateJoules } from "../../../domain/paediatric/joules";
-import { toNum } from "../utils/parsing";
 
-export function useJouleCalculation(
-  weightKg: number,
-  jPerKgOverride: string,
-  defaultJPerKgValue: number,
-) {
-  return useMemo(() => {
-    const override = toNum(jPerKgOverride);
-    const defaultJPerKg = toNum(String(defaultJPerKgValue));
-    const jPerKg = Number.isFinite(override)
-      ? override
-      : Number.isFinite(defaultJPerKg)
-        ? defaultJPerKg
-        : NaN;
-    return {
-      jPerKg,
-      defaultJPerKg,
-      ...calculateJoules(weightKg, jPerKg),
-    };
-  }, [weightKg, jPerKgOverride, defaultJPerKgValue]);
+// Fixed ambulance quick-reference setting. The existing 120 J safety cap in
+// calculateJoules is deliberately unchanged and indicated by the result UI.
+export const AMBULANCE_DEFIB_JOULES_PER_KG = 4;
+
+export function useJouleCalculation(weightKg: number) {
+  return useMemo(() => ({
+    jPerKg: AMBULANCE_DEFIB_JOULES_PER_KG,
+    defaultJPerKg: AMBULANCE_DEFIB_JOULES_PER_KG,
+    ...calculateJoules(weightKg, AMBULANCE_DEFIB_JOULES_PER_KG),
+  }), [weightKg]);
 }

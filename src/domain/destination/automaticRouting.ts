@@ -53,6 +53,58 @@ function isAmagerFallbackPostcode(
   );
 }
 
+
+/** Official DAR municipality codes for directly mapped Region Hovedstaden areas.
+ * Split-by-locality and Byen municipalities are deliberately excluded.
+ * Source: Danmarks Adressers kommunekodeliste.
+ */
+const DAR_REGION_KOMMUNER: Readonly<Record<string, Kommune>> = {
+  "0151": "Ballerup",
+  "0153": "Brøndby",
+  "0155": "Dragør",
+  "0157": "Gentofte",
+  "0159": "Gladsaxe",
+  "0161": "Glostrup",
+  "0163": "Herlev",
+  "0165": "Albertslund",
+  "0167": "Hvidovre",
+  "0169": "Høje-Taastrup",
+  "0173": "Lyngby-Taarbæk",
+  "0175": "Rødovre",
+  "0183": "Ishøj",
+  "0185": "Tårnby",
+  "0187": "Vallensbæk",
+  "0201": "Allerød",
+  "0210": "Fredensborg",
+  "0217": "Helsingør",
+  "0219": "Hillerød",
+  "0223": "Hørsholm",
+  "0250": "Frederikssund",
+  "0260": "Halsnæs",
+  "0270": "Gribskov",
+};
+
+function matchDarRegionMunicipality(
+  municipalityCode: string,
+  city?: string,
+  district?: string,
+  subregion?: string,
+): Kommune | "" {
+  const direct = DAR_REGION_KOMMUNER[municipalityCode];
+  if (direct) return direct;
+
+  // These municipalities have different clinical matrix rows by locality.
+  // Municipality code alone must never guess which subarea applies.
+  if (!["0190", "0230", "0240"].includes(municipalityCode)) return "";
+  const local = mapRegionCityToKommune(
+    [city, district, subregion].filter(Boolean).join(" "),
+  );
+  if (municipalityCode === "0190" && /^Furesø \(/u.test(local)) return local;
+  if (municipalityCode === "0230" && /^Rudersdal \(/u.test(local)) return local;
+  if (municipalityCode === "0240" && /^Egedal \(/u.test(local)) return local;
+  return "";
+}
+
 export type AddressRoutingEvidence = {
   street?: string;
   postcode?: string;
@@ -60,6 +112,7 @@ export type AddressRoutingEvidence = {
   district?: string;
   subregion?: string;
   region?: string;
+  municipalityCode?: string | null;
   houseNumber?: number;
 };
 
@@ -114,6 +167,19 @@ export function deriveAutomaticRoutingStrategy(
       return { area: "unresolved", reason: "unknown_city_street" };
     }
     return { area: "byen", source: "street", street, route };
+  }
+
+  if (address.municipalityCode) {
+    const municipality = matchDarRegionMunicipality(
+      address.municipalityCode,
+      address.city,
+      address.district,
+      address.subregion,
+    );
+    if (municipality) return { area: "region", kommune: municipality };
+    // Unknown official municipality or a split municipality with insufficient
+    // locality evidence must never be silently overridden by post-town text.
+    return { area: "unresolved", reason: "missing_area_evidence" };
   }
 
   const candidates = [

@@ -12,18 +12,6 @@ import { Subtle, Title } from "./Ui";
 import { theme } from "./theme";
 import { usePressFeedback } from "./motion";
 
-const surfaceDepth = Platform.select<StyleProp<ViewStyle>>({
-  ios: {
-    shadowColor: "#000",
-    shadowOpacity: 0.16,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 5 },
-  },
-  android: { elevation: 2 },
-  web: { boxShadow: "0 5px 16px rgba(0,0,0,0.18)" } as ViewStyle,
-  default: {},
-});
-
 export function ToolPageHeader({
   title,
   subtitle,
@@ -118,27 +106,28 @@ export function ToolSurface({
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }) {
-  const toneStyle: ViewStyle =
-    tone === "accent"
-      ? { backgroundColor: "rgba(47,56,39,0.88)", borderColor: "rgba(174,190,144,0.26)" }
-      : tone === "warning"
-        ? { backgroundColor: "rgba(65,57,31,0.48)", borderColor: "rgba(221,189,98,0.30)" }
-        : tone === "danger"
-          ? { backgroundColor: "rgba(66,35,32,0.42)", borderColor: "rgba(255,123,114,0.34)" }
-          : { backgroundColor: "rgba(38,43,34,0.72)", borderColor: "rgba(190,202,165,0.16)" };
+  // A coloured left rule conveys clinical emphasis without another enclosing box.
+  const emphasisColor = tone === "danger"
+    ? theme.colors.danger
+    : tone === "warning"
+      ? theme.colors.warn
+      : theme.colors.accentMuted;
 
   return (
     <View
       testID={testID}
       style={[
         {
-          borderRadius: Platform.OS === "web" ? theme.radii.card : 18,
-          borderWidth: 1,
-          padding: Platform.OS === "web" ? 16 : 15,
-          gap: 13,
+          backgroundColor: "transparent",
+          borderWidth: 0,
+          borderRadius: 0,
+          paddingHorizontal: 7,
+          paddingVertical: 8,
+          gap: 10,
         },
-        toneStyle,
-        surfaceDepth,
+        tone === "default"
+          ? null
+          : { borderLeftWidth: 3, borderLeftColor: emphasisColor, paddingLeft: 12 },
         style,
       ]}
     >

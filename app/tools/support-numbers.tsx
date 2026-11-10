@@ -163,7 +163,7 @@ export default function SupportNumbersPage() {
         />
 
         <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
-          <ToolSurface style={{ paddingHorizontal: 13 }}>
+          <ToolSurface style={{ paddingHorizontal: 3 }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
               <View style={{ flex: 1 }}>
                 <ToolSectionLabel>{lang === "da" ? "Kontakter" : "Contacts"}</ToolSectionLabel>

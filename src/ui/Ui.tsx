@@ -249,22 +249,15 @@ const styles = StyleSheet.create({
     lineHeight: theme.typography.captionLineHeight,
   },
 
+  // Flat by default: no enclosing card around another card or button.
+  // Explicit warning/result styles supplied by a caller may still add emphasis.
   card: {
-    backgroundColor: theme.colors.card,
-    borderColor: theme.colors.cardBorder,
-    borderWidth: 1,
-    borderRadius: Platform.OS === "web" ? theme.radii.card : theme.radius,
-    padding: Platform.OS === "web" ? 16 : 16,
-    gap: 14,
-    ...(Platform.OS === "web"
-      ? ({ boxShadow: "0 6px 18px rgba(0,0,0,0.20)" } as any)
-      : {
-          shadowColor: "#000",
-          shadowOpacity: 0.2,
-          shadowRadius: 12,
-          shadowOffset: { width: 0, height: 5 },
-          elevation: 3,
-        }),
+    backgroundColor: "transparent",
+    borderWidth: 0,
+    borderRadius: 0,
+    paddingVertical: 7,
+    paddingHorizontal: 6,
+    gap: 10,
   },
 
   row: { flexDirection: "row", alignItems: "center", gap: 10 },

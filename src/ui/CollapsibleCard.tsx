@@ -135,7 +135,11 @@ export function CollapsibleCard({
   );
 
   return (
-    <Card style={focused ? { borderColor: theme.colors.focus } : undefined}>
+    <Card style={{
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.divider,
+      ...(focused ? { borderLeftWidth: 2, borderLeftColor: theme.colors.focus } : {}),
+    }}>
       {pwa ? (
         <Animated.View style={pressFeedback.animatedStyle}>
           {trigger}

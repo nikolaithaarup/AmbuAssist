@@ -8,12 +8,11 @@ export function AssessmentCard({ children, style }: PropsWithChildren<{ style?: 
       testID="assessment-compact-card"
       style={[
         {
-          borderWidth: 1,
-          borderColor: "rgba(190,202,165,0.12)",
-          backgroundColor: "rgba(31,35,28,0.48)",
-          borderRadius: 13,
-          padding: 11,
-          gap: 9,
+          borderWidth: 0,
+          backgroundColor: "transparent",
+          borderRadius: 0,
+          padding: 5,
+          gap: 8,
         },
         style,
       ]}

@@ -362,11 +362,8 @@ function SimpleDropdown<T extends string>({
       <MotionPresence visible={open} testID="destination-suggestions-transition">
         <View
           style={{
-            borderRadius: 12,
-            borderWidth: 1,
-            borderColor: theme.colors.cardBorder,
-            backgroundColor: "rgba(0,0,0,0.08)",
-            padding: 8,
+            paddingVertical: 4,
+            gap: 8,
           }}
         >
           {!hasOptions ? (
@@ -2009,7 +2006,7 @@ export default function DestinationTool() {
             <ToolSurface
               tone="accent"
               testID="destination-result"
-              style={{ width: "100%", minWidth: 0, gap: 8, padding: 16 }}
+              style={{ width: "100%", minWidth: 0, gap: 8, paddingHorizontal: 9, paddingVertical: 7 }}
             >
               <Title style={{ fontSize: 22, lineHeight: 28 }}>
                 {resolvedHospital.label}
@@ -2178,11 +2175,10 @@ export default function DestinationTool() {
                 testID="destination-category-unavailable"
                 style={{
                   gap: 4,
-                  borderRadius: 12,
-                  borderWidth: 1,
-                  borderColor: theme.colors.warn,
-                  padding: 12,
-                  backgroundColor: "rgba(255, 193, 7, 0.08)",
+                  borderLeftWidth: 3,
+                  borderLeftColor: theme.colors.warn,
+                  paddingHorizontal: 11,
+                  paddingVertical: 8,
                 }}
               >
                 <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
@@ -2249,12 +2245,11 @@ export default function DestinationTool() {
                 <View
                   testID="destination-gps-confirmation"
                   style={{
-                    borderRadius: 14,
-                    borderWidth: 1,
-                    borderColor: theme.colors.warn,
-                    backgroundColor: "rgba(255,209,102,0.10)",
-                    padding: 14,
-                    gap: 10,
+                    borderLeftWidth: 3,
+                    borderLeftColor: theme.colors.warn,
+                    paddingHorizontal: 11,
+                    paddingVertical: 8,
+                    gap: 9,
                   }}
                 >
                   <Text style={{ color: theme.colors.text, fontWeight: "900", fontSize: 17 }}>
@@ -2345,7 +2340,7 @@ export default function DestinationTool() {
               )}
 
             {gpsStreetNeedsDetails && !!selectedStreet && !searchVisible && (
-              <View testID="destination-gps-street-details" style={{ gap: 10, padding: 12, borderRadius: 12, borderColor: theme.colors.warn, borderWidth: 1 }}>
+              <View testID="destination-gps-street-details" style={{ gap: 10, paddingVertical: 8, paddingHorizontal: 11, borderLeftColor: theme.colors.warn, borderLeftWidth: 3 }}>
                 <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
                   {selectedStreet}
                 </Text>
@@ -2423,11 +2418,10 @@ export default function DestinationTool() {
               <View
                 style={{
                   gap: 4,
-                  padding: 12,
-                  borderRadius: theme.radii.control,
-                  borderWidth: 1,
-                  borderColor: "rgba(221,189,98,0.30)",
-                  backgroundColor: "rgba(65,57,31,0.42)",
+                  paddingHorizontal: 11,
+                  paddingVertical: 8,
+                  borderLeftWidth: 3,
+                  borderLeftColor: theme.colors.warn,
                 }}
               >
                 <ToolSectionLabel>

@@ -2,9 +2,7 @@ import { useMemo, useState } from "react";
 import { Platform, Pressable, ScrollView, Text, View } from "react-native";
 import { useT } from "../../src/i18n/useT";
 import { Background } from "../../src/ui/Background";
-import { ClinicalDisclosure } from "../../src/ui/ClinicalDisclosure";
-import { Card, Screen, Subtle, Title } from "../../src/ui/Ui";
-import { useResponsiveLayout } from "../../src/ui/responsive";
+import { Screen, Subtle, Title } from "../../src/ui/Ui";
 import { theme } from "../../src/ui/theme";
 
 type Exam = {
@@ -198,27 +196,16 @@ const EXAMS: Exam[] = [
 ];
 
 function SectionLabel({ label }: { label: string }) {
-  return (
-    <Text
-      style={{
-        color: theme.colors.mutedText,
-        fontSize: 12,
-        fontWeight: "800",
-        marginTop: 10,
-      }}
-    >
-      {label}
-    </Text>
-  );
+  return <Text style={{ color: theme.colors.mutedText, fontSize: 12, fontWeight: "700", marginTop: 9, marginBottom: 3 }}>{label}</Text>;
 }
 
 export default function Exams() {
   const { t } = useT();
-  const { isExpanded } = useResponsiveLayout();
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
 
   const groups = useMemo(() => {
-    const order: { key: string; titleKey: any }[] = [
+    const order: { key: string; titleKey: string }[] = [
       { key: "abdomen", titleKey: "ex_group_abdomen" },
       { key: "cns", titleKey: "ex_group_cns" },
       { key: "back", titleKey: "ex_group_back" },
@@ -227,182 +214,73 @@ export default function Exams() {
       { key: "ob", titleKey: "ex_group_ob" },
       { key: "trauma", titleKey: "ex_group_trauma" },
     ];
-
-    return order
-      .map((g) => ({
-        ...g,
-        items: EXAMS.filter((e) => e.tags?.includes(g.key as any)),
-      }))
-      .filter((g) => g.items.length > 0);
+    return order.map(group => ({
+      ...group,
+      items: EXAMS.filter(exam => exam.tags?.includes(group.key as NonNullable<Exam["tags"]>[number])),
+    })).filter(group => group.items.length > 0);
   }, []);
 
   return (
     <Background>
       <Screen>
-        <View style={{ gap: 6, marginTop: Platform.OS === "web" ? 0 : 12 }}>
+        <View style={{ gap: 4, marginTop: Platform.OS === "web" ? 0 : 12 }}>
           <Title>{t("exams_title")}</Title>
           <Subtle>{t("exams_sub")}</Subtle>
         </View>
-
-        <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
-          <View
-            style={{
-              flexDirection: isExpanded ? "row" : "column",
-              flexWrap: isExpanded ? "wrap" : "nowrap",
-              alignItems: "flex-start",
-              gap: 12,
-            }}
-          >
-            {groups.map((g) => (
-            <View
-              key={g.key}
-              style={{
-                gap: 10,
-                flexBasis: isExpanded ? "48%" : "auto",
-                flexGrow: isExpanded ? 1 : 0,
-                width: isExpanded ? undefined : "100%",
-                minWidth: 0,
-              }}
-            >
-              <Text
-                style={{
-                  color: theme.colors.text,
-                  fontSize: 16,
-                  fontWeight: "900",
-                  marginTop: 6,
-                }}
-              >
-                {t(g.titleKey)}
-              </Text>
-
-              {g.items.map((ex) => {
-                const isOpen = openId === ex.id;
-
-                return (
-                  <Card key={ex.id}>
-                    <Pressable
-                      onPress={() =>
-                        setOpenId((prev) => (prev === ex.id ? null : ex.id))
-                      }
-                      style={({ pressed }) => [
-                        {
-                          flexDirection: "row",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                        },
-                        pressed && { opacity: 0.85 },
-                      ]}
-                    >
-                      <Text
-                        style={{
-                          color: theme.colors.text,
-                          fontSize: 15,
-                          fontWeight: "900",
-                          flex: 1,
-                        }}
+        <ScrollView contentContainerStyle={{ gap: 0, width: "100%", maxWidth: 800, alignSelf: "center", paddingBottom: 30 }}>
+          {groups.map(group => {
+            const expanded = openGroup === group.key;
+            return (
+              <View key={group.key} style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.divider }}>
+                <Pressable
+                  testID={"exams-group-" + group.key}
+                  accessibilityRole="button"
+                  accessibilityState={{ expanded }}
+                  onPress={() => {
+                    setOpenGroup(prev => prev === group.key ? null : group.key);
+                    setOpenId(null);
+                  }}
+                  style={({ pressed }) => ({ minHeight: 56, flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 6, paddingVertical: 12, opacity: pressed ? 0.7 : 1 })}
+                >
+                  <Text style={{ flex: 1, color: theme.colors.text, fontWeight: "800", fontSize: 16 }}>{t(group.titleKey as Parameters<typeof t>[0])}</Text>
+                  <Text style={{ color: theme.colors.mutedText, fontSize: 13 }}>{group.items.length}</Text>
+                  <Text style={{ color: theme.colors.accentMuted, fontSize: 18, width: 24, textAlign: "center" }}>{expanded ? "−" : "+"}</Text>
+                </Pressable>
+                {expanded ? <View testID={"exams-items-" + group.key} style={{ paddingBottom: 8 }}>
+                  {group.items.map(exam => {
+                    const itemOpen = openId === exam.id;
+                    return <View key={exam.id} style={{ borderTopWidth: 1, borderTopColor: theme.colors.divider }}>
+                      <Pressable
+                        testID={"exams-item-" + exam.id}
+                        accessibilityRole="button"
+                        accessibilityState={{ expanded: itemOpen }}
+                        onPress={() => setOpenId(prev => prev === exam.id ? null : exam.id)}
+                        style={({ pressed }) => ({ flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 11, paddingLeft: 12, paddingRight: 6, minHeight: 48, opacity: pressed ? 0.72 : 1 })}
                       >
-                        {t(ex.titleKey)}
-                      </Text>
-                      <Text
-                        style={{
-                          color: theme.colors.mutedText,
-                          fontSize: 18,
-                          fontWeight: "900",
-                          marginLeft: 12,
-                        }}
-                      >
-                        {isOpen ? "−" : "+"}
-                      </Text>
-                    </Pressable>
-
-                    {isOpen && (
-                      <View style={{ marginTop: 10 }}>
+                        <Text style={{ flex: 1, color: theme.colors.text, fontSize: 14, fontWeight: "700" }}>{t(exam.titleKey)}</Text>
+                        <Text style={{ color: theme.colors.mutedText, fontSize: 17, width: 24, textAlign: "center" }}>{itemOpen ? "−" : "+"}</Text>
+                      </Pressable>
+                      {itemOpen ? <View testID={"exams-detail-" + exam.id} style={{ marginLeft: 12, paddingLeft: 12, paddingBottom: 16, borderLeftWidth: 2, borderLeftColor: theme.colors.accentMuted }}>
                         <SectionLabel label={t("ex_label_how")} />
-                        <Text
-                          style={{
-                            color: theme.colors.text,
-                            fontSize: 14,
-                            lineHeight: 18,
-                          }}
-                        >
-                          {t(ex.howKey)}
-                        </Text>
-
+                        <Text style={{ color: theme.colors.text, fontSize: 14, lineHeight: 21 }}>{t(exam.howKey)}</Text>
                         <SectionLabel label={t("ex_label_positive")} />
-                        <Text
-                          style={{
-                            color: theme.colors.text,
-                            fontSize: 14,
-                            lineHeight: 18,
-                          }}
-                        >
-                          {t(ex.positiveKey)}
-                        </Text>
-
+                        <Text style={{ color: theme.colors.text, fontSize: 14, lineHeight: 21 }}>{t(exam.positiveKey)}</Text>
                         <SectionLabel label={t("ex_label_indicates")} />
-                        <Text
-                          style={{
-                            color: theme.colors.text,
-                            fontSize: 14,
-                            lineHeight: 18,
-                          }}
-                        >
-                          {t(ex.indicatesKey)}
-                        </Text>
-
-                        {!!ex.prehospitalKey && (
-                          <>
-                            <SectionLabel label={t("ex_label_prehospital")} />
-                            <Text
-                              style={{
-                                color: theme.colors.text,
-                                fontSize: 14,
-                                lineHeight: 18,
-                              }}
-                            >
-                              {t(ex.prehospitalKey)}
-                            </Text>
-                          </>
-                        )}
-
-                        <View
-                          style={{
-                            marginTop: 12,
-                            borderRadius: 12,
-                            borderWidth: 1,
-                            borderColor: theme.colors.cardBorder,
-                            padding: 10,
-                            backgroundColor: "rgba(0,0,0,0.10)",
-                          }}
-                        >
-                          <Text
-                            style={{
-                              color: theme.colors.mutedText,
-                              fontSize: 12,
-                              lineHeight: 17,
-                            }}
-                          >
-                            {t("exams_item_disclaimer")}
-                          </Text>
-                        </View>
-                      </View>
-                    )}
-                  </Card>
-                );
-              })}
-            </View>
-            ))}
+                        <Text style={{ color: theme.colors.text, fontSize: 14, lineHeight: 21 }}>{t(exam.indicatesKey)}</Text>
+                        {exam.prehospitalKey ? <>
+                          <SectionLabel label={t("ex_label_prehospital")} />
+                          <Text style={{ color: theme.colors.text, fontSize: 14, lineHeight: 21 }}>{t(exam.prehospitalKey)}</Text>
+                        </> : null}
+                      </View> : null}
+                    </View>;
+                  })}
+                </View> : null}
+              </View>
+            );
+          })}
+          <View style={{ paddingHorizontal: 6, paddingTop: 20 }}>
+            <Text testID="exams-caution" style={{ color: theme.colors.mutedText, fontSize: 12, lineHeight: 18 }}>{t("exams_page_disclaimer")}</Text>
           </View>
-
-          <ClinicalDisclosure
-            disclaimer={t("exams_page_disclaimer")}
-            sourcesIntro={t("exams_sources_sub")}
-            sources={[
-              { id: "exams-1", title: t("exams_source_1_title"), subtitle: t("exams_source_1_sub") },
-              { id: "exams-2", title: t("exams_source_2_title"), subtitle: t("exams_source_2_sub") },
-              { id: "exams-3", title: t("exams_source_3_title"), subtitle: t("exams_source_3_sub") },
-            ]}
-          />
         </ScrollView>
       </Screen>
     </Background>

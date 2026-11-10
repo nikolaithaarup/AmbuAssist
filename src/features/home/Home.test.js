@@ -106,13 +106,13 @@ describe("Home responsive mobile layout", () => {
     expect(root.findAllByType(Text).some((node) => node.props.children === "homeTagline")).toBe(false);
   });
 
-  test("keeps descriptions on desktop and uses the built-in language selector", () => {
+  test("keeps desktop tool rows compact and uses the built-in language selector", () => {
     mockWidth = 1024;
     const root = renderHome();
 
     expect(
       root.findAllByProps({ testID: "navigation-card" }).some(
-        (card) => typeof card.props.description === "string",
+        (card) => card.props.description === undefined && card.props.compact === true,
       ),
     ).toBe(true);
     const danish = root.findAll((node) =>
@@ -129,7 +129,10 @@ describe("Home responsive mobile layout", () => {
     ReactNative.Platform.OS = "web";
     const root = renderHome();
 
-    expect(root.findByProps({ testID: "home-hero" })).toBeDefined();
+    const hero = root.findByProps({ testID: "home-hero" });
+    expect(hero.props.style.borderWidth).toBeUndefined();
+    expect(hero.props.style.backgroundColor).toBeUndefined();
+    expect(root.findAllByProps({ testID: "navigation-card" }).every(card => card.props.compact === true)).toBe(true);
     const scroll = root.findByProps({ testID: "home-scroll" });
     expect(scroll.props.contentContainerStyle.paddingBottom).toBe(6);
     expect(scroll.findAllByProps({ testID: "home-hero" }).length).toBeGreaterThan(0);

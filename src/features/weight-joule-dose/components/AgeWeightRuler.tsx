@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   Animated,
+  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -23,6 +24,7 @@ import {
 import { toNum } from "../utils/parsing";
 
 const TICK = 36;
+const SETTLE_DELAY_MS = 180;
 type RulerMode = "age" | "weight";
 
 type Props = {
@@ -41,6 +43,8 @@ export function AgeWeightRuler({ language, ageYears, weightKg, onAgeChange, onWe
   const scroller = useRef<ScrollView | null>(null);
   const userScrolling = useRef(false);
   const selectedIndex = useRef(-1);
+  const settleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastScrollX = useRef(0);
   const options = mode === "age" ? AGE_RULER_MONTHS : WEIGHT_RULER_KG;
   const parsedAge = parseAgeYears(ageYears);
   const parsedWeight = toNum(weightKg);
@@ -62,6 +66,11 @@ export function AgeWeightRuler({ language, ageYears, weightKg, onAgeChange, onWe
     scroller.current?.scrollTo({ x: indexFromText * TICK, animated: false });
   }, [mode, indexFromText, viewportWidth, offset]);
 
+  // Cancel pending selections when navigating away; never update an unmounted calculator.
+  useEffect(() => () => {
+    if (settleTimer.current !== null) clearTimeout(settleTimer.current);
+  }, []);
+
   const choose = (index: number) => {
     const safe = Math.min(options.length - 1, Math.max(0, index));
     // Re-selecting an age must still clear a previous measured-weight override.
@@ -71,23 +80,46 @@ export function AgeWeightRuler({ language, ageYears, weightKg, onAgeChange, onWe
     else onWeightChange(formatWeightRulerInput(options[safe]));
   };
 
+  const cancelSettle = () => {
+    if (settleTimer.current !== null) {
+      clearTimeout(settleTimer.current);
+      settleTimer.current = null;
+    }
+  };
+
+  const settleSelection = (x: number) => {
+    cancelSettle();
+    if (!Number.isFinite(x)) return;
+    // Commit only the final centred tick, not intermediate values during a fling.
+    userScrolling.current = false;
+    const index = Math.max(0, Math.min(options.length - 1, Math.round(x / TICK)));
+    const previous = selectedIndex.current;
+    choose(index);
+    if (index !== previous) hapticFavourite();
+  };
+
+  const scheduleSettle = (x: number) => {
+    if (!Number.isFinite(x)) return;
+    lastScrollX.current = x;
+    cancelSettle();
+    // RN Web / iOS installed PWAs do not consistently emit momentumScrollEnd.
+    // Inactivity fallback selects the landed tick without another tap.
+    settleTimer.current = setTimeout(() => settleSelection(lastScrollX.current), SETTLE_DELAY_MS);
+  };
+
   const onScroll = Animated.event(
     [{ nativeEvent: { contentOffset: { x: offset } } }],
     {
-      useNativeDriver: true,
+      useNativeDriver: Platform.OS !== "web",
       listener: (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-        if (!userScrolling.current) return;
         const x = event.nativeEvent.contentOffset.x;
-        choose(Math.round(x / TICK));
+        if (!Number.isFinite(x)) return;
+        // Don't turn the initial programmatic scroll into an unsolicited selection.
+        if (!userScrolling.current && settleTimer.current === null && Math.abs(x - indexFromText * TICK) < 0.5) return;
+        scheduleSettle(x);
       },
     },
   );
-
-  const scrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const index = Math.max(0, Math.min(options.length - 1, Math.round(event.nativeEvent.contentOffset.x / TICK)));
-    choose(index);
-    hapticFavourite();
-  };
 
   const onLayout = (event: LayoutChangeEvent) => {
     const next = Math.round(event.nativeEvent.layout.width);
@@ -118,6 +150,7 @@ export function AgeWeightRuler({ language, ageYears, weightKg, onAgeChange, onWe
               accessibilityLabel={key === "age" ? (language === "da" ? "Alder" : "Age") : (language === "da" ? "Vægt" : "Weight")}
               onPress={() => {
                 if (key === mode) return;
+                cancelSettle();
                 userScrolling.current = false;
                 setMode(key);
               }}
@@ -147,10 +180,10 @@ export function AgeWeightRuler({ language, ageYears, weightKg, onAgeChange, onWe
           scrollEventThrottle={16}
           contentContainerStyle={{ alignItems: "center", paddingHorizontal: Math.max(0, (viewportWidth - TICK) / 2) }}
           onScroll={onScroll}
-          onScrollBeginDrag={() => { userScrolling.current = true; }}
-          onScrollEndDrag={(event) => { scrollEnd(event); userScrolling.current = false; }}
-          onMomentumScrollBegin={() => { userScrolling.current = true; }}
-          onMomentumScrollEnd={(event) => { scrollEnd(event); userScrolling.current = false; }}
+          onScrollBeginDrag={() => { userScrolling.current = true; cancelSettle(); }}
+          onScrollEndDrag={(event) => { scheduleSettle(event.nativeEvent.contentOffset.x); }}
+          onMomentumScrollBegin={() => { userScrolling.current = true; cancelSettle(); }}
+          onMomentumScrollEnd={(event) => { settleSelection(event.nativeEvent.contentOffset.x); }}
         >
           {options.map((value, index) => {
             const major = mode === "age" ? value % 12 === 0 : value % 5 === 0;

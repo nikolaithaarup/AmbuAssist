@@ -22,6 +22,7 @@ type NavigationCardProps = {
   favourite?: boolean;
   onToggleFavourite?: () => void;
   secondary?: boolean;
+  compact?: boolean;
   testID?: string;
 };
 
@@ -44,6 +45,7 @@ export function NavigationCard({
   favourite = false,
   onToggleFavourite,
   secondary = false,
+  compact = false,
   testID,
 }: NavigationCardProps) {
   const [hovered, setHovered] = useState(false);
@@ -67,7 +69,7 @@ export function NavigationCard({
       style={({ pressed }) => ({
         flex: pwa ? 1 : undefined,
         width: pwa ? undefined : 52,
-        minHeight: pwa ? 66 : 58,
+        minHeight: compact ? 52 : pwa ? 66 : 58,
         alignItems: "center",
         justifyContent: "center",
         borderLeftWidth: 1,
@@ -98,7 +100,7 @@ export function NavigationCard({
       testID={testID}
       style={[
         {
-          minHeight: pwa ? (description ? 82 : 66) : description ? 72 : 58,
+          minHeight: compact ? 52 : pwa ? (description ? 82 : 66) : description ? 72 : 58,
           flexDirection: "row",
           alignItems: "stretch",
           overflow: "hidden",
@@ -129,13 +131,13 @@ export function NavigationCard({
         onBlur={() => setFocused(false)}
         style={({ pressed }) => ({
           flex: 1,
-          minHeight: pwa ? 66 : 58,
+          minHeight: compact ? 52 : pwa ? 66 : 58,
           flexDirection: "row",
           alignItems: "center",
-          gap: 13,
-          paddingLeft: pwa ? 15 : 14,
+          gap: compact ? 7 : 13,
+          paddingLeft: compact ? 13 : pwa ? 15 : 14,
           paddingRight: onToggleFavourite ? 8 : 14,
-          paddingVertical: description ? 14 : 12,
+          paddingVertical: compact ? 6 : description ? 14 : 12,
           backgroundColor: pressed
             ? "rgba(145,169,108,0.14)"
             : hovered || focused
@@ -148,8 +150,8 @@ export function NavigationCard({
           <Text
             style={{
               color: theme.colors.text,
-              fontSize: pwa ? 18 : 17,
-              lineHeight: pwa ? 22 : 21,
+              fontSize: compact ? 16 : pwa ? 18 : 17,
+              lineHeight: compact ? 21 : pwa ? 22 : 21,
               fontWeight: "700",
               letterSpacing: -0.15,
             }}
@@ -173,8 +175,8 @@ export function NavigationCard({
           accessibilityElementsHidden
           style={{
             color: theme.colors.accentMuted,
-            fontSize: 22,
-            lineHeight: 24,
+            fontSize: compact ? 20 : 22,
+            lineHeight: compact ? 22 : 24,
             fontWeight: "600",
           }}
         >
@@ -185,7 +187,7 @@ export function NavigationCard({
       {onToggleFavourite ? (
         pwa ? (
           <Animated.View
-            style={[{ width: 56 }, favouriteChangeFeedback]}
+            style={[{ width: compact ? 50 : 56 }, favouriteChangeFeedback]}
           >
             <Animated.View
               style={[{ flex: 1 }, favouriteFeedback.animatedStyle]}

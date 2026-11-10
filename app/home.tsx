@@ -103,7 +103,7 @@ function HomeSectionHeader({
   return (
     <View
       style={{
-        minHeight: 34,
+        minHeight: 29,
         flexDirection: "row",
         alignItems: "center",
         gap: 10,
@@ -180,9 +180,7 @@ export default function Home() {
     <NavigationCard
       key={`${titleOnly ? "favourite" : "tool"}-${tool.path}`}
       title={t(tool.titleKey)}
-      description={
-        !compact && !titleOnly && tool.descKey ? t(tool.descKey) : undefined
-      }
+      compact
       favourite={isFavourite(tool.path)}
       onPress={() => openTool(tool)}
       onToggleFavourite={() => toggleTool(tool)}
@@ -195,13 +193,9 @@ export default function Home() {
       style={{
         gap: 0,
         alignItems: "center",
-        paddingTop: pwa ? (compact ? 14 : 20) : 0,
-        paddingBottom: pwa ? (compact ? 16 : 22) : compact ? 4 : 12,
-        paddingHorizontal: pwa ? (compact ? 14 : 20) : 0,
-        borderRadius: pwa ? theme.radii.largeCard : 0,
-        borderWidth: pwa ? 1 : 0,
-        borderColor: pwa ? "rgba(190,202,165,0.12)" : "transparent",
-        backgroundColor: pwa ? "rgba(31,35,28,0.46)" : "transparent",
+        paddingTop: pwa ? (compact ? 10 : 14) : 0,
+        paddingBottom: pwa ? (compact ? 11 : 15) : compact ? 4 : 12,
+        paddingHorizontal: 0,
       }}
     >
       <View
@@ -287,7 +281,7 @@ export default function Home() {
       style={{
         width: "100%",
         maxWidth: pwa ? (expanded ? 580 : 600) : 560,
-        gap: compact ? 9 : 11,
+        gap: compact ? 6 : 8,
       }}
     >
       {favouriteTools.length > 0 ? (
@@ -310,9 +304,9 @@ export default function Home() {
       <View style={{ height: 8 }} />
       <HomeSectionHeader title="App & support" />
       <NavigationCard
+        compact
         testID="home-about-support"
         title={t(ABOUT_SUPPORT_TOOL.titleKey)}
-        description={pwa || compact ? undefined : t(ABOUT_SUPPORT_TOOL.descKey)}
         secondary
         onPress={() => openTool(ABOUT_SUPPORT_TOOL)}
       />

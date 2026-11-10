@@ -18,7 +18,7 @@ export const supportNumberSchema = z.object({
   active: z.boolean().optional(),
 });
 
-export const supportNumbersPayloadSchema = z.array(supportNumberSchema);
+export const supportNumbersPayloadSchema = z.array(supportNumberSchema).max(500);
 
 export function parseSupportNumbersPayload(
   value: unknown,

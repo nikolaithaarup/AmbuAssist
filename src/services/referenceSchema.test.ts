@@ -50,4 +50,16 @@ describe("clinical reference schema", () => {
   ])("rejects invalid %s metadata", (_field, payload) => {
     expect(parseReferencePayload(payload)).toBeNull();
   });
+
+  test("rejects an oversized remote source collection", () => {
+    expect(
+      parseReferencePayload({
+        ...validPayload,
+        sources: Array.from({ length: 501 }, (_, index) => ({
+          id: `source-${index}`,
+          title: { en: "Title", da: "Titel" },
+        })),
+      }),
+    ).toBeNull();
+  });
 });

@@ -1,15 +1,23 @@
 import { useMemo, useState } from "react";
 import {
+  Animated,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import type { DestinationCategoryIntent } from "../../domain/destination/categoryRouting";
 import { Input, Label, Subtle, Title } from "../../ui/Ui";
 import { theme } from "../../ui/theme";
+import {
+  usePressFeedback,
+  useReducedMotionPreference,
+  useStateChangeFeedback,
+} from "../../ui/motion";
 
 type Props = {
   lang: "da" | "en";
@@ -35,52 +43,67 @@ function CategoryChip({
   selected: boolean;
   onPress: () => void;
 }) {
+  const pwa = Platform.OS === "web";
+  const pressFeedback = usePressFeedback(0.98);
+  const selectionFeedback = useStateChangeFeedback(selected, 1.025);
+
   return (
-    <Pressable
-      testID={`destination-favourite-category-${category}`}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      accessibilityState={{ selected }}
-      onPress={onPress}
-      style={({ pressed }) => ({
-        minHeight: 46,
-        maxWidth: "100%",
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 6,
-        paddingHorizontal: 13,
-        paddingVertical: 9,
-        borderRadius: 15,
-        borderWidth: selected ? 1.5 : 1,
-        borderColor: selected
-          ? theme.colors.accentMuted
-          : "rgba(190,202,165,0.18)",
-        backgroundColor: selected
-          ? "rgba(145,169,108,0.22)"
-          : pressed
-            ? "rgba(255,255,255,0.07)"
-            : "rgba(38,43,34,0.68)",
-        opacity: pressed ? 0.82 : 1,
-      })}
+    <Animated.View
+      style={[
+        { maxWidth: "100%", minWidth: 0, flexShrink: 1 },
+        pwa ? selectionFeedback : undefined,
+      ]}
     >
-      {selected ? (
-        <Text style={{ color: theme.colors.accentMuted, fontWeight: "900" }}>
-          ✓
-        </Text>
-      ) : null}
-      <Text
-        style={{
-          flexShrink: 1,
-          color: theme.colors.text,
-          fontSize: 14,
-          lineHeight: 18,
-          fontWeight: selected ? "900" : "700",
-        }}
-      >
-        {label}
-      </Text>
-    </Pressable>
+      <Animated.View style={pressFeedback.animatedStyle}>
+        <Pressable
+          testID={`destination-favourite-category-${category}`}
+          accessibilityRole="button"
+          accessibilityLabel={label}
+          accessibilityState={{ selected }}
+          onPress={onPress}
+          onPressIn={pressFeedback.onPressIn}
+          onPressOut={pressFeedback.onPressOut}
+          style={({ pressed }) => ({
+            minHeight: pwa ? 50 : 46,
+            maxWidth: "100%",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+            paddingHorizontal: 13,
+            paddingVertical: 9,
+            borderRadius: theme.radii.control,
+            borderWidth: selected ? 1.5 : 1,
+            borderColor: selected
+              ? theme.colors.accentMuted
+              : "rgba(190,202,165,0.18)",
+            backgroundColor: selected
+              ? "rgba(145,169,108,0.22)"
+              : pressed
+                ? "rgba(255,255,255,0.07)"
+                : theme.colors.interactive,
+            opacity: pressed ? 0.82 : 1,
+          })}
+        >
+          {selected ? (
+            <Text style={{ color: theme.colors.accentMuted, fontWeight: "900" }}>
+              ✓
+            </Text>
+          ) : null}
+          <Text
+            style={{
+              flexShrink: 1,
+              color: theme.colors.text,
+              fontSize: 14,
+              lineHeight: 18,
+              fontWeight: selected ? "900" : "700",
+            }}
+          >
+            {label}
+          </Text>
+        </Pressable>
+      </Animated.View>
+    </Animated.View>
   );
 }
 
@@ -96,6 +119,9 @@ export function DestinationCategoryPicker({
   onSelect,
   onToggleFavourite,
 }: Props) {
+  const pwa = Platform.OS === "web";
+  const reducedMotion = useReducedMotionPreference(true);
+  const openFeedback = usePressFeedback();
   const [query, setQuery] = useState("");
   const selectedIsFavourite = favourites.includes(selected);
   const filteredOptions = useMemo(() => {
@@ -114,13 +140,13 @@ export function DestinationCategoryPicker({
   };
 
   return (
-    <View style={{ gap: 9 }}>
+    <View style={{ width: "100%", minWidth: 0, gap: 9 }}>
       <Label>{lang === "da" ? "Visitationstype" : "Visitation type"}</Label>
 
       {!selectedIsFavourite ? (
         <View style={{ gap: 6 }}>
           <Subtle>{lang === "da" ? "Valgt visitation" : "Selected visitation"}</Subtle>
-          <View style={{ alignItems: "flex-start" }}>
+          <View style={{ minWidth: 0, alignItems: "flex-start" }}>
             <CategoryChip
               category={selected}
               label={getLabel(selected)}
@@ -141,6 +167,7 @@ export function DestinationCategoryPicker({
               flexDirection: "row",
               flexWrap: "wrap",
               alignItems: "flex-start",
+              minWidth: 0,
               gap: 8,
             }}
           >
@@ -163,39 +190,52 @@ export function DestinationCategoryPicker({
         </Subtle>
       )}
 
-      <Pressable
-        testID="destination-all-categories-toggle"
-        accessibilityRole="button"
-        accessibilityLabel={
-          lang === "da" ? "Alle visitationer" : "All visitations"
-        }
-        accessibilityState={{ expanded: open }}
-        onPress={onOpen}
-        style={({ pressed }) => ({
-          minHeight: 48,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 12,
-          paddingHorizontal: 13,
-          borderRadius: 14,
-          backgroundColor: pressed
-            ? "rgba(255,255,255,0.07)"
-            : "rgba(255,255,255,0.035)",
-          opacity: pressed ? 0.78 : 1,
-        })}
-      >
-        <Text style={{ color: theme.colors.accentMuted, fontWeight: "800" }}>
-          {lang === "da" ? "Alle visitationer" : "All visitations"}
-        </Text>
-        <Text style={{ color: theme.colors.accentMuted, fontSize: 20 }}>›</Text>
-      </Pressable>
+      <Animated.View style={openFeedback.animatedStyle}>
+        <Pressable
+          testID="destination-all-categories-toggle"
+          accessibilityRole="button"
+          accessibilityLabel={
+            lang === "da" ? "Alle visitationer" : "All visitations"
+          }
+          accessibilityState={{ expanded: open }}
+          onPress={onOpen}
+          onPressIn={openFeedback.onPressIn}
+          onPressOut={openFeedback.onPressOut}
+          style={({ pressed }) => ({
+            minHeight: Platform.OS === "web" ? theme.controlHeight : 48,
+            width: "100%",
+            minWidth: 0,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+            paddingHorizontal: 13,
+            borderRadius: 14,
+            backgroundColor: pressed
+              ? "rgba(255,255,255,0.07)"
+              : "rgba(255,255,255,0.035)",
+            opacity: pressed ? 0.78 : 1,
+          })}
+        >
+          <Text
+            style={{
+              flex: 1,
+              minWidth: 0,
+              color: theme.colors.accentMuted,
+              fontWeight: "800",
+            }}
+          >
+            {lang === "da" ? "Alle visitationer" : "All visitations"}
+          </Text>
+          <Text style={{ color: theme.colors.accentMuted, fontSize: 20 }}>›</Text>
+        </Pressable>
+      </Animated.View>
 
       <Modal
         testID="destination-category-modal"
         visible={open}
         transparent
-        animationType="slide"
+        animationType={pwa && reducedMotion ? "none" : "slide"}
         presentationStyle="overFullScreen"
         onRequestClose={close}
       >
@@ -208,10 +248,14 @@ export function DestinationCategoryPicker({
               backgroundColor: "rgba(0,0,0,0.6)",
             }}
           />
-          <View
+          <SafeAreaView
             accessibilityViewIsModal
+            edges={["bottom"]}
             style={{
               maxHeight: "88%",
+              width: "100%",
+              maxWidth: 720,
+              alignSelf: "center",
               borderTopLeftRadius: 24,
               borderTopRightRadius: 24,
               borderWidth: 1,
@@ -363,7 +407,7 @@ export function DestinationCategoryPicker({
                 </Subtle>
               )}
             </ScrollView>
-          </View>
+          </SafeAreaView>
         </View>
       </Modal>
     </View>

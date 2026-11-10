@@ -1,0 +1,11 @@
+.env
+.env.*
+/secrets
+/secrets/**
+.git/
+.vercel/
+.expo/
+.jest-cache/
+dist/
+node_modules/
+*.log

@@ -7,6 +7,12 @@ jest.mock("../../i18n/useT", () => {
   const { da } = jest.requireActual("../../i18n/strings");
   return { useT: () => ({ lang: "da", t: (key) => da[key] ?? key }) };
 });
+jest.mock("../../auth/AuthProvider", () => ({
+  useAuth: () => ({
+    state: { status: "authorized", session: { assurance: "portal-session" } },
+    logout: jest.fn(),
+  }),
+}));
 
 function textContent(root) {
   return root
@@ -19,7 +25,7 @@ function textContent(root) {
 describe("AboutSupportScreen", () => {
   afterEach(() => jest.restoreAllMocks());
 
-  test("presents five compact information areas collapsed by default", () => {
+  test("presents compact information areas collapsed by default", () => {
     let renderer;
     act(() => {
       renderer = TestRenderer.create(<AboutSupportScreen />);
@@ -30,6 +36,7 @@ describe("AboutSupportScreen", () => {
     expect(root.findAllByProps({ testID: "about-support-section-medical" }).length).toBeGreaterThan(0);
     expect(root.findAllByProps({ testID: "about-support-section-contact" }).length).toBeGreaterThan(0);
     expect(root.findAllByProps({ testID: "about-support-section-limitations" }).length).toBeGreaterThan(0);
+    expect(root.findAllByProps({ testID: "about-support-section-account" }).length).toBeGreaterThan(0);
     expect(root.findAllByProps({ testID: "about-support-section-app" }).length).toBeGreaterThan(0);
     expect(root.findByProps({ accessibilityLabel: "Hvad AmbuAssist er" }).props.accessibilityState).toEqual({ expanded: false });
     expect(textContent(root)).toContain("AmbuAssist");

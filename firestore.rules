@@ -1,0 +1,11 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Staging begins with bundled application fallbacks only. Do not relax these
+    // rules until a production data model and authorization policy are approved.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

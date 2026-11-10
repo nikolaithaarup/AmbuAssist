@@ -7,11 +7,12 @@ node_modules/
 .expo/
 dist/
 web-build/
+.vercel/
 expo-env.d.ts
 secrets/
-src/lib/firebase.ts
 .env
 .env.*
+!.env.example
 
 # Native
 .kotlin/
@@ -43,3 +44,5 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+.vercel
+.env*

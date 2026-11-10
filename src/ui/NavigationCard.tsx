@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  Animated,
   Platform,
   Pressable,
   Text,
@@ -8,6 +9,11 @@ import {
   type ViewStyle,
 } from "react-native";
 import { theme } from "./theme";
+import {
+  runWebRouteTransition,
+  usePressFeedback,
+  useStateChangeFeedback,
+} from "./motion";
 
 type NavigationCardProps = {
   title: string;
@@ -42,45 +48,92 @@ export function NavigationCard({
 }: NavigationCardProps) {
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
+  const [favouriteFocused, setFavouriteFocused] = useState(false);
+  const pwa = Platform.OS === "web";
+  const pressFeedback = usePressFeedback(0.985);
+  const favouriteFeedback = usePressFeedback(0.96);
+  const favouriteChangeFeedback = useStateChangeFeedback(favourite, 1.025);
+  const favouriteButton = onToggleFavourite ? (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={favourite ? "Remove favourite" : "Add favourite"}
+      accessibilityState={{ selected: favourite }}
+      onPress={onToggleFavourite}
+      onPressIn={favouriteFeedback.onPressIn}
+      onPressOut={favouriteFeedback.onPressOut}
+      onFocus={() => setFavouriteFocused(true)}
+      onBlur={() => setFavouriteFocused(false)}
+      hitSlop={2}
+      style={({ pressed }) => ({
+        flex: pwa ? 1 : undefined,
+        width: pwa ? undefined : 52,
+        minHeight: pwa ? 66 : 58,
+        alignItems: "center",
+        justifyContent: "center",
+        borderLeftWidth: 1,
+        borderLeftColor: favouriteFocused ? theme.colors.focus : theme.colors.divider,
+        backgroundColor: pressed
+          ? theme.colors.pressed
+          : favouriteFocused
+            ? "rgba(174,190,144,0.14)"
+            : "transparent",
+        opacity: pressed ? 0.72 : 1,
+      })}
+    >
+      <Text
+        style={{
+          color: favourite ? theme.colors.warn : theme.colors.mutedText,
+          fontSize: 24,
+          lineHeight: 28,
+          fontWeight: "800",
+        }}
+      >
+        {favourite ? "★" : "☆"}
+      </Text>
+    </Pressable>
+  ) : null;
 
   return (
-    <View
+    <Animated.View
       testID={testID}
       style={[
         {
-          minHeight: description ? 68 : 56,
+          minHeight: pwa ? (description ? 82 : 66) : description ? 72 : 58,
           flexDirection: "row",
           alignItems: "stretch",
           overflow: "hidden",
-          borderRadius: 16,
+          borderRadius: pwa ? theme.radii.card : 18,
           borderWidth: 1,
-          borderColor: focused
+          borderColor: focused || favouriteFocused
             ? "rgba(174,190,144,0.52)"
             : secondary
               ? "rgba(190,202,165,0.12)"
-              : "rgba(190,202,165,0.18)",
+              : "rgba(190,202,165,0.20)",
           backgroundColor: secondary
             ? "rgba(31,35,28,0.58)"
-            : "rgba(38,43,34,0.78)",
+            : theme.colors.interactive,
         },
         platformDepth,
+        pressFeedback.animatedStyle,
       ]}
     >
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={description ? `${title}. ${description}` : title}
-        onPress={onPress}
+        onPress={() => runWebRouteTransition("forward", onPress)}
+        onPressIn={pressFeedback.onPressIn}
+        onPressOut={pressFeedback.onPressOut}
         onHoverIn={() => setHovered(true)}
         onHoverOut={() => setHovered(false)}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         style={({ pressed }) => ({
           flex: 1,
-          minHeight: 56,
+          minHeight: pwa ? 66 : 58,
           flexDirection: "row",
           alignItems: "center",
-          gap: 12,
-          paddingLeft: 17,
+          gap: 13,
+          paddingLeft: pwa ? 15 : 14,
           paddingRight: onToggleFavourite ? 8 : 14,
           paddingVertical: description ? 14 : 12,
           backgroundColor: pressed
@@ -89,16 +142,15 @@ export function NavigationCard({
               ? "rgba(255,255,255,0.045)"
               : "transparent",
           opacity: pressed ? 0.88 : 1,
-          transform: [{ scale: pressed ? 0.995 : 1 }],
         })}
       >
-        <View style={{ flex: 1, alignItems: "flex-start", gap: 4 }}>
+        <View style={{ flex: 1, minWidth: 0, alignItems: "flex-start", gap: 4 }}>
           <Text
             style={{
               color: theme.colors.text,
-              fontSize: 17,
-              lineHeight: 21,
-              fontWeight: "800",
+              fontSize: pwa ? 18 : 17,
+              lineHeight: pwa ? 22 : 21,
+              fontWeight: "700",
               letterSpacing: -0.15,
             }}
           >
@@ -121,7 +173,7 @@ export function NavigationCard({
           accessibilityElementsHidden
           style={{
             color: theme.colors.accentMuted,
-            fontSize: 23,
+            fontSize: 22,
             lineHeight: 24,
             fontWeight: "600",
           }}
@@ -131,36 +183,20 @@ export function NavigationCard({
       </Pressable>
 
       {onToggleFavourite ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={favourite ? "Remove favourite" : "Add favourite"}
-          accessibilityState={{ selected: favourite }}
-          onPress={onToggleFavourite}
-          hitSlop={2}
-          style={({ pressed }) => ({
-            width: 54,
-            minHeight: 56,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: pressed
-              ? "rgba(255,255,255,0.05)"
-              : "transparent",
-            opacity: pressed ? 0.72 : 1,
-            transform: [{ scale: pressed ? 0.96 : 1 }],
-          })}
-        >
-          <Text
-            style={{
-              color: favourite ? theme.colors.warn : theme.colors.mutedText,
-              fontSize: 24,
-              lineHeight: 28,
-              fontWeight: "800",
-            }}
+        pwa ? (
+          <Animated.View
+            style={[{ width: 56 }, favouriteChangeFeedback]}
           >
-            {favourite ? "★" : "☆"}
-          </Text>
-        </Pressable>
+            <Animated.View
+              style={[{ flex: 1 }, favouriteFeedback.animatedStyle]}
+            >
+              {favouriteButton}
+            </Animated.View>
+          </Animated.View>
+        ) : (
+          favouriteButton
+        )
       ) : null}
-    </View>
+    </Animated.View>
   );
 }

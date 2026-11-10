@@ -1,7 +1,5 @@
 import { useMemo, useState, type ReactNode } from "react";
 import {
-  Alert,
-  Linking,
   Pressable,
   ScrollView,
   Text,
@@ -28,6 +26,7 @@ import {
   ToolSurface,
 } from "../../src/ui/ToolSurface";
 import { useSuccessHaptic } from "../../src/ui/useSuccessHaptic";
+import { openPhoneNumber } from "../../src/services/phoneAction";
 
 const RH_BURNS_PHONE = "+4535451245";
 
@@ -213,26 +212,7 @@ export default function BurnsPage() {
   };
 
   const callBurnsDoctor = async () => {
-    const url = `tel:${RH_BURNS_PHONE}`;
-
-    try {
-      const supported = await Linking.canOpenURL(url);
-
-      if (!supported) {
-        Alert.alert(
-          lang === "da" ? "Kunne ikke ringe op" : "Could not call",
-          RH_BURNS_PHONE,
-        );
-        return;
-      }
-
-      await Linking.openURL(url);
-    } catch {
-      Alert.alert(
-        lang === "da" ? "Kunne ikke ringe op" : "Could not call",
-        RH_BURNS_PHONE,
-      );
-    }
+    await openPhoneNumber(RH_BURNS_PHONE).catch(() => false);
   };
 
   return (

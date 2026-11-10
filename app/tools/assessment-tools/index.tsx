@@ -1,11 +1,12 @@
 // app/tools/assessment-tools/index.tsx
 import { type Href, useRouter } from "expo-router";
-import { ScrollView, View } from "react-native";
+import { Platform, ScrollView, View } from "react-native";
 import { useT } from "../../../src/i18n/useT";
 import { Background } from "../../../src/ui/Background";
 import { hapticToolOpen } from "../../../src/ui/haptics";
 import { NavigationCard } from "../../../src/ui/NavigationCard";
 import { Screen, Subtle, Title } from "../../../src/ui/Ui";
+import { useResponsiveLayout } from "../../../src/ui/responsive";
 
 type ToolLink = {
   titleKey: any;
@@ -16,6 +17,7 @@ type ToolLink = {
 export default function AssessmentToolsPage() {
   const router = useRouter();
   const { lang, t } = useT();
+  const { isExpanded } = useResponsiveLayout();
 
   const tools: ToolLink[] = [
     {
@@ -66,12 +68,12 @@ export default function AssessmentToolsPage() {
         <ScrollView
           contentContainerStyle={{
             paddingHorizontal: 16,
-            paddingTop: 16,
+            paddingTop: Platform.OS === "web" ? 0 : 16,
             paddingBottom: 24,
             alignItems: "center",
           }}
         >
-          <View style={{ width: "100%", maxWidth: 520, gap: 12 }}>
+          <View style={{ width: "100%", maxWidth: isExpanded ? 920 : 520, gap: 12 }}>
             <Title
               style={{
                 textAlign: "center",
@@ -87,17 +89,34 @@ export default function AssessmentToolsPage() {
               {t("tool_assessment_desc")}
             </Subtle>
 
-            {tools.map((tool) => (
-              <NavigationCard
-                key={tool.path}
-                title={t(tool.titleKey)}
-                description={t(tool.descKey)}
-                onPress={() => {
-                  hapticToolOpen();
-                  router.push(tool.path);
-                }}
-              />
-            ))}
+            <View
+              style={{
+                flexDirection: isExpanded ? "row" : "column",
+                flexWrap: isExpanded ? "wrap" : "nowrap",
+                gap: 12,
+              }}
+            >
+              {tools.map((tool) => (
+                <View
+                  key={tool.path}
+                  style={{
+                    flexBasis: isExpanded ? "48%" : "auto",
+                    flexGrow: isExpanded ? 1 : 0,
+                    width: isExpanded ? undefined : "100%",
+                    minWidth: 0,
+                  }}
+                >
+                  <NavigationCard
+                    title={t(tool.titleKey)}
+                    description={t(tool.descKey)}
+                    onPress={() => {
+                      hapticToolOpen();
+                      router.push(tool.path);
+                    }}
+                  />
+                </View>
+              ))}
+            </View>
           </View>
         </ScrollView>
       </Screen>

@@ -3,6 +3,7 @@ import {
   Alert,
   Linking,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -12,6 +13,7 @@ import {
 import { useT } from "../i18n/useT";
 import { Subtle, Title } from "./Ui";
 import { theme } from "./theme";
+import { useReducedMotionPreference } from "./motion";
 
 export type ClinicalDisclosureSource = {
   id: string;
@@ -41,6 +43,8 @@ export function ClinicalDisclosure({
   sources: readonly ClinicalDisclosureSource[];
 }) {
   const { t } = useT();
+  const pwa = Platform.OS === "web";
+  const reducedMotion = useReducedMotionPreference(pwa);
   const [open, setOpen] = useState(false);
   const sourceCount = sources.length;
   const triggerLabel = formatClinicalDisclosureTriggerLabel(
@@ -83,7 +87,7 @@ export function ClinicalDisclosure({
         testID="clinical-disclosure-modal"
         visible={open}
         transparent
-        animationType="slide"
+        animationType={pwa && reducedMotion ? "none" : "slide"}
         presentationStyle="overFullScreen"
         onRequestClose={close}
       >

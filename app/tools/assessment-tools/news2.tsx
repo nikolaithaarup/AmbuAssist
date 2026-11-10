@@ -18,7 +18,13 @@ import {
   ToolSectionLabel,
   ToolSurface,
 } from "../../../src/ui/ToolSurface";
-import { Input, Screen, Subtle } from "../../../src/ui/Ui";
+import {
+  Input,
+  ResponsiveColumn,
+  ResponsiveColumns,
+  Screen,
+  Subtle,
+} from "../../../src/ui/Ui";
 import { theme } from "../../../src/ui/theme";
 import { useSuccessHaptic } from "../../../src/ui/useSuccessHaptic";
 
@@ -162,6 +168,8 @@ export default function NEWS2() {
         <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
           <ToolPageHeader title={t("news2_title")} subtitle={t("news2_sub")} />
 
+          <ResponsiveColumns>
+            <ResponsiveColumn>
           <ToolSurface
             tone={
               computed.total >= 7 || computed.anyThree
@@ -204,7 +212,9 @@ export default function NEWS2() {
               ))}
             </View>
           </ToolSurface>
+            </ResponsiveColumn>
 
+            <ResponsiveColumn>
           <ToolSurface>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
               <ToolSectionLabel>{t("tool_filled")} {computed.filledCount}/5</ToolSectionLabel>
@@ -220,6 +230,8 @@ export default function NEWS2() {
             <Subtle>{t("news2_guidance_note")}</Subtle>
             <ToolActionButton label={t("reset")} tone="secondary" onPress={reset} />
           </ToolSurface>
+            </ResponsiveColumn>
+          </ResponsiveColumns>
 
           <ClinicalDisclosure
             disclaimer={reference?.disclaimer[lang] ?? ""}

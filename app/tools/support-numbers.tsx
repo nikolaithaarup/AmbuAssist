@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  Alert,
-  Linking,
   ScrollView,
   Text,
   View,
@@ -9,6 +7,7 @@ import {
 
 import { SUPPORT_NUMBERS_FALLBACK } from "../../src/data/supportNumbersFallback";
 import { useT } from "../../src/i18n/useT";
+import { openPhoneNumber } from "../../src/services/phoneAction";
 import {
   getReference,
   type ReferenceDoc,
@@ -21,6 +20,7 @@ import { useSettings } from "../../src/state/settings";
 import { Background } from "../../src/ui/Background";
 import { ClinicalDisclosure } from "../../src/ui/ClinicalDisclosure";
 import { Screen, Subtle } from "../../src/ui/Ui";
+import { useResponsiveLayout } from "../../src/ui/responsive";
 import {
   ToolActionButton,
   ToolPageHeader,
@@ -41,6 +41,7 @@ export default function SupportNumbersPage() {
   const { settings } = useSettings();
   const { t } = useT();
   const lang = settings.language === "da" ? "da" : "en";
+  const { isExpanded } = useResponsiveLayout();
 
   const [reference, setReference] = useState<ReferenceDoc | null>(null);
   const [numbers, setNumbers] = useState<SupportNumber[]>(
@@ -110,19 +111,7 @@ export default function SupportNumbersPage() {
   }, [numbers, lang]);
 
   const callNumber = async (phone: string) => {
-    try {
-      const url = `tel:${phone}`;
-      const supported = await Linking.canOpenURL(url);
-
-      if (!supported) {
-        Alert.alert("Kunne ikke åbne opkald", phone);
-        return;
-      }
-
-      await Linking.openURL(url);
-    } catch {
-      Alert.alert("Fejl", "Kunne ikke starte opkald.");
-    }
+    await openPhoneNumber(phone).catch(() => false);
   };
 
   const fallbackSources = [
@@ -192,7 +181,13 @@ export default function SupportNumbersPage() {
                 {lang === "da" ? "Ingen supportnumre fundet endnu." : "No support numbers found yet."}
               </Text>
             ) : (
-              <View>
+              <View
+                style={{
+                  flexDirection: isExpanded ? "row" : "column",
+                  flexWrap: isExpanded ? "wrap" : "nowrap",
+                  columnGap: isExpanded ? 14 : 0,
+                }}
+              >
                 {sortedNumbers.map((item) => {
                   const name = lang === "da" ? item.nameDa : item.nameEn;
 
@@ -204,6 +199,10 @@ export default function SupportNumbersPage() {
                         alignItems: "center",
                         gap: 10,
                         paddingVertical: 10,
+                        flexBasis: isExpanded ? "48%" : "auto",
+                        flexGrow: isExpanded ? 1 : 0,
+                        width: isExpanded ? undefined : "100%",
+                        minWidth: 0,
                         borderBottomWidth: 1,
                         borderBottomColor: theme.colors.divider,
                       }}

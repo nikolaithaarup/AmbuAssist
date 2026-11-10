@@ -1,7 +1,7 @@
 import { Stack, usePathname, useRouter } from "expo-router";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
-import { useMemo } from "react";
-import { Platform, Pressable, StatusBar, Text, View } from "react-native";
+import { useEffect, useMemo, useRef } from "react";
+import { Animated, Platform, Pressable, StatusBar, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useT } from "../../src/i18n/useT";
 import { FAVOURITABLE_TOOLS } from "../../src/features/tools/catalog";
@@ -9,6 +9,18 @@ import { useFavourites } from "../../src/state/favourites";
 import { Background } from "../../src/ui/Background";
 import { hapticFavourite } from "../../src/ui/haptics";
 import { theme } from "../../src/ui/theme";
+import { recordToolOpen, usageToolForPath } from "../../src/analytics/usage";
+import { runWebRouteTransition, usePressFeedback } from "../../src/ui/motion";
+import {
+  EXPANDED_TOOL_RAIL_WIDTH,
+  useResponsiveLayout,
+} from "../../src/ui/responsive";
+import {
+  beginBackNavigation,
+  navigateBackOrFallback,
+  releaseBackNavigationOnRouteCommit,
+  type BackNavigationGate,
+} from "../../src/ui/navigation";
 
 const HEADER_BAR_HEIGHT = 58;
 const TITLE_KEYS: Record<string, any> = {
@@ -46,9 +58,13 @@ export default function ToolsLayout() {
   const { isFavourite, toggleFavourite } = useFavourites();
   const showBack = pathname !== "/tools";
   const insets = useSafeAreaInsets();
+  const { isCompact, isExpanded } = useResponsiveLayout();
+  const showExpandedRail = Platform.OS === "web" && isExpanded;
   const statusBarH =
     Platform.OS === "android" ? (StatusBar.currentHeight ?? 0) : insets.top;
-  const topOffset = statusBarH + HEADER_BAR_HEIGHT;
+  const headerBarHeight =
+    Platform.OS === "web" ? (isCompact ? 56 : 60) : HEADER_BAR_HEIGHT;
+  const topOffset = statusBarH + headerBarHeight;
   const title = useMemo(() => {
     const key = TITLE_KEYS[pathname];
     if (key) return t(key);
@@ -61,36 +77,183 @@ export default function ToolsLayout() {
   const canFavourite = FAVOURITABLE_TOOLS.some(
     (tool) => tool.path === pathname,
   );
+  const trackedTool = useRef<string | null>(null);
+  const backNavigationGate = useRef<BackNavigationGate>({
+    pendingFromPath: null,
+  });
+  const backFeedback = usePressFeedback();
+  const favouriteFeedback = usePressFeedback();
+
+  useEffect(() => {
+    releaseBackNavigationOnRouteCommit(backNavigationGate.current, pathname);
+  }, [pathname]);
+
+  const handleBack = () => {
+    beginBackNavigation(
+      backNavigationGate.current,
+      Platform.OS,
+      pathname,
+      () =>
+        runWebRouteTransition("back", () => navigateBackOrFallback(router)),
+    );
+  };
+
+  const favouriteControl = showBack && canFavourite ? (
+    <Animated.View style={favouriteFeedback.animatedStyle}>
+      <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={favourite ? "Remove favourite" : "Add favourite"}
+      onPress={() => {
+        hapticFavourite();
+        toggleFavourite(pathname);
+      }}
+      onPressIn={favouriteFeedback.onPressIn}
+      onPressOut={favouriteFeedback.onPressOut}
+      hitSlop={8}
+      style={({ pressed }) => ({
+        width: 48,
+        height: 48,
+        alignItems: "center",
+        justifyContent: "center",
+        opacity: pressed ? 0.65 : 1,
+      })}
+    >
+      <Text
+        style={{
+          color: favourite ? theme.colors.warn : theme.colors.mutedText,
+          fontSize: 25,
+        }}
+      >
+        {favourite ? "★" : "☆"}
+      </Text>
+      </Pressable>
+    </Animated.View>
+  ) : null;
+
+  useEffect(() => {
+    const tool = usageToolForPath(pathname);
+    if (!tool || trackedTool.current === tool) return;
+    trackedTool.current = tool;
+    void recordToolOpen(tool);
+  }, [pathname]);
 
   return (
     <Background>
       <ExpoStatusBar style="light" translucent />
-      <View
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: topOffset,
-          zIndex: 1000,
-          paddingTop: statusBarH,
-          justifyContent: "center",
-          borderBottomWidth: 1,
-          borderBottomColor: theme.colors.divider,
-          backgroundColor: "rgba(16,19,15,0.84)",
-        }}
-      >
-        {showBack ? (
-          <Pressable
-            onPress={() => {
-              if (router.canGoBack()) router.back();
-              else router.replace("/home");
+      {showExpandedRail ? (
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            bottom: 0,
+            left: 0,
+            width: EXPANDED_TOOL_RAIL_WIDTH,
+            zIndex: 1000,
+            paddingTop: statusBarH + 14,
+            paddingBottom: insets.bottom + 14,
+            paddingLeft: insets.left + 10,
+            paddingRight: 10,
+            borderRightWidth: 1,
+            borderRightColor: theme.colors.divider,
+            backgroundColor: "rgba(16,19,15,0.90)",
+            gap: 12,
+          }}
+        >
+          <Text
+            style={{
+              color: theme.colors.accentMuted,
+              fontSize: 14,
+              fontWeight: "900",
+              letterSpacing: 0.2,
             }}
+          >
+            ∞ AmbuAssist
+          </Text>
+          <Text
+            numberOfLines={3}
+            style={{
+              color: theme.colors.text,
+              fontSize: 17,
+              lineHeight: 22,
+              fontWeight: "800",
+            }}
+          >
+            {title}
+          </Text>
+          {showBack ? (
+            <Animated.View style={backFeedback.animatedStyle}>
+              <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Back"
+              onPress={handleBack}
+              onPressIn={backFeedback.onPressIn}
+              onPressOut={backFeedback.onPressOut}
+              style={({ pressed }) => ({
+                minHeight: 48,
+                justifyContent: "center",
+                borderRadius: theme.radii.control,
+                paddingHorizontal: 12,
+                backgroundColor: pressed
+                  ? theme.colors.pressed
+                  : theme.colors.accentSurface,
+                borderWidth: 1,
+                borderColor: theme.colors.cardBorder,
+                opacity: pressed ? 0.78 : 1,
+              })}
+            >
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: "800",
+                  color: theme.colors.accentMuted,
+                }}
+              >
+                ‹ {t("back")}
+              </Text>
+              </Pressable>
+            </Animated.View>
+          ) : null}
+          <View style={{ flex: 1 }} />
+          {favouriteControl}
+        </View>
+      ) : (
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: topOffset,
+            zIndex: 1000,
+            paddingTop: statusBarH,
+            justifyContent: "center",
+            borderBottomWidth: 1,
+            borderBottomColor: theme.colors.divider,
+            backgroundColor: "rgba(16,19,15,0.94)",
+            ...(Platform.OS === "web"
+              ? ({ boxShadow: "0 6px 22px rgba(0,0,0,0.20)" } as any)
+              : null),
+          }}
+        >
+        {showBack ? (
+          <Animated.View
+            style={[
+              {
+                position: "absolute",
+                left: 8,
+                bottom: 4,
+              },
+              backFeedback.animatedStyle,
+            ]}
+          >
+            <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Back"
+            onPress={handleBack}
+            onPressIn={backFeedback.onPressIn}
+            onPressOut={backFeedback.onPressOut}
             hitSlop={10}
             style={({ pressed }) => ({
-              position: "absolute",
-              left: 8,
-              bottom: 4,
               minHeight: 48,
               justifyContent: "center",
               paddingHorizontal: 12,
@@ -104,17 +267,19 @@ export default function ToolsLayout() {
                 color: theme.colors.accentMuted,
               }}
             >
-              ‹ Back
+              ‹ {t("back")}
             </Text>
-          </Pressable>
+            </Pressable>
+          </Animated.View>
         ) : null}
 
         <Text
-          numberOfLines={1}
+          numberOfLines={2}
           style={{
             color: theme.colors.text,
-            fontSize: 15,
-            fontWeight: "800",
+            fontSize: isCompact ? 14 : 15,
+            lineHeight: isCompact ? 17 : 19,
+            fontWeight: "700",
             textAlign: "center",
             marginHorizontal: 74,
           }}
@@ -122,47 +287,28 @@ export default function ToolsLayout() {
           {title}
         </Text>
 
-        {showBack && canFavourite ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={
-              favourite ? "Remove favourite" : "Add favourite"
-            }
-            onPress={() => {
-              hapticFavourite();
-              toggleFavourite(pathname);
-            }}
-            hitSlop={8}
-            style={({ pressed }) => ({
+        {favouriteControl ? (
+          <View
+            style={{
               position: "absolute",
               right: 8,
               bottom: 4,
-              width: 48,
-              height: 48,
-              alignItems: "center",
-              justifyContent: "center",
-              opacity: pressed ? 0.65 : 1,
-              transform: [{ scale: pressed ? 0.92 : 1 }],
-            })}
+            }}
           >
-            <Text
-              style={{
-                color: favourite ? theme.colors.warn : theme.colors.mutedText,
-                fontSize: 25,
-              }}
-            >
-              {favourite ? "★" : "☆"}
-            </Text>
-          </Pressable>
+            {favouriteControl}
+          </View>
         ) : null}
-      </View>
+        </View>
+      )}
 
       <Stack
         screenOptions={{
           headerShown: false,
+          animation: Platform.OS === "web" ? "none" : undefined,
           contentStyle: {
             backgroundColor: "transparent",
-            paddingTop: topOffset,
+            paddingTop: showExpandedRail ? statusBarH : topOffset,
+            paddingLeft: showExpandedRail ? EXPANDED_TOOL_RAIL_WIDTH : 0,
           },
         }}
       />

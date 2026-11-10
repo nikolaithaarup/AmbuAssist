@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Platform, Pressable, ScrollView, Text, View } from "react-native";
 import { useT } from "../../src/i18n/useT";
 import { Background } from "../../src/ui/Background";
 import { ClinicalDisclosure } from "../../src/ui/ClinicalDisclosure";
 import { Card, Screen, Subtle, Title } from "../../src/ui/Ui";
+import { useResponsiveLayout } from "../../src/ui/responsive";
 import { theme } from "../../src/ui/theme";
 
 type Exam = {
@@ -213,6 +214,7 @@ function SectionLabel({ label }: { label: string }) {
 
 export default function Exams() {
   const { t } = useT();
+  const { isExpanded } = useResponsiveLayout();
   const [openId, setOpenId] = useState<string | null>(null);
 
   const groups = useMemo(() => {
@@ -237,14 +239,31 @@ export default function Exams() {
   return (
     <Background>
       <Screen>
-        <View style={{ gap: 6, marginTop: 12 }}>
+        <View style={{ gap: 6, marginTop: Platform.OS === "web" ? 0 : 12 }}>
           <Title>{t("exams_title")}</Title>
           <Subtle>{t("exams_sub")}</Subtle>
         </View>
 
         <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
-          {groups.map((g) => (
-            <View key={g.key} style={{ gap: 10 }}>
+          <View
+            style={{
+              flexDirection: isExpanded ? "row" : "column",
+              flexWrap: isExpanded ? "wrap" : "nowrap",
+              alignItems: "flex-start",
+              gap: 12,
+            }}
+          >
+            {groups.map((g) => (
+            <View
+              key={g.key}
+              style={{
+                gap: 10,
+                flexBasis: isExpanded ? "48%" : "auto",
+                flexGrow: isExpanded ? 1 : 0,
+                width: isExpanded ? undefined : "100%",
+                minWidth: 0,
+              }}
+            >
               <Text
                 style={{
                   color: theme.colors.text,
@@ -372,7 +391,8 @@ export default function Exams() {
                 );
               })}
             </View>
-          ))}
+            ))}
+          </View>
 
           <ClinicalDisclosure
             disclaimer={t("exams_page_disclaimer")}

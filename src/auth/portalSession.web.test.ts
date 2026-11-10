@@ -1,0 +1,317 @@
+import {
+  clearOfflineAccess,
+  getPortalLoginUrl,
+  hasOfflineAccess,
+  loadAmbuAssistSession,
+  logoutAmbuAssistDevice,
+  rememberOfflineAccess,
+} from "./portalSession.web";
+
+const validResponse = {
+  user: {
+    id: "user-1",
+    email: "clinician@example.dk",
+    emailVerified: true,
+  },
+  entitlements: { ambuassist: { granted: true, source: "role" } },
+  expiresAt: "2099-01-01T00:00:00.000Z",
+};
+
+describe("AmbuAssist Portal client", () => {
+  const originalFetch = global.fetch;
+  const originalAppOrigin = process.env.EXPO_PUBLIC_APP_ORIGIN;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    if (originalAppOrigin === undefined) {
+      delete process.env.EXPO_PUBLIC_APP_ORIGIN;
+    } else {
+      process.env.EXPO_PUBLIC_APP_ORIGIN = originalAppOrigin;
+    }
+    jest.restoreAllMocks();
+  });
+
+  test("uses the configured app origin for the default login return URL", () => {
+    process.env.EXPO_PUBLIC_APP_ORIGIN =
+      "https://ambuassist-staging.synapsestudio.dk";
+
+    const loginUrl = new URL(getPortalLoginUrl());
+
+    expect(loginUrl.origin).toBe("https://portal.synapsestudio.dk");
+    expect(loginUrl.searchParams.get("returnTo")).toBe(
+      "https://ambuassist-staging.synapsestudio.dk/",
+    );
+  });
+
+  test("sends only a credentialed session lookup and authorizes explicit access", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => validResponse,
+    });
+
+    await expect(loadAmbuAssistSession()).resolves.toMatchObject({
+      status: "authorized",
+    });
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://portal.synapsestudio.dk/api/auth/product-session",
+      {
+        credentials: "include",
+        cache: "no-store",
+        signal: expect.anything(),
+        headers: { Accept: "application/json" },
+      },
+    );
+  });
+
+  test.each([
+    [401, "unauthenticated"],
+    [403, "forbidden"],
+  ])("maps HTTP %s to %s", async (status, expected) => {
+    global.fetch = jest.fn().mockResolvedValue({ ok: false, status });
+    await expect(loadAmbuAssistSession()).resolves.toMatchObject({
+      status: expected,
+    });
+  });
+
+  test("denies a valid identity without AmbuAssist entitlement", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        ...validResponse,
+        entitlements: { ambuassist: { granted: false } },
+      }),
+    });
+    await expect(loadAmbuAssistSession()).resolves.toMatchObject({
+      status: "forbidden",
+    });
+  });
+
+  test("fails closed on malformed Portal responses", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ user: {}, entitlements: {} }),
+    });
+    await expect(loadAmbuAssistSession()).resolves.toMatchObject({
+      status: "error",
+    });
+  });
+
+  test("logs out only through the credentialed current-device endpoint", async () => {
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, status: 204 });
+    await expect(logoutAmbuAssistDevice()).resolves.toBeUndefined();
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://portal.synapsestudio.dk/api/auth/ambuassist/device/logout",
+      {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+        signal: expect.anything(),
+        headers: { Accept: "application/json" },
+      },
+    );
+  });
+
+  test("keeps the offline marker installation-local and removes it on logout/revocation", async () => {
+    const storage = new Map<string, string>();
+    const localStorage = {
+      getItem: jest.fn((key: string) => storage.get(key) ?? null),
+      setItem: jest.fn((key: string, value: string) => storage.set(key, value)),
+      removeItem: jest.fn((key: string) => storage.delete(key)),
+    };
+    const originalWindow = global.window;
+    Object.defineProperty(global, "window", {
+      configurable: true,
+      writable: true,
+      value: { ...originalWindow, localStorage },
+    });
+    try {
+      await rememberOfflineAccess();
+      await expect(hasOfflineAccess()).resolves.toBe(true);
+      await clearOfflineAccess();
+      await expect(hasOfflineAccess()).resolves.toBe(false);
+    } finally {
+      Object.defineProperty(global, "window", {
+        configurable: true,
+        writable: true,
+        value: originalWindow,
+      });
+    }
+  });
+});
+
+describe("AmbuAssist original URL handling", () => {
+  test("preserves a protected deep path, query and fragment through onboarding URL", () => {
+    const { validatedAppReturnUrl } = require("./portalSession.web");
+    const requested =
+      "https://ambuassist.synapsestudio.dk/tools/trombolysis?mode=adult&value=1%202#result";
+    const onboarding = new URL(
+      getPortalLoginUrl(validatedAppReturnUrl(requested)),
+    );
+    expect(onboarding.pathname).toBe("/auth/ambuassist/resume");
+    expect(onboarding.searchParams.get("returnTo")).toBe(requested);
+  });
+  test.each([
+    "https://evil.test/",
+    "//evil.test",
+    "https://ambuassist.synapsestudio.dk.evil.test/",
+    "https://u@ambuassist.synapsestudio.dk/",
+  ])("rejects non-application return %s", (url) => {
+    const { validatedAppReturnUrl } = require("./portalSession.web");
+    expect(validatedAppReturnUrl(url)).toBe(
+      "https://ambuassist.synapsestudio.dk/",
+    );
+  });
+  test("refuses an unverified server identity even with an entitlement", async () => {
+    const old = global.fetch;
+    global.fetch = jest
+      .fn()
+      .mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          ...validResponse,
+          user: { ...validResponse.user, emailVerified: false },
+        }),
+      });
+    try {
+      expect((await loadAmbuAssistSession()).status).toBe("forbidden");
+    } finally {
+      global.fetch = old;
+    }
+  });
+});
+
+describe("remembered-device recovery in installed PWAs", () => {
+  test("attempts first-party Portal recovery once, preserving the requested deep link", () => {
+    const originalWindow = global.window;
+    const stored = new Map<string, string>();
+    const assign = jest.fn();
+    Object.defineProperty(global, "window", { configurable: true, writable: true, value: {
+      location: {
+        href: "https://ambuassist.synapsestudio.dk/tools/destination?mode=gps#result",
+        assign,
+      },
+      localStorage: {
+        getItem: (key: string) => stored.get(key) ?? null,
+        setItem: (key: string, value: string) => stored.set(key, value),
+        removeItem: (key: string) => stored.delete(key),
+      },
+    } });
+    try {
+      const { tryResumeRememberedDevice, clearResumeAttempt } = require("./portalSession.web");
+      expect(tryResumeRememberedDevice()).toBe(true);
+      const first = new URL(assign.mock.calls[0][0]);
+      expect(first.origin).toBe("https://portal.synapsestudio.dk");
+      expect(first.pathname).toBe("/auth/ambuassist/resume");
+      expect(first.searchParams.get("returnTo")).toBe(
+        "https://ambuassist.synapsestudio.dk/tools/destination?mode=gps#result",
+      );
+      expect(tryResumeRememberedDevice()).toBe(false);
+      expect(assign).toHaveBeenCalledTimes(1);
+      clearResumeAttempt();
+      expect(tryResumeRememberedDevice()).toBe(true);
+    } finally {
+      Object.defineProperty(global, "window", {
+        configurable: true, writable: true, value: originalWindow,
+      });
+    }
+  });
+});
+
+describe("Pre-router URL capture", () => {
+  test("does not replace the original URL with Expo's rewritten hash/query", () => {
+    const requested = "https://ambuassist.synapsestudio.dk/tools/trombolysis?mode=adult#result";
+    const originalWindow = global.window;
+    const replaceState = jest.fn();
+    Object.defineProperty(global, "window", { configurable: true, writable: true, value: {
+      location: { href: "https://ambuassist.synapsestudio.dk/tools/trombolysis#result?mode=adult", pathname: "/tools/trombolysis" },
+      history: { state: { key: "router-state" }, replaceState },
+    } });
+    jest.doMock("./initialUrl", () => ({ initialBrowserUrl: requested }));
+    try {
+      jest.isolateModules(() => {
+        const client = require("./portalSession.web");
+        client.captureRequestedUrl();
+        expect(new URL(client.getPortalLoginUrl()).searchParams.get("returnTo")).toBe(requested);
+        client.restoreRequestedUrl();
+        expect(replaceState).toHaveBeenCalledWith({ key: "router-state" }, "", requested);
+      });
+    } finally {
+      jest.dontMock("./initialUrl");
+      Object.defineProperty(global, "window", { configurable: true, writable: true, value: originalWindow });
+    }
+  });
+
+  test("restores a localhost deep link without attempting a production-origin history write", () => {
+    const requested = "http://127.0.0.1:4173/tools/destination?source=gps#address";
+    const originalWindow = global.window;
+    const replaceState = jest.fn();
+    Object.defineProperty(global, "window", { configurable: true, writable: true, value: {
+      location: { href: "http://127.0.0.1:4173/tools/destination#address?source=gps", pathname: "/tools/destination" },
+      history: { state: null, replaceState },
+    } });
+    jest.doMock("./initialUrl", () => ({ initialBrowserUrl: requested }));
+    try {
+      jest.isolateModules(() => {
+        const client = require("./portalSession.web");
+        client.restoreRequestedUrl();
+        expect(replaceState).toHaveBeenCalledWith(null, "", requested);
+        expect(new URL(client.getPortalLoginUrl()).searchParams.get("returnTo")).toBe(
+          "https://ambuassist.synapsestudio.dk/",
+        );
+      });
+    } finally {
+      jest.dontMock("./initialUrl");
+      Object.defineProperty(global, "window", { configurable: true, writable: true, value: originalWindow });
+    }
+  });
+
+  test("accepts a relative localhost restoration URL", () => {
+    const originalWindow = global.window;
+    const replaceState = jest.fn();
+    Object.defineProperty(global, "window", { configurable: true, writable: true, value: {
+      location: { href: "http://localhost:4173/tools/destination", pathname: "/tools/destination" },
+      history: { state: null, replaceState },
+    } });
+    jest.doMock("./initialUrl", () => ({ initialBrowserUrl: "/tools/destination?source=gps#address" }));
+    try {
+      jest.isolateModules(() => {
+        require("./portalSession.web").restoreRequestedUrl();
+        expect(replaceState).toHaveBeenCalledWith(
+          null,
+          "",
+          "http://localhost:4173/tools/destination?source=gps#address",
+        );
+      });
+    } finally {
+      jest.dontMock("./initialUrl");
+      Object.defineProperty(global, "window", { configurable: true, writable: true, value: originalWindow });
+    }
+  });
+
+  test.each([
+    "https://ambuassist.synapsestudio.dk/tools/destination",
+    "//evil.test/tools/destination",
+    "http://[",
+  ])("does not restore a cross-origin or malformed URL: %s", (requested) => {
+    const originalWindow = global.window;
+    const replaceState = jest.fn();
+    Object.defineProperty(global, "window", { configurable: true, writable: true, value: {
+      location: { href: "http://127.0.0.1:4173/tools/destination", pathname: "/tools/destination" },
+      history: { state: null, replaceState },
+    } });
+    jest.doMock("./initialUrl", () => ({ initialBrowserUrl: requested }));
+    try {
+      jest.isolateModules(() => {
+        require("./portalSession.web").restoreRequestedUrl();
+        expect(replaceState).not.toHaveBeenCalled();
+      });
+    } finally {
+      jest.dontMock("./initialUrl");
+      Object.defineProperty(global, "window", { configurable: true, writable: true, value: originalWindow });
+    }
+  });
+});

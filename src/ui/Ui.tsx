@@ -1,6 +1,8 @@
 // src/ui/Ui.tsx
-import { PropsWithChildren } from "react";
+import { PropsWithChildren, useState } from "react";
 import {
+  Animated,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -10,17 +12,120 @@ import {
   type StyleProp,
   ViewStyle,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  type Edge,
+} from "react-native-safe-area-context";
 import { theme } from "./theme";
+import { usePressFeedback } from "./motion";
+import { useResponsiveLayout } from "./responsive";
 
 export function Screen({
   children,
   style,
-}: PropsWithChildren<{ style?: StyleProp<ViewStyle> }>) {
+  edges = ["left", "right", "bottom"],
+}: PropsWithChildren<{
+  style?: StyleProp<ViewStyle>;
+  edges?: readonly Edge[];
+}>) {
+  const { isCompact, isExpanded } = useResponsiveLayout();
+  const safeAreaEdges =
+    Platform.OS === "web"
+      ? {
+          top: edges.includes("top")
+            ? ("additive" as const)
+            : ("off" as const),
+          right: edges.includes("right")
+            ? ("additive" as const)
+            : ("off" as const),
+          bottom: edges.includes("bottom")
+            ? ("additive" as const)
+            : ("off" as const),
+          left: edges.includes("left")
+            ? ("additive" as const)
+            : ("off" as const),
+        }
+      : edges;
+  const webLayout =
+    Platform.OS === "web"
+      ? {
+          paddingHorizontal:
+            isCompact
+              ? 12
+              : isExpanded
+                ? theme.layout.desktopGutter
+                : 16,
+          paddingTop: isCompact ? 12 : isExpanded ? 20 : 16,
+          paddingBottom: isCompact ? 14 : isExpanded ? 20 : 18,
+          gap: isCompact ? 10 : theme.layout.contentGap,
+        }
+      : undefined;
+
   return (
-    <SafeAreaView style={styles.safe} edges={["left", "right", "bottom"]}>
-      <View style={[styles.inner, style]}>{children}</View>
+    <SafeAreaView style={styles.safe} edges={safeAreaEdges}>
+      <ResponsiveToolContainer style={[styles.inner, webLayout, style]}>
+        {children}
+      </ResponsiveToolContainer>
     </SafeAreaView>
+  );
+}
+
+export function ResponsiveToolContainer({
+  children,
+  style,
+  maxWidth = 1180,
+}: PropsWithChildren<{
+  style?: StyleProp<ViewStyle>;
+  maxWidth?: number;
+}>) {
+  return (
+    <View style={[styles.responsiveContainer, { maxWidth }, style]}>
+      {children}
+    </View>
+  );
+}
+
+export function ResponsiveColumns({
+  children,
+  style,
+}: PropsWithChildren<{ style?: StyleProp<ViewStyle> }>) {
+  const { isExpanded } = useResponsiveLayout();
+
+  if (Platform.OS !== "web") return <>{children}</>;
+
+  return (
+    <View
+      style={[
+        styles.responsiveColumns,
+        { flexDirection: isExpanded ? "row" : "column" },
+        style,
+      ]}
+    >
+      {children}
+    </View>
+  );
+}
+
+export function ResponsiveColumn({
+  children,
+  style,
+}: PropsWithChildren<{ style?: StyleProp<ViewStyle> }>) {
+  const { isExpanded } = useResponsiveLayout();
+
+  if (Platform.OS !== "web") return <>{children}</>;
+
+  return (
+    <View
+      style={[
+        styles.responsiveColumn,
+        isExpanded
+          ? styles.responsiveColumnExpanded
+          : styles.responsiveColumnStacked,
+        style,
+      ]}
+    >
+      {children}
+    </View>
   );
 }
 
@@ -51,22 +156,31 @@ export function PrimaryButton({
   onPress: () => void;
   disabled?: boolean;
 }) {
+  const pressFeedback = usePressFeedback(0.98);
+
   return (
-    <Pressable
-      onPress={onPress}
-      disabled={disabled}
-      style={({ pressed }) => [
-        styles.btn,
-        pressed && {
-          opacity: 0.86,
-          transform: [{ scale: 0.99 }],
-          backgroundColor: theme.colors.pressed,
-        },
-        disabled && { opacity: 0.55 },
-      ]}
+    <Animated.View
+      style={[styles.animatedControl, pressFeedback.animatedStyle]}
     >
-      <Text style={styles.btnText}>{label}</Text>
-    </Pressable>
+      <Pressable
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityState={{ disabled }}
+        onPressIn={pressFeedback.onPressIn}
+        onPressOut={pressFeedback.onPressOut}
+        disabled={disabled}
+        style={({ pressed }) => [
+          styles.btn,
+          pressed && {
+            opacity: 0.86,
+            backgroundColor: theme.colors.pressed,
+          },
+          disabled && { opacity: 0.55 },
+        ]}
+      >
+        <Text style={styles.btnText}>{label}</Text>
+      </Pressable>
+    </Animated.View>
   );
 }
 
@@ -87,71 +201,114 @@ export function Input({
   autoCorrect = false,
   ...props
 }: TextInputProps) {
+  const [focused, setFocused] = useState(false);
+
   return (
     <TextInput
       {...props}
       keyboardType={keyboardType}
       autoCorrect={autoCorrect}
+      onFocus={(event) => {
+        setFocused(true);
+        props.onFocus?.(event);
+      }}
+      onBlur={(event) => {
+        setFocused(false);
+        props.onBlur?.(event);
+      }}
       placeholderTextColor={theme.colors.mutedText}
-      style={[styles.input, style]}
+      style={[styles.input, focused && styles.inputFocused, style]}
     />
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "transparent" },
+  responsiveContainer: { flex: 1, width: "100%", alignSelf: "center" },
+  responsiveColumns: {
+    width: "100%",
+    alignItems: "stretch",
+    gap: 12,
+  },
+  responsiveColumn: { minWidth: 0, gap: 14 },
+  responsiveColumnExpanded: { flex: 1 },
+  responsiveColumnStacked: { flex: 0, flexBasis: "auto", width: "100%" },
   inner: { flex: 1, padding: 18, gap: 14 },
+  animatedControl: { width: "100%", minWidth: 0 },
 
   title: {
     color: theme.colors.text,
-    fontSize: theme.typography.title,
+    fontSize: Platform.OS === "web" ? 28 : theme.typography.title,
+    lineHeight: Platform.OS === "web" ? 34 : theme.typography.titleLineHeight,
     fontWeight: "800",
-    letterSpacing: -0.4,
+    letterSpacing: -0.3,
   },
   subtle: {
     color: theme.colors.mutedText,
     fontSize: theme.typography.caption,
-    lineHeight: 19,
+    lineHeight: theme.typography.captionLineHeight,
   },
 
   card: {
     backgroundColor: theme.colors.card,
     borderColor: theme.colors.cardBorder,
     borderWidth: 1,
-    borderRadius: theme.radius,
-    padding: 16,
-    gap: 12,
-    shadowColor: "#000",
-    shadowOpacity: 0.24,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 3,
+    borderRadius: Platform.OS === "web" ? theme.radii.card : theme.radius,
+    padding: Platform.OS === "web" ? 16 : 16,
+    gap: 14,
+    ...(Platform.OS === "web"
+      ? ({ boxShadow: "0 6px 18px rgba(0,0,0,0.20)" } as any)
+      : {
+          shadowColor: "#000",
+          shadowOpacity: 0.2,
+          shadowRadius: 12,
+          shadowOffset: { width: 0, height: 5 },
+          elevation: 3,
+        }),
   },
 
   row: { flexDirection: "row", alignItems: "center", gap: 10 },
-  label: { color: theme.colors.text, fontSize: 15, fontWeight: "600" },
+  label: {
+    color: theme.colors.text,
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: "700",
+  },
 
   input: {
-    flex: 1,
+    width: "100%",
+    minWidth: 0,
     color: theme.colors.text,
-    backgroundColor: "rgba(0,0,0,0.18)",
-    borderRadius: 12,
+    fontSize: 16,
+    lineHeight: 21,
+    backgroundColor: "rgba(9,12,8,0.32)",
+    borderRadius: Platform.OS === "web" ? theme.radii.control : 12,
     paddingHorizontal: 12,
-    minHeight: 46,
+    minHeight: Platform.OS === "web" ? theme.controlHeight : 46,
     paddingVertical: 12,
     borderWidth: 1,
     borderColor: theme.colors.cardBorder,
   },
+  inputFocused: {
+    borderColor: theme.colors.focus,
+    backgroundColor: "rgba(15,19,13,0.56)",
+  },
 
   btn: {
-    backgroundColor: theme.colors.accentSurface,
-    borderColor: theme.colors.cardBorder,
+    backgroundColor: theme.colors.accentMuted,
+    borderColor: "rgba(220,230,199,0.42)",
     borderWidth: 1,
-    borderRadius: 14,
-    minHeight: 50,
+    borderRadius: theme.radii.control,
+    minHeight: theme.controlHeight,
     paddingVertical: 15,
     paddingHorizontal: 18,
     alignItems: "center",
   },
-  btnText: { color: theme.colors.text, fontSize: 16, fontWeight: "700" },
+  btnText: {
+    color: theme.colors.onAccent,
+    fontSize: 16,
+    lineHeight: 21,
+    fontWeight: "800",
+    textAlign: "center",
+  },
 });

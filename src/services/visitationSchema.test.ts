@@ -69,4 +69,20 @@ describe("visitation data schema", () => {
     expect(update.data).toBe(local);
     expect(update.dataToCache).toBeNull();
   });
+
+  test("rejects an oversized remote street-rule collection", () => {
+    const data = makeValidData("oversized");
+    const oversized = {
+      ...data,
+      byen: {
+        ...data.byen,
+        streetSample: Array.from(
+          { length: 10_001 },
+          (_, index) => ({ street: `Testvej ${index}`, bydel: "Bispebjerg" }),
+        ),
+      },
+    };
+
+    expect(parseVisitationData(oversized)).toBeNull();
+  });
 });

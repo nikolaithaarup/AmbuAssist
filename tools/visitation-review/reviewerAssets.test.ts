@@ -4,6 +4,13 @@ import path from "node:path";
 
 const ROOT = path.resolve(__dirname, "..", "..");
 
+function canonicalTextHash(file: string): string {
+  const canonicalText = fs
+    .readFileSync(file, "utf8")
+    .replace(/\r\n?/g, "\n");
+  return crypto.createHash("sha256").update(canonicalText, "utf8").digest("hex");
+}
+
 describe("visitation review artifacts", () => {
   it("provides one exact and one context crop for every pending row", () => {
     const queue = path.join(ROOT, "docs", "visitation-review", "byen-review-queue.csv");
@@ -29,7 +36,7 @@ describe("visitation review artifacts", () => {
     const decisions = JSON.parse(
       fs.readFileSync(path.join(ROOT, "docs", "visitation-review", "review-decisions.json"), "utf8"),
     ) as { queueSha256: string; decisions: Record<string, unknown> };
-    const queueHash = crypto.createHash("sha256").update(fs.readFileSync(queue)).digest("hex");
+    const queueHash = canonicalTextHash(queue);
 
     expect(manifest.items).toHaveLength(123);
     expect(new Set(manifest.items.map((item) => item.id)).size).toBe(123);

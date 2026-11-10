@@ -33,8 +33,11 @@ const LEDGER_FILE = path.join(ROOT, "docs", "visitation-review", "byen-ledger.js
 
 type Manifest = { queueSha256: string; items: ReviewItem[] };
 
-function sha256(file: string): string {
-  return crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");
+function canonicalTextSha256(file: string): string {
+  const canonicalText = fs
+    .readFileSync(file, "utf8")
+    .replace(/\r\n?/g, "\n");
+  return crypto.createHash("sha256").update(canonicalText, "utf8").digest("hex");
 }
 
 function equivalent(a: ByenLedgerRecord, b: ByenLedgerRecord): boolean {
@@ -70,7 +73,7 @@ function main(): void {
   const manifest = JSON.parse(fs.readFileSync(MANIFEST_FILE, "utf8")) as Manifest;
   const decisions = JSON.parse(fs.readFileSync(DECISIONS_FILE, "utf8")) as ReviewDecisionFile;
   const ledger = JSON.parse(fs.readFileSync(LEDGER_FILE, "utf8")) as ByenLedgerRecord[];
-  const queueHash = sha256(QUEUE_FILE);
+  const queueHash = canonicalTextSha256(QUEUE_FILE);
 
   if (manifest.queueSha256 !== queueHash || decisions.queueSha256 !== queueHash) {
     throw new Error("The queue, manifest, and decisions hashes differ; regenerate/reconcile before applying.");

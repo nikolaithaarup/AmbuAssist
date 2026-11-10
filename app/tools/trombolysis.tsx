@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
-  Linking,
   ScrollView,
   Text,
   View,
@@ -13,6 +11,7 @@ import {
   type HospitalPhoneNumber,
 } from "../../src/dev/hospitalNumbers";
 import { useT } from "../../src/i18n/useT";
+import { openPhoneNumber } from "../../src/services/phoneAction";
 import {
   getReference,
   type ReferenceDoc,
@@ -20,7 +19,12 @@ import {
 import { useSettings } from "../../src/state/settings";
 import { Background } from "../../src/ui/Background";
 import { ClinicalDisclosure } from "../../src/ui/ClinicalDisclosure";
-import { Screen, Subtle } from "../../src/ui/Ui";
+import {
+  ResponsiveColumn,
+  ResponsiveColumns,
+  Screen,
+  Subtle,
+} from "../../src/ui/Ui";
 import {
   ToolActionButton,
   ToolPageHeader,
@@ -162,22 +166,7 @@ export default function TrombolysisPage() {
   }, []);
 
   const callHospitalNumber = async (phone: string) => {
-    try {
-      const url = `tel:${phone}`;
-      const supported = await Linking.canOpenURL(url);
-
-      if (!supported) {
-        Alert.alert(t("trombolysis_call_error_title"), phone);
-        return;
-      }
-
-      await Linking.openURL(url);
-    } catch {
-      Alert.alert(
-        t("trombolysis_call_error_title"),
-        t("trombolysis_call_error_body"),
-      );
-    }
+    await openPhoneNumber(phone).catch(() => false);
   };
 
   const disclaimerText =
@@ -218,7 +207,9 @@ export default function TrombolysisPage() {
         <ToolPageHeader title={t("trombolysis_title")} subtitle={t("trombolysis_sub")} />
 
         <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
-          <ToolSurface tone="accent" testID="trombolysis-primary-result">
+          <ResponsiveColumns>
+            <ResponsiveColumn>
+              <ToolSurface tone="accent" testID="trombolysis-primary-result">
             <ToolSectionLabel>{t("trombolysis_responsible")}</ToolSectionLabel>
             <Text style={{ color: theme.colors.text, fontWeight: "900", fontSize: 27, lineHeight: 33 }}>
               {hospitalLabel}
@@ -252,14 +243,18 @@ export default function TrombolysisPage() {
                 </Text>
               )}
             </View>
-          </ToolSurface>
+              </ToolSurface>
+            </ResponsiveColumn>
 
-          <ToolSurface>
+            <ResponsiveColumn>
+              <ToolSurface>
             <ToolSectionLabel>{t("trombolysis_info_title")}</ToolSectionLabel>
             <ToolResultRow label={t("trombolysis_current_time")} value={formatDateTime(now, lang)} />
             <ToolResultRow label={t("trombolysis_next_switch")} value={formatDateTime(responsibility.switchAt, lang)} />
             <Subtle style={{ lineHeight: 19 }}>{t("trombolysis_rule")}</Subtle>
-          </ToolSurface>
+              </ToolSurface>
+            </ResponsiveColumn>
+          </ResponsiveColumns>
 
           <ClinicalDisclosure
             disclaimer={disclaimerText}

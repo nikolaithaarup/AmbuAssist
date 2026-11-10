@@ -6,8 +6,9 @@ import { Background } from "../../ui/Background";
 import { ToolPageHeader, ToolSurface } from "../../ui/ToolSurface";
 import { Screen, Subtle } from "../../ui/Ui";
 import { theme } from "../../ui/theme";
+import { useAuth } from "../../auth/AuthProvider";
 
-export type AboutSupportSection = "about" | "medical" | "contact" | "limitations" | "app";
+export type AboutSupportSection = "about" | "medical" | "contact" | "limitations" | "account" | "app";
 
 const SUPPORT_EMAIL = "nikolai_91@live.com";
 
@@ -170,10 +171,24 @@ export function AboutSupportScreen({
   initialSection?: AboutSupportSection;
 }) {
   const { t } = useT();
+  const { state, logout } = useAuth();
   const appVersion = Constants.expoConfig?.version ?? "unknown";
   const [openSection, setOpenSection] = useState<AboutSupportSection | null>(
     initialSection ?? null,
   );
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState(false);
+
+  const signOut = async () => {
+    setLoggingOut(true);
+    setLogoutError(false);
+    try {
+      await logout();
+    } catch {
+      setLogoutError(true);
+      setLoggingOut(false);
+    }
+  };
 
   const openEmail = async () => {
     const subject = encodeURIComponent(t("contact_email_subject"));
@@ -359,6 +374,44 @@ export function AboutSupportScreen({
             >
               <Warning>{t("about_limit_body")}</Warning>
               <Body>{t("meddisc_emergency_body")}</Body>
+            </SupportSection>
+
+            <SupportSection
+              id="account"
+              title={t("account_title")}
+              subtitle={t("account_sub")}
+              open={openSection === "account"}
+              onToggle={() => setOpenSection((current) => current === "account" ? null : "account")}
+            >
+              <Body>
+                {state.status === "authorized" &&
+                state.session.assurance === "offline-cache"
+                  ? t("account_offline")
+                  : t("account_remembered")}
+              </Body>
+              <Pressable
+                testID="about-support-logout"
+                accessibilityRole="button"
+                accessibilityLabel={t("account_logout")}
+                accessibilityState={{ disabled: loggingOut }}
+                disabled={loggingOut}
+                onPress={() => void signOut()}
+                style={({ pressed }) => ({
+                  minHeight: 48,
+                  borderRadius: 14,
+                  borderWidth: 1,
+                  borderColor: theme.colors.cardBorder,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  paddingHorizontal: 14,
+                  opacity: loggingOut ? 0.5 : pressed ? 0.72 : 1,
+                })}
+              >
+                <Text style={{ color: theme.colors.accentMuted, fontWeight: "900" }}>
+                  {loggingOut ? t("account_logging_out") : t("account_logout")}
+                </Text>
+              </Pressable>
+              {logoutError ? <Warning>{t("account_logout_error")}</Warning> : null}
             </SupportSection>
 
             <SupportSection

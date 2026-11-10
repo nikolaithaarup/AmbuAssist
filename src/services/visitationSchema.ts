@@ -8,6 +8,10 @@ import type {
   RegionCategory,
 } from "../features/destination/types";
 
+const MAX_CATEGORY_COUNT = 128;
+const MAX_POSTAL_CODES_PER_RULE = 100;
+const MAX_STREET_RULE_COUNT = 10_000;
+
 export type VisitationCategory = {
   key: string;
   labelKey: string;
@@ -29,6 +33,7 @@ export type BackendVisitationData = {
   byen: {
     categories: VisitationCategory[];
     map: Record<Bydel, Partial<Record<ByenCategory, HospitalCode>>>;
+    aliases?: Record<string, string>;
     streetSample: StreetSampleRow[];
   };
   region: {
@@ -133,7 +138,10 @@ const streetSampleSchema = z
     from: z.number().optional(),
     to: z.number().optional(),
     side: z.enum(["odd", "even"]).optional(),
-    postalCodes: z.array(z.string().regex(/^\d{4}$/)).optional(),
+    postalCodes: z
+      .array(z.string().regex(/^\d{4}$/))
+      .max(MAX_POSTAL_CODES_PER_RULE)
+      .optional(),
     unresolvedReason: z.string().optional(),
   })
   .passthrough();
@@ -142,15 +150,16 @@ export const visitationDataSchema = z.object({
   version: z.string().min(1),
   updatedAt: z.string().optional(),
   byen: z.object({
-    categories: z.array(categorySchema(byenCategorySchema)),
+    categories: z.array(categorySchema(byenCategorySchema)).max(MAX_CATEGORY_COUNT),
     map: z.record(
       z.string(),
       z.partialRecord(byenCategorySchema, hospitalCodeSchema),
     ),
-    streetSample: z.array(streetSampleSchema),
+    aliases: z.record(z.string(), z.string()).optional(),
+    streetSample: z.array(streetSampleSchema).max(MAX_STREET_RULE_COUNT),
   }),
   region: z.object({
-    categories: z.array(categorySchema(regionCategorySchema)),
+    categories: z.array(categorySchema(regionCategorySchema)).max(MAX_CATEGORY_COUNT),
     map: z.record(
       z.string(),
       z.partialRecord(regionCategorySchema, hospitalCodeSchema),

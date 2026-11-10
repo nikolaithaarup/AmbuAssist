@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Platform, Pressable, ScrollView, Text, View } from "react-native";
 import { useT } from "../../../src/i18n/useT";
 import { useSettings } from "../../../src/state/settings";
 import {
@@ -48,7 +48,7 @@ export default function Paediatric() {
   return (
     <Background>
       <Screen>
-        <View style={{ gap: 6, marginTop: 12 }}>
+        <View style={{ gap: 6, marginTop: Platform.OS === "web" ? 0 : 12 }}>
           <Title>{t("paediatric_title")}</Title>
           <Subtle>{t("paediatric_sub")}</Subtle>
         </View>
@@ -61,6 +61,7 @@ export default function Paediatric() {
                 style={({ pressed }) => ({
                   opacity: pressed ? 0.75 : 1,
                   flex: 1,
+                  minHeight: Platform.OS === "web" ? 50 : undefined,
                   paddingVertical: 12,
                   borderRadius: 14,
                   borderWidth: 1,
@@ -82,6 +83,7 @@ export default function Paediatric() {
                 style={({ pressed }) => ({
                   opacity: pressed ? 0.75 : 1,
                   flex: 1,
+                  minHeight: Platform.OS === "web" ? 50 : undefined,
                   paddingVertical: 12,
                   borderRadius: 14,
                   borderWidth: 1,

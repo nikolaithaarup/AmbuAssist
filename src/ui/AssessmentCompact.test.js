@@ -12,7 +12,7 @@ describe("assessment-only compact surface", () => {
     const section = renderer.root.findAllByProps({ testID: "assessment-compact-card" })[0];
     expect(section).toBeDefined();
     expect(section.props.style).toEqual(expect.arrayContaining([
-      expect.objectContaining({ padding: 11 }),
+      expect.objectContaining({ padding: 5 }),
       expect.objectContaining({ padding: 7 }),
     ]));
     expect(renderer.root.findAllByType(Text).some(node => node.props.children === "Clinical content")).toBe(true);

@@ -11,8 +11,9 @@ import {
 import { Background } from "../../../../src/ui/Background";
 import { ActionOverlay } from "../../../../src/features/cardiac-resus/ActionOverlay";
 import { hapticReset, hapticSuccess } from "../../../../src/ui/haptics";
+import { CollapsibleCard } from "../../../../src/ui/CollapsibleCard";
 import { Screen, Subtle, Title } from "../../../../src/ui/Ui";
-import { ToolActionButton, ToolPageHeader, ToolSectionLabel, ToolSurface } from "../../../../src/ui/ToolSurface";
+import { ToolActionButton, ToolPageHeader, ToolSurface } from "../../../../src/ui/ToolSurface";
 import { theme } from "../../../../src/ui/theme";
 
 const SAFETY_TEXT = "Hjertestop er et tids- og hændelsesstøtteværktøj. Timere og påmindelser er baseret på dine registreringer og skal kontrolleres mod gældende lokale retningslinjer, klinisk vurdering og medicinsk ledelse.";
@@ -87,7 +88,6 @@ export default function CardiacResusLanding() {
           <ToolPageHeader
             badge="Under udvikling"
             title="Hjertestop"
-            subtitle="Tids- og hændelsesstøtte ved hjertestop."
           />
 
           {loading ? <ActivityIndicator color={theme.colors.accent} /> : (
@@ -111,24 +111,16 @@ export default function CardiacResusLanding() {
             </View>
           )}
 
-          <ToolSurface tone="accent">
-            <ToolSectionLabel>Teamlederens workflow</ToolSectionLabel>
-            <Text style={{ color: theme.colors.text, fontSize: 15, lineHeight: 22 }}>
-              Start en lokal session for at se forløbet tid og registrere hændelser. Denne første version registrerer kun det, brugeren vælger.
-            </Text>
-          </ToolSurface>
-
-          <ToolSurface tone="warning">
-            <ToolSectionLabel>Vigtigt</ToolSectionLabel>
-            <Text style={{ color: theme.colors.text, fontSize: 14, lineHeight: 21 }}>{SAFETY_TEXT}</Text>
-          </ToolSurface>
+          <CollapsibleCard title="Sikkerhed og begrænsninger" subtitle="Tids- og hændelsesstøtte · kontrollér mod lokale retningslinjer">
+            <Text style={{ color: theme.colors.mutedText, fontSize: 14, lineHeight: 21 }}>{SAFETY_TEXT}</Text>
+          </CollapsibleCard>
 
         </ScrollView>
         {showClearConfirmation ? (
           <ActionOverlay>
             <Title style={{ fontSize: 21 }}>Ryd aktiv session?</Title>
             <Text style={{ color: theme.colors.text, lineHeight: 21 }}>
-              Den lokale aktive session og dens registreringer fjernes fra denne enhed. Seneste afsluttede oversigt bevares.
+              Den aktive session slettes fra denne enhed. Seneste afsluttede oversigt bevares.
             </Text>
             {clearError ? <Text style={{ color: theme.colors.danger, fontWeight: "700" }}>{clearError}</Text> : null}
             <Pressable disabled={clearing} onPress={() => void clearSession()} style={({ pressed }) => ({ minHeight: 52, borderRadius: 14, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,123,114,0.48)", backgroundColor: "rgba(255,123,114,0.12)", opacity: pressed || clearing ? 0.6 : 1 })}>

@@ -26,8 +26,9 @@ import { ActionOverlay } from "../../../../src/features/cardiac-resus/ActionOver
 import { createSerializedArrestSessionWriter, getActiveArrestSession, saveEndedArrestSession } from "../../../../src/services/cardiacResusStorage";
 import { Background } from "../../../../src/ui/Background";
 import { hapticSuccess, hapticToolOpen } from "../../../../src/ui/haptics";
-import { Input, Screen, Subtle, Title } from "../../../../src/ui/Ui";
+import { Input, ResponsiveColumn, ResponsiveColumns, Screen, Subtle, Title } from "../../../../src/ui/Ui";
 import { ToolActionButton, ToolSectionLabel, ToolSurface } from "../../../../src/ui/ToolSurface";
+import { useResponsiveLayout } from "../../../../src/ui/responsive";
 import { theme } from "../../../../src/ui/theme";
 
 const EVENT_BUTTON_COLORS: Record<EventButtonCategory, { background: string; border: string }> = {
@@ -42,6 +43,7 @@ type SessionDialog = "end" | "shock" | "rosc" | "mors" | "note" | "correct" | "c
 
 export default function ActiveCardiacResusSession() {
   const router = useRouter();
+  const { isExpanded } = useResponsiveLayout();
   const [session, setSession] = useState<ArrestSession | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const [loading, setLoading] = useState(true);
@@ -218,102 +220,80 @@ export default function ActiveCardiacResusSession() {
     <Background>
       <Screen>
         <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 28 }}>
-          <Pressable onPress={() => { setActionError(""); setDialog("cycleReset"); }} style={({ pressed }) => ({ opacity: pressed ? 0.78 : 1 })}>
-            <ToolSurface tone={cycleState.prechargeCueActive ? "danger" : "accent"} style={{ alignItems: "center", marginTop: 10 }}>
-              <ToolSectionLabel>Aktuel HLR-cyklus</ToolSectionLabel>
-              <Text style={{ color: theme.colors.text, fontWeight: "800", fontSize: 17 }}>HLR-cyklus {cycleState.cycleNumber}</Text>
-              <Title style={{ fontSize: 46, fontVariant: ["tabular-nums"] }}>{formatElapsed(cycleState.elapsedInCycleSeconds)}</Title>
-              <Text style={{ color: theme.colors.mutedText, fontSize: 14, fontWeight: "700", fontVariant: ["tabular-nums"] }}>
-                Forløbet tid: {formatElapsed(elapsed)}
-              </Text>
-              <Subtle>{cycleState.remainingSeconds} sek. tilbage i cyklus</Subtle>
-              {cycleState.prechargeCueActive ? (
-                <Text style={{ color: theme.colors.danger, fontWeight: "900", fontSize: 20 }}>Pre-charge nu</Text>
-              ) : null}
-              <View style={{ height: 8, width: "100%", borderRadius: 999, backgroundColor: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
-                <View style={{ height: "100%", width: `${cycleState.progress * 100}%`, backgroundColor: theme.colors.accent }} />
-              </View>
-              <Subtle>Tryk for at justere cyklustimer.</Subtle>
-              <Subtle>Tidsmarkører og workflow-cues skal kontrolleres mod lokale retningslinjer og klinisk vurdering.</Subtle>
-            </ToolSurface>
-          </Pressable>
-
-          <Pressable disabled={secondsSinceAdrenaline === null} onPress={() => { setActionError(""); setDialog("adrenalineReset"); }} style={({ pressed }) => ({ opacity: pressed ? 0.78 : 1 })}>
-            <ToolSurface tone={adrenalineReminderDue ? "warning" : "default"}>
-              <Title style={{ fontSize: 18 }}>Adrenalin-timer</Title>
-              {secondsSinceAdrenaline === null ? (
-                <Subtle>Ingen adrenalin registreret endnu. Timeren starter, når “Adrenalin givet” registreres.</Subtle>
-              ) : (
-                <>
-                  <Text style={{ color: theme.colors.text, fontWeight: "800", fontSize: 17 }}>
-                    Tid på timer: {formatElapsed(secondsSinceAdrenaline)}
-                  </Text>
-                  <Subtle>Næste kontrol: ca. {formatElapsed(adrenalineReminderSeconds)} / 2 cyklusser</Subtle>
-                  {adrenalineTimerAnchor?.type === "adrenaline_timer_reset" ? <Subtle>Timer nulstillet manuelt.</Subtle> : null}
-                  <View style={{ height: 8, width: "100%", borderRadius: 999, backgroundColor: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
-                    <View style={{ height: "100%", width: `${adrenalineProgress * 100}%`, backgroundColor: adrenalineReminderDue ? theme.colors.warn : theme.colors.accent }} />
+          <ResponsiveColumns>
+            <ResponsiveColumn>
+              <Pressable accessibilityRole="button" accessibilityLabel="Justér HLR-cyklustimer" onPress={() => { setActionError(""); setDialog("cycleReset"); }} style={({ pressed }) => ({ opacity: pressed ? 0.78 : 1 })}>
+                <ToolSurface tone={cycleState.prechargeCueActive ? "danger" : "accent"} style={{ alignItems: "center" }}>
+                  <View style={{ width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                    <ToolSectionLabel>HLR-cyklus {cycleState.cycleNumber}</ToolSectionLabel>
+                    <Text style={{ color: theme.colors.mutedText, fontSize: 13, fontWeight: "700", fontVariant: ["tabular-nums"] }}>Total {formatElapsed(elapsed)}</Text>
                   </View>
-                  {adrenalineReminderDue ? (
-                    <Text style={{ color: theme.colors.warn, fontWeight: "900", lineHeight: 20 }}>
-                      Kontrollér adrenalin efter lokale retningslinjer.
-                    </Text>
-                  ) : null}
-                  <Subtle>Tryk for at nulstille timer.</Subtle>
-                </>
-              )}
-            </ToolSurface>
-          </Pressable>
-
-          <ToolSurface>
-            <Title style={{ fontSize: 19 }}>Registrér hændelse</Title>
-            <Subtle>Knapperne registrerer kun, hvad der allerede er sket.</Subtle>
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-              {VISIBLE_EVENT_BUTTONS.map((item) => {
-                const colors = EVENT_BUTTON_COLORS[item.category];
-                return (
-                <Pressable key={item.type} disabled={ending} onPress={() => item.type === "shock_delivered" ? recordShock() : item.type === "rosc" || item.type === "mors" ? confirmOutcome(item.type) : item.type === "free_note" ? (setNoteText(""), setNoteError(""), setDialog("note")) : recordEvent(item.type)} style={({ pressed }) => ({ minHeight: 56, flexBasis: "47%", flexGrow: 1, justifyContent: "center", alignItems: "center", padding: 10, borderRadius: 14, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.background, opacity: pressed || ending ? 0.7 : 1 })}>
-                  <Text style={{ color: theme.colors.text, fontWeight: "800", textAlign: "center" }}>{item.label}</Text>
-                </Pressable>
-              );})}
-            </View>
-            {actionError ? <Text style={{ color: theme.colors.danger, fontWeight: "700" }}>{actionError}</Text> : null}
-          </ToolSurface>
-
-          <ToolSurface>
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-              <Title style={{ fontSize: 19 }}>Seneste hændelser</Title>
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => setShowAllEvents((current) => !current)}
-                hitSlop={8}
-                style={{ minHeight: 44, justifyContent: "center", paddingHorizontal: 4 }}
-              >
-                <Text style={{ color: theme.colors.accentMuted, fontWeight: "800" }}>{showAllEvents ? "Skjul" : "Vis alle"}</Text>
+                  <Title style={{ fontSize: 54, lineHeight: 62, fontVariant: ["tabular-nums"] }}>{formatElapsed(cycleState.elapsedInCycleSeconds)}</Title>
+                  <Text style={{ color: theme.colors.mutedText, fontSize: 13, fontWeight: "700" }}>{cycleState.remainingSeconds} sek. tilbage</Text>
+                  {cycleState.prechargeCueActive ? <Text style={{ color: theme.colors.danger, fontWeight: "900", fontSize: 20 }}>Pre-charge nu</Text> : null}
+                  <View style={{ height: 8, width: "100%", borderRadius: 999, backgroundColor: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+                    <View style={{ height: "100%", width: `${cycleState.progress * 100}%`, backgroundColor: cycleState.prechargeCueActive ? theme.colors.danger : theme.colors.accent }} />
+                  </View>
+                  <Text style={{ color: theme.colors.accentMuted, fontSize: 12, fontWeight: "800" }}>Justér timer</Text>
+                </ToolSurface>
               </Pressable>
-            </View>
-            {displayedEvents.map((event) => {
-              const corrected = correctedEventIds.has(event.id);
-              return (
-              <View key={event.id} accessibilityLabel={corrected ? `${formatArrestEventLabel(event)}. Rettet og ikke medregnet.` : undefined} style={{ flexDirection: "row", gap: 10, paddingVertical: 7, borderBottomWidth: 1, borderBottomColor: theme.colors.divider, opacity: corrected ? 0.58 : 1 }}>
-                <Text style={{ color: theme.colors.accentMuted, fontWeight: "800", fontVariant: ["tabular-nums"] }}>{formatElapsed(event.elapsedSeconds)}</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ color: theme.colors.text, fontWeight: "700", textDecorationLine: corrected ? "line-through" : "none" }}>{formatArrestEventLabel(event)}</Text>
-                  {corrected ? <Subtle>Rettet · medregnes ikke</Subtle> : null}
-                  {event.note ? <Subtle>{event.note}</Subtle> : null}
+
+              <Pressable accessibilityRole="button" accessibilityLabel="Nulstil adrenalin-timer" disabled={secondsSinceAdrenaline === null} onPress={() => { setActionError(""); setDialog("adrenalineReset"); }} style={({ pressed }) => ({ opacity: pressed ? 0.78 : 1 })}>
+                <ToolSurface tone={adrenalineReminderDue ? "warning" : "default"} style={{ gap: 9 }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                    <Text style={{ color: theme.colors.text, fontSize: 16, fontWeight: "900" }}>Adrenalin</Text>
+                    <Text style={{ color: adrenalineReminderDue ? theme.colors.warn : theme.colors.text, fontSize: 21, fontWeight: "900", fontVariant: ["tabular-nums"] }}>{secondsSinceAdrenaline === null ? "Ikke startet" : formatElapsed(secondsSinceAdrenaline)}</Text>
+                  </View>
+                  {secondsSinceAdrenaline === null ? <Subtle>Starter ved registrering af adrenalin.</Subtle> : <>
+                    <View style={{ height: 6, width: "100%", borderRadius: 999, backgroundColor: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+                      <View style={{ height: "100%", width: `${adrenalineProgress * 100}%`, backgroundColor: adrenalineReminderDue ? theme.colors.warn : theme.colors.accent }} />
+                    </View>
+                    <Text style={{ color: adrenalineReminderDue ? theme.colors.warn : theme.colors.mutedText, fontSize: 13, fontWeight: adrenalineReminderDue ? "900" : "700" }}>{adrenalineReminderDue ? "Kontrollér adrenalin efter lokale retningslinjer" : `Kontrol ved ca. ${formatElapsed(adrenalineReminderSeconds)}`}</Text>
+                    {adrenalineTimerAnchor?.type === "adrenaline_timer_reset" ? <Subtle>Manuelt nulstillet</Subtle> : null}
+                  </>}
+                </ToolSurface>
+              </Pressable>
+            </ResponsiveColumn>
+
+            <ResponsiveColumn>
+              <ToolSurface>
+                <Title style={{ fontSize: 19 }}>Registrér</Title>
+                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 9 }}>
+                  {VISIBLE_EVENT_BUTTONS.map((item) => {
+                    const colors = EVENT_BUTTON_COLORS[item.category];
+                    return <Pressable
+                      key={item.type}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Registrér ${item.label}`}
+                      disabled={ending}
+                      onPress={() => item.type === "shock_delivered" ? recordShock() : item.type === "rosc" || item.type === "mors" ? confirmOutcome(item.type) : item.type === "free_note" ? (setNoteText(""), setNoteError(""), setDialog("note")) : recordEvent(item.type)}
+                      style={({ pressed }) => ({ minHeight: 54, flexBasis: isExpanded ? "30%" : "47%", flexGrow: 1, justifyContent: "center", alignItems: "center", padding: 9, borderRadius: 13, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.background, opacity: pressed || ending ? 0.7 : 1 })}
+                    ><Text style={{ color: theme.colors.text, fontWeight: "800", textAlign: "center" }}>{item.label}</Text></Pressable>;
+                  })}
                 </View>
-              </View>
-            );})}
-            {latestCorrectableEvent ? (
-              <Pressable
-                onPress={() => { setActionError(""); setDialog("correct"); }}
-                style={({ pressed }) => ({ minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}
-              >
-                <Text style={{ color: theme.colors.accentMuted, fontWeight: "900" }}>Ret seneste registrering</Text>
-              </Pressable>
-            ) : null}
-          </ToolSurface>
+                {actionError ? <Text style={{ color: theme.colors.danger, fontWeight: "700" }}>{actionError}</Text> : null}
+              </ToolSurface>
 
-          <ToolActionButton disabled={ending} tone="danger" label={ending ? "Afslutter…" : "Afslut session"} onPress={confirmEnd} />
+              <ToolSurface>
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                  <Title style={{ fontSize: 19 }}>Seneste hændelser</Title>
+                  <Pressable accessibilityRole="button" accessibilityState={{ expanded: showAllEvents }} onPress={() => setShowAllEvents((current) => !current)} hitSlop={8} style={{ minHeight: 44, justifyContent: "center", paddingHorizontal: 4 }}>
+                    <Text style={{ color: theme.colors.accentMuted, fontWeight: "800" }}>{showAllEvents ? "Vis færre" : "Vis alle"}</Text>
+                  </Pressable>
+                </View>
+                {displayedEvents.map((event) => {
+                  const corrected = correctedEventIds.has(event.id);
+                  return <View key={event.id} accessibilityLabel={corrected ? `${formatArrestEventLabel(event)}. Rettet og ikke medregnet.` : undefined} style={{ flexDirection: "row", gap: 10, paddingVertical: 7, borderBottomWidth: 1, borderBottomColor: theme.colors.divider, opacity: corrected ? 0.58 : 1 }}>
+                    <Text style={{ color: theme.colors.accentMuted, fontWeight: "800", fontVariant: ["tabular-nums"] }}>{formatElapsed(event.elapsedSeconds)}</Text>
+                    <View style={{ flex: 1 }}><Text style={{ color: theme.colors.text, fontWeight: "700", textDecorationLine: corrected ? "line-through" : "none" }}>{formatArrestEventLabel(event)}</Text>{corrected ? <Subtle>Rettet · medregnes ikke</Subtle> : null}{event.note ? <Subtle>{event.note}</Subtle> : null}</View>
+                  </View>;
+                })}
+                {latestCorrectableEvent ? <Pressable onPress={() => { setActionError(""); setDialog("correct"); }} style={({ pressed }) => ({ minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}><Text style={{ color: theme.colors.accentMuted, fontWeight: "900" }}>Ret seneste</Text></Pressable> : null}
+              </ToolSurface>
+
+              <ToolActionButton disabled={ending} tone="danger" label={ending ? "Afslutter…" : "Afslut session"} onPress={confirmEnd} />
+            </ResponsiveColumn>
+          </ResponsiveColumns>
         </ScrollView>
         {dialog ? (
           <ActionOverlay>

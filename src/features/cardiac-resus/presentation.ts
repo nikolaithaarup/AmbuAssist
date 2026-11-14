@@ -26,9 +26,9 @@ export const VISIBLE_EVENT_BUTTONS: {
   label: string;
   category: EventButtonCategory;
 }[] = [
-  { type: "shock_delivered", label: "Stød afgivet", category: "shock" },
-  { type: "adrenaline_given", label: "Adrenalin givet", category: "medication" },
-  { type: "amiodarone_given", label: "Amiodaron givet", category: "medication" },
+  { type: "shock_delivered", label: "Stød", category: "shock" },
+  { type: "adrenaline_given", label: "Adrenalin", category: "medication" },
+  { type: "amiodarone_given", label: "Amiodaron", category: "medication" },
   { type: "rosc", label: "ROSC", category: "outcome" },
   { type: "mors", label: "MORS", category: "outcome" },
   { type: "free_note", label: "Note", category: "other" },

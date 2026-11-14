@@ -77,7 +77,7 @@ export const en = {
   // ASSESSMENT SECTION CARDS
   // =========================================================
 
-  tool_bloodgas_title: "VGAS interpretation",
+  tool_bloodgas_title: "VGAS / CRP",
   tool_cardiacResus_title: "Cardiac arrest",
   tool_cardiacResus_desc: "Time and event support during cardiac arrest.",
   tool_cardiacResus_active_title: "Active cardiac arrest session",
@@ -181,14 +181,14 @@ export const en = {
   bg_no_pattern_found:
     "No clear pattern suggestion based on the entered values.",
 
-  tool_bg_acidbase_title: "Acid-base helper",
+  tool_bg_acidbase_title: "Acid-base",
   tool_bg_acidbase_desc:
     "Simple acid-base pattern support using pH, pCO₂, and HCO₃⁻.",
 
-  tool_bg_patterns_title: "Pattern recognition",
+  tool_bg_patterns_title: "VGAS / pattern assessment",
   tool_bg_patterns_desc: "Identify common blood gas and lab patterns.",
 
-  tool_bg_infection_title: "Infection helper",
+  tool_bg_infection_title: "CRP / infection",
   tool_bg_infection_desc:
     "Simple support for infection-related blood and urine findings.",
 
@@ -1628,7 +1628,7 @@ export const da: typeof en = {
   // ASSESSMENT SECTION CARDS
   // =========================================================
 
-  tool_bloodgas_title: "VGAS-fortolkning",
+  tool_bloodgas_title: "VGAS / CRP",
   tool_cardiacResus_title: "Hjertestop",
   tool_cardiacResus_desc: "Tids- og hændelsesstøtte ved hjertestop.",
   tool_cardiacResus_active_title: "Aktiv hjertestop-session",
@@ -1713,15 +1713,15 @@ export const da: typeof en = {
     "Forhøjet laktat er uspecifikt og bør vurderes sammen med perfusion, klinik og øvrige fund.",
   bg_infection_stress_hyperglycemia:
     "Hyperglykæmi kan være stressrelateret, men skal fortolkes klinisk.",
-  tool_bg_acidbase_title: "Syre-base-hjælper",
+  tool_bg_acidbase_title: "Syre-base",
   tool_bg_acidbase_desc:
     "Simpel støtte til syre-base-mønstre ud fra pH, pCO₂ og HCO₃⁻.",
 
-  tool_bg_patterns_title: "Mønstergenkendelse",
+  tool_bg_patterns_title: "VGAS / mønstervurdering",
   tool_bg_patterns_desc:
     "Identificér almindelige blodgas- og laboratoriemønstre.",
 
-  tool_bg_infection_title: "Infektionshjælper",
+  tool_bg_infection_title: "CRP / infektion",
   tool_bg_infection_desc:
     "Simpel støtte til infektionstolkning ud fra blod- og urinprøver.",
 

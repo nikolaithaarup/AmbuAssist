@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, Text } from "react-native";
 
 import { useT } from "../../../../src/i18n/useT";
 import type { Key } from "../../../../src/i18n/strings";
@@ -11,11 +11,12 @@ import {
 } from "../../../../src/services/referenceService";
 import { Background } from "../../../../src/ui/Background";
 import { ClinicalDisclosure } from "../../../../src/ui/ClinicalDisclosure";
-import { Card, Screen, Subtle, Title } from "../../../../src/ui/Ui";
+import { ResponsiveColumn, ResponsiveColumns, Screen, Title } from "../../../../src/ui/Ui";
+import { ToolSurface } from "../../../../src/ui/ToolSurface";
 import { theme } from "../../../../src/ui/theme";
 
 import { BloodGasInputCard } from "../../../../src/features/bloodgas/BloodGasInputCard";
-import { BloodGasPageHeader, BloodGasProvenance, EmptyResult, ResultSection } from "../../../../src/features/bloodgas/BloodGasPresentation";
+import { BloodGasPageHeader, EmptyResult, ResultSection } from "../../../../src/features/bloodgas/BloodGasPresentation";
 import {
   makeEmptyBloodGasFormValues,
   parseBloodGasFormValues,
@@ -103,47 +104,39 @@ export default function AcidBasePage() {
   return (
     <Background>
       <Screen>
-        <BloodGasPageHeader title={t("tool_bg_acidbase_title")} subtitle={t("tool_bg_acidbase_desc")} />
+        <BloodGasPageHeader title={t("tool_bg_acidbase_title")} />
 
         <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
-          <BloodGasInputCard
-            values={form}
-            onChange={handleChange}
-            fields={ACID_BASE_FIELDS}
-            title={lang === "da" ? "Syre-base-værdier" : "Acid-base values"}
-          />
-
-          {!result ? (
-            <EmptyResult>{t("bg_acidbase_enter_values")}</EmptyResult>
-          ) : <Card style={{ gap: 18 }}>
-            <Title>{t("result")}</Title>
-              <ResultSection label={lang === "da" ? "Primær fortolkning" : "Primary interpretation"} tone={result.severity ? "caution" : "neutral"}>
-                <Text
-                  style={{
-                    color: theme.colors.text,
-                    fontWeight: "900",
-                    fontSize: 18,
-                  }}
-                >
-                  {result.summary}
-                </Text>
-                <Text style={{ color: theme.colors.mutedText, lineHeight: 20 }}>
-                  {result.detail}
-                </Text>
-              </ResultSection>
-              <ResultSection label={lang === "da" ? "Forslag til overvejelser" : "Suggested considerations"}>
-                <Text style={{ color: theme.colors.mutedText, lineHeight: 20 }}>
-                  {result.compensation}
-                </Text>
-              </ResultSection>
-              {!!result.severity && (
-                <ResultSection label={lang === "da" ? "Advarsel" : "Warning"} tone="urgent">
-                  <Text style={{ color: theme.colors.danger, fontWeight: "800" }}>{result.severity}</Text>
+          <ResponsiveColumns>
+            <ResponsiveColumn>
+              <BloodGasInputCard
+                values={form}
+                onChange={handleChange}
+                fields={ACID_BASE_FIELDS}
+                title={lang === "da" ? "Værdier" : "Values"}
+              />
+            </ResponsiveColumn>
+            <ResponsiveColumn>
+              {!result ? (
+                <EmptyResult>{t("bg_acidbase_enter_values")}</EmptyResult>
+              ) : <ToolSurface style={{ gap: 16 }}>
+                <Title style={{ fontSize: 20 }}>{t("result")}</Title>
+                <ResultSection label={lang === "da" ? "Fortolkning" : "Interpretation"} tone={result.severity ? "caution" : "neutral"}>
+                  <Text style={{ color: theme.colors.text, fontWeight: "900", fontSize: 18 }}>{result.summary}</Text>
+                  <Text style={{ color: theme.colors.mutedText, lineHeight: 20 }}>{result.detail}</Text>
                 </ResultSection>
-              )}
-          </Card>}
+                <ResultSection label={lang === "da" ? "Kompensation" : "Compensation"}>
+                  <Text style={{ color: theme.colors.mutedText, lineHeight: 20 }}>{result.compensation}</Text>
+                </ResultSection>
+                {!!result.severity && (
+                  <ResultSection label={lang === "da" ? "Advarsel" : "Warning"} tone="urgent">
+                    <Text style={{ color: theme.colors.danger, fontWeight: "800" }}>{result.severity}</Text>
+                  </ResultSection>
+                )}
+              </ToolSurface>}
+            </ResponsiveColumn>
+          </ResponsiveColumns>
 
-          <BloodGasProvenance />
           <ClinicalDisclosure
             disclaimer={reference?.disclaimer[lang] ?? t("bg_acidbase_disclaimer")}
             sourcesIntro={reference?.sourcesSub[lang] ?? t("bg_acidbase_sources_sub")}

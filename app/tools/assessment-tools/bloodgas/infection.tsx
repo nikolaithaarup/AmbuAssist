@@ -11,11 +11,12 @@ import {
 } from "../../../../src/services/referenceService";
 import { Background } from "../../../../src/ui/Background";
 import { ClinicalDisclosure } from "../../../../src/ui/ClinicalDisclosure";
-import { Card, Row, Screen, Subtle, Title } from "../../../../src/ui/Ui";
+import { ResponsiveColumn, ResponsiveColumns, Row, Screen, Subtle, Title } from "../../../../src/ui/Ui";
+import { ToolSurface } from "../../../../src/ui/ToolSurface";
 import { theme } from "../../../../src/ui/theme";
 
 import { BloodGasInputCard } from "../../../../src/features/bloodgas/BloodGasInputCard";
-import { BloodGasPageHeader, BloodGasProvenance, ResultSection } from "../../../../src/features/bloodgas/BloodGasPresentation";
+import { BloodGasPageHeader, ResultSection } from "../../../../src/features/bloodgas/BloodGasPresentation";
 import {
   makeEmptyBloodGasFormValues,
   parseBloodGasFormValues,
@@ -101,23 +102,15 @@ export default function InfectionPage() {
   return (
     <Background>
       <Screen>
-        <BloodGasPageHeader title={t("tool_bg_infection_title")} subtitle={t("tool_bg_infection_desc")} />
+        <BloodGasPageHeader title={t("tool_bg_infection_title")} />
 
         <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
-          <BloodGasInputCard
-            values={form}
-            onChange={handleChange}
-            fields={INFECTION_FIELDS}
-            title={lang === "da" ? "Blodprøver" : "Blood tests"}
-          />
-
-          <Card>
-            <View style={{ gap: 14 }}>
+          <ResponsiveColumns>
+            <ResponsiveColumn>
+              <BloodGasInputCard values={form} onChange={handleChange} fields={INFECTION_FIELDS} title={lang === "da" ? "Værdier" : "Values"} />
+              <ToolSurface style={{ gap: 4 }}>
               <Row
-                style={{
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
+                style={{ minHeight: 48, justifyContent: "space-between", alignItems: "center" }}
               >
                 <Text style={{ color: theme.colors.text, fontWeight: "700" }}>
                   {t("bg_label_nitrite")}
@@ -126,56 +119,31 @@ export default function InfectionPage() {
               </Row>
 
               <Row
-                style={{
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
+                style={{ minHeight: 48, justifyContent: "space-between", alignItems: "center", borderTopWidth: 1, borderTopColor: theme.colors.divider }}
               >
                 <Text style={{ color: theme.colors.text, fontWeight: "700" }}>
                   {t("bg_label_leukocytes")}
                 </Text>
                 <Switch value={leukocytes} onValueChange={setLeukocytes} />
               </Row>
-            </View>
-          </Card>
+              </ToolSurface>
+            </ResponsiveColumn>
 
-          <Card>
-            <Title>{t("result")}</Title>
+            <ResponsiveColumn>
+              <ToolSurface>
+                <Title style={{ fontSize: 20 }}>{t("result")}</Title>
 
-            {results.length === 0 ? (
-              <Text
-                style={{
-                  color: theme.colors.mutedText,
-                  marginTop: 10,
-                  lineHeight: 20,
-                }}
-              >
-                {t("bg_infection_enter_values")}
-              </Text>
-            ) : (
-              <ResultSection label={lang === "da" ? "Understøttende fund" : "Supporting findings"} tone="caution">
-              <View style={{ gap: 8 }}>
-                {results.map((r, i) => (
-                  <Text
-                    key={`${r}-${i}`}
-                    style={{
-                      color: theme.colors.mutedText,
-                      lineHeight: 20,
-                    }}
-                  >
-                    • {r}
-                  </Text>
-                ))}
-              </View>
-              </ResultSection>
-            )}
-          </Card>
-
-          <Card style={{ gap: 8 }}>
-            <Text style={{ color: theme.colors.warn, fontWeight: "900" }}>{lang === "da" ? "CRP / infektion" : "CRP / infection"}</Text>
-            <Subtle style={{ lineHeight: 20 }}>{lang === "da" ? "CRP skal vurderes sammen med klinik, vitalparametre, varighed, fokus og lokale retningslinjer. CRP alene kan ikke afgøre infektionstype eller behandlingsbehov." : "CRP must be assessed with clinical context, vital signs, duration, focus, and local guidelines. CRP alone cannot determine infection type or treatment need."}</Subtle>
-          </Card>
-          <BloodGasProvenance />
+                {results.length === 0 ? <Subtle style={{ lineHeight: 20 }}>{t("bg_infection_enter_values")}</Subtle> : (
+                  <ResultSection label={lang === "da" ? "Understøttende fund" : "Supporting findings"} tone="caution">
+                    <View style={{ gap: 8 }}>{results.map((r, i) => <Text key={`${r}-${i}`} style={{ color: theme.colors.mutedText, lineHeight: 20 }}>• {r}</Text>)}</View>
+                  </ResultSection>
+                )}
+                <View style={{ borderTopWidth: 1, borderTopColor: theme.colors.divider, paddingTop: 10 }}>
+                  <Subtle style={{ lineHeight: 20 }}>{lang === "da" ? "CRP skal vurderes med klinik, vitalparametre, varighed og fokus. CRP alene kan ikke afgøre infektionstype eller behandlingsbehov." : "CRP must be assessed with clinical context, vital signs, duration, and focus. CRP alone cannot determine infection type or treatment need."}</Subtle>
+                </View>
+              </ToolSurface>
+            </ResponsiveColumn>
+          </ResponsiveColumns>
           <ClinicalDisclosure
             disclaimer={reference?.disclaimer[lang] ?? t("bg_infection_disclaimer")}
             sourcesIntro={reference?.sourcesSub[lang] ?? t("bg_infection_sources_sub")}

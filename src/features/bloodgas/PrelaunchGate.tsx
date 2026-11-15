@@ -39,12 +39,12 @@ export function PrelaunchGate() {
         <Card style={{ maxWidth: 520, width: "100%", alignSelf: "center", padding: 22, gap: 16 }}>
           <View style={{ gap: 8 }}>
             <Title style={{ fontSize: 24 }}>
-              {isDanish ? "Blodgas kræver klinisk validering" : "Blood Gas requires clinical validation"}
+              {isDanish ? "Klinisk validering" : "Clinical validation"}
             </Title>
             <Subtle style={{ fontSize: 15, lineHeight: 22 }}>
               {isDanish
-                ? "Fortolkningsstøtten er foreløbig. Kontrollér værdier og konklusioner mod patientens klinik, lokale instrukser og lægefaglig vurdering."
-                : "Interpretation support is preliminary. Verify values and conclusions against the patient’s clinical presentation, local guidance, and medical judgement."}
+                ? "Fortolkningsstøtten er ikke klinisk valideret og må ikke stå alene. Vurdér patienten og følg lokale instrukser."
+                : "Interpretation support is not clinically validated and must not be used alone. Assess the patient and follow local guidance."}
             </Subtle>
           </View>
           <PrimaryButton label={isDanish ? "Jeg forstår" : "I understand"} onPress={accept} />

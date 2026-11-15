@@ -14,8 +14,7 @@ import type { Key } from "../../../../src/i18n/strings";
 import { useSettings } from "../../../../src/state/settings";
 import { Background } from "../../../../src/ui/Background";
 import { CollapsibleCard } from "../../../../src/ui/CollapsibleCard";
-import { PrimaryButton, ResponsiveColumn, ResponsiveColumns, Screen, Subtle, Title } from "../../../../src/ui/Ui";
-import { ToolSurface } from "../../../../src/ui/ToolSurface";
+import { PrimaryButton, ResponsiveColumn, ResponsiveColumns, Screen, Subtle } from "../../../../src/ui/Ui";
 import { theme } from "../../../../src/ui/theme";
 
 export default function PatternsPage() {
@@ -52,7 +51,7 @@ export default function PatternsPage() {
     <ScrollView ref={scrollRef} contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
       <ResponsiveColumns>
         <ResponsiveColumn>
-          <ToolSurface>
+          <View style={{ gap: 12 }}>
             <GroupedBloodGasInput values={form} onChange={onChange} isDa={isDa} />
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
               <Text style={{ color: theme.colors.accentMuted, fontWeight: "700" }}>{isDa ? `${formSummary.entered} indtastet` : `${formSummary.entered} entered`}</Text>
@@ -61,15 +60,14 @@ export default function PatternsPage() {
             <PrimaryButton label={isDa ? "Vurder VGAS" : "Assess VGAS"} onPress={assess} />
             {submitted && formSummary.issues ? <Text style={{ color: theme.colors.danger, fontWeight: "800" }}>{isDa ? "Ret markerede værdier før vurdering." : "Correct marked values before assessment."}</Text> : null}
             {submitted && !formSummary.issues && formSummary.entered === 0 ? <Text style={{ color: theme.colors.danger, fontWeight: "800" }}>{isDa ? "Indtast mindst én værdi." : "Enter at least one value."}</Text> : null}
-          </ToolSurface>
+          </View>
         </ResponsiveColumn>
 
         <ResponsiveColumn>
           {submitted && !formSummary.issues && formSummary.entered > 0 ? <View style={{ gap: 12 }}>
-            <ToolSurface style={{ gap: 12 }}>
-              <Title style={{ fontSize: 20 }}>{isDa ? "Vurdering" : "Assessment"}</Title>
-              {concise.length ? concise.map((item, index) => <Text key={`${item}-${index}`} style={{ color: theme.colors.text, lineHeight: 21 }}>• {item}</Text>) : <Subtle>{isDa ? "Ingen tydelige mønsterfund. Kontrollér værdier, enheder og klinik." : "No clear pattern findings. Check values, units, and clinical context."}</Subtle>}
-            </ToolSurface>
+            <View style={{ gap: 8, paddingTop: 2 }}>
+              {concise.length ? concise.map((item, index) => <Text key={`${item}-${index}`} style={{ color: theme.colors.text, lineHeight: 21 }}>• {item}</Text>) : <Subtle>{isDa ? "Ingen tydelige mønsterfund." : "No clear pattern findings."}</Subtle>}
+            </View>
 
             <CollapsibleCard title={isDa ? "Syre-base" : "Acid-base"}>
               <ResultSection label={isDa ? "Fund" : "Findings"}>{acidBase.length ? acidBase.map((item, i) => <Text key={i} style={{ color: theme.colors.mutedText, lineHeight: 20 }}>• {item}</Text>) : <Subtle>{isDa ? "Ingen tydelige syre-base-mønstre." : "No clear acid-base patterns."}</Subtle>}</ResultSection>
@@ -77,7 +75,7 @@ export default function PatternsPage() {
 
             <CollapsibleCard title={isDa ? "VGAS og iltning" : "VGAS and oxygenation"}><VgasPo2Caution /></CollapsibleCard>
 
-            <CollapsibleCard title={isDa ? "Elektrolytter og nyretal" : "Electrolytes and renal markers"}>{electrolytesRenal.map((item, i) => <Text key={i} style={{ color: theme.colors.mutedText, lineHeight: 20 }}>• {item}</Text>)}<Subtle>{isDa ? "Vurder med tidligere værdier, væskestatus, øvrige prøver og klinik." : "Assess with previous values, hydration status, other tests, and clinical context."}</Subtle></CollapsibleCard>
+            <CollapsibleCard title={isDa ? "Elektrolytter og nyretal" : "Electrolytes and renal markers"}>{electrolytesRenal.length ? electrolytesRenal.map((item, i) => <Text key={i} style={{ color: theme.colors.mutedText, lineHeight: 20 }}>• {item}</Text>) : <Subtle>{isDa ? "Ingen tydelige fund." : "No clear findings."}</Subtle>}</CollapsibleCard>
 
             <CollapsibleCard title={isDa ? "CRP / infektion" : "CRP / infection"}>
               {infection.length ? infection.map((item, i) => <Text key={i} style={{ color: theme.colors.mutedText, lineHeight: 20 }}>• {item}</Text>) : <Subtle>{isDa ? "CRP alene kan ikke afgøre infektionstype eller behandlingsbehov." : "CRP alone cannot determine infection type or treatment need."}</Subtle>}

@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { ScrollView, View } from "react-native";
-import { BloodGasPageHeader, BloodGasProvenance } from "../../../../src/features/bloodgas/BloodGasPresentation";
+import { BloodGasPageHeader } from "../../../../src/features/bloodgas/BloodGasPresentation";
 import { useT } from "../../../../src/i18n/useT";
 import { Background } from "../../../../src/ui/Background";
 import { NavigationCard } from "../../../../src/ui/NavigationCard";
@@ -26,11 +26,11 @@ export default function BloodGasPage() {
               <NavigationCard
                 key={tool.path}
                 title={t(tool.titleKey)}
+                compact
                 onPress={() => router.push(tool.path)}
               />
             ))}
           </View>
-          <BloodGasProvenance />
         </ScrollView>
       </Screen>
     </Background>

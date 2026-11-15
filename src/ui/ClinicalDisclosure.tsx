@@ -37,10 +37,12 @@ export function ClinicalDisclosure({
   disclaimer,
   sourcesIntro,
   sources,
+  compact = false,
 }: {
   disclaimer: string;
   sourcesIntro?: string;
   sources: readonly ClinicalDisclosureSource[];
+  compact?: boolean;
 }) {
   const { t } = useT();
   const pwa = Platform.OS === "web";
@@ -63,16 +65,17 @@ export function ClinicalDisclosure({
         accessibilityLabel={triggerLabel}
         onPress={() => setOpen(true)}
         style={({ pressed }) => ({
-          minHeight: 48,
-          paddingHorizontal: 12,
-          paddingVertical: 10,
-          borderRadius: 14,
-          borderWidth: 1,
-          borderColor: theme.colors.cardBorder,
-          backgroundColor: "rgba(255,255,255,0.035)",
+          minHeight: 44,
+          paddingHorizontal: compact ? 4 : 12,
+          paddingVertical: compact ? 6 : 10,
+          borderRadius: compact ? 0 : 14,
+          borderWidth: compact ? 0 : 1,
+          borderColor: compact ? "transparent" : theme.colors.cardBorder,
+          backgroundColor: compact ? "transparent" : "rgba(255,255,255,0.035)",
           flexDirection: "row",
           alignItems: "center",
-          justifyContent: "center",
+          justifyContent: compact ? "flex-start" : "center",
+          alignSelf: compact ? "flex-start" : "stretch",
           gap: 8,
           opacity: pressed ? 0.68 : 1,
         })}

@@ -185,7 +185,7 @@ export const en = {
   tool_bg_acidbase_desc:
     "Simple acid-base pattern support using pH, pCO₂, and HCO₃⁻.",
 
-  tool_bg_patterns_title: "VGAS / pattern assessment",
+  tool_bg_patterns_title: "VGAS assessment",
   tool_bg_patterns_desc: "Identify common blood gas and lab patterns.",
 
   tool_bg_infection_title: "CRP / infection",
@@ -1717,7 +1717,7 @@ export const da: typeof en = {
   tool_bg_acidbase_desc:
     "Simpel støtte til syre-base-mønstre ud fra pH, pCO₂ og HCO₃⁻.",
 
-  tool_bg_patterns_title: "VGAS / mønstervurdering",
+  tool_bg_patterns_title: "VGAS-vurdering",
   tool_bg_patterns_desc:
     "Identificér almindelige blodgas- og laboratoriemønstre.",
 

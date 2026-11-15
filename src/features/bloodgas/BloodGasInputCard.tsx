@@ -1,7 +1,7 @@
 import { Text, View } from "react-native";
 import { useT } from "../../i18n/useT";
 import { useSettings } from "../../state/settings";
-import { Card, Input, Label } from "../../ui/Ui";
+import { Input, Label } from "../../ui/Ui";
 import { useResponsiveLayout } from "../../ui/responsive";
 import { theme } from "../../ui/theme";
 import { VGAS_FIELDS } from "./fieldConfig";
@@ -24,6 +24,7 @@ export function BloodGasInputCard({ values, onChange, fields, title, embedded = 
           const helper = isDa ? field.helperDa : field.helperEn;
           const translatedLabel = t(field.labelKey as any);
           const label = field.unit ? translatedLabel.replace(/\s*\([^)]*\)\s*$/, "") : translatedLabel;
+          const displayLabel = fieldKey === "be" ? "BE" : label;
           return (
             <View
               key={field.id}
@@ -31,11 +32,11 @@ export function BloodGasInputCard({ values, onChange, fields, title, embedded = 
                 gap: 5,
                 minWidth: isCompact ? 118 : 132,
                 flexGrow: 1,
-                flexBasis: isExpanded ? "30%" : "46%",
+                flexBasis: isExpanded && fields.length > 4 ? "30%" : "46%",
               }}
             >
               <View style={{ minHeight: 20, flexDirection: "row", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
-                <Label>{label}</Label>
+                <Label>{displayLabel}</Label>
                 {field.unit ? <Text style={{ color: theme.colors.mutedText, fontSize: 11, fontWeight: "700" }}>{field.unit}</Text> : null}
               </View>
               <Input
@@ -62,5 +63,5 @@ export function BloodGasInputCard({ values, onChange, fields, title, embedded = 
         })}
       </View>
     </>;
-  return embedded ? <View style={{ gap: 10 }}>{content}</View> : <Card style={{ gap: 10 }}>{content}</Card>;
+  return <View style={{ gap: embedded ? 10 : 8 }}>{content}</View>;
 }

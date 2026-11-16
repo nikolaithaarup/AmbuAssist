@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "expo-router";
 import { getActiveArrestSession } from "../services/cardiacResusStorage";
+import { PwaUpdateBanner } from "./PwaUpdateBanner.web";
 import {
   CURRENT_PWA_BUILD_ID,
   fetchAvailablePwaBuildId,
@@ -8,63 +9,40 @@ import {
   shouldApplyPwaUpdate,
 } from "./update";
 
-const RELOAD_TARGET_KEY = "ambuassist.pwa.reload-target.v1";
-
-function readReloadTarget(): string | null {
-  try {
-    return window.sessionStorage.getItem(RELOAD_TARGET_KEY);
-  } catch {
-    return null;
-  }
-}
-
-function rememberReloadTarget(buildId: string): void {
-  try {
-    window.sessionStorage.setItem(RELOAD_TARGET_KEY, buildId);
-  } catch {
-    // A storage restriction must not block normal app use or updates.
-  }
-}
-
-function forgetCompletedReload(buildId: string): void {
-  try {
-    if (window.sessionStorage.getItem(RELOAD_TARGET_KEY) === buildId) {
-      window.sessionStorage.removeItem(RELOAD_TARGET_KEY);
-    }
-  } catch {
-    // Session storage is optional; the build-id comparison remains authoritative.
-  }
-}
+const UPDATE_CHECK_INTERVAL_MS = 5 * 60 * 1000;
 
 export default function PwaUpdateManager() {
   const pathname = usePathname();
   const checkingRef = useRef(false);
+  const [availableBuildId, setAvailableBuildId] = useState<string | null>(null);
+  const [dismissedBuildId, setDismissedBuildId] = useState<string | null>(null);
+  const [updating, setUpdating] = useState(false);
 
   const checkForUpdate = useCallback(async () => {
     if (checkingRef.current || !isSafePwaUpdatePath(pathname)) return;
     checkingRef.current = true;
     try {
-      const availableBuildId = await fetchAvailablePwaBuildId();
-      if (!availableBuildId) return;
-      if (availableBuildId === CURRENT_PWA_BUILD_ID) {
-        forgetCompletedReload(availableBuildId);
+      const buildId = await fetchAvailablePwaBuildId();
+      if (!buildId) return;
+      if (buildId === CURRENT_PWA_BUILD_ID) {
+        setAvailableBuildId(null);
         return;
       }
-      if (readReloadTarget() === availableBuildId) return;
 
+      // Never offer a reload while there is a locally recorded active arrest.
       const hasActiveArrestSession = Boolean(await getActiveArrestSession());
-      if (
-        !shouldApplyPwaUpdate({
-          availableBuildId,
+      setAvailableBuildId(
+        shouldApplyPwaUpdate({
+          availableBuildId: buildId,
           pathname,
           hasActiveArrestSession,
         })
-      ) {
-        return;
-      }
-
-      rememberReloadTarget(availableBuildId);
-      window.location.reload();
+          ? buildId
+          : null,
+      );
+    } catch {
+      // An unavailable session store is not proof that it is safe to reload.
+      setAvailableBuildId(null);
     } finally {
       checkingRef.current = false;
     }
@@ -80,12 +58,56 @@ export default function PwaUpdateManager() {
     window.addEventListener("online", onOnline);
     window.addEventListener("pageshow", onPageShow);
     document.addEventListener("visibilitychange", onVisible);
+    const interval = window.setInterval(() => void checkForUpdate(), UPDATE_CHECK_INTERVAL_MS);
     return () => {
+      window.clearInterval(interval);
       window.removeEventListener("online", onOnline);
       window.removeEventListener("pageshow", onPageShow);
       document.removeEventListener("visibilitychange", onVisible);
     };
   }, [checkForUpdate]);
 
-  return null;
+  const applyUpdate = useCallback(async () => {
+    if (!availableBuildId || updating || !isSafePwaUpdatePath(pathname)) return;
+    setUpdating(true);
+    try {
+      // Re-check immediately before the user-triggered reload. No automatic
+      // refresh, no storage clearing and no interrupted clinical workflow.
+      const currentBuildId = await fetchAvailablePwaBuildId();
+      if (!currentBuildId || currentBuildId === CURRENT_PWA_BUILD_ID) {
+        setAvailableBuildId(null);
+        return;
+      }
+
+      const hasActiveArrestSession = Boolean(await getActiveArrestSession());
+      if (!shouldApplyPwaUpdate({
+        availableBuildId: currentBuildId,
+        pathname,
+        hasActiveArrestSession,
+      })) {
+        setAvailableBuildId(null);
+        return;
+      }
+
+      window.location.reload();
+    } catch {
+      // Stay on the current version if the network or local storage fails.
+      setAvailableBuildId(null);
+    } finally {
+      setUpdating(false);
+    }
+  }, [availableBuildId, pathname, updating]);
+
+  const showBanner =
+    isSafePwaUpdatePath(pathname) &&
+    availableBuildId !== null &&
+    availableBuildId !== dismissedBuildId;
+
+  return showBanner ? (
+    <PwaUpdateBanner
+      updating={updating}
+      onUpdate={() => void applyUpdate()}
+      onDismiss={() => setDismissedBuildId(availableBuildId)}
+    />
+  ) : null;
 }

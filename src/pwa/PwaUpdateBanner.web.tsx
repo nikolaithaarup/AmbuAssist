@@ -19,7 +19,7 @@ export function PwaUpdateBanner({ updating, onUpdate, onDismiss }: PwaUpdateBann
       <View
         testID="pwa-update-modal"
         accessibilityViewIsModal
-        style={styles.backdrop}
+        style={[styles.backdrop, { backdropFilter: "blur(12px)" } as never]}
       >
         <View style={styles.dialog}>
           <Text accessibilityRole="header" style={styles.title}>Ny version klar</Text>
@@ -62,7 +62,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 24,
     backgroundColor: "rgba(5, 9, 6, 0.65)",
-    backdropFilter: "blur(12px)" as never,
   },
   dialog: {
     width: "100%",

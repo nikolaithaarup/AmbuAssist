@@ -13,7 +13,7 @@ describe("AmbuAssist PWA update banner", () => {
       );
     });
     const root = renderer.root;
-    expect(root.findByProps({ testID: "pwa-update-banner" }).props.accessibilityLiveRegion).toBe("polite");
+    expect(root.findByProps({ testID: "pwa-update-modal" }).props.accessibilityViewIsModal).toBe(true);
     const updateButton = root.findByProps({ accessibilityLabel: "Opdatér AmbuAssist" });
     const laterButton = root.findByProps({ accessibilityLabel: "Senere" });
     expect(updateButton.props.accessibilityRole).toBe("button");

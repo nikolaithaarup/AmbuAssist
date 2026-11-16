@@ -1,4 +1,11 @@
-import type { ArrestEventType } from "../../domain/cardiac-resus/session";
+import {
+  getEffectiveArrestEvents,
+  getElapsedSeconds,
+  summarizeArrestSession,
+  type ArrestEvent,
+  type ArrestEventType,
+  type ArrestSession,
+} from "../../domain/cardiac-resus/session";
 
 export const EVENT_LABELS_DA: Record<ArrestEventType, string> = {
   session_started: "Session startet",
@@ -26,9 +33,9 @@ export const VISIBLE_EVENT_BUTTONS: {
   label: string;
   category: EventButtonCategory;
 }[] = [
-  { type: "shock_delivered", label: "Stød afgivet", category: "shock" },
-  { type: "adrenaline_given", label: "Adrenalin givet", category: "medication" },
-  { type: "amiodarone_given", label: "Amiodaron givet", category: "medication" },
+  { type: "shock_delivered", label: "Stød", category: "shock" },
+  { type: "adrenaline_given", label: "Adrenalin", category: "medication" },
+  { type: "amiodarone_given", label: "Amiodaron", category: "medication" },
   { type: "rosc", label: "ROSC", category: "outcome" },
   { type: "mors", label: "MORS", category: "outcome" },
   { type: "free_note", label: "Note", category: "other" },
@@ -51,4 +58,57 @@ export function formatElapsed(totalSeconds: number): string {
   return hours > 0
     ? [hours, minutes, remainder].map((value) => String(value).padStart(2, "0")).join(":")
     : [minutes, remainder].map((value) => String(value).padStart(2, "0")).join(":");
+}
+
+export type CardiacLandingActionState = {
+  primaryLabel: "Start" | "Fortsæt";
+  showPrimary: boolean;
+  showClear: boolean;
+};
+
+export function getCardiacLandingActionState(
+  activeSession: ArrestSession | null,
+  corrupted: boolean,
+): CardiacLandingActionState {
+  return {
+    primaryLabel: activeSession ? "Fortsæt" : "Start",
+    showPrimary: !corrupted,
+    showClear: Boolean(activeSession) || corrupted,
+  };
+}
+
+export type CardiacLandingSummary = {
+  sessionStartedAt: string;
+  shockCount: number;
+  adrenalineCount: number;
+  elapsedSeconds: number;
+  outcome: "rosc" | "mors" | null;
+  outcomeOccurredAt: string | null;
+};
+
+function latestOutcomeEvent(events: ArrestEvent[]): ArrestEvent | null {
+  return events.reduce<ArrestEvent | null>((latest, event) => {
+    if (event.type !== "rosc" && event.type !== "mors") return latest;
+    if (!latest) return event;
+    return new Date(event.occurredAt).getTime() >= new Date(latest.occurredAt).getTime()
+      ? event
+      : latest;
+  }, null);
+}
+
+export function getCardiacLandingSummary(
+  session: ArrestSession,
+  now: Date | string | number,
+): CardiacLandingSummary {
+  const summary = summarizeArrestSession(session);
+  const outcomeEvent = latestOutcomeEvent(getEffectiveArrestEvents(session));
+
+  return {
+    sessionStartedAt: session.startedAt,
+    shockCount: summary.shockCount,
+    adrenalineCount: summary.adrenalineCount,
+    elapsedSeconds: getElapsedSeconds(session.startedAt, now),
+    outcome: summary.latestOutcome,
+    outcomeOccurredAt: outcomeEvent?.occurredAt ?? null,
+  };
 }

@@ -36,16 +36,12 @@ export default function CardiacResusSummary() {
   const correctedEventIds = getCorrectedArrestEventIds(session);
   const latestOutcome = summary.latestOutcome === "rosc" ? "ROSC" : summary.latestOutcome === "mors" ? "MORS" : "Ikke registreret";
   const summaryRows = [
-    ["Varighed", formatElapsed(summary.durationSeconds)],
-    ["Stød total", String(summary.shockCount)],
-    ["Stød VF", String(summary.shockVfCount)],
-    ["Stød pVT", String(summary.shockPvtCount)],
-    ["Adrenalin", String(summary.adrenalineCount)],
-    ["Amiodaron", String(summary.amiodaroneCount)],
-    ["ROSC", summary.hasRosc ? "Ja" : "Nej"],
-    ["MORS", summary.hasMors ? "Ja" : "Nej"],
-    ["Seneste udfald", latestOutcome],
-    ["Hændelser i alt", String(summary.totalRecordedEvents)],
+    ["Varighed", formatElapsed(summary.durationSeconds), undefined],
+    ["Stød", String(summary.shockCount), `VF ${summary.shockVfCount} · pVT ${summary.shockPvtCount}`],
+    ["Adrenalin", String(summary.adrenalineCount), undefined],
+    ["Amiodaron", String(summary.amiodaroneCount), undefined],
+    ["Udfald", latestOutcome, summary.hasRosc && summary.hasMors ? "ROSC og MORS registreret" : undefined],
+    ["Hændelser", String(summary.totalRecordedEvents), undefined],
   ] as const;
   const resumeSession = async () => {
     if (resuming) return;
@@ -62,21 +58,20 @@ export default function CardiacResusSummary() {
     <Background>
       <Screen>
         <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 28 }}>
-          <ToolPageHeader title="Hjertestopoversigt" subtitle="Lokalt gemt på denne enhed. Kan ikke eksporteres fra denne version." />
+          <ToolPageHeader title="Hjertestopoversigt" subtitle="Lokalt gemt på denne enhed" />
           <ToolSurface tone="accent">
-            <ToolSectionLabel>Resume</ToolSectionLabel>
-            <Text style={{ color: theme.colors.text }}><Text style={{ fontWeight: "900" }}>Start: </Text>{formatDate(session.startedAt)}</Text>
-            <Text style={{ color: theme.colors.text }}><Text style={{ fontWeight: "900" }}>Slut: </Text>{formatDate(session.endedAt ?? session.startedAt)}</Text>
-            <View style={{ marginTop: 4 }}>
-              {summaryRows.map(([label, value]) => (
-                <View key={label} style={{ flexDirection: "row", justifyContent: "space-between", gap: 16, paddingVertical: 7, borderBottomWidth: 1, borderBottomColor: theme.colors.divider }}>
-                  <Text style={{ color: theme.colors.mutedText, fontWeight: "700" }}>{label}</Text>
-                  <Text style={{ color: theme.colors.text, fontWeight: "900", textAlign: "right" }}>{value}</Text>
+            <ToolSectionLabel>{formatDate(session.startedAt)} – {formatDate(session.endedAt ?? session.startedAt)}</ToolSectionLabel>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+              {summaryRows.map(([label, value, detail]) => (
+                <View key={label} style={{ minWidth: 112, flexBasis: "30%", flexGrow: 1, gap: 3, paddingVertical: 10, paddingHorizontal: 11, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.035)" }}>
+                  <Text style={{ color: theme.colors.mutedText, fontSize: 12, fontWeight: "700" }}>{label}</Text>
+                  <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: "900" }}>{value}</Text>
+                  {detail ? <Subtle>{detail}</Subtle> : null}
                 </View>
               ))}
             </View>
           </ToolSurface>
-          <CollapsibleCard title="Hændelseslog" subtitle={`${session.events.length} tidsstemplede registreringer`}>
+          <CollapsibleCard title="Hændelseslog" subtitle={`${session.events.length} registreringer · rettelser bevares`}>
             {session.events.map((event) => {
               const corrected = correctedEventIds.has(event.id);
               return (

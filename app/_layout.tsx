@@ -8,6 +8,7 @@ import { FavouritesProvider } from "../src/state/favourites";
 import { AuthProvider, useAuth } from "../src/auth/AuthProvider";
 import { useWebRouteTransition } from "../src/ui/motion";
 import { theme } from "../src/ui/theme";
+import PwaUpdateManager from "../src/pwa/PwaUpdateManager";
 
 function AppStack() {
   const { state } = useAuth();
@@ -66,6 +67,7 @@ export default function RootLayout() {
     <AuthProvider>
       <SettingsProvider>
         <FavouritesProvider>
+          <PwaUpdateManager />
           <StatusBar style="light" translucent backgroundColor="transparent" />
           <AppStack />
         </FavouritesProvider>

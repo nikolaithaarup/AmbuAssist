@@ -2,7 +2,6 @@ import Constants from "expo-constants";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Animated,
-  Image,
   Linking,
   Pressable,
   ScrollView,
@@ -21,6 +20,7 @@ import { ToolPageHeader, ToolSurface } from "../../ui/ToolSurface";
 import { Screen, Subtle } from "../../ui/Ui";
 import { theme } from "../../ui/theme";
 import { useAuth } from "../../auth/AuthProvider";
+import { SupportQuickActions } from "./SupportQuickActions";
 
 export type AboutSupportSection =
   | "about"
@@ -32,7 +32,6 @@ export type AboutSupportSection =
   | "app";
 
 const SUPPORT_EMAIL = "nikolai_91@live.com";
-const AMBUASSIST_ICON = require("../../../assets/icon.png");
 
 type PwaNavigator = Navigator & { standalone?: boolean };
 
@@ -393,185 +392,121 @@ function InstallGuide() {
 }
 
 export function AboutSupportScreen({ initialSection }: { initialSection?: AboutSupportSection }) {
-  const { t } = useT();
+  const { t, lang } = useT();
   const { state, logout } = useAuth();
-  const appVersion = Constants.expoConfig?.version ?? "unknown";
+  const appVersion = Constants.expoConfig?.version ?? "–";
   const initialOpen = initialSection === "limitations" ? "medical" : initialSection;
-  const [openSection, setOpenSection] = useState<Exclude<AboutSupportSection, "limitations"> | null>(
-    initialOpen ?? null,
-  );
+  const [openSection, setOpenSection] = useState<Exclude<AboutSupportSection, "limitations"> | null>(initialOpen ?? null);
   const [loggingOut, setLoggingOut] = useState(false);
   const [logoutError, setLogoutError] = useState(false);
-
-  const toggleSection = (section: Exclude<AboutSupportSection, "limitations">) => {
-    setOpenSection((current) => current === section ? null : section);
+  const toggle = (section: Exclude<AboutSupportSection, "limitations">) => {
+    setOpenSection((old) => old === section ? null : section);
   };
 
+  const openEmail = async (bug = false) => {
+    const subject = encodeURIComponent(bug
+      ? (lang === "da" ? "Fejl i AmbuAssist" : "AmbuAssist bug report")
+      : t("contact_email_subject"));
+    const body = encodeURIComponent(bug
+      ? (lang === "da"
+        ? "Hej Nikolai,\n\nHvor i appen?\n\nHvad skete der?\n\nHvad forventede du?\n\n"
+        : "Hi Nikolai,\n\nWhere in the app?\n\nWhat happened?\n\nWhat did you expect?\n\n")
+      : t("contact_email_body_greeting") + "\n\n");
+    const mailto = "mailto:" + SUPPORT_EMAIL + "?subject=" + subject + "&body=" + body;
+    try {
+      await Linking.openURL((await Linking.canOpenURL(mailto)) ? mailto : "mailto:" + SUPPORT_EMAIL);
+    } catch {
+      try { await Linking.openURL("mailto:" + SUPPORT_EMAIL); } catch { /* User can find the address under Kontakt. */ }
+    }
+  };
+  const openStudio = async () => {
+    try { await Linking.openURL("https://synapsestudio.dk"); }
+    catch { /* The address is also shown in the button label/context. */ }
+  };
   const signOut = async () => {
+    if (loggingOut) return;
     setLoggingOut(true);
     setLogoutError(false);
-    try {
-      await logout();
-    } catch {
-      setLogoutError(true);
-      setLoggingOut(false);
-    }
-  };
-
-  const openEmail = async () => {
-    const subject = encodeURIComponent(t("contact_email_subject"));
-    const body = encodeURIComponent(
-      [
-        t("contact_email_body_greeting"),
-        "",
-        t("contact_email_body_intro"),
-        "",
-        `${t("contact_email_body_tool")}:`,
-        `${t("contact_email_body_happened")}:`,
-        `${t("contact_email_body_expected")}:`,
-        `${t("contact_email_body_language")}:`,
-        `${t("contact_email_body_device")}:`,
-        `${t("contact_email_body_version")}:`,
-        "",
-        `${t("contact_email_body_notes")}:`,
-      ].join("\n"),
-    );
-    const detailedUrl = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
-    try {
-      await Linking.openURL((await Linking.canOpenURL(detailedUrl)) ? detailedUrl : `mailto:${SUPPORT_EMAIL}`);
-    } catch {
-      await Linking.openURL(`mailto:${SUPPORT_EMAIL}`);
-    }
+    try { await logout(); }
+    catch { setLogoutError(true); setLoggingOut(false); }
   };
 
   return (
     <Background>
       <Screen>
         <ScrollView
-          contentContainerStyle={{ gap: 12, paddingBottom: 28 }}
+          contentContainerStyle={{ gap: 14, paddingBottom: 28 }}
           keyboardShouldPersistTaps="handled"
         >
           <ToolPageHeader title={t("about_support_title")} />
 
-          <View testID="about-product-identity" style={{ gap: 10, paddingHorizontal: 2 }}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
-              <View
-                style={{
-                  width: 70,
-                  height: 70,
-                  borderRadius: 18,
-                  overflow: "hidden",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: theme.colors.backgroundBase,
-                  borderWidth: 1,
-                  borderColor: theme.colors.cardBorder,
-                }}
-              >
-                <Image source={AMBUASSIST_ICON} resizeMode="contain" style={{ width: 58, height: 58 }} />
-              </View>
-              <View style={{ flex: 1, gap: 3 }}>
-                <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 29, fontWeight: "900" }}>
-                  AmbuAssist
-                </Text>
-                <Text style={{ color: theme.colors.accentMuted, fontSize: 14, lineHeight: 19 }}>
-                  {t("homeTagline")}
-                </Text>
-              </View>
-            </View>
-            <Body>{t("about_compact_body")}</Body>
+          <View testID="about-product-identity" style={{ gap: 5 }}>
+            <SupportQuickActions
+              language={lang}
+              onEmail={() => void openEmail()}
+              onReport={() => void openEmail(true)}
+              onStudio={() => void openStudio()}
+            />
+            <Subtle style={{ marginTop: 2 }}>{t("homeTagline")}</Subtle>
           </View>
 
           <Warning>{t("about_safety_summary")}</Warning>
 
           <InstallGuide />
 
-          <Text style={{ color: theme.colors.mutedText, fontSize: 13, lineHeight: 18, fontWeight: "800", paddingTop: 4, paddingHorizontal: 2 }}>
-            {t("about_help_title")}
-          </Text>
-
-          <ToolSurface style={{ paddingVertical: 0, paddingHorizontal: 14, gap: 0 }}>
+          <ToolSurface style={{ paddingVertical: 0, paddingHorizontal: 4, gap: 0 }}>
             <SupportSection
               id="about"
               title={t("about_project_title")}
               subtitle={t("about_project_sub")}
               open={openSection === "about"}
-              onToggle={() => toggleSection("about")}
+              onToggle={() => toggle("about")}
             >
-              <SectionHeading>{t("about_purpose_title")}</SectionHeading>
-              <Bullet>{t("about_purpose_1")}</Bullet>
-              <Bullet>{t("about_purpose_2")}</Bullet>
-              <Bullet>{t("about_purpose_3")}</Bullet>
-              <SectionHeading>{t("about_design_title")}</SectionHeading>
-              <Bullet>{t("about_design_1")}</Bullet>
-              <Bullet>{t("about_design_2")}</Bullet>
-              <Bullet>{t("about_design_3")}</Bullet>
-              <Bullet>{t("about_design_4")}</Bullet>
+              <Body>{t("about_compact_body")}</Body>
+              <Body>{t("about_purpose_1")}</Body>
             </SupportSection>
-
             <SupportSection
               id="sources"
               title={t("about_sources_title")}
               subtitle={t("about_sources_sub")}
               open={openSection === "sources"}
-              onToggle={() => toggleSection("sources")}
+              onToggle={() => toggle("sources")}
             >
-              <SectionHeading>{t("meddisc_section_method_title")}</SectionHeading>
-              <Bullet>{t("meddisc_method_1")}</Bullet>
-              <Bullet>{t("meddisc_method_2")}</Bullet>
-              <Bullet>{t("meddisc_method_3")}</Bullet>
-              <Bullet>{t("meddisc_method_4")}</Bullet>
-              <SectionHeading>{t("meddisc_section_sources_title")}</SectionHeading>
               <Body>{t("meddisc_sources_body")}</Body>
-              <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
-                {t("meddisc_sources_note_title")}
-              </Text>
               <Subtle>{t("meddisc_sources_note_body")}</Subtle>
-              <SectionHeading>{t("meddisc_section_updates_title")}</SectionHeading>
-              <Bullet>{t("meddisc_updates_1")}</Bullet>
-              <Bullet>{t("meddisc_updates_2")}</Bullet>
-              <Bullet>{t("meddisc_updates_3")}</Bullet>
             </SupportSection>
-
             <SupportSection
               id="medical"
               title={t("about_disclaimer_title")}
               subtitle={t("meddisc_sub")}
               open={openSection === "medical"}
-              onToggle={() => toggleSection("medical")}
+              onToggle={() => toggle("medical")}
             >
-              <SectionHeading>{t("meddisc_section_use_title")}</SectionHeading>
-              <Bullet>{t("meddisc_use_1")}</Bullet>
-              <Bullet>{t("meddisc_use_2")}</Bullet>
-              <Bullet>{t("meddisc_use_3")}</Bullet>
-              <Bullet>{t("meddisc_use_4")}</Bullet>
-              <SectionHeading>{t("meddisc_section_users_title")}</SectionHeading>
-              <Bullet>{t("meddisc_users_1")}</Bullet>
-              <Bullet>{t("meddisc_users_2")}</Bullet>
-              <Bullet>{t("meddisc_users_3")}</Bullet>
-              <SectionHeading>{t("meddisc_section_warning_title")}</SectionHeading>
-              <Warning>{t("meddisc_warning_body")}</Warning>
-              <SectionHeading>{t("meddisc_section_region_title")}</SectionHeading>
-              <Bullet>{t("meddisc_region_1")}</Bullet>
-              <Bullet>{t("meddisc_region_2")}</Bullet>
-              <Bullet>{t("meddisc_region_3")}</Bullet>
-              <SectionHeading>{t("meddisc_section_emergency_title")}</SectionHeading>
+              <Body>{t("meddisc_warning_body")}</Body>
               <Body>{t("meddisc_emergency_body")}</Body>
-              <Subtle style={{ textAlign: "center", marginTop: 4 }}>{t("meddisc_footer")}</Subtle>
             </SupportSection>
-
+            <SupportSection
+              id="contact"
+              title={t("about_contact_row_title")}
+              subtitle={t("contact_sub")}
+              open={openSection === "contact"}
+              onToggle={() => toggle("contact")}
+            >
+              <Body>{lang === "da"
+                ? "Skriv gerne, hvor fejlen opstod, og hvad du forventede. Del ikke patientoplysninger."
+                : "Tell me where the issue occurred and what you expected. Do not share patient information."}</Body>
+              <Text selectable style={{ color: theme.colors.accentMuted, fontSize: 14, fontWeight: "800" }}>{SUPPORT_EMAIL}</Text>
+            </SupportSection>
             <SupportSection
               id="account"
               title={t("account_title")}
               subtitle={t("account_sub")}
               open={openSection === "account"}
-              onToggle={() => toggleSection("account")}
+              onToggle={() => toggle("account")}
             >
-              <Body>
-                {state.status === "authorized" && state.session.assurance === "offline-cache"
-                  ? t("account_offline")
-                  : t("account_remembered")}
-              </Body>
+              <Body>{state.status === "authorized" && state.session.assurance === "offline-cache"
+                ? t("account_offline")
+                : t("account_remembered")}</Body>
               <Pressable
                 testID="about-support-logout"
                 accessibilityRole="button"
@@ -580,85 +515,33 @@ export function AboutSupportScreen({ initialSection }: { initialSection?: AboutS
                 disabled={loggingOut}
                 onPress={() => void signOut()}
                 style={({ pressed }) => ({
-                  minHeight: 50,
-                  borderRadius: 14,
-                  borderWidth: 1,
-                  borderColor: theme.colors.cardBorder,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  paddingHorizontal: 14,
-                  opacity: loggingOut ? 0.5 : pressed ? 0.72 : 1,
+                  minHeight: 48, justifyContent: "center", alignItems: "center",
+                  borderRadius: 13, borderWidth: 1, borderColor: theme.colors.cardBorder,
+                  opacity: pressed || loggingOut ? 0.6 : 1,
                 })}
               >
-                <Text style={{ color: theme.colors.accentMuted, fontWeight: "900" }}>
+                <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
                   {loggingOut ? t("account_logging_out") : t("account_logout")}
                 </Text>
               </Pressable>
               {logoutError ? <Warning>{t("account_logout_error")}</Warning> : null}
             </SupportSection>
-
             <SupportSection
               id="app"
               title={t("about_privacy_row_title")}
               subtitle={t("about_privacy_sub")}
               open={openSection === "app"}
-              onToggle={() => toggleSection("app")}
+              onToggle={() => toggle("app")}
             >
-              <Bullet>{t("about_privacy_local")}</Bullet>
-              <Bullet>{t("about_privacy_auth")}</Bullet>
-              <Bullet>{t("about_privacy_usage")}</Bullet>
-              <Warning>{t("about_privacy_feedback")}</Warning>
-              <InfoRow label={t("about_info_name")} value="AmbuAssist" />
+              <Body>{t("about_privacy_local")}</Body>
+              <Body>{t("about_privacy_auth")}</Body>
+              <Body>{t("about_privacy_usage")}</Body>
+              <Body>{t("about_privacy_feedback")}</Body>
               <InfoRow label={t("about_info_version")} value={appVersion} />
-              <InfoRow label={t("about_info_use")} value={t("about_info_use_value")} />
-              <InfoRow label={t("about_info_focus")} value={t("about_info_focus_value")} />
-            </SupportSection>
-
-            <SupportSection
-              id="contact"
-              title={t("about_contact_row_title")}
-              subtitle={t("contact_sub")}
-              open={openSection === "contact"}
-              onToggle={() => toggleSection("contact")}
-            >
-              <Body>{t("contact_getintouch_body")}</Body>
-              <Subtle>{t("contact_support_email_label")}</Subtle>
-              <Text style={{ color: theme.colors.text, fontWeight: "900" }}>{SUPPORT_EMAIL}</Text>
-              <Pressable
-                testID="about-support-email"
-                accessibilityRole="link"
-                accessibilityLabel={t("contact_email_button")}
-                onPress={() => void openEmail()}
-                style={({ pressed }) => ({
-                  minHeight: 50,
-                  borderRadius: 14,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  paddingHorizontal: 14,
-                  backgroundColor: pressed ? "rgba(145,169,108,0.24)" : theme.colors.accentSurface,
-                  opacity: pressed ? 0.8 : 1,
-                })}
-              >
-                <Text style={{ color: theme.colors.text, fontWeight: "900" }}>{t("contact_email_button")}</Text>
-              </Pressable>
-              <SectionHeading>{t("contact_include_title")}</SectionHeading>
-              <Bullet>{t("contact_include_1")}</Bullet>
-              <Bullet>{t("contact_include_2")}</Bullet>
-              <Bullet>{t("contact_include_3")}</Bullet>
-              <Bullet>{t("contact_include_4")}</Bullet>
-              <Bullet>{t("contact_include_5")}</Bullet>
-              <SectionHeading>{t("contact_medical_title")}</SectionHeading>
-              <Body>{t("contact_medical_body")}</Body>
-              <Warning>{t("contact_medical_warning")}</Warning>
-              <SectionHeading>{t("contact_suggestions_title")}</SectionHeading>
-              <Bullet>{t("contact_suggestions_1")}</Bullet>
-              <Bullet>{t("contact_suggestions_2")}</Bullet>
-              <Bullet>{t("contact_suggestions_3")}</Bullet>
-              <Bullet>{t("contact_suggestions_4")}</Bullet>
             </SupportSection>
           </ToolSurface>
 
-          <View testID="about-footer" style={{ alignItems: "center", gap: 2, paddingTop: 5 }}>
+          <View testID="about-footer" style={{ alignItems: "center", gap: 3, paddingTop: 4 }}>
             <Subtle>{t("about_info_version")} {appVersion}</Subtle>
             <Subtle>{t("about_made_by")}</Subtle>
           </View>

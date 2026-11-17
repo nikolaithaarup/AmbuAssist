@@ -125,6 +125,22 @@ describe("Home responsive mobile layout", () => {
     expect(mockSetLanguage).toHaveBeenCalledWith("da");
   });
 
+  test("matches FlashMedic: small accent section labels and compact header controls", () => {
+    ReactNative.Platform.OS = "web";
+    const root = renderHome();
+    const headings = root.findAllByProps({ testID: "home-section-header" });
+    expect(headings).toHaveLength(2);
+    const toolsHeading = root.findAllByType(Text).find((node) => node.props.children === "Værktøjer");
+    expect(toolsHeading).toBeDefined();
+    expect(toolsHeading.props.style.color).toBe(require("../../ui/theme").theme.colors.headingAccent);
+    expect(toolsHeading.props.style.textTransform).toBe("uppercase");
+    expect(root.findByProps({ testID: "home-language-controls" }).props.style.position).toBe("absolute");
+    const mark = root.findByProps({ testID: "home-brand-icon" });
+    expect(mark.props.style.height).toBe(56);
+    const wordmark = root.findByProps({ testID: "home-brand-wordmark" });
+    expect(wordmark.props.style.height).toBe(38);
+  });
+
   test("uses the balanced branded hero and title-only cards in the web PWA", () => {
     ReactNative.Platform.OS = "web";
     const root = renderHome();

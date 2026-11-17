@@ -26,7 +26,7 @@ export const EVENT_LABELS_DA: Record<ArrestEventType, string> = {
   session_ended: "Session afsluttet",
 };
 
-export type EventButtonCategory = "shock" | "medication" | "airway" | "outcome" | "other";
+export type EventButtonCategory = "shock" | "medication" | "airway" | "outcome-success" | "outcome-danger" | "other";
 
 export const VISIBLE_EVENT_BUTTONS: {
   type: ArrestEventType;
@@ -36,8 +36,8 @@ export const VISIBLE_EVENT_BUTTONS: {
   { type: "shock_delivered", label: "Stød", category: "shock" },
   { type: "adrenaline_given", label: "Adrenalin", category: "medication" },
   { type: "amiodarone_given", label: "Amiodaron", category: "medication" },
-  { type: "rosc", label: "ROSC", category: "outcome" },
-  { type: "mors", label: "MORS", category: "outcome" },
+  { type: "rosc", label: "ROSC", category: "outcome-success" },
+  { type: "mors", label: "MORS", category: "outcome-danger" },
   { type: "free_note", label: "Note", category: "other" },
 ];
 
@@ -48,6 +48,23 @@ export function formatArrestEventLabel(
   return event.type === "shock_delivered" && event.metadata?.shockRhythm
     ? `${label} · ${event.metadata.shockRhythm}`
     : label;
+}
+
+/** User-facing event log deliberately uses local clock time only, never date/seconds. */
+export function formatArrestClock(occurredAt: string): string {
+  const date = new Date(occurredAt);
+  if (Number.isNaN(date.getTime())) return "--:--";
+  return new Intl.DateTimeFormat("da-DK", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).format(date);
+}
+
+/** Whole minutes since the session was started. Seconds remain in storage. */
+export function formatArrestMinuteOffset(elapsedSeconds: number): string {
+  const minutes = Number.isFinite(elapsedSeconds) ? Math.floor(Math.max(0, elapsedSeconds) / 60) : 0;
+  return "+" + minutes + " min";
 }
 
 export function formatElapsed(totalSeconds: number): string {

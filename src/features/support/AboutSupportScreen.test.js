@@ -34,8 +34,8 @@ describe("AboutSupportScreen", () => {
     const root = renderer.root;
     expect(root.findAllByProps({ testID: "about-support-section-about" }).length).toBeGreaterThan(0);
     expect(root.findAllByProps({ testID: "about-support-section-medical" }).length).toBeGreaterThan(0);
-    expect(root.findAllByProps({ testID: "about-support-section-contact" }).length).toBeGreaterThan(0);
-    expect(root.findAllByProps({ testID: "about-support-section-limitations" }).length).toBeGreaterThan(0);
+    expect(root.findAllByProps({ testID: "about-support-section-contact" })).toHaveLength(0);
+    expect(root.findAllByProps({ testID: "about-support-section-limitations" })).toHaveLength(0);
     expect(root.findAllByProps({ testID: "about-support-section-account" }).length).toBeGreaterThan(0);
     expect(root.findAllByProps({ testID: "about-support-section-app" }).length).toBeGreaterThan(0);
     expect(root.findByProps({ accessibilityLabel: "Hvad AmbuAssist er" }).props.accessibilityState).toEqual({ expanded: false });
@@ -81,7 +81,7 @@ describe("AboutSupportScreen", () => {
     expect(contactRenderer.root.findAllByProps({ testID: "about-support-email" }).length).toBeGreaterThan(0);
     expect(contactRenderer.root.findAllByProps({ testID: "about-support-report-error" }).length).toBeGreaterThan(0);
     expect(contactRenderer.root.findAllByProps({ testID: "about-support-studio" }).length).toBeGreaterThan(0);
-    expect(textContent(contactRenderer.root)).toContain("nikolai_91@live.com");
+    expect(textContent(contactRenderer.root)).toContain("SynapseStudio");
   });
 
   test("keeps app version information available", () => {
@@ -101,7 +101,7 @@ describe("AboutSupportScreen", () => {
     expect(renderer.root.findByProps({ testID: "about-support-studio" })).toBeDefined();
     expect(textContent(renderer.root)).toContain("SynapseStudio");
     expect(textContent(renderer.root)).toContain("Nikolai Louis Kleftås Thaarup");
-    expect(renderer.root.findByProps({ testID: "about-support-section-contact" })).toBeDefined();
+    expect(renderer.root.findAllByProps({ testID: "about-support-section-contact" })).toHaveLength(0);
   });
 
   test("keeps the detailed mailto feedback action", async () => {

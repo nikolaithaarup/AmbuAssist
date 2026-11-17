@@ -397,24 +397,50 @@ export default function ActiveCardiacResusSession() {
               </>
             ) : dialog === "cycleReset" || dialog === "adrenalineReset" ? (
               <>
-                <Title style={{ fontSize: 21 }}>
-                  {dialog === "cycleReset" ? "Nulstil cyklustimer?" : "Nulstil adrenalin-timer?"}
-                </Title>
-                <Text style={{ color: theme.colors.text, lineHeight: 21 }}>
-                  {dialog === "cycleReset"
-                    ? "Brug kun dette, hvis I manuelt starter en ny HLR-cyklus eller har brug for at justere cyklustimeren. Den samlede hjertestoptid ændres ikke."
-                    : "Dette nulstiller kun timeren. Det registrerer ikke, at der er givet adrenalin."}
+                <Title style={{ fontSize: 21 }}>{dialog === "cycleReset" ? "Justér HLR-cyklustimer" : "Justér adrenalin-timer"}</Title>
+                <MinuteRuler
+                  label="Tid på timeren"
+                  value={selectedMinutes}
+                  maxMinutes={dialog === "cycleReset" ? 3 : 10}
+                  onChange={setSelectedMinutes}
+                />
+                <Text style={{ color: theme.colors.mutedText, fontSize: 13, lineHeight: 19 }}>
+                  Ændrer kun timeren. Den samlede sessionstid og tidligere registreringer bevares.
                 </Text>
                 {actionError ? <Text style={{ color: theme.colors.danger, fontWeight: "700" }}>{actionError}</Text> : null}
                 <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Gem timerjustering"
                   onPress={dialog === "cycleReset" ? resetCycleTimer : resetAdrenalineTimer}
-                  style={({ pressed }) => ({ minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 14, borderWidth: 1, borderColor: theme.colors.cardBorder, backgroundColor: theme.colors.accentSurface, opacity: pressed ? 0.65 : 1 })}
+                  style={({ pressed }) => ({ minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 14, backgroundColor: "#2679D3", opacity: pressed ? 0.7 : 1 })}
                 >
-                  <Text style={{ color: theme.colors.text, fontWeight: "900" }}>
-                    {dialog === "cycleReset" ? "Nulstil cyklustimer" : "Nulstil timer"}
-                  </Text>
+                  <Text style={{ color: "#FFFFFF", fontWeight: "900" }}>Gem justering</Text>
                 </Pressable>
-                <Pressable onPress={() => setDialog(null)} style={({ pressed }) => ({ minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}>
+                <Pressable accessibilityRole="button" onPress={() => setDialog(null)} style={({ pressed }) => ({ minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}>
+                  <Text style={{ color: theme.colors.accentMuted, fontWeight: "800" }}>Annuller</Text>
+                </Pressable>
+              </>
+            ) : dialog === "eventTime" ? (
+              <>
+                <Title style={{ fontSize: 21 }}>Justér hændelsestid</Title>
+                <MinuteRuler
+                  label="Tid fra sessionstart"
+                  value={selectedMinutes}
+                  maxMinutes={Math.max(0, Math.floor(elapsed / 60))}
+                  relative
+                  onChange={setSelectedMinutes}
+                />
+                <Text style={{ color: theme.colors.text, fontSize: 16, fontWeight: "800" }}>
+                  Kl. {formatArrestClock(new Date(new Date(session.startedAt).getTime() + selectedMinutes * 60000).toISOString())}
+                </Text>
+                <Text style={{ color: theme.colors.mutedText, fontSize: 13, lineHeight: 19 }}>
+                  Den oprindelige registrering bevares i historikken som rettet.
+                </Text>
+                {actionError ? <Text style={{ color: theme.colors.danger, fontWeight: "700" }}>{actionError}</Text> : null}
+                <Pressable accessibilityRole="button" accessibilityLabel="Gem hændelsestid" onPress={saveEventTime} style={({ pressed }) => ({ minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 14, backgroundColor: "#2679D3", opacity: pressed ? 0.7 : 1 })}>
+                  <Text style={{ color: "#FFFFFF", fontWeight: "900" }}>Gem tid</Text>
+                </Pressable>
+                <Pressable accessibilityRole="button" onPress={() => setDialog(null)} style={({ pressed }) => ({ minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}>
                   <Text style={{ color: theme.colors.accentMuted, fontWeight: "800" }}>Annuller</Text>
                 </Pressable>
               </>

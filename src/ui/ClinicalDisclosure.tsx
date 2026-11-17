@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useT } from "../i18n/useT";
 import { Subtle, Title } from "./Ui";
+import { ToolSectionLabel } from "./ToolSurface";
 import { theme } from "./theme";
 import { useReducedMotionPreference } from "./motion";
 
@@ -143,7 +144,7 @@ export function ClinicalDisclosure({
               showsVerticalScrollIndicator
             >
               <View style={{ gap: 8 }}>
-                <Title style={{ fontSize: 18 }}>{t("tool_disclaimer_title")}</Title>
+                <ToolSectionLabel>{t("tool_disclaimer_title")}</ToolSectionLabel>
                 {disclaimer ? (
                   <Text style={{ color: theme.colors.text, fontSize: 14, lineHeight: 21 }}>{disclaimer}</Text>
                 ) : (
@@ -152,7 +153,7 @@ export function ClinicalDisclosure({
               </View>
 
               <View style={{ gap: 8 }}>
-                <Title style={{ fontSize: 18 }}>{t("tool_sources_title")}</Title>
+                <ToolSectionLabel>{t("tool_sources_title")}</ToolSectionLabel>
                 {sourcesIntro ? <Subtle>{sourcesIntro}</Subtle> : null}
                 {sourceCount > 0 ? sources.map((source) => (
                   <Pressable

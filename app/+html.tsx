@@ -94,8 +94,50 @@ export default function Root({ children }: PropsWithChildren) {
             `,
           }}
         />
+      <style dangerouslySetInnerHTML={{ __html: `
+  /* First paint before JavaScript runs; replaced only when app bootstrap finishes. */
+  #synapse-startup { position: fixed; inset: 0; z-index: 2147483646; display: flex;
+    align-items: center; justify-content: center; padding: 48px 24px;
+    min-height: 100vh; min-height: 100dvh; box-sizing: border-box;
+    background: #25311F; color: #fff; font-family: system-ui, -apple-system, sans-serif; }
+  #synapse-startup * { box-sizing: border-box; }
+  #synapse-startup .identity { width: 100%; max-width: 480px; text-align: center;
+    display: flex; flex-direction: column; align-items: center; }
+  #synapse-startup .mark { display: block; width: 136px; height: 68px;
+    object-fit: cover; margin-bottom: 14px; }
+  #synapse-startup .studio { color: #E2C76D; font-size: 11px;
+    font-weight: 800; line-height: 16px; letter-spacing: 2px; margin-bottom: 9px; }
+  #synapse-startup .title { margin: 0; color: #fff; font-size: 32px;
+    line-height: 39px; font-weight: 800; letter-spacing: -.6px; }
+  #synapse-startup .subtitle { margin: 9px 0 0; color: #e1e8e7;
+    font-size: 14px; line-height: 21px; }
+  #synapse-startup .loading { display: flex; flex-direction: row; align-items: center;
+    justify-content: center; gap: 12px; min-height: 32px; margin-top: 34px;
+    color: #d3dcda; font-size: 13px; font-weight: 500; line-height: 19px; }
+  #synapse-startup .spinner { display: block; width: 19px; height: 19px;
+    border: 2px solid rgba(255,255,255,.22); border-top-color: #E2C76D;
+    border-radius: 50%; animation: synapse-startup-spin .85s linear infinite; }
+  @keyframes synapse-startup-spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) {
+    #synapse-startup .spinner { animation: none; }
+  }
+` }} />
       </head>
-      <body>{children}</body>
+      <body>
+        <div id="synapse-startup" aria-label="AmbuAssist starter">
+          <div className="identity">
+            <img className="mark" src="/pwa-icon-512.png" alt="" aria-hidden="true" width="136" height="68" />
+            <span className="studio">SYNAPSESTUDIO</span>
+            <h1 className="title">AmbuAssist</h1>
+            <p className="subtitle">Kliniske værktøjer. Lige ved hånden.</p>
+            <div className="loading" role="status" aria-live="polite">
+              <span className="spinner" aria-hidden="true" />
+              <span>Kontrollerer adgang…</span>
+            </div>
+          </div>
+        </div>
+        {children}
+      </body>
     </html>
   );
 }

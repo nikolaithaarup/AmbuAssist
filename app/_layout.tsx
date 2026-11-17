@@ -1,5 +1,6 @@
 // app/_layout.tsx
 import { Stack, usePathname } from "expo-router";
+import { useEffect } from "react";
 import { Animated, Platform, View } from "react-native";
 import AuthLanding from "../src/features/auth/AuthLanding";
 import { StatusBar } from "expo-status-bar";
@@ -16,6 +17,13 @@ function AppStack() {
   const pwa = Platform.OS === "web";
   const routeTransition = useWebRouteTransition(pathname, pwa);
   const authorized = state.status === "authorized";
+  // The first-paint HTML splash stays until access checking is complete.
+  useEffect(() => {
+    if (Platform.OS === "web" && state.status !== "checking") {
+      document.getElementById("synapse-startup")?.remove();
+    }
+  }, [state.status]);
+
   // Keep the browser URL intact while checking access, before Expo can redirect a protected route.
   if (Platform.OS === "web" && !authorized) return <AuthLanding />;
 

@@ -29,7 +29,7 @@ import { createSerializedArrestSessionWriter, getActiveArrestSession, saveEndedA
 import { Background } from "../../../../src/ui/Background";
 import { hapticSuccess, hapticToolOpen } from "../../../../src/ui/haptics";
 import { Input, ResponsiveColumn, ResponsiveColumns, Screen, Subtle, Title } from "../../../../src/ui/Ui";
-import { ToolActionButton, ToolSectionLabel, ToolSurface } from "../../../../src/ui/ToolSurface";
+import { ToolSectionLabel, ToolSurface } from "../../../../src/ui/ToolSurface";
 import { useResponsiveLayout } from "../../../../src/ui/responsive";
 import { theme } from "../../../../src/ui/theme";
 
@@ -325,14 +325,36 @@ export default function ActiveCardiacResusSession() {
                 {displayedEvents.map((event) => {
                   const corrected = correctedEventIds.has(event.id);
                   return <View key={event.id} accessibilityLabel={corrected ? `${formatArrestEventLabel(event)}. Rettet og ikke medregnet.` : undefined} style={{ flexDirection: "row", gap: 10, paddingVertical: 7, borderBottomWidth: 1, borderBottomColor: theme.colors.divider, opacity: corrected ? 0.58 : 1 }}>
-                    <Text style={{ color: theme.colors.accentMuted, fontWeight: "800", fontVariant: ["tabular-nums"] }}>{formatElapsed(event.elapsedSeconds)}</Text>
+                    <View style={{ minWidth: 69, gap: 2 }}>
+                      <Text style={{ color: theme.colors.text, fontWeight: "900", fontSize: 15, fontVariant: ["tabular-nums"] }}>{formatArrestClock(event.occurredAt)}</Text>
+                      <Text style={{ color: theme.colors.accentMuted, fontWeight: "700", fontSize: 12, fontVariant: ["tabular-nums"] }}>{formatArrestMinuteOffset(event.elapsedSeconds)}</Text>
+                    </View>
                     <View style={{ flex: 1 }}><Text style={{ color: theme.colors.text, fontWeight: "700", textDecorationLine: corrected ? "line-through" : "none" }}>{formatArrestEventLabel(event)}</Text>{corrected ? <Subtle>Rettet · medregnes ikke</Subtle> : null}{event.note ? <Subtle>{event.note}</Subtle> : null}</View>
+                    {event.source === "manual" && !corrected && event.type !== "event_correction" ? (
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={"Justér tid for " + formatArrestEventLabel(event)}
+                        onPress={() => openEventTime(event.id, event.elapsedSeconds)}
+                        hitSlop={6}
+                        style={({ pressed }) => ({ minWidth: 48, minHeight: 44, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}
+                      >
+                        <Text style={{ color: theme.colors.accentMuted, fontWeight: "800", fontSize: 13 }}>Tid</Text>
+                      </Pressable>
+                    ) : null}
                   </View>;
                 })}
                 {latestCorrectableEvent ? <Pressable onPress={() => { setActionError(""); setDialog("correct"); }} style={({ pressed }) => ({ minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}><Text style={{ color: theme.colors.accentMuted, fontWeight: "900" }}>Ret seneste</Text></Pressable> : null}
               </ToolSurface>
 
-              <ToolActionButton disabled={ending} tone="danger" label={ending ? "Afslutter…" : "Afslut session"} onPress={confirmEnd} />
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Afslut session"
+                disabled={ending}
+                onPress={confirmEnd}
+                style={({ pressed }) => ({ minHeight: 54, alignItems: "center", justifyContent: "center", borderRadius: 14, backgroundColor: "#D9434D", opacity: pressed || ending ? 0.7 : 1 })}
+              >
+                <Text style={{ color: "#FFFFFF", fontWeight: "900", fontSize: 16 }}>{ending ? "Afslutter…" : "Afslut session"}</Text>
+              </Pressable>
             </ResponsiveColumn>
           </ResponsiveColumns>
         </ScrollView>
@@ -344,8 +366,8 @@ export default function ActiveCardiacResusSession() {
                 <Text style={{ color: theme.colors.text, lineHeight: 21 }}>Vælg den rytme, som brugeren registrerer for stødet.</Text>
                 <View style={{ flexDirection: "row", gap: 10 }}>
                   {(["VF", "pVT"] as const).map((rhythm) => (
-                    <Pressable key={rhythm} onPress={() => recordShockRhythm(rhythm)} style={({ pressed }) => ({ flex: 1, minHeight: 56, alignItems: "center", justifyContent: "center", borderRadius: 14, borderWidth: 1, borderColor: "rgba(221,189,98,0.42)", backgroundColor: "rgba(221,189,98,0.13)", opacity: pressed ? 0.65 : 1 })}>
-                      <Text style={{ color: theme.colors.text, fontWeight: "900", fontSize: 18 }}>{rhythm}</Text>
+                    <Pressable key={rhythm} onPress={() => recordShockRhythm(rhythm)} style={({ pressed }) => ({ flex: 1, minHeight: 56, alignItems: "center", justifyContent: "center", borderRadius: 14, borderWidth: 1, borderColor: "#F4C542", backgroundColor: "#F4C542", opacity: pressed ? 0.65 : 1 })}>
+                      <Text style={{ color: "#17160D", fontWeight: "900", fontSize: 18 }}>{rhythm}</Text>
                     </Pressable>
                   ))}
                 </View>
@@ -409,7 +431,7 @@ export default function ActiveCardiacResusSession() {
                   {dialog === "end" ? "Sessionen afsluttes og gemmes som den seneste lokale session." : `${dialog === "rosc" ? "ROSC" : "MORS"} registreres som udfald, og den aktive session afsluttes.`}
                 </Text>
                 {actionError ? <Text style={{ color: theme.colors.danger, fontWeight: "700" }}>{actionError}</Text> : null}
-                <Pressable disabled={ending} onPress={() => void finishSession(dialog === "rosc" || dialog === "mors" ? dialog : undefined)} style={({ pressed }) => ({ minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 14, borderWidth: 1, borderColor: "rgba(255,123,114,0.45)", backgroundColor: "rgba(255,123,114,0.10)", opacity: pressed || ending ? 0.6 : 1 })}><Text style={{ color: theme.colors.danger, fontWeight: "900" }}>{ending ? "Gemmer…" : dialog === "end" ? "Afslut session" : `Registrér ${dialog === "rosc" ? "ROSC" : "MORS"}`}</Text></Pressable>
+                <Pressable disabled={ending} onPress={() => void finishSession(dialog === "rosc" || dialog === "mors" ? dialog : undefined)} style={({ pressed }) => ({ minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 14, borderWidth: 1, borderColor: "#D9434D", backgroundColor: "#D9434D", opacity: pressed || ending ? 0.6 : 1 })}><Text style={{ color: "#FFFFFF", fontWeight: "900" }}>{ending ? "Gemmer…" : dialog === "end" ? "Afslut session" : `Registrér ${dialog === "rosc" ? "ROSC" : "MORS"}`}</Text></Pressable>
                 <Pressable disabled={ending} onPress={() => setDialog(null)} style={({ pressed }) => ({ minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}><Text style={{ color: theme.colors.accentMuted, fontWeight: "800" }}>Annuller</Text></Pressable>
               </>
             )}

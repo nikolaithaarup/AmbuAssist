@@ -80,7 +80,7 @@ describe("AboutSupportScreen", () => {
     });
     expect(contactRenderer.root.findAllByProps({ testID: "about-support-email" }).length).toBeGreaterThan(0);
     expect(contactRenderer.root.findAllByProps({ testID: "about-support-report-error" }).length).toBeGreaterThan(0);
-    expect(contactRenderer.root.findAllByProps({ testID: "about-support-suggest-improvement" }).length).toBeGreaterThan(0);
+    expect(contactRenderer.root.findAllByProps({ testID: "about-support-studio" }).length).toBeGreaterThan(0);
     expect(textContent(contactRenderer.root)).toContain("nikolai_91@live.com");
   });
 
@@ -90,6 +90,18 @@ describe("AboutSupportScreen", () => {
       renderer = TestRenderer.create(<AboutSupportScreen initialSection="app" />);
     });
     expect(textContent(renderer.root)).toContain("Version");
+  });
+
+  test("keeps SynapseStudio identity and immediate contact actions outside the disclosures", () => {
+    let renderer;
+    act(() => { renderer = TestRenderer.create(<AboutSupportScreen />); });
+    expect(renderer.root.findByProps({ testID: "synapsestudio-support-identity" })).toBeDefined();
+    expect(renderer.root.findByProps({ testID: "about-support-email" })).toBeDefined();
+    expect(renderer.root.findByProps({ testID: "about-support-report-error" })).toBeDefined();
+    expect(renderer.root.findByProps({ testID: "about-support-studio" })).toBeDefined();
+    expect(textContent(renderer.root)).toContain("SynapseStudio");
+    expect(textContent(renderer.root)).toContain("Nikolai Louis Kleftås Thaarup");
+    expect(renderer.root.findByProps({ accessibilityLabel: "Kontakt" }).props.accessibilityState).toEqual({ expanded: false });
   });
 
   test("keeps the detailed mailto feedback action", async () => {

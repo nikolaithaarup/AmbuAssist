@@ -105,8 +105,6 @@ export default function Root({ children }: PropsWithChildren) {
     display: flex; flex-direction: column; align-items: center; }
   #synapse-startup .mark { display: block; width: 136px; height: 68px;
     object-fit: cover; margin-bottom: 14px; }
-  #synapse-startup .studio { color: #E2C76D; font-size: 11px;
-    font-weight: 800; line-height: 16px; letter-spacing: 2px; margin-bottom: 9px; }
   #synapse-startup .title { margin: 0; color: #fff; font-size: 32px;
     line-height: 39px; font-weight: 800; letter-spacing: -.6px; }
   #synapse-startup .subtitle { margin: 9px 0 0; color: #e1e8e7;
@@ -114,6 +112,12 @@ export default function Root({ children }: PropsWithChildren) {
   #synapse-startup .loading { display: flex; flex-direction: row; align-items: center;
     justify-content: center; gap: 12px; min-height: 32px; margin-top: 34px;
     color: #d3dcda; font-size: 13px; font-weight: 500; line-height: 19px; }
+  #synapse-startup .studio-footer { display: flex; flex-direction: column;
+    align-items: center; gap: 10px; margin-top: 46px; }
+  #synapse-startup .part-of { color: #d3dcda; font-size: 11px;
+    font-weight: 600; line-height: 16px; letter-spacing: 1.1px; }
+  #synapse-startup .studio-logo { display: block; width: 164px;
+    height: auto; max-width: 75vw; }
   #synapse-startup .spinner { display: block; width: 19px; height: 19px;
     border: 2px solid rgba(255,255,255,.22); border-top-color: #E2C76D;
     border-radius: 50%; animation: synapse-startup-spin .85s linear infinite; }
@@ -127,12 +131,16 @@ export default function Root({ children }: PropsWithChildren) {
         <div id="synapse-startup" aria-label="AmbuAssist starter">
           <div className="identity">
             <img className="mark" src="/pwa-icon-512.png" alt="" aria-hidden="true" width="136" height="68" />
-            <span className="studio">SYNAPSESTUDIO</span>
+            
             <h1 className="title">AmbuAssist</h1>
             <p className="subtitle">Kliniske værktøjer. Lige ved hånden.</p>
             <div className="loading" role="status" aria-live="polite">
               <span className="spinner" aria-hidden="true" />
               <span>Kontrollerer adgang…</span>
+            </div>
+            <div className="studio-footer" aria-label="Part of Synapse Studio">
+              <span className="part-of">Part of</span>
+              <img className="studio-logo" src="/synapsestudio-logo-white.svg" alt="SynapseStudio" width="164" height="44" />
             </div>
           </div>
         </div>

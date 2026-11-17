@@ -30,7 +30,7 @@ export function SupportQuickActions({ language, onEmail, onReport, onStudio, onS
         <Text style={{ color: theme.colors.text, fontWeight: "900", fontSize: 25, lineHeight: 31 }}>
           {da ? "Kontakt & support" : "Contact & support"}
         </Text>
-        <Text style={{ color: theme.colors.accentMuted, fontWeight: "800", fontSize: 14 }}>
+        <Text style={{ color: theme.colors.headingAccent, fontWeight: "800", fontSize: 14 }}>
           SynapseStudio · AmbuAssist
         </Text>
         <Text style={{ color: theme.colors.mutedText, fontSize: 12, lineHeight: 18 }}>
@@ -86,7 +86,7 @@ export function SupportQuickActions({ language, onEmail, onReport, onStudio, onS
         ))}
       </View>
       <Pressable accessibilityRole="link" accessibilityLabel="FlashMedic" onPress={onSibling} style={({ pressed }) => ({ alignSelf: "flex-start", minHeight: 44, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
-        <Text style={{ color: theme.colors.accentMuted, fontWeight: "800", fontSize: 13 }}>
+        <Text style={{ color: theme.colors.headingAccent, fontWeight: "800", fontSize: 13 }}>
           {da ? "Også fra SynapseStudio: FlashMedic  ›" : "Also from SynapseStudio: FlashMedic  ›"}
         </Text>
       </Pressable>

@@ -68,7 +68,7 @@ export default function CardiacResusSummary() {
             </View>
           </ToolSurface>
           <CollapsibleCard title="Hændelseslog" subtitle={`${session.events.length} registreringer · rettelser bevares`}>
-            {session.events.map((event) => {
+            {[...session.events].sort((a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime()).map((event) => {
               const corrected = correctedEventIds.has(event.id);
               return (
               <View key={event.id} accessibilityLabel={corrected ? `${formatArrestEventLabel(event)}. Rettet og ikke medregnet.` : undefined} style={{ flexDirection: "row", gap: 10, paddingVertical: 7, borderBottomWidth: 1, borderBottomColor: theme.colors.divider, opacity: corrected ? 0.58 : 1 }}>

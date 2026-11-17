@@ -102,7 +102,9 @@ export default function ActiveCardiacResusSession() {
       const chronological = [...(session?.events ?? [])].sort(
         (a, b) => new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime(),
       );
-      return showAllEvents ? chronological : chronological.slice(0, 3);
+      if (showAllEvents) return chronological;
+      const corrected = session ? getCorrectedArrestEventIds(session) : new Set<string>();
+      return chronological.filter((event) => !corrected.has(event.id) && event.type !== "event_correction").slice(0, 3);
     },
     [session, showAllEvents],
   );
@@ -330,7 +332,7 @@ export default function ActiveCardiacResusSession() {
                       <Text style={{ color: theme.colors.accentMuted, fontWeight: "700", fontSize: 12, fontVariant: ["tabular-nums"] }}>{formatArrestMinuteOffset(event.elapsedSeconds)}</Text>
                     </View>
                     <View style={{ flex: 1 }}><Text style={{ color: theme.colors.text, fontWeight: "700", textDecorationLine: corrected ? "line-through" : "none" }}>{formatArrestEventLabel(event)}</Text>{corrected ? <Subtle>Rettet · medregnes ikke</Subtle> : null}{event.note ? <Subtle>{event.note}</Subtle> : null}</View>
-                    {event.source === "manual" && !corrected && event.type !== "event_correction" ? (
+                    {event.source === "manual" && !corrected && event.type !== "event_correction" && event.type !== "cycle_timer_reset" && event.type !== "adrenaline_timer_reset" ? (
                       <Pressable
                         accessibilityRole="button"
                         accessibilityLabel={"Justér tid for " + formatArrestEventLabel(event)}

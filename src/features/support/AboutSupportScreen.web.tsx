@@ -455,8 +455,7 @@ export function AboutSupportScreen({ initialSection }: { initialSection?: AboutS
               open={openSection === "about"}
               onToggle={() => toggle("about")}
             >
-              <Body>{t("about_compact_body")}</Body>
-              <Body>{t("about_purpose_1")}</Body>
+              <Body>{lang === "da" ? "AmbuAssist samler praktiske værktøjer og opslagsinformation til ambulancetjenesten. Udviklet af Nikolai gennem SynapseStudio." : "AmbuAssist brings practical tools and reference material together for ambulance clinicians. Created by Nikolai at SynapseStudio."}</Body>
             </SupportSection>
 
             <SupportSection
@@ -466,9 +465,7 @@ export function AboutSupportScreen({ initialSection }: { initialSection?: AboutS
               open={openSection === "medical"}
               onToggle={() => toggle("medical")}
             >
-              <Body>{t("meddisc_warning_body")}</Body>
-              <Body>{t("meddisc_sources_body")}</Body>
-              <Subtle>{t("meddisc_sources_note_body")}</Subtle>
+              <Body>{lang === "da" ? "AmbuAssist er beslutningsstøtte, ikke en erstatning for klinisk vurdering eller gældende instrukser. Kontrollér oplysninger før anvendelse." : "AmbuAssist supports decisions; it does not replace clinical judgement or current protocols. Verify information before use."}</Body>
             </SupportSection>
 
             <SupportSection
@@ -480,7 +477,6 @@ export function AboutSupportScreen({ initialSection }: { initialSection?: AboutS
             >
               <Body>{t("about_privacy_local")}</Body>
               <Body>{t("about_privacy_auth")}</Body>
-              <Body>{t("about_privacy_usage")}</Body>
               <InfoRow label={t("about_info_version")} value={appVersion} />
             </SupportSection>
 
@@ -523,7 +519,7 @@ export function AboutSupportScreen({ initialSection }: { initialSection?: AboutS
           </View>
 
           <View testID="about-footer" style={{ alignItems: "center", paddingTop: 2 }}>
-            <Subtle>AmbuAssist · v{appVersion} · SynapseStudio</Subtle>
+            <Subtle>SynapseStudio · AmbuAssist v{appVersion}</Subtle>
           </View>
         </ScrollView>
       </Screen>

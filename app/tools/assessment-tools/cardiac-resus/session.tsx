@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Alert, AppState, Pressable, ScrollView, Text, View } from "react-native";
 import {
   addArrestEvent,
+  adjustManualArrestEventMinute,
   addAdrenalineTimerResetEvent,
   addCycleTimerResetEvent,
   addNoteEvent,
@@ -21,25 +22,27 @@ import {
   type ArrestEventType,
   type ArrestSession,
 } from "../../../../src/domain/cardiac-resus/session";
-import { formatArrestEventLabel, formatElapsed, VISIBLE_EVENT_BUTTONS, type EventButtonCategory } from "../../../../src/features/cardiac-resus/presentation";
+import { formatArrestClock, formatArrestEventLabel, formatArrestMinuteOffset, formatElapsed, VISIBLE_EVENT_BUTTONS, type EventButtonCategory } from "../../../../src/features/cardiac-resus/presentation";
+import { MinuteRuler } from "../../../../src/features/cardiac-resus/MinuteRuler";
 import { ActionOverlay } from "../../../../src/features/cardiac-resus/ActionOverlay";
 import { createSerializedArrestSessionWriter, getActiveArrestSession, saveEndedArrestSession } from "../../../../src/services/cardiacResusStorage";
 import { Background } from "../../../../src/ui/Background";
 import { hapticSuccess, hapticToolOpen } from "../../../../src/ui/haptics";
 import { Input, ResponsiveColumn, ResponsiveColumns, Screen, Subtle, Title } from "../../../../src/ui/Ui";
-import { ToolActionButton, ToolSectionLabel, ToolSurface } from "../../../../src/ui/ToolSurface";
+import { ToolSectionLabel, ToolSurface } from "../../../../src/ui/ToolSurface";
 import { useResponsiveLayout } from "../../../../src/ui/responsive";
 import { theme } from "../../../../src/ui/theme";
 
-const EVENT_BUTTON_COLORS: Record<EventButtonCategory, { background: string; border: string }> = {
-  shock: { background: "rgba(221,189,98,0.14)", border: "rgba(221,189,98,0.38)" },
-  medication: { background: "rgba(101,142,181,0.14)", border: "rgba(125,166,205,0.36)" },
-  airway: { background: "rgba(102,166,158,0.14)", border: "rgba(122,186,178,0.35)" },
-  outcome: { background: "rgba(145,169,108,0.16)", border: "rgba(145,169,108,0.40)" },
-  other: { background: "rgba(255,255,255,0.06)", border: theme.colors.cardBorder },
+const EVENT_BUTTON_COLORS: Record<EventButtonCategory, { background: string; border: string; text: string }> = {
+  shock: { background: "#F4C542", border: "#F4C542", text: "#17160D" },
+  medication: { background: "#2679D3", border: "#2679D3", text: "#FFFFFF" },
+  airway: { background: "#168A9B", border: "#168A9B", text: "#FFFFFF" },
+  "outcome-success": { background: "#26B46E", border: "#26B46E", text: "#0B2516" },
+  "outcome-danger": { background: "#D9434D", border: "#D9434D", text: "#FFFFFF" },
+  other: { background: "#526778", border: "#526778", text: "#FFFFFF" },
 };
 
-type SessionDialog = "end" | "shock" | "rosc" | "mors" | "note" | "correct" | "cycleReset" | "adrenalineReset" | "partial" | null;
+type SessionDialog = "end" | "shock" | "rosc" | "mors" | "note" | "correct" | "cycleReset" | "adrenalineReset" | "eventTime" | "partial" | null;
 
 export default function ActiveCardiacResusSession() {
   const router = useRouter();
@@ -53,6 +56,8 @@ export default function ActiveCardiacResusSession() {
   const [noteText, setNoteText] = useState("");
   const [noteError, setNoteError] = useState("");
   const [actionError, setActionError] = useState("");
+  const [selectedMinutes, setSelectedMinutes] = useState(0);
+  const [editingEventId, setEditingEventId] = useState<string | null>(null);
   const sessionRef = useRef<ArrestSession | null>(null);
   const [saveWriter] = useState(() => createSerializedArrestSessionWriter());
 
@@ -93,7 +98,14 @@ export default function ActiveCardiacResusSession() {
     ? 0
     : Math.min(1, secondsSinceAdrenaline / adrenalineReminderSeconds);
   const displayedEvents = useMemo(
-    () => showAllEvents ? [...(session?.events ?? [])].reverse() : session?.events.slice(-3).reverse() ?? [],
+    () => {
+      const chronological = [...(session?.events ?? [])].sort(
+        (a, b) => new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime(),
+      );
+      if (showAllEvents) return chronological;
+      const corrected = session ? getCorrectedArrestEventIds(session) : new Set<string>();
+      return chronological.filter((event) => !corrected.has(event.id) && event.type !== "event_correction").slice(0, 3);
+    },
     [session, showAllEvents],
   );
   const correctedEventIds = useMemo(
@@ -155,7 +167,7 @@ export default function ActiveCardiacResusSession() {
 
   const resetCycleTimer = () => {
     commitSessionUpdate(
-      (current) => addCycleTimerResetEvent(current, new Date()),
+      (current) => addCycleTimerResetEvent(current, new Date(), selectedMinutes),
       "Cyklustimeren kunne ikke gemmes lokalt.",
     );
     setDialog(null);
@@ -163,7 +175,7 @@ export default function ActiveCardiacResusSession() {
 
   const resetAdrenalineTimer = () => {
     commitSessionUpdate(
-      (current) => addAdrenalineTimerResetEvent(current, new Date()),
+      (current) => addAdrenalineTimerResetEvent(current, new Date(), selectedMinutes),
       "Adrenalin-timeren kunne ikke gemmes lokalt.",
     );
     setDialog(null);
@@ -204,6 +216,37 @@ export default function ActiveCardiacResusSession() {
     }
   };
 
+  const openTimerAdjustment = (kind: "cycleReset" | "adrenalineReset") => {
+    const current = sessionRef.current;
+    if (!current) return;
+    const elapsedSeconds = kind === "cycleReset"
+      ? getCycleDisplayState(current, Date.now()).elapsedInCycleSeconds
+      : getSecondsSinceAdrenalineTimerAnchor(current, Date.now()) ?? 0;
+    setSelectedMinutes(Math.max(0, Math.min(kind === "cycleReset" ? 3 : 10, Math.floor(elapsedSeconds / 60))));
+    setActionError("");
+    setDialog(kind);
+  };
+
+  const openEventTime = (eventId: string, elapsedSeconds: number) => {
+    setEditingEventId(eventId);
+    setSelectedMinutes(Math.max(0, Math.floor(elapsedSeconds / 60)));
+    setActionError("");
+    setDialog("eventTime");
+  };
+
+  const saveEventTime = () => {
+    if (!editingEventId) return;
+    if (commitSessionUpdate(
+      (current) => adjustManualArrestEventMinute(current, editingEventId, selectedMinutes, new Date()),
+      "Hændelsestiden kunne ikke gemmes lokalt.",
+    )) {
+      setEditingEventId(null);
+      setDialog(null);
+    } else {
+      setActionError("Tiden kunne ikke justeres.");
+    }
+  };
+
   const confirmOutcome = (outcome: "rosc" | "mors") => {
     setActionError("");
     setDialog(outcome);
@@ -222,7 +265,7 @@ export default function ActiveCardiacResusSession() {
         <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 28 }}>
           <ResponsiveColumns>
             <ResponsiveColumn>
-              <Pressable accessibilityRole="button" accessibilityLabel="Justér HLR-cyklustimer" onPress={() => { setActionError(""); setDialog("cycleReset"); }} style={({ pressed }) => ({ opacity: pressed ? 0.78 : 1 })}>
+              <Pressable accessibilityRole="button" accessibilityLabel="Justér HLR-cyklustimer" onPress={() => openTimerAdjustment("cycleReset")} style={({ pressed }) => ({ opacity: pressed ? 0.78 : 1 })}>
                 <ToolSurface tone={cycleState.prechargeCueActive ? "danger" : "accent"} style={{ alignItems: "center" }}>
                   <View style={{ width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
                     <ToolSectionLabel>HLR-cyklus {cycleState.cycleNumber}</ToolSectionLabel>
@@ -238,7 +281,7 @@ export default function ActiveCardiacResusSession() {
                 </ToolSurface>
               </Pressable>
 
-              <Pressable accessibilityRole="button" accessibilityLabel="Nulstil adrenalin-timer" disabled={secondsSinceAdrenaline === null} onPress={() => { setActionError(""); setDialog("adrenalineReset"); }} style={({ pressed }) => ({ opacity: pressed ? 0.78 : 1 })}>
+              <Pressable accessibilityRole="button" accessibilityLabel="Justér adrenalin-timer" disabled={secondsSinceAdrenaline === null} onPress={() => openTimerAdjustment("adrenalineReset")} style={({ pressed }) => ({ opacity: pressed ? 0.78 : 1 })}>
                 <ToolSurface tone={adrenalineReminderDue ? "warning" : "default"} style={{ gap: 9 }}>
                   <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
                     <Text style={{ color: theme.colors.text, fontSize: 16, fontWeight: "900" }}>Adrenalin</Text>
@@ -268,7 +311,7 @@ export default function ActiveCardiacResusSession() {
                       disabled={ending}
                       onPress={() => item.type === "shock_delivered" ? recordShock() : item.type === "rosc" || item.type === "mors" ? confirmOutcome(item.type) : item.type === "free_note" ? (setNoteText(""), setNoteError(""), setDialog("note")) : recordEvent(item.type)}
                       style={({ pressed }) => ({ minHeight: 54, flexBasis: isExpanded ? "30%" : "47%", flexGrow: 1, justifyContent: "center", alignItems: "center", padding: 9, borderRadius: 13, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.background, opacity: pressed || ending ? 0.7 : 1 })}
-                    ><Text style={{ color: theme.colors.text, fontWeight: "800", textAlign: "center" }}>{item.label}</Text></Pressable>;
+                    ><Text style={{ color: colors.text, fontWeight: "900", textAlign: "center", fontSize: 16 }}>{item.label}</Text></Pressable>;
                   })}
                 </View>
                 {actionError ? <Text style={{ color: theme.colors.danger, fontWeight: "700" }}>{actionError}</Text> : null}
@@ -284,14 +327,36 @@ export default function ActiveCardiacResusSession() {
                 {displayedEvents.map((event) => {
                   const corrected = correctedEventIds.has(event.id);
                   return <View key={event.id} accessibilityLabel={corrected ? `${formatArrestEventLabel(event)}. Rettet og ikke medregnet.` : undefined} style={{ flexDirection: "row", gap: 10, paddingVertical: 7, borderBottomWidth: 1, borderBottomColor: theme.colors.divider, opacity: corrected ? 0.58 : 1 }}>
-                    <Text style={{ color: theme.colors.accentMuted, fontWeight: "800", fontVariant: ["tabular-nums"] }}>{formatElapsed(event.elapsedSeconds)}</Text>
+                    <View style={{ minWidth: 69, gap: 2 }}>
+                      <Text style={{ color: theme.colors.text, fontWeight: "900", fontSize: 15, fontVariant: ["tabular-nums"] }}>{formatArrestClock(event.occurredAt)}</Text>
+                      <Text style={{ color: theme.colors.accentMuted, fontWeight: "700", fontSize: 12, fontVariant: ["tabular-nums"] }}>{formatArrestMinuteOffset(event.elapsedSeconds)}</Text>
+                    </View>
                     <View style={{ flex: 1 }}><Text style={{ color: theme.colors.text, fontWeight: "700", textDecorationLine: corrected ? "line-through" : "none" }}>{formatArrestEventLabel(event)}</Text>{corrected ? <Subtle>Rettet · medregnes ikke</Subtle> : null}{event.note ? <Subtle>{event.note}</Subtle> : null}</View>
+                    {event.source === "manual" && !corrected && event.type !== "event_correction" && event.type !== "cycle_timer_reset" && event.type !== "adrenaline_timer_reset" ? (
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={"Justér tid for " + formatArrestEventLabel(event)}
+                        onPress={() => openEventTime(event.id, event.elapsedSeconds)}
+                        hitSlop={6}
+                        style={({ pressed }) => ({ minWidth: 48, minHeight: 44, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}
+                      >
+                        <Text style={{ color: theme.colors.accentMuted, fontWeight: "800", fontSize: 13 }}>Tid</Text>
+                      </Pressable>
+                    ) : null}
                   </View>;
                 })}
                 {latestCorrectableEvent ? <Pressable onPress={() => { setActionError(""); setDialog("correct"); }} style={({ pressed }) => ({ minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}><Text style={{ color: theme.colors.accentMuted, fontWeight: "900" }}>Ret seneste</Text></Pressable> : null}
               </ToolSurface>
 
-              <ToolActionButton disabled={ending} tone="danger" label={ending ? "Afslutter…" : "Afslut session"} onPress={confirmEnd} />
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Afslut session"
+                disabled={ending}
+                onPress={confirmEnd}
+                style={({ pressed }) => ({ minHeight: 54, alignItems: "center", justifyContent: "center", borderRadius: 14, backgroundColor: "#D9434D", opacity: pressed || ending ? 0.7 : 1 })}
+              >
+                <Text style={{ color: "#FFFFFF", fontWeight: "900", fontSize: 16 }}>{ending ? "Afslutter…" : "Afslut session"}</Text>
+              </Pressable>
             </ResponsiveColumn>
           </ResponsiveColumns>
         </ScrollView>
@@ -303,8 +368,8 @@ export default function ActiveCardiacResusSession() {
                 <Text style={{ color: theme.colors.text, lineHeight: 21 }}>Vælg den rytme, som brugeren registrerer for stødet.</Text>
                 <View style={{ flexDirection: "row", gap: 10 }}>
                   {(["VF", "pVT"] as const).map((rhythm) => (
-                    <Pressable key={rhythm} onPress={() => recordShockRhythm(rhythm)} style={({ pressed }) => ({ flex: 1, minHeight: 56, alignItems: "center", justifyContent: "center", borderRadius: 14, borderWidth: 1, borderColor: "rgba(221,189,98,0.42)", backgroundColor: "rgba(221,189,98,0.13)", opacity: pressed ? 0.65 : 1 })}>
-                      <Text style={{ color: theme.colors.text, fontWeight: "900", fontSize: 18 }}>{rhythm}</Text>
+                    <Pressable key={rhythm} onPress={() => recordShockRhythm(rhythm)} style={({ pressed }) => ({ flex: 1, minHeight: 56, alignItems: "center", justifyContent: "center", borderRadius: 14, borderWidth: 1, borderColor: "#F4C542", backgroundColor: "#F4C542", opacity: pressed ? 0.65 : 1 })}>
+                      <Text style={{ color: "#17160D", fontWeight: "900", fontSize: 18 }}>{rhythm}</Text>
                     </Pressable>
                   ))}
                 </View>
@@ -316,7 +381,7 @@ export default function ActiveCardiacResusSession() {
                 <Input value={noteText} onChangeText={(value) => { setNoteText(value); if (noteError) setNoteError(""); }} multiline placeholder="Skriv note…" style={{ minHeight: 110, textAlignVertical: "top" }} />
                 <Subtle>Undgå patientidentificerende oplysninger.</Subtle>
                 {noteError ? <Text style={{ color: theme.colors.danger, fontWeight: "700" }}>{noteError}</Text> : null}
-                <Pressable onPress={saveNote} style={({ pressed }) => ({ minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 14, borderWidth: 1, borderColor: theme.colors.cardBorder, backgroundColor: theme.colors.accentSurface, opacity: pressed ? 0.65 : 1 })}><Text style={{ color: theme.colors.text, fontWeight: "900" }}>Gem note</Text></Pressable>
+                <Pressable onPress={saveNote} style={({ pressed }) => ({ minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 14, borderWidth: 1, borderColor: "#2679D3", backgroundColor: "#2679D3", opacity: pressed ? 0.65 : 1 })}><Text style={{ color: "#FFFFFF", fontWeight: "900" }}>Gem note</Text></Pressable>
                 <Pressable onPress={() => setDialog(null)} style={({ pressed }) => ({ minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}><Text style={{ color: theme.colors.accentMuted, fontWeight: "800" }}>Annuller</Text></Pressable>
               </>
             ) : dialog === "correct" ? (
@@ -325,7 +390,7 @@ export default function ActiveCardiacResusSession() {
                 <Text style={{ color: theme.colors.text, lineHeight: 21 }}>
                   Den seneste aktive brugerregistrering markeres som rettet. Historikken slettes ikke, og optællinger/timere ser bort fra den rettede registrering.
                 </Text>
-                <Pressable onPress={correctLatestEvent} style={({ pressed }) => ({ minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 14, borderWidth: 1, borderColor: theme.colors.cardBorder, backgroundColor: theme.colors.accentSurface, opacity: pressed ? 0.65 : 1 })}>
+                <Pressable onPress={correctLatestEvent} style={({ pressed }) => ({ minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 14, borderWidth: 1, borderColor: "#2679D3", backgroundColor: "#2679D3", opacity: pressed ? 0.65 : 1 })}>
                   <Text style={{ color: theme.colors.text, fontWeight: "900" }}>Markér som rettet</Text>
                 </Pressable>
                 <Pressable onPress={() => setDialog(null)} style={({ pressed }) => ({ minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}>
@@ -334,24 +399,50 @@ export default function ActiveCardiacResusSession() {
               </>
             ) : dialog === "cycleReset" || dialog === "adrenalineReset" ? (
               <>
-                <Title style={{ fontSize: 21 }}>
-                  {dialog === "cycleReset" ? "Nulstil cyklustimer?" : "Nulstil adrenalin-timer?"}
-                </Title>
-                <Text style={{ color: theme.colors.text, lineHeight: 21 }}>
-                  {dialog === "cycleReset"
-                    ? "Brug kun dette, hvis I manuelt starter en ny HLR-cyklus eller har brug for at justere cyklustimeren. Den samlede hjertestoptid ændres ikke."
-                    : "Dette nulstiller kun timeren. Det registrerer ikke, at der er givet adrenalin."}
+                <Title style={{ fontSize: 21 }}>{dialog === "cycleReset" ? "Justér HLR-cyklustimer" : "Justér adrenalin-timer"}</Title>
+                <MinuteRuler
+                  label="Tid på timeren"
+                  value={selectedMinutes}
+                  maxMinutes={dialog === "cycleReset" ? 3 : 10}
+                  onChange={setSelectedMinutes}
+                />
+                <Text style={{ color: theme.colors.mutedText, fontSize: 13, lineHeight: 19 }}>
+                  Ændrer kun timeren. Den samlede sessionstid og tidligere registreringer bevares.
                 </Text>
                 {actionError ? <Text style={{ color: theme.colors.danger, fontWeight: "700" }}>{actionError}</Text> : null}
                 <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Gem timerjustering"
                   onPress={dialog === "cycleReset" ? resetCycleTimer : resetAdrenalineTimer}
-                  style={({ pressed }) => ({ minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 14, borderWidth: 1, borderColor: theme.colors.cardBorder, backgroundColor: theme.colors.accentSurface, opacity: pressed ? 0.65 : 1 })}
+                  style={({ pressed }) => ({ minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 14, backgroundColor: "#2679D3", opacity: pressed ? 0.7 : 1 })}
                 >
-                  <Text style={{ color: theme.colors.text, fontWeight: "900" }}>
-                    {dialog === "cycleReset" ? "Nulstil cyklustimer" : "Nulstil timer"}
-                  </Text>
+                  <Text style={{ color: "#FFFFFF", fontWeight: "900" }}>Gem justering</Text>
                 </Pressable>
-                <Pressable onPress={() => setDialog(null)} style={({ pressed }) => ({ minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}>
+                <Pressable accessibilityRole="button" onPress={() => setDialog(null)} style={({ pressed }) => ({ minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}>
+                  <Text style={{ color: theme.colors.accentMuted, fontWeight: "800" }}>Annuller</Text>
+                </Pressable>
+              </>
+            ) : dialog === "eventTime" ? (
+              <>
+                <Title style={{ fontSize: 21 }}>Justér hændelsestid</Title>
+                <MinuteRuler
+                  label="Tid fra sessionstart"
+                  value={selectedMinutes}
+                  maxMinutes={Math.max(0, Math.floor(elapsed / 60))}
+                  relative
+                  onChange={setSelectedMinutes}
+                />
+                <Text style={{ color: theme.colors.text, fontSize: 16, fontWeight: "800" }}>
+                  Kl. {formatArrestClock(new Date(new Date(session.startedAt).getTime() + selectedMinutes * 60000).toISOString())}
+                </Text>
+                <Text style={{ color: theme.colors.mutedText, fontSize: 13, lineHeight: 19 }}>
+                  Den oprindelige registrering bevares i historikken som rettet.
+                </Text>
+                {actionError ? <Text style={{ color: theme.colors.danger, fontWeight: "700" }}>{actionError}</Text> : null}
+                <Pressable accessibilityRole="button" accessibilityLabel="Gem hændelsestid" onPress={saveEventTime} style={({ pressed }) => ({ minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 14, backgroundColor: "#2679D3", opacity: pressed ? 0.7 : 1 })}>
+                  <Text style={{ color: "#FFFFFF", fontWeight: "900" }}>Gem tid</Text>
+                </Pressable>
+                <Pressable accessibilityRole="button" onPress={() => setDialog(null)} style={({ pressed }) => ({ minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}>
                   <Text style={{ color: theme.colors.accentMuted, fontWeight: "800" }}>Annuller</Text>
                 </Pressable>
               </>
@@ -368,7 +459,7 @@ export default function ActiveCardiacResusSession() {
                   {dialog === "end" ? "Sessionen afsluttes og gemmes som den seneste lokale session." : `${dialog === "rosc" ? "ROSC" : "MORS"} registreres som udfald, og den aktive session afsluttes.`}
                 </Text>
                 {actionError ? <Text style={{ color: theme.colors.danger, fontWeight: "700" }}>{actionError}</Text> : null}
-                <Pressable disabled={ending} onPress={() => void finishSession(dialog === "rosc" || dialog === "mors" ? dialog : undefined)} style={({ pressed }) => ({ minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 14, borderWidth: 1, borderColor: "rgba(255,123,114,0.45)", backgroundColor: "rgba(255,123,114,0.10)", opacity: pressed || ending ? 0.6 : 1 })}><Text style={{ color: theme.colors.danger, fontWeight: "900" }}>{ending ? "Gemmer…" : dialog === "end" ? "Afslut session" : `Registrér ${dialog === "rosc" ? "ROSC" : "MORS"}`}</Text></Pressable>
+                <Pressable disabled={ending} onPress={() => void finishSession(dialog === "rosc" || dialog === "mors" ? dialog : undefined)} style={({ pressed }) => ({ minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 14, borderWidth: 1, borderColor: "#D9434D", backgroundColor: "#D9434D", opacity: pressed || ending ? 0.6 : 1 })}><Text style={{ color: "#FFFFFF", fontWeight: "900" }}>{ending ? "Gemmer…" : dialog === "end" ? "Afslut session" : `Registrér ${dialog === "rosc" ? "ROSC" : "MORS"}`}</Text></Pressable>
                 <Pressable disabled={ending} onPress={() => setDialog(null)} style={({ pressed }) => ({ minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}><Text style={{ color: theme.colors.accentMuted, fontWeight: "800" }}>Annuller</Text></Pressable>
               </>
             )}

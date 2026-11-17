@@ -1,5 +1,7 @@
 import {
   addArrestEvent,
+  adjustManualArrestEventMinute,
+  getEffectiveArrestEvents,
   addAdrenalineTimerResetEvent,
   addCycleTimerResetEvent,
   addShockEvent,
@@ -337,5 +339,61 @@ describe("CardiacResus session utilities", () => {
     session = addAdrenalineTimerResetEvent(session, "2026-07-12T10:03:00.000Z");
     session = correctLatestManualArrestEvent(session, "2026-07-12T10:03:10.000Z");
     expect(getSecondsSinceAdrenalineTimerAnchor(session, "2026-07-12T10:04:00.000Z")).toBe(180);
+  });
+});
+
+describe("Whole-minute cardiac time adjustments", () => {
+  test("setting a HLR timer to one minute changes its phase, not the total session time", () => {
+    const session = createArrestSession(START);
+    const now = "2026-07-12T10:03:30.000Z";
+    const adjusted = addCycleTimerResetEvent(session, now, 1);
+    expect(adjusted.events.at(-1)).toMatchObject({
+      type: "cycle_timer_reset",
+      occurredAt: now,
+      metadata: { timerElapsedSeconds: 60 },
+    });
+    expect(getCycleDisplayState(adjusted, now).elapsedInCycleSeconds).toBe(60);
+    expect(getCycleDisplayState(adjusted, "2026-07-12T10:04:00.000Z").elapsedInCycleSeconds).toBe(90);
+    expect(getElapsedSeconds(adjusted.startedAt, now)).toBe(210);
+    expect(getCycleDisplayState(addCycleTimerResetEvent(session, now), now).elapsedInCycleSeconds).toBe(0);
+  });
+
+  test("adrenaline timer can be adjusted without recording a medication dose", () => {
+    const dose = addArrestEvent(createArrestSession(START), "adrenaline_given", "2026-07-12T10:01:00.000Z");
+    const reset = addAdrenalineTimerResetEvent(dose, "2026-07-12T10:03:00.000Z", 3);
+    expect(getSecondsSinceAdrenalineTimerAnchor(reset, "2026-07-12T10:03:00.000Z")).toBe(180);
+    expect(getSecondsSinceAdrenalineTimerAnchor(reset, "2026-07-12T10:04:00.000Z")).toBe(240);
+    expect(summarizeArrestSession(reset).adrenalineCount).toBe(1);
+    expect(addAdrenalineTimerResetEvent(dose, "2026-07-12T10:03:00.000Z", 11)).toBe(dose);
+  });
+
+  test("adjusts a shock clock time with append-only correction and preserves VF attribution", () => {
+    const session = addShockEvent(createArrestSession(START), "VF", "2026-07-12T10:03:28.000Z");
+    const original = session.events.at(-1)!;
+    const adjusted = adjustManualArrestEventMinute(session, original.id, 1, "2026-07-12T10:05:00.000Z");
+    expect(session.events).toHaveLength(2);
+    expect(adjusted.events).toHaveLength(4);
+    expect(getCorrectedArrestEventIds(adjusted).has(original.id)).toBe(true);
+    const effective = getEffectiveArrestEvents(adjusted).filter((e) => e.type === "shock_delivered");
+    expect(effective).toHaveLength(1);
+    expect(effective[0]).toMatchObject({
+      occurredAt: "2026-07-12T10:01:00.000Z",
+      elapsedSeconds: 60,
+      metadata: { shockRhythm: "VF" },
+    });
+    expect(summarizeArrestSession(adjusted)).toMatchObject({ shockCount: 1, shockVfCount: 1, totalRecordedEvents: 1 });
+  });
+
+  test("preserves free text and rejects changes to corrected, system or future events", () => {
+    const session = addNoteEvent(createArrestSession(START), "Non-identifying note", "2026-07-12T10:02:35.000Z");
+    const original = session.events.at(-1)!;
+    const now = "2026-07-12T10:04:00.000Z";
+    expect(adjustManualArrestEventMinute(session, session.events[0].id, 1, now)).toBe(session);
+    expect(adjustManualArrestEventMinute(session, original.id, 10, now)).toBe(session);
+    expect(adjustManualArrestEventMinute(session, original.id, -1, now)).toBe(session);
+    const adjusted = adjustManualArrestEventMinute(session, original.id, 1, now);
+    expect(getEffectiveArrestEvents(adjusted).find((e) => e.type === "free_note")?.note).toBe("Non-identifying note");
+    expect(adjustManualArrestEventMinute(adjusted, original.id, 2, now)).toBe(adjusted);
+    expect(adjustManualArrestEventMinute(endArrestSession(session, now), original.id, 1, now)).toHaveProperty("status", "ended");
   });
 });

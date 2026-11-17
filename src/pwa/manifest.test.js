@@ -55,7 +55,7 @@ describe("PWA icon metadata", () => {
   test("links the conventional cache-busted Apple touch icon in initial HTML", () => {
     const htmlSource = fs.readFileSync(path.join(projectRoot, "app/+html.tsx"), "utf8");
     expect(htmlSource).toContain(
-      '<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20261017" />',
+      '<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20261117" />',
     );
     expect(
       fs.readFileSync(path.join(projectRoot, "public/apple-touch-icon.png")),

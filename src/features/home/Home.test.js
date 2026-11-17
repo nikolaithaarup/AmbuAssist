@@ -129,7 +129,7 @@ describe("Home responsive mobile layout", () => {
     ReactNative.Platform.OS = "web";
     const root = renderHome();
     const headings = root.findAllByProps({ testID: "home-section-header" });
-    expect(headings).toHaveLength(2);
+    expect(headings.filter((node) => node.type === View)).toHaveLength(2);
     const toolsHeading = root.findAllByType(Text).find((node) => node.props.children === "Værktøjer");
     expect(toolsHeading).toBeDefined();
     expect(toolsHeading.props.style.color).toBe(require("../../ui/theme").theme.colors.headingAccent);

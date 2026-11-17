@@ -34,6 +34,7 @@ export type ArrestEvent = {
   metadata?: {
     shockRhythm?: ShockRhythm;
     cycleNumberAtReset?: number;
+    timerElapsedSeconds?: number;
   };
 };
 
@@ -136,7 +137,7 @@ export function getCycleDisplayState(session: ArrestSession, now: TimeValue): Cy
     : DEFAULT_CYCLE_DURATION_SECONDS;
   const reset = getLatestCycleTimerResetEvent(session);
   const anchorElapsed = reset
-    ? getElapsedSeconds(reset.occurredAt, now)
+    ? getElapsedSeconds(reset.occurredAt, now) + Math.max(0, Math.floor(reset.metadata?.timerElapsedSeconds ?? 0))
     : getElapsedSeconds(session.startedAt, now);
   const elapsedInCycleSeconds = anchorElapsed % duration;
   const cyclesAfterAnchor = Math.floor(anchorElapsed / duration);
@@ -182,7 +183,10 @@ export function getSecondsSinceLastAdrenaline(session: ArrestSession, now: TimeV
 
 export function getSecondsSinceAdrenalineTimerAnchor(session: ArrestSession, now: TimeValue): number | null {
   const latest = findLatestAdrenalineTimerAnchorEvent(session);
-  return latest ? getElapsedSeconds(latest.occurredAt, now) : null;
+  return latest
+    ? getElapsedSeconds(latest.occurredAt, now) +
+      (latest.type === "adrenaline_timer_reset" ? Math.max(0, Math.floor(latest.metadata?.timerElapsedSeconds ?? 0)) : 0)
+    : null;
 }
 
 export function getAdrenalineReminderSeconds(session: ArrestSession): number {
@@ -337,16 +341,55 @@ export function addNoteEvent(
   return note.trim() ? addArrestEvent(session, "free_note", now, note) : session;
 }
 
-export function addCycleTimerResetEvent(session: ArrestSession, now: TimeValue): ArrestSession {
+/** A displayed timer may be set to N whole minutes elapsed without moving the
+ * recorded reset timestamp or the total session start. Older reset events with
+ * no offset continue to mean 0 minutes elapsed.
+ */
+export function addCycleTimerResetEvent(session: ArrestSession, now: TimeValue, elapsedMinutes = 0): ArrestSession {
+  if (!Number.isInteger(elapsedMinutes) || elapsedMinutes < 0 || elapsedMinutes > 10) return session;
   const display = getCycleDisplayState(session, now);
   return addArrestEvent(session, "cycle_timer_reset", now, undefined, "manual", {
     cycleNumberAtReset: display.cycleNumber,
+    timerElapsedSeconds: elapsedMinutes * 60,
   });
 }
 
-export function addAdrenalineTimerResetEvent(session: ArrestSession, now: TimeValue): ArrestSession {
+export function addAdrenalineTimerResetEvent(session: ArrestSession, now: TimeValue, elapsedMinutes = 0): ArrestSession {
+  if (!Number.isInteger(elapsedMinutes) || elapsedMinutes < 0 || elapsedMinutes > 10) return session;
   if (!findLatestAdrenalineTimerAnchorEvent(session)) return session;
-  return addArrestEvent(session, "adrenaline_timer_reset", now);
+  return addArrestEvent(session, "adrenaline_timer_reset", now, undefined, "manual", {
+    timerElapsedSeconds: elapsedMinutes * 60,
+  });
+}
+
+/** Correct a manual log timestamp without deleting clinical history.
+ * Append a correction referencing the original event, then a replacement
+ * with preserved label/note/rhythm metadata at the user-selected minute.
+ */
+export function adjustManualArrestEventMinute(
+  session: ArrestSession,
+  eventId: string,
+  elapsedMinutes: number,
+  now: TimeValue,
+): ArrestSession {
+  if (session.status !== "active" || !Number.isInteger(elapsedMinutes) || elapsedMinutes < 0) return session;
+  const target = getEffectiveArrestEvents(session).find((event) => event.id === eventId);
+  if (!target || target.source !== "manual" || target.type === "event_correction") return session;
+
+  const started = toTimestamp(session.startedAt);
+  const current = toTimestamp(now);
+  if (started === null || current === null) return session;
+  const selectedAt = started + elapsedMinutes * 60000;
+  if (selectedAt > current || !Number.isFinite(selectedAt)) return session;
+
+  const withCorrection = addArrestEvent(session, "event_correction", now, "Tid justeret");
+  const correction = withCorrection.events.at(-1);
+  if (correction?.type !== "event_correction") return session;
+  const marked = {
+    ...withCorrection,
+    events: [...withCorrection.events.slice(0, -1), { ...correction, correctedEventId: target.id }],
+  };
+  return addArrestEvent(marked, target.type, selectedAt, target.note, "manual", target.metadata);
 }
 
 export function endArrestSession(session: ArrestSession, now: TimeValue): ArrestSession {

@@ -1,8 +1,9 @@
 import { Redirect } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, Pressable, TextInput, View } from "react-native";
+import { Image, KeyboardAvoidingView, Platform, Pressable, TextInput, View } from "react-native";
 
 import { useAuth } from "../../auth/AuthProvider";
+import StartupSplash from "../../ui/StartupSplash";
 import { useT } from "../../i18n/useT";
 import { Background } from "../../ui/Background";
 import { hapticToolOpen } from "../../ui/haptics";
@@ -20,7 +21,7 @@ export default function AuthLanding() {
 
   if (state.status === "authorized") return <Redirect href="/home" />;
   if (state.status === "checking") {
-    return <Background variant="home"><Screen style={{ justifyContent: "center", alignItems: "center" }}><ActivityIndicator /></Screen></Background>;
+    return <StartupSplash />;
   }
 
   const normalizedBamId = bamId.trim().toUpperCase();

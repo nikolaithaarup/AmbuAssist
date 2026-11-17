@@ -9,6 +9,7 @@
     "web": "expo start --web",
     "web:export": "node scripts/exportWeb.mjs",
     "typecheck": "tsc --noEmit",
+    "pretest": "node scripts/buildBrandIcons.mjs",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",

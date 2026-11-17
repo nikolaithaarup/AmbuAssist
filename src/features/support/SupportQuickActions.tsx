@@ -6,10 +6,11 @@ type Props = {
   onEmail: () => void;
   onReport: () => void;
   onStudio: () => void;
+  onSibling: () => void;
 };
 
 /** Same layout and actions as FlashMedic's SynapseStudio contact page. */
-export function SupportQuickActions({ language, onEmail, onReport, onStudio }: Props) {
+export function SupportQuickActions({ language, onEmail, onReport, onStudio, onSibling }: Props) {
   const da = language === "da";
   const actions = [
     {
@@ -84,6 +85,11 @@ export function SupportQuickActions({ language, onEmail, onReport, onStudio }: P
           </Pressable>
         ))}
       </View>
+      <Pressable accessibilityRole="link" accessibilityLabel="FlashMedic" onPress={onSibling} style={({ pressed }) => ({ alignSelf: "flex-start", minHeight: 44, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+        <Text style={{ color: theme.colors.accentMuted, fontWeight: "800", fontSize: 13 }}>
+          {da ? "Også fra SynapseStudio: FlashMedic  ›" : "Also from SynapseStudio: FlashMedic  ›"}
+        </Text>
+      </Pressable>
     </View>
   );
 }

@@ -3,6 +3,7 @@ import { useState } from "react";
 import {
   Animated,
   Image,
+  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -281,6 +282,45 @@ export default function Home() {
     </View>
   );
 
+  const studioFooter = (
+    <View
+      testID="home-synapsestudio-footer"
+      style={{ width: "100%", alignItems: "center", gap: 8, marginTop: 24 }}
+    >
+      <Text
+        style={{
+          color: theme.colors.mutedText,
+          fontSize: 11,
+          lineHeight: 16,
+          letterSpacing: 1.1,
+          fontWeight: "600",
+          textAlign: "center",
+        }}
+      >
+        Part of
+      </Text>
+      <Pressable
+        accessibilityRole="link"
+        accessibilityLabel="Besøg SynapseStudio"
+        hitSlop={8}
+        onPress={() => { void Linking.openURL("https://synapsestudio.dk"); }}
+        style={({ pressed }) => ({
+          minWidth: 164,
+          minHeight: 44,
+          alignItems: "center",
+          justifyContent: "center",
+          opacity: pressed ? 0.75 : 1,
+        })}
+      >
+        <Image
+          source={require("../assets/synapsestudio-logo-white.png")}
+          style={{ width: 164, height: 44 }}
+          resizeMode="contain"
+        />
+      </Pressable>
+    </View>
+  );
+
   return (
     <Background variant="home">
       <Screen
@@ -325,6 +365,7 @@ export default function Home() {
                 {menu}
               </View>
             </View>
+            {studioFooter}
           </ScrollView>
         ) : (
           <>
@@ -338,6 +379,7 @@ export default function Home() {
               }}
             >
               {menu}
+              {studioFooter}
             </ScrollView>
           </>
         )}

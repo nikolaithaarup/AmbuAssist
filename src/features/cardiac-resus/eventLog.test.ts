@@ -34,6 +34,6 @@ describe("Hjertestop readable event log", () => {
     expect(live).toContain('"#26B46E"');
     expect(live).toContain('"#D9434D"');
     expect(live).toContain("adjustManualArrestEventMinute");
-    expect(live).toContain("cardiac-minute-ruler");
+    expect(live).toContain("<MinuteRuler");
   });
 });

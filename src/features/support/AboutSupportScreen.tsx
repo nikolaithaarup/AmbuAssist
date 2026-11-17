@@ -1,111 +1,20 @@
 import Constants from "expo-constants";
 import { useState, type ReactNode } from "react";
-import { Linking, Pressable, ScrollView, Text, View } from "react-native";
+import { Alert, Linking, Pressable, ScrollView, Text, View } from "react-native";
 import { useT } from "../../i18n/useT";
+import { useAuth } from "../../auth/AuthProvider";
 import { Background } from "../../ui/Background";
 import { ToolPageHeader, ToolSurface } from "../../ui/ToolSurface";
 import { Screen, Subtle } from "../../ui/Ui";
 import { theme } from "../../ui/theme";
-import { useAuth } from "../../auth/AuthProvider";
+import { SupportQuickActions } from "./SupportQuickActions";
 
 export type AboutSupportSection = "about" | "medical" | "contact" | "limitations" | "account" | "app";
 
 const SUPPORT_EMAIL = "nikolai_91@live.com";
+const STUDIO_URL = "https://synapsestudio.dk";
 
-function Bullet({ children }: { children: ReactNode }) {
-  return (
-    <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 9 }}>
-      <Text style={{ color: theme.colors.accentMuted, lineHeight: 21 }}>•</Text>
-      <Text
-        style={{
-          flex: 1,
-          color: theme.colors.text,
-          fontSize: 14,
-          lineHeight: 21,
-        }}
-      >
-        {children}
-      </Text>
-    </View>
-  );
-}
-
-function SectionHeading({ children }: { children: ReactNode }) {
-  return (
-    <Text
-      style={{
-        color: theme.colors.text,
-        fontSize: 15,
-        lineHeight: 20,
-        fontWeight: "900",
-        marginTop: 5,
-      }}
-    >
-      {children}
-    </Text>
-  );
-}
-
-function Body({ children }: { children: ReactNode }) {
-  return (
-    <Text style={{ color: theme.colors.text, fontSize: 14, lineHeight: 21 }}>
-      {children}
-    </Text>
-  );
-}
-
-function Warning({ children }: { children: ReactNode }) {
-  return (
-    <View
-      style={{
-        borderRadius: 13,
-        borderLeftWidth: 3,
-        borderLeftColor: theme.colors.warn,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
-        backgroundColor: "rgba(221,189,98,0.08)",
-      }}
-    >
-      <Text style={{ color: theme.colors.text, fontSize: 14, lineHeight: 21 }}>
-        {children}
-      </Text>
-    </View>
-  );
-}
-
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <View
-      style={{
-        paddingVertical: 9,
-        borderBottomWidth: 1,
-        borderBottomColor: theme.colors.divider,
-      }}
-    >
-      <Subtle>{label}</Subtle>
-      <Text
-        style={{
-          color: theme.colors.text,
-          fontSize: 14,
-          lineHeight: 20,
-          fontWeight: "800",
-          marginTop: 2,
-        }}
-      >
-        {value}
-      </Text>
-    </View>
-  );
-}
-
-function SupportSection({
-  id,
-  title,
-  subtitle,
-  open,
-  onToggle,
-  children,
-}: {
+function SupportSection({ id, title, subtitle, open, onToggle, children }: {
   id: AboutSupportSection;
   title: string;
   subtitle: string;
@@ -114,325 +23,122 @@ function SupportSection({
   children: ReactNode;
 }) {
   return (
-    <View
-      testID={`about-support-section-${id}`}
-      style={{
-        borderBottomWidth: 1,
-        borderBottomColor: theme.colors.divider,
-      }}
-    >
+    <View testID={"about-support-section-" + id} style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.divider }}>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={title}
         accessibilityState={{ expanded: open }}
         onPress={onToggle}
         style={({ pressed }) => ({
-          minHeight: 60,
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 12,
-          paddingVertical: 12,
-          paddingHorizontal: 3,
-          opacity: pressed ? 0.72 : 1,
+          minHeight: 59, paddingHorizontal: 2, paddingVertical: 11,
+          flexDirection: "row", alignItems: "center", gap: 8, opacity: pressed ? 0.7 : 1,
         })}
       >
-        <View style={{ flex: 1, gap: 3 }}>
-          <Text
-            style={{
-              color: theme.colors.text,
-              fontSize: 17,
-              lineHeight: 21,
-              fontWeight: "900",
-            }}
-          >
-            {title}
-          </Text>
+        <View style={{ flex: 1, gap: 2 }}>
+          <Text style={{ color: theme.colors.text, fontWeight: "800", fontSize: 16 }}>{title}</Text>
           {!open ? <Subtle>{subtitle}</Subtle> : null}
         </View>
-        <Text
-          accessibilityElementsHidden
-          style={{ color: theme.colors.accentMuted, fontSize: 20 }}
-        >
-          {open ? "⌄" : "›"}
-        </Text>
+        <Text style={{ color: theme.colors.accentMuted, fontSize: 20 }}>{open ? "⌄" : "›"}</Text>
       </Pressable>
-      {open ? (
-        <View style={{ gap: 10, paddingBottom: 18, paddingHorizontal: 3 }}>
-          {children}
-        </View>
-      ) : null}
+      {open ? <View style={{ gap: 9, paddingBottom: 16, paddingHorizontal: 2 }}>{children}</View> : null}
     </View>
   );
 }
 
-export function AboutSupportScreen({
-  initialSection,
-}: {
-  initialSection?: AboutSupportSection;
-}) {
-  const { t } = useT();
+function Body({ children }: { children: ReactNode }) {
+  return <Text style={{ color: theme.colors.text, lineHeight: 21, fontSize: 14 }}>{children}</Text>;
+}
+
+export function AboutSupportScreen({ initialSection }: { initialSection?: AboutSupportSection }) {
+  const { t, lang } = useT();
   const { state, logout } = useAuth();
-  const appVersion = Constants.expoConfig?.version ?? "unknown";
-  const [openSection, setOpenSection] = useState<AboutSupportSection | null>(
-    initialSection ?? null,
-  );
+  const [openSection, setOpenSection] = useState<AboutSupportSection | null>(initialSection ?? null);
   const [loggingOut, setLoggingOut] = useState(false);
   const [logoutError, setLogoutError] = useState(false);
-
-  const signOut = async () => {
-    setLoggingOut(true);
-    setLogoutError(false);
+  const appVersion = Constants.expoConfig?.version ?? "–";
+  const toggle = (section: AboutSupportSection) => setOpenSection((old) => old === section ? null : section);
+  const openEmail = async (bug = false) => {
+    const subject = encodeURIComponent(bug
+      ? (lang === "da" ? "Fejl i AmbuAssist" : "AmbuAssist bug report")
+      : t("contact_email_subject"));
+    const body = encodeURIComponent(bug
+      ? (lang === "da"
+        ? "Hej Nikolai,\n\nHvor i appen?\n\nHvad skete der?\n\nHvad forventede du?\n\n"
+        : "Hi Nikolai,\n\nWhere in the app?\n\nWhat happened?\n\nWhat did you expect?\n\n")
+      : t("contact_email_body_greeting") + "\n\n");
     try {
-      await logout();
+      await Linking.openURL("mailto:" + SUPPORT_EMAIL + "?subject=" + subject + "&body=" + body);
     } catch {
-      setLogoutError(true);
-      setLoggingOut(false);
+      Alert.alert(lang === "da" ? "Kunne ikke åbne e-mail" : "Could not open email", SUPPORT_EMAIL);
     }
   };
-
-  const openEmail = async () => {
-    const subject = encodeURIComponent(t("contact_email_subject"));
-    const body = encodeURIComponent(
-      [
-        t("contact_email_body_greeting"),
-        "",
-        t("contact_email_body_intro"),
-        "",
-        `${t("contact_email_body_tool")}:`,
-        `${t("contact_email_body_happened")}:`,
-        `${t("contact_email_body_expected")}:`,
-        `${t("contact_email_body_language")}:`,
-        `${t("contact_email_body_device")}:`,
-        `${t("contact_email_body_version")}:`,
-        "",
-        `${t("contact_email_body_notes")}:`,
-      ].join("\n"),
-    );
-    const detailedUrl = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
-    try {
-      await Linking.openURL(
-        (await Linking.canOpenURL(detailedUrl))
-          ? detailedUrl
-          : `mailto:${SUPPORT_EMAIL}`,
-      );
-    } catch {
-      await Linking.openURL(`mailto:${SUPPORT_EMAIL}`);
-    }
+  const openStudio = async () => {
+    try { await Linking.openURL(STUDIO_URL); }
+    catch { Alert.alert("SynapseStudio", STUDIO_URL); }
+  };
+  const signOut = async () => {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    setLogoutError(false);
+    try { await logout(); }
+    catch { setLogoutError(true); setLoggingOut(false); }
   };
 
   return (
     <Background>
       <Screen>
-        <ScrollView
-          contentContainerStyle={{ gap: 12, paddingBottom: 28 }}
-          keyboardShouldPersistTaps="handled"
-        >
-          <ToolPageHeader title={t("about_support_title")} subtitle={t("about_support_sub")} />
-
-          <ToolSurface style={{ paddingVertical: 0, paddingHorizontal: 14, gap: 0 }}>
-            <SupportSection
-              id="about"
-              title={t("about_what_title")}
-              subtitle={t("about_sub")}
-              open={openSection === "about"}
-              onToggle={() => setOpenSection((current) => current === "about" ? null : "about")}
-            >
+        <ScrollView contentContainerStyle={{ gap: 14, paddingBottom: 28 }} keyboardShouldPersistTaps="handled">
+          <ToolPageHeader title={t("about_support_title")} />
+          <SupportQuickActions
+            language={lang}
+            onEmail={() => void openEmail()}
+            onReport={() => void openEmail(true)}
+            onStudio={() => void openStudio()}
+          />
+          <Text style={{ color: theme.colors.mutedText, fontSize: 13, lineHeight: 19, paddingHorizontal: 2 }}>
+            {t("about_safety_summary")}
+          </Text>
+          <ToolSurface style={{ paddingVertical: 0, paddingHorizontal: 4, gap: 0 }}>
+            <SupportSection id="about" title={t("about_what_title")} subtitle={t("about_sub")} open={openSection === "about"} onToggle={() => toggle("about")}>
               <Body>{t("about_what_body")}</Body>
-              <SectionHeading>{t("about_purpose_title")}</SectionHeading>
-              <Bullet>{t("about_purpose_1")}</Bullet>
-              <Bullet>{t("about_purpose_2")}</Bullet>
-              <Bullet>{t("about_purpose_3")}</Bullet>
-              <SectionHeading>{t("about_design_title")}</SectionHeading>
-              <Bullet>{t("about_design_1")}</Bullet>
-              <Bullet>{t("about_design_2")}</Bullet>
-              <Bullet>{t("about_design_3")}</Bullet>
-              <Bullet>{t("about_design_4")}</Bullet>
-              <SectionHeading>{t("about_feedback_title")}</SectionHeading>
-              <Body>{t("about_feedback_body")}</Body>
+              <Body>{t("about_purpose_1")}</Body>
             </SupportSection>
-
-            <SupportSection
-              id="medical"
-              title={t("meddisc_title")}
-              subtitle={t("meddisc_sub")}
-              open={openSection === "medical"}
-              onToggle={() => setOpenSection((current) => current === "medical" ? null : "medical")}
-            >
-              <SectionHeading>{t("meddisc_section_use_title")}</SectionHeading>
-              <Bullet>{t("meddisc_use_1")}</Bullet>
-              <Bullet>{t("meddisc_use_2")}</Bullet>
-              <Bullet>{t("meddisc_use_3")}</Bullet>
-              <Bullet>{t("meddisc_use_4")}</Bullet>
-              <SectionHeading>{t("meddisc_section_users_title")}</SectionHeading>
-              <Bullet>{t("meddisc_users_1")}</Bullet>
-              <Bullet>{t("meddisc_users_2")}</Bullet>
-              <Bullet>{t("meddisc_users_3")}</Bullet>
-              <SectionHeading>{t("meddisc_section_warning_title")}</SectionHeading>
-              <Warning>{t("meddisc_warning_body")}</Warning>
-              <SectionHeading>{t("meddisc_section_method_title")}</SectionHeading>
-              <Bullet>{t("meddisc_method_1")}</Bullet>
-              <Bullet>{t("meddisc_method_2")}</Bullet>
-              <Bullet>{t("meddisc_method_3")}</Bullet>
-              <Bullet>{t("meddisc_method_4")}</Bullet>
-              <SectionHeading>{t("meddisc_section_sources_title")}</SectionHeading>
-              <Body>{t("meddisc_sources_body")}</Body>
-              <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
-                {t("meddisc_sources_note_title")}
-              </Text>
-              <Subtle>{t("meddisc_sources_note_body")}</Subtle>
-              <SectionHeading>{t("meddisc_section_region_title")}</SectionHeading>
-              <Bullet>{t("meddisc_region_1")}</Bullet>
-              <Bullet>{t("meddisc_region_2")}</Bullet>
-              <Bullet>{t("meddisc_region_3")}</Bullet>
-              <SectionHeading>{t("meddisc_section_emergency_title")}</SectionHeading>
-              <Body>{t("meddisc_emergency_body")}</Body>
-              <SectionHeading>{t("meddisc_section_updates_title")}</SectionHeading>
-              <Bullet>{t("meddisc_updates_1")}</Bullet>
-              <Bullet>{t("meddisc_updates_2")}</Bullet>
-              <Bullet>{t("meddisc_updates_3")}</Bullet>
-              <Subtle style={{ textAlign: "center", marginTop: 4 }}>
-                {t("meddisc_footer")}
-              </Subtle>
-            </SupportSection>
-
-            <SupportSection
-              id="contact"
-              title={t("contact_title")}
-              subtitle={t("contact_sub")}
-              open={openSection === "contact"}
-              onToggle={() => setOpenSection((current) => current === "contact" ? null : "contact")}
-            >
-              <SectionHeading>{t("contact_getintouch_title")}</SectionHeading>
-              <Body>{t("contact_getintouch_body")}</Body>
-              <Subtle>{t("contact_support_email_label")}</Subtle>
-              <Text style={{ color: theme.colors.text, fontWeight: "900" }}>
-                {SUPPORT_EMAIL}
-              </Text>
-              <Pressable
-                testID="about-support-email"
-                accessibilityRole="link"
-                accessibilityLabel={t("contact_email_button")}
-                onPress={() => void openEmail()}
-                style={({ pressed }) => ({
-                  minHeight: 48,
-                  borderRadius: 14,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  paddingHorizontal: 14,
-                  backgroundColor: pressed
-                    ? "rgba(145,169,108,0.24)"
-                    : theme.colors.accentSurface,
-                  opacity: pressed ? 0.82 : 1,
-                })}
-              >
-                <Text style={{ color: theme.colors.text, fontWeight: "900" }}>
-                  {t("contact_email_button")}
-                </Text>
-              </Pressable>
-              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-                <Pressable
-                  testID="about-support-report-error"
-                  accessibilityRole="link"
-                  accessibilityLabel={t("contact_report_error")}
-                  onPress={() => void openEmail()}
-                  style={({ pressed }) => ({ minHeight: 48, flexGrow: 1, flexBasis: "46%", borderRadius: 14, borderWidth: 1, borderColor: theme.colors.cardBorder, alignItems: "center", justifyContent: "center", paddingHorizontal: 10, opacity: pressed ? 0.72 : 1 })}
-                >
-                  <Text style={{ color: theme.colors.accentMuted, fontWeight: "900", textAlign: "center" }}>{t("contact_report_error")}</Text>
-                </Pressable>
-                <Pressable
-                  testID="about-support-suggest-improvement"
-                  accessibilityRole="link"
-                  accessibilityLabel={t("contact_suggest_improvement")}
-                  onPress={() => void openEmail()}
-                  style={({ pressed }) => ({ minHeight: 48, flexGrow: 1, flexBasis: "46%", borderRadius: 14, borderWidth: 1, borderColor: theme.colors.cardBorder, alignItems: "center", justifyContent: "center", paddingHorizontal: 10, opacity: pressed ? 0.72 : 1 })}
-                >
-                  <Text style={{ color: theme.colors.accentMuted, fontWeight: "900", textAlign: "center" }}>{t("contact_suggest_improvement")}</Text>
-                </Pressable>
-              </View>
-              <SectionHeading>{t("contact_include_title")}</SectionHeading>
-              <Bullet>{t("contact_include_1")}</Bullet>
-              <Bullet>{t("contact_include_2")}</Bullet>
-              <Bullet>{t("contact_include_3")}</Bullet>
-              <Bullet>{t("contact_include_4")}</Bullet>
-              <Bullet>{t("contact_include_5")}</Bullet>
-              <SectionHeading>{t("contact_medical_title")}</SectionHeading>
-              <Body>{t("contact_medical_body")}</Body>
-              <Warning>{t("contact_medical_warning")}</Warning>
-              <SectionHeading>{t("contact_suggestions_title")}</SectionHeading>
-              <Bullet>{t("contact_suggestions_1")}</Bullet>
-              <Bullet>{t("contact_suggestions_2")}</Bullet>
-              <Bullet>{t("contact_suggestions_3")}</Bullet>
-              <Bullet>{t("contact_suggestions_4")}</Bullet>
-            </SupportSection>
-
-            <SupportSection
-              id="limitations"
-              title={t("about_limit_title")}
-              subtitle={t("about_limit_sub")}
-              open={openSection === "limitations"}
-              onToggle={() => setOpenSection((current) => current === "limitations" ? null : "limitations")}
-            >
-              <Warning>{t("about_limit_body")}</Warning>
+            <SupportSection id="medical" title={t("meddisc_title")} subtitle={t("meddisc_sub")} open={openSection === "medical"} onToggle={() => toggle("medical")}>
+              <Body>{t("meddisc_warning_body")}</Body>
               <Body>{t("meddisc_emergency_body")}</Body>
             </SupportSection>
-
-            <SupportSection
-              id="account"
-              title={t("account_title")}
-              subtitle={t("account_sub")}
-              open={openSection === "account"}
-              onToggle={() => setOpenSection((current) => current === "account" ? null : "account")}
-            >
-              <Body>
-                {state.status === "authorized" &&
-                state.session.assurance === "offline-cache"
-                  ? t("account_offline")
-                  : t("account_remembered")}
-              </Body>
+            <SupportSection id="contact" title={t("contact_title")} subtitle={t("contact_sub")} open={openSection === "contact"} onToggle={() => toggle("contact")}>
+              <Body>{lang === "da" ? "Skriv gerne, hvor du oplevede problemet. Send ikke patientoplysninger." : "Describe where the problem occurred. Do not send patient information."}</Body>
+              <Text selectable style={{ color: theme.colors.accentMuted, fontWeight: "800" }}>{SUPPORT_EMAIL}</Text>
+            </SupportSection>
+            <SupportSection id="limitations" title={t("about_limit_title")} subtitle={t("about_limit_sub")} open={openSection === "limitations"} onToggle={() => toggle("limitations")}>
+              <Body>{t("about_limit_body")}</Body>
+            </SupportSection>
+            <SupportSection id="account" title={t("account_title")} subtitle={t("account_sub")} open={openSection === "account"} onToggle={() => toggle("account")}>
+              <Body>{state.status === "authorized" && state.session.assurance === "offline-cache" ? t("account_offline") : t("account_remembered")}</Body>
               <Pressable
                 testID="about-support-logout"
                 accessibilityRole="button"
                 accessibilityLabel={t("account_logout")}
-                accessibilityState={{ disabled: loggingOut }}
                 disabled={loggingOut}
+                accessibilityState={{ disabled: loggingOut }}
                 onPress={() => void signOut()}
                 style={({ pressed }) => ({
-                  minHeight: 48,
-                  borderRadius: 14,
-                  borderWidth: 1,
-                  borderColor: theme.colors.cardBorder,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  paddingHorizontal: 14,
-                  opacity: loggingOut ? 0.5 : pressed ? 0.72 : 1,
+                  minHeight: 48, borderRadius: 13, borderWidth: 1,
+                  borderColor: theme.colors.cardBorder, alignItems: "center", justifyContent: "center",
+                  opacity: pressed || loggingOut ? 0.6 : 1,
                 })}
               >
-                <Text style={{ color: theme.colors.accentMuted, fontWeight: "900" }}>
-                  {loggingOut ? t("account_logging_out") : t("account_logout")}
-                </Text>
+                <Text style={{ color: theme.colors.text, fontWeight: "800" }}>{loggingOut ? t("account_logging_out") : t("account_logout")}</Text>
               </Pressable>
-              {logoutError ? <Warning>{t("account_logout_error")}</Warning> : null}
+              {logoutError ? <Body>{t("account_logout_error")}</Body> : null}
             </SupportSection>
-
-            <SupportSection
-              id="app"
-              title={t("about_info_title")}
-              subtitle={t("about_info_sub")}
-              open={openSection === "app"}
-              onToggle={() => setOpenSection((current) => current === "app" ? null : "app")}
-            >
-              <InfoRow label={t("about_info_name")} value="AmbuAssist" />
-              <InfoRow label={t("about_info_version")} value={appVersion} />
-              <InfoRow
-                label={t("about_info_use")}
-                value={t("about_info_use_value")}
-              />
-              <InfoRow
-                label={t("about_info_focus")}
-                value={t("about_info_focus_value")}
-              />
+            <SupportSection id="app" title={t("about_info_title")} subtitle={t("about_info_sub")} open={openSection === "app"} onToggle={() => toggle("app")}>
+              <Body>AmbuAssist · {t("about_info_version")} {appVersion}</Body>
+              <Body>{t("about_info_use_value")}</Body>
             </SupportSection>
           </ToolSurface>
+          <Subtle style={{ textAlign: "center" }}>SynapseStudio · AmbuAssist</Subtle>
         </ScrollView>
       </Screen>
     </Background>

@@ -1,5 +1,5 @@
 import React from "react";
-import { ActivityIndicator, Image, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Image, Platform, StyleSheet, Text, View } from "react-native";
 
 /**
  * Matches the initial PWA HTML splash and only appears while real startup work
@@ -35,7 +35,7 @@ export default function StartupSplash() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    minHeight: "100dvh" as never,
+    minHeight: Platform.OS === "web" ? ("100dvh" as never) : undefined,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#25311F",

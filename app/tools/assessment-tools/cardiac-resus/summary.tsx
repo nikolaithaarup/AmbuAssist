@@ -2,17 +2,13 @@ import { type Href, useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { getCorrectedArrestEventIds, resumeArrestSession, summarizeArrestSession, type ArrestSession } from "../../../../src/domain/cardiac-resus/session";
-import { formatArrestEventLabel, formatElapsed } from "../../../../src/features/cardiac-resus/presentation";
+import { formatArrestClock, formatArrestEventLabel, formatArrestMinuteOffset } from "../../../../src/features/cardiac-resus/presentation";
 import { getLatestArrestSession, saveActiveArrestSession } from "../../../../src/services/cardiacResusStorage";
 import { Background } from "../../../../src/ui/Background";
 import { CollapsibleCard } from "../../../../src/ui/CollapsibleCard";
 import { Screen, Subtle, Title } from "../../../../src/ui/Ui";
 import { ToolActionButton, ToolPageHeader, ToolSectionLabel, ToolSurface } from "../../../../src/ui/ToolSurface";
 import { theme } from "../../../../src/ui/theme";
-
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat("da-DK", { dateStyle: "short", timeStyle: "medium" }).format(new Date(value));
-}
 
 export default function CardiacResusSummary() {
   const router = useRouter();
@@ -36,7 +32,7 @@ export default function CardiacResusSummary() {
   const correctedEventIds = getCorrectedArrestEventIds(session);
   const latestOutcome = summary.latestOutcome === "rosc" ? "ROSC" : summary.latestOutcome === "mors" ? "MORS" : "Ikke registreret";
   const summaryRows = [
-    ["Varighed", formatElapsed(summary.durationSeconds), undefined],
+    ["Varighed", Math.floor(summary.durationSeconds / 60) + " min", undefined],
     ["Stød", String(summary.shockCount), `VF ${summary.shockVfCount} · pVT ${summary.shockPvtCount}`],
     ["Adrenalin", String(summary.adrenalineCount), undefined],
     ["Amiodaron", String(summary.amiodaroneCount), undefined],
@@ -60,7 +56,7 @@ export default function CardiacResusSummary() {
         <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 28 }}>
           <ToolPageHeader title="Hjertestopoversigt" subtitle="Lokalt gemt på denne enhed" />
           <ToolSurface tone="accent">
-            <ToolSectionLabel>{formatDate(session.startedAt)} – {formatDate(session.endedAt ?? session.startedAt)}</ToolSectionLabel>
+            <ToolSectionLabel>{"Kl. " + formatArrestClock(session.startedAt) + " – " + formatArrestClock(session.endedAt ?? session.startedAt)}</ToolSectionLabel>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
               {summaryRows.map(([label, value, detail]) => (
                 <View key={label} style={{ minWidth: 112, flexBasis: "30%", flexGrow: 1, gap: 3, paddingVertical: 10, paddingHorizontal: 11, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.035)" }}>
@@ -76,7 +72,10 @@ export default function CardiacResusSummary() {
               const corrected = correctedEventIds.has(event.id);
               return (
               <View key={event.id} accessibilityLabel={corrected ? `${formatArrestEventLabel(event)}. Rettet og ikke medregnet.` : undefined} style={{ flexDirection: "row", gap: 10, paddingVertical: 7, borderBottomWidth: 1, borderBottomColor: theme.colors.divider, opacity: corrected ? 0.58 : 1 }}>
-                <Text style={{ color: theme.colors.accentMuted, fontWeight: "800", fontVariant: ["tabular-nums"] }}>{formatElapsed(event.elapsedSeconds)}</Text>
+                <View style={{ minWidth: 69, gap: 2 }}>
+                  <Text style={{ color: theme.colors.text, fontWeight: "900", fontSize: 15, fontVariant: ["tabular-nums"] }}>{formatArrestClock(event.occurredAt)}</Text>
+                  <Text style={{ color: theme.colors.accentMuted, fontWeight: "700", fontSize: 12, fontVariant: ["tabular-nums"] }}>{formatArrestMinuteOffset(event.elapsedSeconds)}</Text>
+                </View>
                 <View style={{ flex: 1 }}><Text style={{ color: theme.colors.text, fontWeight: "700", textDecorationLine: corrected ? "line-through" : "none" }}>{formatArrestEventLabel(event)}</Text>{corrected ? <Subtle>Rettet · medregnes ikke</Subtle> : null}{event.note ? <Subtle>{event.note}</Subtle> : null}</View>
               </View>
             );})}

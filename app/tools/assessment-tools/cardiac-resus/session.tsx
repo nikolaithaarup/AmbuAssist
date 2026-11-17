@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Alert, AppState, Pressable, ScrollView, Text, View } from "react-native";
 import {
   addArrestEvent,
+  adjustManualArrestEventMinute,
   addAdrenalineTimerResetEvent,
   addCycleTimerResetEvent,
   addNoteEvent,
@@ -21,7 +22,8 @@ import {
   type ArrestEventType,
   type ArrestSession,
 } from "../../../../src/domain/cardiac-resus/session";
-import { formatArrestEventLabel, formatElapsed, VISIBLE_EVENT_BUTTONS, type EventButtonCategory } from "../../../../src/features/cardiac-resus/presentation";
+import { formatArrestClock, formatArrestEventLabel, formatArrestMinuteOffset, formatElapsed, VISIBLE_EVENT_BUTTONS, type EventButtonCategory } from "../../../../src/features/cardiac-resus/presentation";
+import { MinuteRuler } from "../../../../src/features/cardiac-resus/MinuteRuler";
 import { ActionOverlay } from "../../../../src/features/cardiac-resus/ActionOverlay";
 import { createSerializedArrestSessionWriter, getActiveArrestSession, saveEndedArrestSession } from "../../../../src/services/cardiacResusStorage";
 import { Background } from "../../../../src/ui/Background";
@@ -31,15 +33,16 @@ import { ToolActionButton, ToolSectionLabel, ToolSurface } from "../../../../src
 import { useResponsiveLayout } from "../../../../src/ui/responsive";
 import { theme } from "../../../../src/ui/theme";
 
-const EVENT_BUTTON_COLORS: Record<EventButtonCategory, { background: string; border: string }> = {
-  shock: { background: "rgba(221,189,98,0.14)", border: "rgba(221,189,98,0.38)" },
-  medication: { background: "rgba(101,142,181,0.14)", border: "rgba(125,166,205,0.36)" },
-  airway: { background: "rgba(102,166,158,0.14)", border: "rgba(122,186,178,0.35)" },
-  outcome: { background: "rgba(145,169,108,0.16)", border: "rgba(145,169,108,0.40)" },
-  other: { background: "rgba(255,255,255,0.06)", border: theme.colors.cardBorder },
+const EVENT_BUTTON_COLORS: Record<EventButtonCategory, { background: string; border: string; text: string }> = {
+  shock: { background: "#F4C542", border: "#F4C542", text: "#17160D" },
+  medication: { background: "#2679D3", border: "#2679D3", text: "#FFFFFF" },
+  airway: { background: "#168A9B", border: "#168A9B", text: "#FFFFFF" },
+  "outcome-success": { background: "#26B46E", border: "#26B46E", text: "#0B2516" },
+  "outcome-danger": { background: "#D9434D", border: "#D9434D", text: "#FFFFFF" },
+  other: { background: "#526778", border: "#526778", text: "#FFFFFF" },
 };
 
-type SessionDialog = "end" | "shock" | "rosc" | "mors" | "note" | "correct" | "cycleReset" | "adrenalineReset" | "partial" | null;
+type SessionDialog = "end" | "shock" | "rosc" | "mors" | "note" | "correct" | "cycleReset" | "adrenalineReset" | "eventTime" | "partial" | null;
 
 export default function ActiveCardiacResusSession() {
   const router = useRouter();
@@ -53,6 +56,8 @@ export default function ActiveCardiacResusSession() {
   const [noteText, setNoteText] = useState("");
   const [noteError, setNoteError] = useState("");
   const [actionError, setActionError] = useState("");
+  const [selectedMinutes, setSelectedMinutes] = useState(0);
+  const [editingEventId, setEditingEventId] = useState<string | null>(null);
   const sessionRef = useRef<ArrestSession | null>(null);
   const [saveWriter] = useState(() => createSerializedArrestSessionWriter());
 
@@ -93,7 +98,12 @@ export default function ActiveCardiacResusSession() {
     ? 0
     : Math.min(1, secondsSinceAdrenaline / adrenalineReminderSeconds);
   const displayedEvents = useMemo(
-    () => showAllEvents ? [...(session?.events ?? [])].reverse() : session?.events.slice(-3).reverse() ?? [],
+    () => {
+      const chronological = [...(session?.events ?? [])].sort(
+        (a, b) => new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime(),
+      );
+      return showAllEvents ? chronological : chronological.slice(0, 3);
+    },
     [session, showAllEvents],
   );
   const correctedEventIds = useMemo(
@@ -155,7 +165,7 @@ export default function ActiveCardiacResusSession() {
 
   const resetCycleTimer = () => {
     commitSessionUpdate(
-      (current) => addCycleTimerResetEvent(current, new Date()),
+      (current) => addCycleTimerResetEvent(current, new Date(), selectedMinutes),
       "Cyklustimeren kunne ikke gemmes lokalt.",
     );
     setDialog(null);
@@ -163,7 +173,7 @@ export default function ActiveCardiacResusSession() {
 
   const resetAdrenalineTimer = () => {
     commitSessionUpdate(
-      (current) => addAdrenalineTimerResetEvent(current, new Date()),
+      (current) => addAdrenalineTimerResetEvent(current, new Date(), selectedMinutes),
       "Adrenalin-timeren kunne ikke gemmes lokalt.",
     );
     setDialog(null);
@@ -204,6 +214,37 @@ export default function ActiveCardiacResusSession() {
     }
   };
 
+  const openTimerAdjustment = (kind: "cycleReset" | "adrenalineReset") => {
+    const current = sessionRef.current;
+    if (!current) return;
+    const elapsedSeconds = kind === "cycleReset"
+      ? getCycleDisplayState(current, Date.now()).elapsedInCycleSeconds
+      : getSecondsSinceAdrenalineTimerAnchor(current, Date.now()) ?? 0;
+    setSelectedMinutes(Math.max(0, Math.min(kind === "cycleReset" ? 3 : 10, Math.floor(elapsedSeconds / 60))));
+    setActionError("");
+    setDialog(kind);
+  };
+
+  const openEventTime = (eventId: string, elapsedSeconds: number) => {
+    setEditingEventId(eventId);
+    setSelectedMinutes(Math.max(0, Math.floor(elapsedSeconds / 60)));
+    setActionError("");
+    setDialog("eventTime");
+  };
+
+  const saveEventTime = () => {
+    if (!editingEventId) return;
+    if (commitSessionUpdate(
+      (current) => adjustManualArrestEventMinute(current, editingEventId, selectedMinutes, new Date()),
+      "Hændelsestiden kunne ikke gemmes lokalt.",
+    )) {
+      setEditingEventId(null);
+      setDialog(null);
+    } else {
+      setActionError("Tiden kunne ikke justeres.");
+    }
+  };
+
   const confirmOutcome = (outcome: "rosc" | "mors") => {
     setActionError("");
     setDialog(outcome);
@@ -222,7 +263,7 @@ export default function ActiveCardiacResusSession() {
         <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 28 }}>
           <ResponsiveColumns>
             <ResponsiveColumn>
-              <Pressable accessibilityRole="button" accessibilityLabel="Justér HLR-cyklustimer" onPress={() => { setActionError(""); setDialog("cycleReset"); }} style={({ pressed }) => ({ opacity: pressed ? 0.78 : 1 })}>
+              <Pressable accessibilityRole="button" accessibilityLabel="Justér HLR-cyklustimer" onPress={() => openTimerAdjustment("cycleReset")} style={({ pressed }) => ({ opacity: pressed ? 0.78 : 1 })}>
                 <ToolSurface tone={cycleState.prechargeCueActive ? "danger" : "accent"} style={{ alignItems: "center" }}>
                   <View style={{ width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
                     <ToolSectionLabel>HLR-cyklus {cycleState.cycleNumber}</ToolSectionLabel>
@@ -238,7 +279,7 @@ export default function ActiveCardiacResusSession() {
                 </ToolSurface>
               </Pressable>
 
-              <Pressable accessibilityRole="button" accessibilityLabel="Nulstil adrenalin-timer" disabled={secondsSinceAdrenaline === null} onPress={() => { setActionError(""); setDialog("adrenalineReset"); }} style={({ pressed }) => ({ opacity: pressed ? 0.78 : 1 })}>
+              <Pressable accessibilityRole="button" accessibilityLabel="Justér adrenalin-timer" disabled={secondsSinceAdrenaline === null} onPress={() => openTimerAdjustment("adrenalineReset")} style={({ pressed }) => ({ opacity: pressed ? 0.78 : 1 })}>
                 <ToolSurface tone={adrenalineReminderDue ? "warning" : "default"} style={{ gap: 9 }}>
                   <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
                     <Text style={{ color: theme.colors.text, fontSize: 16, fontWeight: "900" }}>Adrenalin</Text>
@@ -268,7 +309,7 @@ export default function ActiveCardiacResusSession() {
                       disabled={ending}
                       onPress={() => item.type === "shock_delivered" ? recordShock() : item.type === "rosc" || item.type === "mors" ? confirmOutcome(item.type) : item.type === "free_note" ? (setNoteText(""), setNoteError(""), setDialog("note")) : recordEvent(item.type)}
                       style={({ pressed }) => ({ minHeight: 54, flexBasis: isExpanded ? "30%" : "47%", flexGrow: 1, justifyContent: "center", alignItems: "center", padding: 9, borderRadius: 13, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.background, opacity: pressed || ending ? 0.7 : 1 })}
-                    ><Text style={{ color: theme.colors.text, fontWeight: "800", textAlign: "center" }}>{item.label}</Text></Pressable>;
+                    ><Text style={{ color: colors.text, fontWeight: "900", textAlign: "center", fontSize: 16 }}>{item.label}</Text></Pressable>;
                   })}
                 </View>
                 {actionError ? <Text style={{ color: theme.colors.danger, fontWeight: "700" }}>{actionError}</Text> : null}

@@ -47,10 +47,10 @@ function LanguageButton({
         onBlur={() => setFocused(false)}
         style={({ pressed }) => ({
           opacity: pressed ? 0.82 : 1,
-          minWidth: pwa ? 50 : 44,
-          minHeight: pwa ? 50 : 44,
-          padding: compact ? 9 : 7,
-          borderRadius: pwa ? 15 : compact ? 12 : 14,
+          minWidth: 44,
+          minHeight: 44,
+          padding: compact ? 6 : 7,
+          borderRadius: 12,
           borderWidth: 1,
           borderColor:
             pwa && focused
@@ -82,7 +82,7 @@ function LanguageButton({
           style={
             compact
               ? pwa
-                ? { width: 26, height: 26, borderRadius: 7 }
+                ? { width: 24, height: 24, borderRadius: 6 }
                 : { width: 24, height: 24, borderRadius: 6 }
               : { width: 32, height: 32, borderRadius: 8 }
           }
@@ -102,54 +102,37 @@ function HomeSectionHeader({
 }) {
   return (
     <View
+      testID="home-section-header"
       style={{
-        minHeight: 29,
+        minHeight: 21,
         flexDirection: "row",
         alignItems: "center",
-        gap: 10,
-        marginTop: 2,
+        gap: 8,
+        marginTop: 5,
+        marginBottom: 2,
       }}
     >
-      <Text
-        style={{
-          color: theme.colors.text,
-          fontSize: 16,
-          lineHeight: 21,
-          fontWeight: "700",
-          letterSpacing: -0.1,
-        }}
-      >
+      <Text style={{
+        color: theme.colors.headingAccent,
+        fontSize: 12,
+        lineHeight: 17,
+        letterSpacing: 0.8,
+        fontWeight: "900",
+        textTransform: "uppercase",
+      }}>
         {title}
       </Text>
       {typeof count === "number" ? (
-        <View
-          style={{
-            minWidth: 25,
-            height: 25,
-            alignItems: "center",
-            justifyContent: "center",
-            borderRadius: theme.radii.pill,
-            backgroundColor: theme.colors.accentSurface,
-          }}
-        >
-          <Text
-            style={{
-              color: theme.colors.accentMuted,
-              fontSize: 12,
-              fontWeight: "800",
-            }}
-          >
-            {count}
-          </Text>
-        </View>
+        <Text style={{
+          color: theme.colors.mutedText,
+          fontSize: 12,
+          lineHeight: 17,
+          fontWeight: "700",
+          fontVariant: ["tabular-nums"],
+        }}>
+          {count}
+        </Text>
       ) : null}
-      <View
-        style={{
-          flex: 1,
-          height: 1,
-          backgroundColor: theme.colors.divider,
-        }}
-      />
     </View>
   );
 }
@@ -191,28 +174,19 @@ export default function Home() {
     <View
       testID="home-hero"
       style={{
-        gap: 0,
+        width: "100%",
         alignItems: "center",
-        paddingTop: pwa ? (compact ? 10 : 14) : 0,
-        paddingBottom: pwa ? (compact ? 11 : 15) : compact ? 4 : 12,
-        paddingHorizontal: 0,
+        paddingTop: 0,
+        paddingBottom: compact ? 6 : 10,
       }}
     >
-      <View
-        style={{
-          width: "100%",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 0,
-        }}
-      >
+      <View style={{ width: "100%", alignItems: "center", position: "relative" }}>
         <Image
           testID="home-brand-icon"
           source={require("../assets/synapse-icon.png")}
           style={{
-            width: compact ? 136 : 160,
-            height: compact ? 68 : 80,
+            width: compact ? 112 : 136,
+            height: compact ? 56 : 68,
             overflow: "hidden",
           }}
           resizeMode="cover"
@@ -222,33 +196,33 @@ export default function Home() {
           source={require("../assets/ambuassist-logo.png")}
           style={{
             width: "100%",
-            maxWidth: compact ? 300 : 360,
-            height: compact ? 40 : 48,
-            marginTop: -3,
+            maxWidth: compact ? 274 : 312,
+            height: compact ? 38 : 43,
+            marginTop: -4,
           }}
           resizeMode="contain"
         />
-
         {pwa ? (
           <Subtle
             style={{
               textAlign: "center",
-              marginTop: compact ? -3 : -5,
-              fontSize: compact ? 13 : 14,
-              lineHeight: 19,
+              marginTop: -3,
+              fontSize: 13,
+              lineHeight: 18,
             }}
           >
             {t("homeTagline")}
           </Subtle>
         ) : null}
-
         <View
+          testID="home-language-controls"
           style={{
+            position: "absolute",
+            right: 0,
+            top: 0,
             flexDirection: "row",
-            gap: pwa ? 10 : compact ? 4 : 10,
-            marginTop: pwa ? (compact ? 9 : 12) : compact ? 0 : 14,
             alignItems: "center",
-            justifyContent: "center",
+            gap: 4,
           }}
         >
           {(["en", "da"] as const).map((language) => (
@@ -256,14 +230,14 @@ export default function Home() {
               key={language}
               language={language}
               selected={settings.language === language}
-              compact={compact}
+              compact
               onPress={() => setLanguage(language)}
             />
           ))}
         </View>
       </View>
       {!pwa && !compact ? (
-        <Subtle style={{ textAlign: "center", marginTop: 0, fontSize: 14 }}>
+        <Subtle style={{ textAlign: "center", fontSize: 13, lineHeight: 18 }}>
           {t("homeTagline")}
         </Subtle>
       ) : null}

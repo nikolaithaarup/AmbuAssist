@@ -16,7 +16,6 @@ import {
 } from "../../pwa/install";
 import { Background } from "../../ui/Background";
 import { usePressFeedback, useReducedMotionPreference } from "../../ui/motion";
-import { ToolSurface } from "../../ui/ToolSurface";
 import { Screen, Subtle } from "../../ui/Ui";
 import { theme } from "../../ui/theme";
 import { useAuth } from "../../auth/AuthProvider";
@@ -321,7 +320,7 @@ function InstallGuide() {
       : [t("install_android_1"), t("install_android_2"), t("install_android_3"), t("install_android_4")];
 
   return (
-    <ToolSurface tone="accent" testID="about-install-card" style={{ gap: 0, paddingVertical: 0 }}>
+    <View testID="about-install-card" style={{ gap: 0, borderBottomWidth: 1, borderBottomColor: theme.colors.divider }}>
       {standalone ? (
         <View style={{ gap: 4, paddingVertical: 14 }} testID="about-install-standalone">
           <Text style={{ color: theme.colors.ok, fontSize: 15, fontWeight: "900" }}>
@@ -355,8 +354,7 @@ function InstallGuide() {
                 <Text style={{ color: theme.colors.text, fontSize: 17, fontWeight: "900" }}>
                   {t("install_entry_title")}
                 </Text>
-                {!guideOpen ? <Subtle>{t("install_intro")}</Subtle> : null}
-              </View>
+                </View>
               <Text accessibilityElementsHidden style={{ color: theme.colors.accentMuted, fontSize: 20 }}>
                 {guideOpen ? "⌄" : "›"}
               </Text>
@@ -364,7 +362,6 @@ function InstallGuide() {
           </Animated.View>
           <DisclosureBody open={guideOpen}>
             <View style={{ gap: 11, paddingTop: 2, paddingBottom: 14 }} testID="about-install-guide">
-              <Body>{t("install_optional")}</Body>
               <View style={{ flexDirection: "row", gap: 8 }}>
                 <PlatformButton
                   label={t("install_ios_tab")}
@@ -387,7 +384,7 @@ function InstallGuide() {
           </DisclosureBody>
         </>
       )}
-    </ToolSurface>
+    </View>
   );
 }
 

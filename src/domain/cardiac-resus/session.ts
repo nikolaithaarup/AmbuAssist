@@ -374,7 +374,10 @@ export function adjustManualArrestEventMinute(
 ): ArrestSession {
   if (session.status !== "active" || !Number.isInteger(elapsedMinutes) || elapsedMinutes < 0) return session;
   const target = getEffectiveArrestEvents(session).find((event) => event.id === eventId);
-  if (!target || target.source !== "manual" || target.type === "event_correction") return session;
+  if (!target || target.source !== "manual" ||
+      target.type === "event_correction" ||
+      target.type === "cycle_timer_reset" ||
+      target.type === "adrenaline_timer_reset") return session;
 
   const started = toTimestamp(session.startedAt);
   const current = toTimestamp(now);

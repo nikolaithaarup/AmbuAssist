@@ -92,7 +92,7 @@ export function AboutSupportScreen({ initialSection }: { initialSection?: AboutS
             onEmail={() => void openEmail()}
             onReport={() => void openEmail(true)}
             onStudio={() => void openStudio()}
-            onSibling={() => void Linking.openURL("https://flashmedic.synapsestudio.dk") }
+            onSibling={() => { void Linking.openURL("https://flashmedic.synapsestudio.dk").catch(() => {}); }}
           />
           <Text style={{ color: theme.colors.mutedText, fontSize: 12, lineHeight: 18, paddingHorizontal: 2 }}>
             {lang === "da"

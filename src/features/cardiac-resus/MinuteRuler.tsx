@@ -66,7 +66,13 @@ export function MinuteRuler({ value, maxMinutes, onChange, label, relative = fal
   };
 
   const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    if (interacted.current) queueSettle(event.nativeEvent.contentOffset.x);
+    const x = event.nativeEvent.contentOffset.x;
+    if (!Number.isFinite(x)) return;
+    // Browser trackpad scrolling may not emit onScrollBeginDrag. Ignore only
+    // the initial programmatic centering; treat other movement as user input.
+    if (!interacted.current && Math.abs(x - selected * STEP) < 0.5) return;
+    interacted.current = true;
+    queueSettle(x);
   };
 
   const onLayout = (event: LayoutChangeEvent) => {

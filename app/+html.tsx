@@ -17,8 +17,8 @@ export default function Root({ children }: PropsWithChildren) {
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="theme-color" content="#25311f" />
         <link rel="manifest" href="/manifest.webmanifest" />
-        <link rel="icon" type="image/png" sizes="192x192" href="/pwa-icon-192.png?v=20261017" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20261017" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/pwa-icon-192.png?v=20261117" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20261117" />
         <ScrollViewStyleReset />
         <style
           dangerouslySetInnerHTML={{

@@ -69,7 +69,7 @@ describe("AboutSupportScreen", () => {
         .props.accessibilityState,
     ).toEqual({ expanded: true });
     expect(textContent(medicalRenderer.root)).toContain(
-      "Brug af appen må aldrig forsinke nødvendig behandling.",
+      "AmbuAssist er beslutningsstøtte",
     );
 
     let contactRenderer;

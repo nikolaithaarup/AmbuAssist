@@ -6,10 +6,11 @@ type Props = {
   onEmail: () => void;
   onReport: () => void;
   onStudio: () => void;
+  onSibling: () => void;
 };
 
 /** Same layout and actions as FlashMedic's SynapseStudio contact page. */
-export function SupportQuickActions({ language, onEmail, onReport, onStudio }: Props) {
+export function SupportQuickActions({ language, onEmail, onReport, onStudio, onSibling }: Props) {
   const da = language === "da";
   const actions = [
     {
@@ -30,9 +31,9 @@ export function SupportQuickActions({ language, onEmail, onReport, onStudio }: P
           {da ? "Kontakt & support" : "Contact & support"}
         </Text>
         <Text style={{ color: theme.colors.accentMuted, fontWeight: "800", fontSize: 14 }}>
-          AmbuAssist · SynapseStudio
+          SynapseStudio · AmbuAssist
         </Text>
-        <Text style={{ color: theme.colors.mutedText, fontSize: 13, lineHeight: 19 }}>
+        <Text style={{ color: theme.colors.mutedText, fontSize: 12, lineHeight: 18 }}>
           {da ? "Udviklet af Nikolai Louis Kleftås Thaarup" : "Created by Nikolai Louis Kleftås Thaarup"}
         </Text>
       </View>
@@ -55,7 +56,7 @@ export function SupportQuickActions({ language, onEmail, onReport, onStudio }: P
           {da ? "Skriv e-mail" : "Write an email"}
         </Text>
       </Pressable>
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
         {actions.map((item) => (
           <Pressable
             key={item.id}
@@ -65,7 +66,7 @@ export function SupportQuickActions({ language, onEmail, onReport, onStudio }: P
             onPress={item.action}
             style={({ pressed }) => ({
               minHeight: 48,
-              minWidth: 130,
+              minWidth: 120,
               flexBasis: "45%",
               flexGrow: 1,
               justifyContent: "center",
@@ -84,6 +85,11 @@ export function SupportQuickActions({ language, onEmail, onReport, onStudio }: P
           </Pressable>
         ))}
       </View>
+      <Pressable accessibilityRole="link" accessibilityLabel="FlashMedic" onPress={onSibling} style={({ pressed }) => ({ alignSelf: "flex-start", minHeight: 44, justifyContent: "center", opacity: pressed ? 0.7 : 1 })}>
+        <Text style={{ color: theme.colors.accentMuted, fontWeight: "800", fontSize: 13 }}>
+          {da ? "Også fra SynapseStudio: FlashMedic  ›" : "Also from SynapseStudio: FlashMedic  ›"}
+        </Text>
+      </Pressable>
     </View>
   );
 }

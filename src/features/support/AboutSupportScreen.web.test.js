@@ -123,13 +123,13 @@ describe("AboutSupportScreen web experience", () => {
     const project = renderer.root.findByProps({ accessibilityLabel: "Om projektet" });
     act(() => project.props.onPress());
     expect(project.props.accessibilityState).toEqual({ expanded: true });
-    expect(textContent(renderer.root)).toContain("At mindske friktion");
+    expect(textContent(renderer.root)).toContain("AmbuAssist samler praktiske værktøjer");
 
     const privacy = renderer.root.findByProps({ accessibilityLabel: "Privatliv og data" });
     act(() => privacy.props.onPress());
     expect(renderer.root.findByProps({ accessibilityLabel: "Om projektet" }).props.accessibilityState).toEqual({ expanded: false });
     expect(privacy.props.accessibilityState).toEqual({ expanded: true });
-    expect(textContent(renderer.root)).not.toContain("At mindske friktion");
+    expect(textContent(renderer.root)).not.toContain("AmbuAssist samler praktiske værktøjer");
     expect(textContent(renderer.root)).toContain("Indstillinger og favoritter gemmes lokalt");
   });
 

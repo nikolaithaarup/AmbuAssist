@@ -201,37 +201,31 @@ export default function Home() {
       <View
         style={{
           width: "100%",
-          flexDirection: pwa ? "column" : compact ? "row" : "column",
+          flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          gap: pwa ? 0 : compact ? 4 : 0,
+          gap: 0,
         }}
       >
         <Image
-          source={require("../assets/her-icon.png")}
-          style={
-            pwa
-              ? { width: compact ? 50 : 68, height: compact ? 50 : 68, opacity: 0.96 }
-              : compact
-                ? { width: 48, height: 48, opacity: 0.95 }
-                : { width: 88, height: 88, marginTop: 10, marginBottom: 0, opacity: 0.95 }
-          }
-          resizeMode="contain"
+          testID="home-brand-icon"
+          source={require("../assets/synapse-icon.png")}
+          style={{
+            width: compact ? 136 : 160,
+            height: compact ? 68 : 80,
+            overflow: "hidden",
+          }}
+          resizeMode="cover"
         />
         <Image
+          testID="home-brand-wordmark"
           source={require("../assets/ambuassist-logo.png")}
-          style={
-            pwa
-              ? {
-                  width: "100%",
-                  maxWidth: compact ? 310 : 440,
-                  height: compact ? 54 : 76,
-                  marginTop: compact ? -7 : -10,
-                }
-              : compact
-                ? { flex: 1, maxWidth: 220, height: 44 }
-                : { width: "100%", maxWidth: 440, height: 76, marginTop: -14, marginBottom: -8 }
-          }
+          style={{
+            width: "100%",
+            maxWidth: compact ? 300 : 360,
+            height: compact ? 40 : 48,
+            marginTop: -3,
+          }}
           resizeMode="contain"
         />
 

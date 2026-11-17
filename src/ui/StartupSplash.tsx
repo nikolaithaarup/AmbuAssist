@@ -15,7 +15,6 @@ export default function StartupSplash() {
           resizeMode="cover"
           style={styles.mark}
         />
-        <Text style={styles.studio}>SYNAPSESTUDIO</Text>
         <Text accessibilityRole="header" style={styles.title}>AmbuAssist</Text>
         <Text style={styles.subtitle}>Kliniske værktøjer. Lige ved hånden.</Text>
         <View
@@ -26,6 +25,15 @@ export default function StartupSplash() {
         >
           <ActivityIndicator size="small" color="#E2C76D" />
           <Text style={styles.loadingText}>Kontrollerer adgang…</Text>
+        </View>
+        <View style={styles.studioFooter} accessible accessibilityLabel="Part of Synapse Studio">
+          <Text style={styles.partOf}>Part of</Text>
+          <Image
+            source={require("../../assets/synapsestudio-logo-white.png")}
+            resizeMode="contain"
+            style={styles.studioLogo}
+            accessibilityLabel="SynapseStudio"
+          />
         </View>
       </View>
     </View>
@@ -48,14 +56,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   mark: { width: 136, height: 68, overflow: "hidden", marginBottom: 14 },
-  studio: {
-    color: "#E2C76D",
-    fontSize: 11,
-    lineHeight: 16,
-    letterSpacing: 2,
-    fontWeight: "800",
-    marginBottom: 9,
-  },
   title: {
     color: "#FFFFFF",
     fontSize: 32,
@@ -71,6 +71,19 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 9,
   },
+  studioFooter: {
+    marginTop: 46,
+    alignItems: "center",
+    gap: 10,
+  },
+  partOf: {
+    color: "#D3DCDA",
+    fontSize: 11,
+    lineHeight: 16,
+    letterSpacing: 1.1,
+    fontWeight: "600",
+  },
+  studioLogo: { width: 164, height: 44 },
   loading: {
     flexDirection: "row",
     alignItems: "center",

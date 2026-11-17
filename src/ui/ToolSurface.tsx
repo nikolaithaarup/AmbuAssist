@@ -140,11 +140,11 @@ export function ToolSectionLabel({ children }: { children: ReactNode }) {
   return (
     <Text
       style={{
-        color: theme.colors.mutedText,
+        color: theme.colors.headingAccent,
         fontSize: 12,
-        lineHeight: 16,
-        fontWeight: "800",
-        letterSpacing: 0.55,
+        lineHeight: 17,
+        fontWeight: "900",
+        letterSpacing: 0.8,
         textTransform: "uppercase",
       }}
     >

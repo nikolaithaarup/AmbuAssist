@@ -17,6 +17,7 @@ export const theme = {
     focus: "rgba(174, 190, 144, 0.62)",
     danger: "#FF7B72",
     warn: "#DDBD62",
+    headingAccent: "#E2C76D",
     ok: "#99B97A",
     topTone: "#242A20",
     backgroundBase: "#10130F",

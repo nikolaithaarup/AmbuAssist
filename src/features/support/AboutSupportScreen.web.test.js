@@ -54,9 +54,9 @@ describe("AboutSupportScreen web experience", () => {
 
     const copy = textContent(renderer.root);
     expect(renderer.root.findAllByProps({ testID: "about-product-identity" }).length).toBeGreaterThan(0);
-    expect(copy).toContain("Små værktøjer til kaotisk virkelighed");
-    expect(copy).toContain("lad aldrig brug af appen forsinke nødvendig behandling");
-    expect(copy).toContain("Udviklet af SynapseStudio");
+    expect(copy).toContain("Kontakt & support");
+    expect(copy).toContain("Akut behandling må aldrig forsinkes");
+    expect(copy).toContain("Nikolai Louis Kleftås Thaarup");
     expect(copy).not.toContain("Tilsigtet brug");
     expect(copy).not.toContain("nikolai_91@live.com");
     expect(copy).not.toContain("Grundlæggende brug af appen og værktøjerne kan registreres");
@@ -87,9 +87,9 @@ describe("AboutSupportScreen web experience", () => {
     });
 
     expect(renderer.root.findAllByProps({ testID: "about-support-section-about" }).length).toBeGreaterThan(0);
-    expect(renderer.root.findAllByProps({ testID: "about-support-section-sources" }).length).toBeGreaterThan(0);
+    expect(renderer.root.findAllByProps({ testID: "about-support-section-sources" })).toHaveLength(0);
     expect(renderer.root.findAllByProps({ testID: "about-support-section-medical" }).length).toBeGreaterThan(0);
-    expect(renderer.root.findAllByProps({ testID: "about-support-section-contact" }).length).toBeGreaterThan(0);
+    expect(renderer.root.findByProps({ testID: "about-support-email" })).toBeDefined();
     expect(renderer.root.findAllByProps({ testID: "about-support-section-app" }).length).toBeGreaterThan(0);
     expect(renderer.root.findAllByProps({ testID: "about-support-section-account" }).length).toBeGreaterThan(0);
     expect(renderer.root.findAllByProps({ testID: "about-support-section-limitations" })).toHaveLength(0);
@@ -98,9 +98,18 @@ describe("AboutSupportScreen web experience", () => {
     ).toEqual({ expanded: true });
 
     const copy = textContent(renderer.root);
-    expect(copy).toContain("Kilder og fagligt grundlag");
+    expect(copy).toContain("Kontakt & support");
     expect(copy).not.toContain("nikolai_91@live.com");
     expect(copy).not.toContain("Grundlæggende brug af appen og værktøjerne kan registreres");
+  });
+
+  test("legacy contact link opens direct actions without redundant Contact section", () => {
+    let renderer;
+    act(() => { renderer = TestRenderer.create(<AboutSupportScreen initialSection="contact" />); });
+    expect(renderer.root.findAllByProps({ testID: "about-support-email" })).toHaveLength(1);
+    expect(renderer.root.findAllByProps({ testID: "about-support-report-error" })).toHaveLength(1);
+    expect(renderer.root.findAllByProps({ testID: "about-support-studio" })).toHaveLength(1);
+    expect(renderer.root.findAllByProps({ testID: "about-support-section-contact" })).toHaveLength(0);
   });
 
   test("starts every detail closed and keeps only one section open", () => {

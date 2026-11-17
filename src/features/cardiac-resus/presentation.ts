@@ -54,11 +54,14 @@ export function formatArrestEventLabel(
 export function formatArrestClock(occurredAt: string): string {
   const date = new Date(occurredAt);
   if (Number.isNaN(date.getTime())) return "--:--";
-  return new Intl.DateTimeFormat("da-DK", {
+  const parts = new Intl.DateTimeFormat("da-DK", {
     hour: "2-digit",
     minute: "2-digit",
     hourCycle: "h23",
-  }).format(date);
+  }).formatToParts(date);
+  const hour = parts.find((part) => part.type === "hour")?.value ?? "00";
+  const minute = parts.find((part) => part.type === "minute")?.value ?? "00";
+  return hour.padStart(2, "0") + ":" + minute.padStart(2, "0");
 }
 
 /** Whole minutes since the session was started. Seconds remain in storage. */

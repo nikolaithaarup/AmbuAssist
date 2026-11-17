@@ -107,8 +107,7 @@ export function AboutSupportScreen({ initialSection }: { initialSection?: AboutS
               open={openSection === "about"}
               onToggle={() => toggle("about")}
             >
-              <Body>{t("about_what_body")}</Body>
-              <Body>{t("about_purpose_1")}</Body>
+              <Body>{lang === "da" ? "AmbuAssist samler praktiske værktøjer og opslagsinformation til ambulancetjenesten. Udviklet af Nikolai gennem SynapseStudio." : "AmbuAssist brings practical tools and reference material together for ambulance clinicians. Created by Nikolai at SynapseStudio."}</Body>
             </SupportSection>
             <SupportSection
               id="medical"
@@ -117,9 +116,7 @@ export function AboutSupportScreen({ initialSection }: { initialSection?: AboutS
               open={openSection === "medical"}
               onToggle={() => toggle("medical")}
             >
-              <Body>{t("meddisc_warning_body")}</Body>
-              <Body>{t("meddisc_sources_body")}</Body>
-              <Body>{t("meddisc_emergency_body")}</Body>
+              <Body>{lang === "da" ? "AmbuAssist er beslutningsstøtte, ikke en erstatning for klinisk vurdering eller gældende instrukser. Kontrollér oplysninger før anvendelse." : "AmbuAssist supports decisions; it does not replace clinical judgement or current protocols. Verify information before use."}</Body>
             </SupportSection>
             <SupportSection
               id="app"
@@ -163,7 +160,7 @@ export function AboutSupportScreen({ initialSection }: { initialSection?: AboutS
               {logoutError ? <Body>{t("account_logout_error")}</Body> : null}
             </SupportSection>
           </View>
-          <Subtle style={{ textAlign: "center" }}>AmbuAssist · v{appVersion} · SynapseStudio</Subtle>
+          <Subtle style={{ textAlign: "center" }}>SynapseStudio · AmbuAssist v{appVersion}</Subtle>
         </ScrollView>
       </Screen>
     </Background>

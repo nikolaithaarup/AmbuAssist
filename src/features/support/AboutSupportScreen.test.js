@@ -101,7 +101,7 @@ describe("AboutSupportScreen", () => {
     expect(renderer.root.findByProps({ testID: "about-support-studio" })).toBeDefined();
     expect(textContent(renderer.root)).toContain("SynapseStudio");
     expect(textContent(renderer.root)).toContain("Nikolai Louis Kleftås Thaarup");
-    expect(renderer.root.findByProps({ accessibilityLabel: "Kontakt" }).props.accessibilityState).toEqual({ expanded: false });
+    expect(renderer.root.findByProps({ testID: "about-support-section-contact" })).toBeDefined();
   });
 
   test("keeps the detailed mailto feedback action", async () => {

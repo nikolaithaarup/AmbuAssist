@@ -37,6 +37,12 @@ describe("horizontal whole-minute cardiac ruler", () => {
     expect(reading.current).toBe(4);
   });
 
+  test("desktop trackpad scroll selects a tick without drag events", () => {
+    act(() => handler(renderer, "onScroll")(event(5 * 44)));
+    act(() => { jest.advanceTimersByTime(180); });
+    expect(reading.current).toBe(5);
+  });
+
   test("selects the landed tick immediately at momentum end", () => {
     act(() => handler(renderer, "onMomentumScrollBegin")());
     act(() => handler(renderer, "onMomentumScrollEnd")(event(7 * 44)));

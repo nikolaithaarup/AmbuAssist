@@ -438,6 +438,7 @@ export function AboutSupportScreen({ initialSection }: { initialSection?: AboutS
               onEmail={() => void openEmail()}
               onReport={() => void openEmail(true)}
               onStudio={() => void openStudio()}
+            onSibling={() => void Linking.openURL("https://flashmedic.synapsestudio.dk") }
             />
           </View>
 

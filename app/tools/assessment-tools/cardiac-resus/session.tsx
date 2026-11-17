@@ -381,7 +381,7 @@ export default function ActiveCardiacResusSession() {
                 <Input value={noteText} onChangeText={(value) => { setNoteText(value); if (noteError) setNoteError(""); }} multiline placeholder="Skriv note…" style={{ minHeight: 110, textAlignVertical: "top" }} />
                 <Subtle>Undgå patientidentificerende oplysninger.</Subtle>
                 {noteError ? <Text style={{ color: theme.colors.danger, fontWeight: "700" }}>{noteError}</Text> : null}
-                <Pressable onPress={saveNote} style={({ pressed }) => ({ minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 14, borderWidth: 1, borderColor: theme.colors.cardBorder, backgroundColor: theme.colors.accentSurface, opacity: pressed ? 0.65 : 1 })}><Text style={{ color: theme.colors.text, fontWeight: "900" }}>Gem note</Text></Pressable>
+                <Pressable onPress={saveNote} style={({ pressed }) => ({ minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 14, borderWidth: 1, borderColor: "#2679D3", backgroundColor: "#2679D3", opacity: pressed ? 0.65 : 1 })}><Text style={{ color: "#FFFFFF", fontWeight: "900" }}>Gem note</Text></Pressable>
                 <Pressable onPress={() => setDialog(null)} style={({ pressed }) => ({ minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}><Text style={{ color: theme.colors.accentMuted, fontWeight: "800" }}>Annuller</Text></Pressable>
               </>
             ) : dialog === "correct" ? (
@@ -390,7 +390,7 @@ export default function ActiveCardiacResusSession() {
                 <Text style={{ color: theme.colors.text, lineHeight: 21 }}>
                   Den seneste aktive brugerregistrering markeres som rettet. Historikken slettes ikke, og optællinger/timere ser bort fra den rettede registrering.
                 </Text>
-                <Pressable onPress={correctLatestEvent} style={({ pressed }) => ({ minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 14, borderWidth: 1, borderColor: theme.colors.cardBorder, backgroundColor: theme.colors.accentSurface, opacity: pressed ? 0.65 : 1 })}>
+                <Pressable onPress={correctLatestEvent} style={({ pressed }) => ({ minHeight: 52, alignItems: "center", justifyContent: "center", borderRadius: 14, borderWidth: 1, borderColor: "#2679D3", backgroundColor: "#2679D3", opacity: pressed ? 0.65 : 1 })}>
                   <Text style={{ color: theme.colors.text, fontWeight: "900" }}>Markér som rettet</Text>
                 </Pressable>
                 <Pressable onPress={() => setDialog(null)} style={({ pressed }) => ({ minHeight: 48, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.65 : 1 })}>

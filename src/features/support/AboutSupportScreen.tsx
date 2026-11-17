@@ -4,7 +4,6 @@ import { Alert, Linking, Pressable, ScrollView, Text, View } from "react-native"
 import { useT } from "../../i18n/useT";
 import { useAuth } from "../../auth/AuthProvider";
 import { Background } from "../../ui/Background";
-import { ToolPageHeader, ToolSurface } from "../../ui/ToolSurface";
 import { Screen, Subtle } from "../../ui/Ui";
 import { theme } from "../../ui/theme";
 import { SupportQuickActions } from "./SupportQuickActions";
@@ -52,7 +51,7 @@ function Body({ children }: { children: ReactNode }) {
 export function AboutSupportScreen({ initialSection }: { initialSection?: AboutSupportSection }) {
   const { t, lang } = useT();
   const { state, logout } = useAuth();
-  const [openSection, setOpenSection] = useState<AboutSupportSection | null>(initialSection ?? null);
+  const [openSection, setOpenSection] = useState<AboutSupportSection | null>(initialSection === "limitations" ? "medical" : initialSection === "contact" ? null : initialSection ?? null);
   const [loggingOut, setLoggingOut] = useState(false);
   const [logoutError, setLogoutError] = useState(false);
   const appVersion = Constants.expoConfig?.version ?? "–";
@@ -87,34 +86,58 @@ export function AboutSupportScreen({ initialSection }: { initialSection?: AboutS
   return (
     <Background>
       <Screen>
-        <ScrollView contentContainerStyle={{ gap: 14, paddingBottom: 28 }} keyboardShouldPersistTaps="handled">
-          <ToolPageHeader title={t("about_support_title")} />
+        <ScrollView contentContainerStyle={{ gap: 15, paddingBottom: 26 }} keyboardShouldPersistTaps="handled">
           <SupportQuickActions
             language={lang}
             onEmail={() => void openEmail()}
             onReport={() => void openEmail(true)}
             onStudio={() => void openStudio()}
           />
-          <Text style={{ color: theme.colors.mutedText, fontSize: 13, lineHeight: 19, paddingHorizontal: 2 }}>
-            {t("about_safety_summary")}
+          <Text style={{ color: theme.colors.mutedText, fontSize: 12, lineHeight: 18, paddingHorizontal: 2 }}>
+            {lang === "da"
+              ? "Til faglig støtte – ikke en erstatning for klinisk vurdering. Akut behandling må aldrig forsinkes."
+              : "For clinical support, not a replacement for judgement. Never delay urgent treatment."}
           </Text>
-          <ToolSurface style={{ paddingVertical: 0, paddingHorizontal: 4, gap: 0 }}>
-            <SupportSection id="about" title={t("about_what_title")} subtitle={t("about_sub")} open={openSection === "about"} onToggle={() => toggle("about")}>
+
+          <View style={{ borderTopWidth: 1, borderTopColor: theme.colors.divider }}>
+            <SupportSection
+              id="about"
+              title={t("about_what_title")}
+              subtitle=""
+              open={openSection === "about"}
+              onToggle={() => toggle("about")}
+            >
               <Body>{t("about_what_body")}</Body>
               <Body>{t("about_purpose_1")}</Body>
             </SupportSection>
-            <SupportSection id="medical" title={t("meddisc_title")} subtitle={t("meddisc_sub")} open={openSection === "medical"} onToggle={() => toggle("medical")}>
+            <SupportSection
+              id="medical"
+              title={t("meddisc_title")}
+              subtitle=""
+              open={openSection === "medical"}
+              onToggle={() => toggle("medical")}
+            >
               <Body>{t("meddisc_warning_body")}</Body>
+              <Body>{t("meddisc_sources_body")}</Body>
               <Body>{t("meddisc_emergency_body")}</Body>
             </SupportSection>
-            <SupportSection id="contact" title={t("contact_title")} subtitle={t("contact_sub")} open={openSection === "contact"} onToggle={() => toggle("contact")}>
-              <Body>{lang === "da" ? "Skriv gerne, hvor du oplevede problemet. Send ikke patientoplysninger." : "Describe where the problem occurred. Do not send patient information."}</Body>
-              <Text selectable style={{ color: theme.colors.accentMuted, fontWeight: "800" }}>{SUPPORT_EMAIL}</Text>
+            <SupportSection
+              id="app"
+              title={t("about_info_title")}
+              subtitle=""
+              open={openSection === "app"}
+              onToggle={() => toggle("app")}
+            >
+              <Body>AmbuAssist · {t("about_info_version")} {appVersion}</Body>
+              <Body>{t("about_info_use_value")}</Body>
             </SupportSection>
-            <SupportSection id="limitations" title={t("about_limit_title")} subtitle={t("about_limit_sub")} open={openSection === "limitations"} onToggle={() => toggle("limitations")}>
-              <Body>{t("about_limit_body")}</Body>
-            </SupportSection>
-            <SupportSection id="account" title={t("account_title")} subtitle={t("account_sub")} open={openSection === "account"} onToggle={() => toggle("account")}>
+            <SupportSection
+              id="account"
+              title={t("account_title")}
+              subtitle=""
+              open={openSection === "account"}
+              onToggle={() => toggle("account")}
+            >
               <Body>{state.status === "authorized" && state.session.assurance === "offline-cache" ? t("account_offline") : t("account_remembered")}</Body>
               <Pressable
                 testID="about-support-logout"
@@ -124,21 +147,23 @@ export function AboutSupportScreen({ initialSection }: { initialSection?: AboutS
                 accessibilityState={{ disabled: loggingOut }}
                 onPress={() => void signOut()}
                 style={({ pressed }) => ({
-                  minHeight: 48, borderRadius: 13, borderWidth: 1,
-                  borderColor: theme.colors.cardBorder, alignItems: "center", justifyContent: "center",
+                  minHeight: 48,
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: theme.colors.cardBorder,
+                  alignItems: "center",
+                  justifyContent: "center",
                   opacity: pressed || loggingOut ? 0.6 : 1,
                 })}
               >
-                <Text style={{ color: theme.colors.text, fontWeight: "800" }}>{loggingOut ? t("account_logging_out") : t("account_logout")}</Text>
+                <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
+                  {loggingOut ? t("account_logging_out") : t("account_logout")}
+                </Text>
               </Pressable>
               {logoutError ? <Body>{t("account_logout_error")}</Body> : null}
             </SupportSection>
-            <SupportSection id="app" title={t("about_info_title")} subtitle={t("about_info_sub")} open={openSection === "app"} onToggle={() => toggle("app")}>
-              <Body>AmbuAssist · {t("about_info_version")} {appVersion}</Body>
-              <Body>{t("about_info_use_value")}</Body>
-            </SupportSection>
-          </ToolSurface>
-          <Subtle style={{ textAlign: "center" }}>SynapseStudio · AmbuAssist</Subtle>
+          </View>
+          <Subtle style={{ textAlign: "center" }}>AmbuAssist · v{appVersion} · SynapseStudio</Subtle>
         </ScrollView>
       </Screen>
     </Background>

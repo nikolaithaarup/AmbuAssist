@@ -16,7 +16,6 @@ import {
 } from "../../pwa/install";
 import { Background } from "../../ui/Background";
 import { usePressFeedback, useReducedMotionPreference } from "../../ui/motion";
-import { ToolPageHeader, ToolSurface } from "../../ui/ToolSurface";
 import { Screen, Subtle } from "../../ui/Ui";
 import { theme } from "../../ui/theme";
 import { useAuth } from "../../auth/AuthProvider";
@@ -321,7 +320,7 @@ function InstallGuide() {
       : [t("install_android_1"), t("install_android_2"), t("install_android_3"), t("install_android_4")];
 
   return (
-    <ToolSurface tone="accent" testID="about-install-card" style={{ gap: 0, paddingVertical: 0 }}>
+    <View testID="about-install-card" style={{ gap: 0, borderBottomWidth: 1, borderBottomColor: theme.colors.divider }}>
       {standalone ? (
         <View style={{ gap: 4, paddingVertical: 14 }} testID="about-install-standalone">
           <Text style={{ color: theme.colors.ok, fontSize: 15, fontWeight: "900" }}>
@@ -355,8 +354,7 @@ function InstallGuide() {
                 <Text style={{ color: theme.colors.text, fontSize: 17, fontWeight: "900" }}>
                   {t("install_entry_title")}
                 </Text>
-                {!guideOpen ? <Subtle>{t("install_intro")}</Subtle> : null}
-              </View>
+                </View>
               <Text accessibilityElementsHidden style={{ color: theme.colors.accentMuted, fontSize: 20 }}>
                 {guideOpen ? "⌄" : "›"}
               </Text>
@@ -364,7 +362,6 @@ function InstallGuide() {
           </Animated.View>
           <DisclosureBody open={guideOpen}>
             <View style={{ gap: 11, paddingTop: 2, paddingBottom: 14 }} testID="about-install-guide">
-              <Body>{t("install_optional")}</Body>
               <View style={{ flexDirection: "row", gap: 8 }}>
                 <PlatformButton
                   label={t("install_ios_tab")}
@@ -387,7 +384,7 @@ function InstallGuide() {
           </DisclosureBody>
         </>
       )}
-    </ToolSurface>
+    </View>
   );
 }
 
@@ -434,79 +431,71 @@ export function AboutSupportScreen({ initialSection }: { initialSection?: AboutS
   return (
     <Background>
       <Screen>
-        <ScrollView
-          contentContainerStyle={{ gap: 14, paddingBottom: 28 }}
-          keyboardShouldPersistTaps="handled"
-        >
-          <ToolPageHeader title={t("about_support_title")} />
-
-          <View testID="about-product-identity" style={{ gap: 5 }}>
+        <ScrollView contentContainerStyle={{ gap: 15, paddingBottom: 26 }} keyboardShouldPersistTaps="handled">
+          <View testID="about-product-identity">
             <SupportQuickActions
               language={lang}
               onEmail={() => void openEmail()}
               onReport={() => void openEmail(true)}
               onStudio={() => void openStudio()}
             />
-            <Subtle style={{ marginTop: 2 }}>{t("homeTagline")}</Subtle>
           </View>
 
-          <Warning>{t("about_safety_summary")}</Warning>
+          <Text style={{ color: theme.colors.mutedText, fontSize: 12, lineHeight: 18, paddingHorizontal: 2 }}>
+            {lang === "da"
+              ? "Til faglig støtte – ikke en erstatning for klinisk vurdering. Akut behandling må aldrig forsinkes."
+              : "For clinical support, not a replacement for judgement. Never delay urgent treatment."}
+          </Text>
 
-          <InstallGuide />
-
-          <ToolSurface style={{ paddingVertical: 0, paddingHorizontal: 4, gap: 0 }}>
+          <View testID="about-details" style={{ borderTopWidth: 1, borderTopColor: theme.colors.divider }}>
             <SupportSection
               id="about"
               title={t("about_project_title")}
-              subtitle={t("about_project_sub")}
+              subtitle=""
               open={openSection === "about"}
               onToggle={() => toggle("about")}
             >
               <Body>{t("about_compact_body")}</Body>
               <Body>{t("about_purpose_1")}</Body>
             </SupportSection>
-            <SupportSection
-              id="sources"
-              title={t("about_sources_title")}
-              subtitle={t("about_sources_sub")}
-              open={openSection === "sources"}
-              onToggle={() => toggle("sources")}
-            >
-              <Body>{t("meddisc_sources_body")}</Body>
-              <Subtle>{t("meddisc_sources_note_body")}</Subtle>
-            </SupportSection>
+
             <SupportSection
               id="medical"
               title={t("about_disclaimer_title")}
-              subtitle={t("meddisc_sub")}
+              subtitle=""
               open={openSection === "medical"}
               onToggle={() => toggle("medical")}
             >
               <Body>{t("meddisc_warning_body")}</Body>
-              <Body>{t("meddisc_emergency_body")}</Body>
+              <Body>{t("meddisc_sources_body")}</Body>
+              <Subtle>{t("meddisc_sources_note_body")}</Subtle>
             </SupportSection>
+
             <SupportSection
-              id="contact"
-              title={t("about_contact_row_title")}
-              subtitle={t("contact_sub")}
-              open={openSection === "contact"}
-              onToggle={() => toggle("contact")}
+              id="app"
+              title={t("about_privacy_row_title")}
+              subtitle=""
+              open={openSection === "app"}
+              onToggle={() => toggle("app")}
             >
-              <Body>{lang === "da"
-                ? "Skriv gerne, hvor fejlen opstod, og hvad du forventede. Del ikke patientoplysninger."
-                : "Tell me where the issue occurred and what you expected. Do not share patient information."}</Body>
-              <Text selectable style={{ color: theme.colors.accentMuted, fontSize: 14, fontWeight: "800" }}>{SUPPORT_EMAIL}</Text>
+              <Body>{t("about_privacy_local")}</Body>
+              <Body>{t("about_privacy_auth")}</Body>
+              <Body>{t("about_privacy_usage")}</Body>
+              <InfoRow label={t("about_info_version")} value={appVersion} />
             </SupportSection>
+
             <SupportSection
               id="account"
               title={t("account_title")}
-              subtitle={t("account_sub")}
+              subtitle=""
               open={openSection === "account"}
               onToggle={() => toggle("account")}
             >
-              <Body>{state.status === "authorized" && state.session.assurance === "offline-cache"
-                ? t("account_offline")
-                : t("account_remembered")}</Body>
+              <Body>
+                {state.status === "authorized" && state.session.assurance === "offline-cache"
+                  ? t("account_offline")
+                  : t("account_remembered")}
+              </Body>
               <Pressable
                 testID="about-support-logout"
                 accessibilityRole="button"
@@ -515,9 +504,13 @@ export function AboutSupportScreen({ initialSection }: { initialSection?: AboutS
                 disabled={loggingOut}
                 onPress={() => void signOut()}
                 style={({ pressed }) => ({
-                  minHeight: 48, justifyContent: "center", alignItems: "center",
-                  borderRadius: 13, borderWidth: 1, borderColor: theme.colors.cardBorder,
-                  opacity: pressed || loggingOut ? 0.6 : 1,
+                  minHeight: 48,
+                  borderRadius: 12,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  borderWidth: 1,
+                  borderColor: theme.colors.cardBorder,
+                  opacity: loggingOut || pressed ? 0.6 : 1,
                 })}
               >
                 <Text style={{ color: theme.colors.text, fontWeight: "800" }}>
@@ -526,24 +519,11 @@ export function AboutSupportScreen({ initialSection }: { initialSection?: AboutS
               </Pressable>
               {logoutError ? <Warning>{t("account_logout_error")}</Warning> : null}
             </SupportSection>
-            <SupportSection
-              id="app"
-              title={t("about_privacy_row_title")}
-              subtitle={t("about_privacy_sub")}
-              open={openSection === "app"}
-              onToggle={() => toggle("app")}
-            >
-              <Body>{t("about_privacy_local")}</Body>
-              <Body>{t("about_privacy_auth")}</Body>
-              <Body>{t("about_privacy_usage")}</Body>
-              <Body>{t("about_privacy_feedback")}</Body>
-              <InfoRow label={t("about_info_version")} value={appVersion} />
-            </SupportSection>
-          </ToolSurface>
+            <InstallGuide />
+          </View>
 
-          <View testID="about-footer" style={{ alignItems: "center", gap: 3, paddingTop: 4 }}>
-            <Subtle>{t("about_info_version")} {appVersion}</Subtle>
-            <Subtle>{t("about_made_by")}</Subtle>
+          <View testID="about-footer" style={{ alignItems: "center", paddingTop: 2 }}>
+            <Subtle>AmbuAssist · v{appVersion} · SynapseStudio</Subtle>
           </View>
         </ScrollView>
       </Screen>

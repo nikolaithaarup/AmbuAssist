@@ -19,6 +19,10 @@ function resolveBuildId() {
     : "development";
 }
 
+const assets = spawnSync(process.execPath, [resolve("scripts", "buildBrandIcons.mjs")], { stdio: "inherit" });
+if (assets.error) throw assets.error;
+if (assets.status !== 0) process.exit(assets.status ?? 1);
+
 const buildId = resolveBuildId();
 const versionPath = resolve("public", "version.json");
 const expoCliPath = resolve("node_modules", "expo", "bin", "cli");

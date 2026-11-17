@@ -26,17 +26,14 @@ export function SupportQuickActions({ language, onEmail, onReport, onStudio }: P
   return (
     <View testID="synapsestudio-support-identity" style={{ gap: 12, paddingHorizontal: 2 }}>
       <View style={{ gap: 4 }}>
-        <Text style={{ color: theme.colors.accentMuted, fontWeight: "800", fontSize: 13 }}>
-          SynapseStudio
+        <Text style={{ color: theme.colors.text, fontWeight: "900", fontSize: 25, lineHeight: 31 }}>
+          {da ? "Kontakt & support" : "Contact & support"}
         </Text>
-        <Text style={{ color: theme.colors.text, fontWeight: "900", fontSize: 26, lineHeight: 32 }}>
-          AmbuAssist
+        <Text style={{ color: theme.colors.accentMuted, fontWeight: "800", fontSize: 14 }}>
+          AmbuAssist · SynapseStudio
         </Text>
-        <Text style={{ color: theme.colors.mutedText, fontSize: 14, lineHeight: 20 }}>
+        <Text style={{ color: theme.colors.mutedText, fontSize: 13, lineHeight: 19 }}>
           {da ? "Udviklet af Nikolai Louis Kleftås Thaarup" : "Created by Nikolai Louis Kleftås Thaarup"}
-        </Text>
-        <Text style={{ color: theme.colors.text, fontSize: 15, lineHeight: 22, marginTop: 4 }}>
-          {da ? "Spørgsmål, fejl eller idéer? Skriv direkte til mig." : "Questions, bugs or ideas? Get in touch directly."}
         </Text>
       </View>
       <Pressable

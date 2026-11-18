@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
   studioFooter: {
     marginTop: 46,
     alignItems: "center",
-    gap: 10,
+    gap: 2,
   },
   partOf: {
     color: "#D3DCDA",

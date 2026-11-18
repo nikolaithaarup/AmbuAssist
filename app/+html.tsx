@@ -113,7 +113,7 @@ export default function Root({ children }: PropsWithChildren) {
     justify-content: center; gap: 12px; min-height: 32px; margin-top: 34px;
     color: #d3dcda; font-size: 13px; font-weight: 500; line-height: 19px; }
   #synapse-startup .studio-footer { display: flex; flex-direction: column;
-    align-items: center; gap: 10px; margin-top: 46px; }
+    align-items: center; gap: 2px; margin-top: 46px; }
   #synapse-startup .part-of { color: #d3dcda; font-size: 11px;
     font-weight: 600; line-height: 16px; letter-spacing: 1.1px; }
   #synapse-startup .studio-logo { display: block; width: 164px;

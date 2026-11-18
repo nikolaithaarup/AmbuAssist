@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 4,
     marginTop: 28,
-    minHeight: 82,
+    minHeight: 96,
   },
   loadingText: {
     color: "#D3DCDA",

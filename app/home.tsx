@@ -149,6 +149,28 @@ export default function Home() {
   const { t } = useT();
   const { favourites, isFavourite, toggleFavourite } = useFavourites();
   const favouriteTools = FAVOURITABLE_TOOLS.filter((tool) => favourites.includes(tool.path));
+  const [labelWidths, setLabelWidths] = useState<Record<string, number>>({});
+  const menuLabels = Array.from(new Set(
+    [...favouriteTools, ...HOME_TOOLS, ABOUT_SUPPORT_TOOL].map((tool) => t(tool.titleKey)),
+  ));
+  // Use the measured longest title (including translated and favourite tools)
+  // rather than letting every card fill the available width.
+  const longestLabel = Math.max(0, ...menuLabels.map((label) => labelWidths[label] ?? 0));
+  const menuGutter = compact ? 60 : 84;
+  const availableMenuWidth = Math.max(0, width - menuGutter);
+  const webMenuWidth = Math.max(0, Math.min(
+    440,
+    availableMenuWidth,
+    longestLabel > 0 ? Math.max(296, Math.ceil(longestLabel + 118)) : 316,
+  ));
+  const measureTitle = (label: string, measured: number) => {
+    if (measured <= 0) return;
+    setLabelWidths((previous) =>
+      Math.abs((previous[label] ?? 0) - measured) < 1
+        ? previous
+        : { ...previous, [label]: measured },
+    );
+  };
 
   const openTool = (tool: ToolDefinition) => {
     hapticToolOpen();
@@ -177,7 +199,7 @@ export default function Home() {
       style={{
         width: "100%",
         alignItems: "center",
-        paddingTop: compact ? 14 : 18,
+        paddingTop: compact ? 18 : 22,
         paddingBottom: compact ? 6 : 10,
       }}
     >
@@ -247,12 +269,41 @@ export default function Home() {
 
   const menu = (
     <View
+      testID="ambu-home-menu"
       style={{
-        width: "100%",
-        maxWidth: pwa ? (expanded ? 580 : 600) : 560,
+        width: pwa ? webMenuWidth : "100%",
+        maxWidth: "100%",
+        alignSelf: "center",
         gap: compact ? 6 : 8,
       }}
     >
+      {pwa ? (
+        <View
+          testID="ambu-home-label-measure"
+          pointerEvents="none"
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+          style={{ position: "absolute", top: 0, left: 0, opacity: 0, alignItems: "flex-start" }}
+        >
+          {menuLabels.map((label) => (
+            <Text
+              key={label}
+              numberOfLines={1}
+              onLayout={(event) => measureTitle(label, event.nativeEvent.layout.width)}
+              style={{
+                alignSelf: "flex-start",
+                color: theme.colors.text,
+                fontSize: 16,
+                lineHeight: 21,
+                fontWeight: "700",
+                letterSpacing: -0.15,
+              }}
+            >
+              {label}
+            </Text>
+          ))}
+        </View>
+      ) : null}
       {favouriteTools.length > 0 ? (
         <>
           <HomeSectionHeader
@@ -327,7 +378,7 @@ export default function Home() {
         edges={["top", "left", "right", "bottom"]}
         style={{
           paddingTop: pwa ? (compact ? 4 : 10) : compact ? 2 : 8,
-          paddingHorizontal: pwa ? (compact ? 14 : 22) : compact ? 10 : 18,
+          paddingHorizontal: pwa ? (compact ? 20 : 26) : compact ? 10 : 18,
           gap: pwa ? (compact ? 8 : 14) : compact ? 4 : 14,
         }}
       >
@@ -335,8 +386,8 @@ export default function Home() {
           <ScrollView
             testID="home-scroll"
             contentContainerStyle={{
-              paddingBottom: compact ? 6 : 14,
-              paddingTop: compact ? 2 : 8,
+              paddingBottom: compact ? 12 : 18,
+              paddingTop: compact ? 8 : 12,
               paddingHorizontal: compact ? 0 : 8,
               alignItems: expanded ? "flex-start" : "center",
             }}

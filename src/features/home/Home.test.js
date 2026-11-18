@@ -171,7 +171,7 @@ describe("Home responsive mobile layout", () => {
     expect(hero.props.style.backgroundColor).toBeUndefined();
     expect(root.findAllByProps({ testID: "navigation-card" }).every(card => card.props.compact === true)).toBe(true);
     const scroll = root.findByProps({ testID: "home-scroll" });
-    expect(scroll.props.contentContainerStyle.paddingBottom).toBe(6);
+    expect(scroll.props.contentContainerStyle.paddingBottom).toBe(12);
     expect(scroll.findAllByProps({ testID: "home-hero" }).length).toBeGreaterThan(0);
     expect(
       root.findAllByType(Text).some(

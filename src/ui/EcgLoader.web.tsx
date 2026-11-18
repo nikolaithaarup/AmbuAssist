@@ -9,14 +9,14 @@ export default function EcgLoader({ color }: EcgLoaderProps) {
     <svg
       className="synapse-ecg"
       width="236"
-      height="52"
-      viewBox="0 0 236 52"
+      height="68"
+      viewBox="0 0 236 68"
       aria-hidden="true"
       focusable="false"
       style={{ color }}
     >
       <style>{ECG_STYLES}</style>
-      <path className="synapse-ecg-guide" d="M 2 26 L 234 26" />
+      <path className="synapse-ecg-guide" d="M 2 34 L 234 34" />
       <path className="synapse-ecg-glow" d={ECG_PATH} pathLength={100} />
       <path className="synapse-ecg-trace" d={ECG_PATH} pathLength={100} />
     </svg>

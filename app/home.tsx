@@ -177,7 +177,7 @@ export default function Home() {
       style={{
         width: "100%",
         alignItems: "center",
-        paddingTop: 0,
+        paddingTop: compact ? 14 : 18,
         paddingBottom: compact ? 6 : 10,
       }}
     >
@@ -285,7 +285,7 @@ export default function Home() {
   const studioFooter = (
     <View
       testID="home-synapsestudio-footer"
-      style={{ width: "100%", alignItems: "center", gap: 8, marginTop: 24 }}
+      style={{ width: "100%", alignItems: "center", gap: 0, marginTop: 24 }}
     >
       <Text
         style={{

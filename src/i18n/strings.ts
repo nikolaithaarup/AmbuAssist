@@ -6,7 +6,7 @@ export const en = {
   // SHARED / APP
   // =========================================================
   appName: "AmbuAssist",
-  homeTagline: "Minimal tools for chaotic reality",
+  homeTagline: "Clinical tools. Right at hand.",
   language: "Language",
   english: "English",
   danish: "Danish",
@@ -1557,7 +1557,7 @@ export const da: typeof en = {
   // SHARED / APP
   // =========================================================
   appName: "AmbuAssist",
-  homeTagline: "Små værktøjer til kaotisk virkelighed",
+  homeTagline: "Kliniske værktøjer. Lige ved hånden.",
   language: "Sprog",
   english: "Engelsk",
   danish: "Dansk",

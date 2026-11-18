@@ -141,6 +141,27 @@ describe("Home responsive mobile layout", () => {
     expect(wordmark.props.style.height).toBe(38);
   });
 
+  test("centres PWA menu at a shared width measured from its longest title", () => {
+    ReactNative.Platform.OS = "web";
+    const root = renderHome();
+    const menu = root.findByProps({ testID: "ambu-home-menu" });
+    const probes = root.findByProps({ testID: "ambu-home-label-measure" }).findAllByType(Text);
+
+    expect(menu.props.style.width).toBe(316);
+    act(() => {
+      probes.forEach((probe) =>
+        probe.props.onLayout({ nativeEvent: { layout: { width: 150 } } }),
+      );
+    });
+    expect(root.findByProps({ testID: "ambu-home-menu" }).props.style.width).toBe(296);
+
+    act(() => {
+      probes[0].props.onLayout({ nativeEvent: { layout: { width: 194 } } });
+    });
+    expect(root.findByProps({ testID: "ambu-home-menu" }).props.style.width).toBe(312);
+    expect(root.findByProps({ testID: "ambu-home-menu" }).props.style.alignSelf).toBe("center");
+  });
+
   test("uses the balanced branded hero and title-only cards in the web PWA", () => {
     ReactNative.Platform.OS = "web";
     const root = renderHome();
